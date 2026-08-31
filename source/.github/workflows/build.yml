@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build (Electron)
+        run: pnpm run build
+
+      - name: Package (${{ matrix.os }})
+        run: >
+          ${{ matrix.os == 'windows-latest'
+              && 'pnpm exec electron-builder --win nsis --config electron-builder.yml'
+              || 'pnpm exec electron-builder --linux AppImage --config electron-builder.yml' }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tinda-pos-${{ matrix.os }}
+          path: |
+            builds/TindaPOS-Setup-*.exe
+            builds/TindaPOS-*.AppImage
+          if-no-files-found: error

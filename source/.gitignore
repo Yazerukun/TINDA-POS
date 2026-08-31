@@ -1,0 +1,15 @@
+node_modules/
+out/
+dist/
+*.log
+.DS_Store
+release/
+build/
+/dist/
+
+# Local runtime dev data (kept off system drive intentionally)
+/mnt/D/TINDA-POS/test-data/*
+!/mnt/D/TINDA-POS/test-data/*
+/mnt/D/TINDA-POS/backups/*
+/mnt/D/TINDA-POS/installers/*
+/mnt/D/TINDA-POS/builds/*

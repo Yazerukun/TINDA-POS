@@ -1,0 +1,39 @@
+# === Dependencies ===
+node_modules/
+.pnpm-store
+
+# === Build outputs ===
+out/
+source/out/
+source/builds/
+builds/
+
+# === Electron / npm / pnpm caches ===
+electron-cache/
+npm-cache/
+pnpm-store/
+
+# === Wine prefix ===
+.wine/
+
+# === Installers (large .exe binaries) ===
+*.exe
+installers/*.exe
+installers/TINDA-POS-Windows/*.exe
+
+# === Temp & backups ===
+temp/
+backups/
+test-data/
+
+# === OS junk ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Editor / IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

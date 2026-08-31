@@ -1,0 +1,51 @@
+appId: com.tindapos.desktop
+productName: TINDA POS
+copyright: Copyright © 2026 TINDA POS
+directories:
+  output: builds
+  buildResources: build
+files:
+  - out/**
+  - build/icon.png
+  - build/icon.ico
+  - "!**/*.map"
+asar: true
+asarUnpack:
+  - "**/*.node"
+  - "**/node_modules/better-sqlite3/**/*"
+npmRebuild: false
+electronLanguages:
+  - en-US
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  executableName: TindaPOS
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: TINDA POS
+  uninstallDisplayName: TINDA POS
+  artifactName: TindaPOS-Setup-${version}.${ext}
+  deleteAppDataOnUninstall: false
+  runAfterFinish: true
+portable:
+  artifactName: TindaPOS-Portable-${version}.${ext}
+linux:
+  target:
+    - AppImage
+  category: Office
+  icon: build/icon.png
+  artifactName: TindaPOS-${version}.${ext}
+mac:
+  target:
+    - dmg
+  category: public.app-category.business
+  icon: build/icon.icns

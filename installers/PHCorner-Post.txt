@@ -1,0 +1,57 @@
+TINDA POS — Free & Offline POS for Sari-Sari Stores
+
+Download: https://github.com/your-repo/TindaPOS/releases/latest
+
+WHAT IS IT?
+TINDA POS is a free, offline point-of-sale app made specifically for
+Philippine sari-sari stores. No internet needed — all your data stays
+on your own computer. Works on Windows and Linux.
+
+MAIN FEATURES
+- Fast POS checkout — product grid + search (name/SKU/barcode)
+- Payments: Cash (with automatic sukli/change), GCash, Maya, and Utang (credit)
+- Inventory with TINGI units (sachet, can, stick, piraso)
+- Low-stock & out-of-stock alerts
+- Customers & Utang ledger (credit limits, payment history)
+- Expenses tracking (rent, electric, water, load)
+- Suppliers & purchases
+- Transactions: view, refund, void (restores stock)
+- Dashboard (sales, profit, utang, expenses) + Reports (daily/weekly/monthly)
+- Export reports to CSV (Excel)
+- Backup & restore
+- Multi-user with roles & fast login PIN
+- Receipts with your store name & footer
+
+SYSTEM REQUIREMENTS
+- Windows 10/11 64-bit, or any modern Linux 64-bit
+- 4 GB RAM, ~200 MB free space
+- 1366x768 screen or higher
+
+DOWNLOAD
+- Windows: TindaPOS-Setup-1.0.0.exe (installer)
+- Linux: TindaPOS-1.0.0.AppImage
+- Full guide: TindaPOS-User-Guide.pdf (read this, lalo na first time)
+
+HOW TO INSTALL
+Windows: run the .exe, follow the wizard. If SmartScreen pops up, click
+"More info" then "Run anyway" (not signed yet).
+Linux: right-click AppImage > Properties > Permissions > check "Allow
+executing as program", then double-click.
+
+FIRST RUN
+A 3-step wizard sets up your store: Store details > Admin account
+(username/password/PIN) > Receipt & sample data. You can tick "Load
+sample data" to try the POS immediately with ~18 common items.
+
+SUPPORT
+Questions, bugs, or requests? Reply here sa thread. Salamat po!
+
+FAQs
+- Offline ba talaga? Oo. Walang internet na kailangan, walang cloud, walang
+  datos na umaalis sa store ninyo.
+- Saan naka-save ang data? Windows: %APPDATA%\TINDA POS. Linux:
+  ~/.config/tinda-pos. Hindi nabubura kapag in-uninstall.
+- Safe ba ang backup? Oo — gumawa lang ng backup anytime sa Backup page, tapos
+  i-copy sa USB/cloud. I-restore pag kailangan.
+
+Batch ID: TindaPOS-1.0.0
