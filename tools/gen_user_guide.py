@@ -136,6 +136,33 @@ story.append(bullets([
 ]))
 story.append(step("5", "Confirm the sale. The receipt is generated and your inventory and balances are updated automatically."))
 story.append(P("Stock and money are tracked for every single sale, so your inventory, utang balances, and daily sales reports stay accurate with no extra work.", "callout"))
+story.append(H3("Split Payment"))
+story.append(P(
+    "Customers can pay with multiple methods in a single sale. For example, pay part in Cash and "
+    "the rest via GCash. Just add each payment method in the checkout window and enter the "
+    "amount for each. The total must equal the sale amount."
+))
+story.append(step("1", "In the checkout window, click <b>Add Payment</b>."))
+story.append(step("2", "Choose the first method (e.g. Cash) and enter the amount."))
+story.append(step("3", "Choose the second method (e.g. GCash) and enter the remaining amount."))
+story.append(step("4", "Confirm — both payments are logged on the receipt and in reports."))
+story.append(H3("Hold &amp; Resume Sale"))
+story.append(P(
+    "If a customer needs to step away (e.g. forgot their wallet), you can <b>hold</b> the current cart "
+    "and serve the next customer. The held sale is saved without affecting stock."
+))
+story.append(step("1", "Click <b>Hold</b> on the POS page to save the current cart."))
+story.append(step("2", "Serve other customers normally."))
+story.append(step("3", "When the first customer returns, click <b>Resume</b> on the held sale to restore the cart."))
+story.append(step("4", "If the customer changes their mind, click <b>Delete</b> on the held sale to discard it."))
+story.append(P("Held sales do NOT reduce stock until the sale is actually completed.", "callout"))
+story.append(H3("Safety Protections"))
+story.append(bullets([
+    "<b>Insufficient stock</b> — you cannot sell more than what is on hand. The app blocks the checkout if quantity exceeds available stock.",
+    "<b>Over-refund</b> — you cannot refund more items than were originally sold in a transaction.",
+    "<b>Credit limit</b> — utang checkout is blocked if the customer would exceed their credit limit.",
+    "<b>Void permission</b> — only managers/admins can void a sale. Cashiers are blocked from voiding.",
+]))
 
 # ============================================================
 sec("Inventory &amp; Products")
@@ -231,6 +258,26 @@ story.append(step("2", "Click <b>Restore</b> and confirm. Your data is restored 
 story.append(P("Back up at least once a week (or every day if the store is busy). Keep copies off the machine so you're safe even if the computer breaks.", "callout"))
 
 # ============================================================
+sec("Shifts")
+story.append(P(
+    "A <b>shift</b> tracks your cash drawer during a work period. Shifts open automatically when "
+    "you ring up your first sale of the day, or you can open one manually."
+))
+story.append(H3("Opening a shift"))
+story.append(step("1", "A shift opens automatically on the first sale after login."))
+story.append(step("2", "Or, open one manually from the Shifts section."))
+story.append(step("3", "Enter the <b>starting cash</b> (the amount in your drawer before selling)."))
+story.append(H3("Closing a shift"))
+story.append(step("1", "When done for the day, click <b>Close Shift</b>."))
+story.append(step("2", "Enter the <b>actual cash</b> you counted in the drawer."))
+story.append(step("3", "The app computes the <b>expected cash</b> (starting cash + cash sales – expenses) and shows the <b>difference</b>."))
+story.append(step("4", "A difference of 0 means your cash is exact. Any discrepancy is shown so you can investigate."))
+story.append(P(
+    "Shifts give you a daily cash reconciliation. If the numbers don't add up, "
+    "check your expenses and recent transactions."
+))
+
+# ============================================================
 sec("Settings")
 story.append(P("The Settings page has three tabs:"))
 story.append(bullets([
@@ -273,8 +320,9 @@ story_titles = {
     8: "Transactions, Refunds &amp; Voids",
     9: "Dashboard &amp; Reports",
     10: "Backup &amp; Restore",
-    11: "Settings",
-    12: "Data, Storage &amp; Safety",
+    11: "Shifts",
+    12: "Settings",
+    13: "Data, Storage &amp; Safety",
 }
 toc = [Paragraph("Contents", ParagraphStyle("toch", parent=ST["h1"], fontSize=18, textColor=EMERALD_DARK, spaceAfter=10))]
 for i in range(1, num[0] + 1):
