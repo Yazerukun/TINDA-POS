@@ -1,57 +1,157 @@
-TINDA POS — Free & Offline POS for Sari-Sari Stores
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TITLE: [FREE] TINDA POS v1.0.0 — Offline POS App for Sari-Sari Stores (Windows)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Download: https://github.com/your-repo/TindaPOS/releases/latest
+[TAGS: free software, POS, sari-sari store, point of sale, offline, electron, react]
 
-WHAT IS IT?
-TINDA POS is a free, offline point-of-sale app made specifically for
-Philippine sari-sari stores. No internet needed — all your data stays
-on your own computer. Works on Windows and Linux.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MAIN FEATURES
-- Fast POS checkout — product grid + search (name/SKU/barcode)
-- Payments: Cash (with automatic sukli/change), GCash, Maya, and Utang (credit)
-- Inventory with TINGI units (sachet, can, stick, piraso)
-- Low-stock & out-of-stock alerts
-- Customers & Utang ledger (credit limits, payment history)
-- Expenses tracking (rent, electric, water, load)
-- Suppliers & purchases
-- Transactions: view, refund, void (restores stock)
-- Dashboard (sales, profit, utang, expenses) + Reports (daily/weekly/monthly)
-- Export reports to CSV (Excel)
-- Backup & restore
-- Multi-user with roles & fast login PIN
-- Receipts with your store name & footer
+Mga lods! Gumawa ako ng free POS app para sa mga sari-sari store owners dito sa Pinas. Fully offline, walang internet na kailangan, at libre na talaga.
 
-SYSTEM REQUIREMENTS
-- Windows 10/11 64-bit, or any modern Linux 64-bit
-- 4 GB RAM, ~200 MB free space
-- 1366x768 screen or higher
+🔗 Download: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.0
+📖 Source code: https://github.com/Yazerukun/TINDA-POS
 
-DOWNLOAD
-- Windows: TindaPOS-Setup-1.0.0.exe (installer)
-- Linux: TindaPOS-1.0.0.AppImage
-- Full guide: TindaPOS-User-Guide.pdf (read this, lalo na first time)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 ANO TONG TINDA POS?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-HOW TO INSTALL
-Windows: run the .exe, follow the wizard. If SmartScreen pops up, click
-"More info" then "Run anyway" (not signed yet).
-Linux: right-click AppImage > Properties > Permissions > check "Allow
-executing as program", then double-click.
+Desktop POS app na ginawa specifically para sa mga sari-sari store at small businesses sa Pinas. 100% offline — walang cloud, walang subscription, walang data na umaalis sa computer ninyo.
 
-FIRST RUN
-A 3-step wizard sets up your store: Store details > Admin account
-(username/password/PIN) > Receipt & sample data. You can tick "Load
-sample data" to try the POS immediately with ~18 common items.
+Gawa sa Electron + React + TypeScript + SQLite. Matibay, mabilis, at reliable.
 
-SUPPORT
-Questions, bugs, or requests? Reply here sa thread. Salamat po!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-FAQs
-- Offline ba talaga? Oo. Walang internet na kailangan, walang cloud, walang
-  datos na umaalis sa store ninyo.
-- Saan naka-save ang data? Windows: %APPDATA%\TINDA POS. Linux:
-  ~/.config/tinda-pos. Hindi nabubura kapag in-uninstall.
-- Safe ba ang backup? Oo — gumawa lang ng backup anytime sa Backup page, tapos
-  i-copy sa USB/cloud. I-restore pag kailangan.
+💰 POS / Benta
+• Mabilis na checkout — product grid + search (pangalan, SKU, o barcode)
+• Cash — may automatic sukli/change computation
+• GCash & Maya — may reference number tracking
+• Utang (credit) — may customer picker at credit limit
+• Split payment — pwede CASH + GCASH sa iisang transaction
+• Hold & Resume — itabi muna ang cart habang nagse-serve ng ibang customer
 
+📦 Inventory
+• Products with TINGI units (sachet, can, stick, piraso, etc.)
+• Categories, suppliers, at SKU/barcode support
+• Low-stock at out-of-stock alerts (color-coded badges)
+• Auto-update ng stock sa bawat sale, refund, at void
+
+👥 Customers & Utang
+• Customer directory with credit limits
+• Full utang ledger — track bawat sale-on-credit at payment
+• Over-limit protection — blocked ang bagong utang pag lampas na sa limit
+
+📊 Dashboard & Reports
+• Sales, profit, utang, expenses — nasa dashboard agad
+• Daily, weekly, monthly reports
+• Export to CSV (Excel compatible)
+
+🔄 Transactions
+• View full receipt kahit kailan
+• Refund items — auto-restore ng stock
+• Void mistaken sales — stock balik, utang bura
+• Receipt reprint anytime
+
+⏱️ Shifts
+• Auto-open sa unang benta ng araw
+• Close shift with expected vs actual cash reconciliation
+• Track expenses per shift
+
+💸 Expenses
+• Record rent, kuryente, tubig, load, etc.
+• Categorized para malinis ang reporting
+• Kasama sa profit computation
+
+📋 Suppliers & Purchases
+• Supplier directory with contact info
+• Track kung saan ka bumibili
+
+🗄️ Backup & Restore
+• One-click backup
+• Restore from any previous backup
+• Data stored separately sa app — kahit i-uninstall, hindi mawawala
+
+🔐 Multi-User
+• Admin at Cashier roles
+• Fast PIN login para sa daily use
+• Only admins pwede mag-void
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📥 DOWNLOAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Windows 10/11:
+• Installer: TindaPOS-Setup-1.0.0.exe (~110 MB)
+• Portable: TindaPOS-Portable-1.0.0.exe (~110 MB) — walang install, i-run lang
+
+User Guide: TindaPOS-User-Guide.pdf — basahin niyo lalo na first time!
+
+👉 https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 HOW TO INSTALL (Windows)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Download ang TindaPOS-Setup-1.0.0.exe
+2. Double-click to install
+3. Pag lumabas ang SmartScreen, click "More info" → "Run anyway" (hindi pa signed)
+4. Follow the wizard — choose install location, desktop shortcut
+5. Click Install, tapos Run
+
+Kung ayaw niyo mag-install, gamitin ang Portable version — i-double-click lang, walang install needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧙 FIRST RUN SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pag-bukas ng app, may 3-step wizard:
+
+Step 1 — Store Details
+• Store Name (ito ang lalabas sa receipt)
+• Owner Name, Address, Phone
+
+Step 2 — Admin Account
+• Username (default: admin)
+• Password (at least 4 chars)
+• Quick PIN (4 digits para mabilis mag-login)
+• ⚠️ Tandaan niyo ang username at password!
+
+Step 3 — Receipt & Data
+• Receipt Header at Footer (e.g. store address, "Salamat po!")
+• ☑️ Load sample data — lagyan ng ~18 common items para ma-try agad
+
+Click Finish → logged in na kayo agad!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❓ FAQ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q: Offline ba talaga?
+A: Oo 100%. Walang internet na kailangan. Walang cloud. Walang datos na umaalis sa store ninyo.
+
+Q: Saan naka-save ang data?
+A: Windows: %APPDATA%\TINDA POS — Hindi nabubura kahit i-uninstall ang app.
+
+Q: Safe ba ang backup?
+A: Oo — gumawa ng backup sa Backup page, tapos i-copy sa USB or cloud. I-restore pag kailangan.
+
+Q: Pwede ba mag-barcode scanner?
+A: Oo — kahit anong USB barcode scanner, automatic na gumagana. Walang special drivers needed.
+
+Q: Libre talaga?
+A: Oo, 100% free. Walang trial, walang subscription, walang hidden fees.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🐛 SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+May bug? May suggestions? May questions? Reply lang dito sa thread!
+
+GitHub Issues: https://github.com/Yazerukun/TINDA-POS/issues
+
+Salamat po sa inyong support! 🙏
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Batch ID: TindaPOS-1.0.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

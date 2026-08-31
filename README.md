@@ -6,7 +6,7 @@
 
 **No internet needed. No subscription. Your data stays on your computer.**
 
-[![Release](https://img.shields.io/github/v/release/FrancisIanMuyco/TINDA-POS?color=059669&style=for-the-badge)](https://github.com/FrancisIanMuyco/TINDA-POS/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Yazerukun/TINDA-POS?color=059669&style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/latest)
 [![License](https://img.shields.io/badge/license-proprietary-red?style=for-the-badge)](#license)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=for-the-badge)](#download)
 
@@ -80,11 +80,11 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 | Platform | File | Size |
 |----------|------|------|
-| **Windows 10/11** | [TindaPOS-Setup-1.0.0.exe](https://github.com/FrancisIanMuyco/TINDA-POS/releases/download/v1.0.0/TindaPOS-Setup-1.0.0.exe) | ~110 MB |
-| **Windows (Portable)** | [TindaPOS-Portable-1.0.0.exe](https://github.com/FrancisIanMuyco/TINDA-POS/releases/download/v1.0.0/TindaPOS-Portable-1.0.0.exe) | ~110 MB |
-| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/FrancisIanMuyco/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) | ~20 KB |
+| **Windows 10/11** | [TindaPOS-Setup-1.0.0.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-Setup-1.0.0.exe) | ~110 MB |
+| **Windows (Portable)** | [TindaPOS-Portable-1.0.0.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-Portable-1.0.0.exe) | ~110 MB |
+| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) | ~20 KB |
 
-> 📖 **First time?** Read the [User Guide PDF](https://github.com/FrancisIanMuyco/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) — it covers installation, setup, and how to use every feature.
+> 📖 **First time?** Read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) — it covers installation, setup, and how to use every feature.
 
 ## 🚀 Quick Start
 
@@ -107,7 +107,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 ```bash
 # Clone the repo
-git clone https://github.com/FrancisIanMuyco/TINDA-POS.git
+git clone https://github.com/Yazerukun/TINDA-POS.git
 cd TINDA-POS/source
 
 # Install dependencies
@@ -175,7 +175,7 @@ Oo — any USB barcode scanner works. No special drivers needed.
 
 ## 🤝 Contributing
 
-This is a personal project, but bug reports and suggestions are welcome via [GitHub Issues](https://github.com/FrancisIanMuyco/TINDA-POS/issues).
+This is a personal project, but bug reports and suggestions are welcome via [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues).
 
 ## 📄 License
 
