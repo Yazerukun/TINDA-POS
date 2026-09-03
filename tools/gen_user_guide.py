@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """TINDA POS — User Guide PDF generator (reportlab)."""
+import os
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.lib.colors import HexColor, white
@@ -7,7 +8,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.platypus import (
     BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, PageBreak,
-    HRFlowable, ListFlowable, ListItem, NextPageTemplate
+    HRFlowable, ListFlowable, ListItem, NextPageTemplate, CondPageBreak
 )
 
 EMERALD = HexColor("#059669")
@@ -19,7 +20,10 @@ LIGHT = HexColor("#f8fafc")
 LINE = HexColor("#e2e8f0")
 WHITE = white
 
-OUT = "/mnt/D/TINDA-POS/installers/TindaPOS-User-Guide.pdf"
+OUT = os.environ.get(
+    "TINDA_USER_GUIDE_OUT",
+    "/mnt/D/TINDA-POS/installers/TindaPOS-User-Guide.pdf",
+)
 
 ss = getSampleStyleSheet()
 ST = {
@@ -48,6 +52,8 @@ def bullets(items):
 num = [0]
 story = []
 def sec(title):
+    if story:
+        story.append(CondPageBreak(1.35 * inch))
     num[0] += 1
     story.append(H1(title))
     story.append(el())
@@ -83,6 +89,24 @@ story.append(step("2", "Alternative: open a terminal and run <font face='Courier
 story.append(step("3", "Double-click the AppImage to launch TINDA POS."))
 story.append(step("4", "If FUSE is not installed, install it (e.g. <font face='Courier'>sudo apt install libfuse2</font> on Debian/Ubuntu), or run the app with <font face='Courier'>--appimage-extract-and-run</font>."))
 story.append(P("Linux data is stored under <b>~/.config/tinda-pos</b> (or a folder you set)."))
+
+# ============================================================
+sec("Quick Start &amp; What's New")
+story.append(H2("Start selling in five steps"))
+story.append(step("1", "Complete the first-run wizard and keep your admin password and PIN safe."))
+story.append(step("2", "Open <b>Inventory</b>, create categories, then add products with their price, cost, unit, and stock."))
+story.append(step("3", "Open <b>POS</b>, add products to the cart, choose a payment method, and confirm the sale."))
+story.append(step("4", "Add regular customers before allowing <b>Utang</b>, and record every payment in their ledger."))
+story.append(step("5", "Open <b>Backup</b> at the end of the day and create a backup."))
+story.append(H2("Latest v1.0.1 improvements"))
+story.append(bullets([
+    "The badge now performs a <b>real internet check</b> instead of trusting the computer's Wi-Fi indicator alone.",
+    "<b>ONLINE READY</b> means internet was verified; <b>OFFLINE READY</b> means sales remain available while cloud syncing waits.",
+    "Connection changes trigger notifications and are checked automatically about every 15 seconds.",
+    "Cloud-folder backup supports OneDrive, Google Drive for desktop, and Dropbox.",
+    "Category management, inventory safeguards, customer balances, backups, and accessibility were improved.",
+]))
+story.append(P("The connection badge only describes internet availability. It never controls checkout, inventory, reports, or other local POS features.", "callout"))
 
 # ============================================================
 sec("Getting Started")
@@ -125,7 +149,8 @@ story.append(P(
 sec("Point of Sale (POS)")
 story.append(P("The POS page is where you ring up sales. It is the heart of the app and is designed for speed."))
 story.append(H3("Ringing up a sale"))
-story.append(step("1", "<b>Find the product</b> \u2014 use the search box with the product name, SKU, or barcode, or browse the product grid."))
+story.append(step("1", "<b>Find the product</b> \u2014 use the search box with the product name, SKU, or barcode, browse the product grid, or open <b>All categories</b> to show only products from one category."))
+story.append(P("The category menu opens when clicked, marks the active choice with a check, and can be reset to <b>All categories</b>. Search and category filters work together.", "callout"))
 story.append(step("2", "<b>Add to cart</b> \u2014 click a product to add one unit. Adjust quantity with the +/- buttons in the cart."))
 story.append(step("3", "<b>Checkout</b> \u2014 click <b>Checkout</b>; the total is shown automatically."))
 story.append(step("4", "<b>Choose payment</b> in the checkout window:"))
@@ -264,7 +289,12 @@ story.append(step("3", "Enable <b>synced backups</b>, then choose <b>Daily on ap
 story.append(step("4", "TINDA POS creates the local backup first, then copies it to the selected synced folder. If internet is offline, the Windows sync client uploads it when the connection returns."))
 story.append(P("The uploaded backup can be viewed or downloaded using the matching cloud app on a phone or tablet. Restoring the database is still performed in the Windows TINDA POS app.", "callout"))
 story.append(H3("Online / offline status"))
-story.append(P("The login screen and sidebar show <b>ONLINE READY</b> when internet is available and <b>OFFLINE READY</b> when disconnected. TINDA POS also shows a notification whenever the connection changes. Going offline never interrupts sales; configured cloud backups sync after internet returns."))
+story.append(P("The login screen and sidebar show <b>ONLINE READY</b> only after TINDA POS successfully reaches an internet connectivity service. It shows <b>OFFLINE READY</b> when the check fails. The app checks again after network changes and approximately every 15 seconds."))
+story.append(bullets([
+    "<b>ONLINE READY:</b> internet is reachable and configured cloud-drive software can upload pending backup copies.",
+    "<b>OFFLINE READY:</b> checkout and local records continue normally; cloud upload waits until the connection returns.",
+    "A notification appears when the verified state changes. A short delay after turning Wi-Fi on or off is normal.",
+]))
 story.append(H3("Restoring a backup"))
 story.append(step("1", "On the Backup page, choose a previous backup from the list."))
 story.append(step("2", "Click <b>Restore</b> and confirm. Your data is restored to that point in time."))
@@ -316,6 +346,8 @@ story.append(bullets([
     "<b>Forgot the admin password?</b> \u2014 Restore a backup made before you changed it, or contact support.",
     "<b>App will not open on Windows?</b> \u2014 Right-click the setup and choose <b>Run as administrator</b>, or check that your antivirus is not blocking it.",
     "<b>SmartScreen warning</b> \u2014 expected since the installer is unsigned; click <b>More info \u2192 Run anyway</b>.",
+    "<b>Status still says OFFLINE READY?</b> \u2014 confirm a website opens, wait up to 15 seconds, then restart TINDA POS. A login portal, firewall, DNS problem, or blocked connectivity service can keep the verified status offline.",
+    "<b>No connection notification?</b> \u2014 notifications appear only when the verified state changes while the app is open; the badge always shows the detected state.",
     "<b>Linux AppImage won't launch</b> \u2014 install <font face='Courier'>libfuse2</font>, or run <font face='Courier'>--appimage-extract-and-run</font>.",
 ]))
 story.append(H3("Support"))
@@ -325,18 +357,19 @@ story.append(P("If TINDA POS helps your store and you would like to buy the deve
 # ---- Table of contents ----
 story_titles = {
     1: "Installation Guide",
-    2: "Getting Started",
-    3: "Point of Sale (POS)",
-    4: "Inventory &amp; Products",
-    5: "Customers &amp; Utang (Credit)",
-    6: "Expenses",
-    7: "Suppliers &amp; Purchases",
-    8: "Transactions, Refunds &amp; Voids",
-    9: "Dashboard &amp; Reports",
-    10: "Backup &amp; Restore",
-    11: "Shifts",
-    12: "Settings",
-    13: "Data, Storage &amp; Safety",
+    2: "Quick Start &amp; What's New",
+    3: "Getting Started",
+    4: "Point of Sale (POS)",
+    5: "Inventory &amp; Products",
+    6: "Customers &amp; Utang (Credit)",
+    7: "Expenses",
+    8: "Suppliers &amp; Purchases",
+    9: "Transactions, Refunds &amp; Voids",
+    10: "Dashboard &amp; Reports",
+    11: "Backup &amp; Restore",
+    12: "Shifts",
+    13: "Settings",
+    14: "Data, Storage &amp; Safety",
 }
 toc = [Paragraph("Contents", ParagraphStyle("toch", parent=ST["h1"], fontSize=18, textColor=EMERALD_DARK, spaceAfter=10))]
 for i in range(1, num[0] + 1):

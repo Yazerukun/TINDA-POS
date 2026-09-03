@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check } from 'lucide-react'
 import type { Product, Category } from '@shared/types'
 import { money } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -27,9 +27,11 @@ export function Inventory(): React.JSX.Element {
   const [categories, setCategories] = useState<Category[]>([])
   const [q, setQ] = useState('')
   const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT'>('ALL')
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<ProductForm | null>(null)
   const [managingCategories, setManagingCategories] = useState(false)
+  const filterMenuRef = useRef<HTMLDivElement>(null)
 
   const load = async () => {
     setLoading(true)
@@ -48,6 +50,35 @@ export function Inventory(): React.JSX.Element {
   }
 
   useEffect(() => { void load() }, [])
+
+  useEffect(() => {
+    if (!filterMenuOpen) return
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!filterMenuRef.current?.contains(event.target as Node)) setFilterMenuOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFilterMenuOpen(false)
+    }
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [filterMenuOpen])
+
+  const filterLabel = catFilter === 'ALL'
+    ? 'All categories'
+    : catFilter === 'LOW'
+      ? 'Low stock'
+      : catFilter === 'OUT'
+        ? 'Out of stock'
+        : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+
+  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT') => {
+    setCatFilter(filter)
+    setFilterMenuOpen(false)
+  }
 
   const filtered = useMemo(() => {
     let list = products
@@ -110,12 +141,40 @@ export function Inventory(): React.JSX.Element {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search products…" className="input w-full pl-9" />
         </div>
-        <select value={String(catFilter)} onChange={(e) => setCatFilter(e.target.value as never)} className="input w-44">
-          <option value="ALL">All categories</option>
-          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          <option value="LOW">Low stock</option>
-          <option value="OUT">Out of stock</option>
-        </select>
+        <div ref={filterMenuRef} className="relative w-44 shrink-0">
+          <button
+            type="button"
+            onClick={() => setFilterMenuOpen((open) => !open)}
+            className="input flex w-full items-center justify-between gap-2 text-left"
+            aria-haspopup="listbox"
+            aria-expanded={filterMenuOpen}
+          >
+            <span className="truncate">{filterLabel}</span>
+            <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${filterMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {filterMenuOpen && (
+            <div className="absolute left-0 top-full z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-ink-line bg-ink-850 p-1 shadow-pop" role="listbox">
+              {([
+                { value: 'ALL' as const, label: 'All categories' },
+                ...categories.map((category) => ({ value: category.id, label: category.name })),
+                { value: 'LOW' as const, label: 'Low stock' },
+                { value: 'OUT' as const, label: 'Out of stock' }
+              ]).map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => chooseFilter(item.value)}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-ink-700 ${catFilter === item.value ? 'text-brand-300' : 'text-slate-200'}`}
+                  role="option"
+                  aria-selected={catFilter === item.value}
+                >
+                  <span className="truncate">{item.label}</span>
+                  {catFilter === item.value && <Check className="h-4 w-4 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <button onClick={() => setManagingCategories(true)} className="btn-ghost flex items-center gap-2"><Tags className="h-4 w-4" /> Categories</button>
         <button onClick={() => void load()} className="btn-ghost flex items-center gap-2"><RefreshCw className="h-4 w-4" /> Refresh</button>
       </div>

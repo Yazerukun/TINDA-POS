@@ -224,7 +224,7 @@ describe('END-TO-END POS WORKFLOW (isolated TINDA_DATA_DIR)', () => {
       payments: [{ method: 'CASH', amount_c: 500 }]
     })
     const cat = createExpenseCategory(db2, 'Pamasahe')
-    createExpense(db2, { category_id: cat.id, amount_c: 100, expense_date: new Date().toISOString().slice(0, 10), description: 'fare' }, admin.id)
+    createExpense(db2, { category_id: cat.id, amount_c: 100, expense_date: new Date().toLocaleDateString('en-CA'), description: 'fare' }, admin.id)
     const beforeClose = shifts.currentShiftFor(db2, admin.id)
     expect(beforeClose).not.toBeNull()
     const closed = shifts.closeShift(db2, (beforeClose as { id: number }).id, { actual_cash_c: 1400 })

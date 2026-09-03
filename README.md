@@ -32,6 +32,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 ### 💰 Point of Sale
 - Fast checkout with product grid + search (name, SKU, or barcode)
+- Working category dropdown for quickly filtering the POS product grid
 - **Cash** with automatic sukli/change calculation
 - **GCash & Maya** with reference number tracking
 - **Utang (credit)** with customer picker
@@ -94,7 +95,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 |----------|------|------|
 | **Windows 10/11** | [TindaPOS-Setup-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe) | ~110 MB |
 | **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | ~110 MB |
-| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~21 KB |
+| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~25 KB |
 
 > New users should read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) for installation, setup, and complete usage instructions.
 

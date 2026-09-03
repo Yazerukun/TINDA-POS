@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { create } from 'zustand'
 import {
   Search,
@@ -12,9 +12,10 @@ import {
   Smartphone,
   Wallet,
   Pause,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react'
-import type { Product, Customer, Sale } from '@shared/types'
+import type { Product, Customer, Sale, Category } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError, toastInfo } from '../stores/toast'
@@ -73,14 +74,24 @@ export const usePosCart = create<CartState>((set) => ({
 export function POS(): React.JSX.Element {
   const [q, setQ] = useState('')
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [catFilter, setCatFilter] = useState<number | 'ALL'>('ALL')
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const categoryMenuRef = useRef<HTMLDivElement>(null)
 
-  const search = async (term: string) => {
+  const selectedCategory = catFilter === 'ALL'
+    ? 'All categories'
+    : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+
+  const search = async (term: string, categoryId?: number | null) => {
     setLoading(true)
     setError(null)
     try {
-      const res = await window.api.products.search(term, { status: 'ACTIVE', limit: 60 })
+      const opts: { status: string; limit: number; category_id?: number | null } = { status: 'ACTIVE', limit: 60 }
+      if (categoryId != null) opts.category_id = categoryId
+      const res = await window.api.products.search(term, opts)
       setProducts(res.rows)
     } catch (e) {
       setError(String((e as Error)?.message || e))
@@ -91,7 +102,30 @@ export function POS(): React.JSX.Element {
 
   useEffect(() => {
     void search('')
+    window.api.categories.list().then(setCategories).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!categoryMenuOpen) return
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!categoryMenuRef.current?.contains(event.target as Node)) setCategoryMenuOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCategoryMenuOpen(false)
+    }
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [categoryMenuOpen])
+
+  const chooseCategory = (categoryId: number | 'ALL') => {
+    setCatFilter(categoryId)
+    setCategoryMenuOpen(false)
+    void search(q, categoryId === 'ALL' ? null : categoryId)
+  }
 
   return (
     <div className="flex h-full">
@@ -101,11 +135,51 @@ export function POS(): React.JSX.Element {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
               value={q}
-              onChange={(e) => { setQ(e.target.value); void search(e.target.value) }}
+              onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
               placeholder="Search product by name or barcode…"
               className="input w-full pl-9"
               autoFocus
             />
+          </div>
+          <div ref={categoryMenuRef} className="relative w-44 shrink-0">
+            <button
+              type="button"
+              onClick={() => setCategoryMenuOpen((open) => !open)}
+              className="input flex w-full items-center justify-between gap-2 text-left"
+              aria-haspopup="listbox"
+              aria-expanded={categoryMenuOpen}
+            >
+              <span className="truncate">{selectedCategory}</span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {categoryMenuOpen && (
+              <div className="absolute left-0 top-full z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-ink-line bg-ink-850 p-1 shadow-pop" role="listbox">
+                <button
+                  type="button"
+                  onClick={() => chooseCategory('ALL')}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-ink-700 ${catFilter === 'ALL' ? 'text-brand-300' : 'text-slate-200'}`}
+                  role="option"
+                  aria-selected={catFilter === 'ALL'}
+                >
+                  <span>All categories</span>
+                  {catFilter === 'ALL' && <Check className="h-4 w-4" />}
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => chooseCategory(category.id)}
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-ink-700 ${catFilter === category.id ? 'text-brand-300' : 'text-slate-200'}`}
+                    role="option"
+                    aria-selected={catFilter === category.id}
+                  >
+                    <span className="truncate">{category.name}</span>
+                    {catFilter === category.id && <Check className="h-4 w-4 shrink-0" />}
+                  </button>
+                ))}
+                {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1 text-xs text-slate-500">
             <Plus className="h-3.5 w-3.5" /> add

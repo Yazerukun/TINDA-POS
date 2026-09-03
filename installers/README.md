@@ -5,8 +5,9 @@ Final shipped installers live here.
 | File | Type | Size | Status |
 |------|------|------|--------|
 | `TindaPOS-Setup-1.0.1.exe` | Windows installer (NSIS) | 110 MB | **BUILT** — ready to post |
+| `TindaPOS-Portable-1.0.1.exe` | Windows portable app | 110 MB | **BUILT** — ready to post |
 | `TindaPOS-1.0.0.AppImage` | Linux package | 133 MB | Built in `../source/builds/`, verified |
-| `TindaPOS-User-Guide.pdf` | 8-page guide (install + manual) | 17 KB | **BUILT** — ready to post |
+| `TindaPOS-User-Guide.pdf` | 11-page organized guide (install + manual) | 25 KB | **BUILT** — ready to post |
 
 Build outputs also live under `../source/builds/`:
 - `win-unpacked/TindaPOS.exe` — unpacked Windows app (portable test)
@@ -15,8 +16,9 @@ Build outputs also live under `../source/builds/`:
 ## PHCorner release bundle
 
 1. `TindaPOS-Setup-1.0.1.exe` — Windows installer
-2. `TindaPOS-1.0.0.AppImage` — Linux package
-3. `TindaPOS-User-Guide.pdf` — installation + user guide
+2. `TindaPOS-Portable-1.0.1.exe` — Windows portable app
+3. `TindaPOS-1.0.0.AppImage` — Linux package
+4. `TindaPOS-User-Guide.pdf` — installation + user guide
 
 Rebuild notes:
 - Windows `.exe` is built on Linux via **Wine** (`electron-builder --win nsis`).
