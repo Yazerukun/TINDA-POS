@@ -20,6 +20,15 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
+## 🆕 What's New in v1.0.1
+
+- Optional cloud-folder backup support for OneDrive, Google Drive for desktop, and Dropbox
+- Live ONLINE READY/OFFLINE READY status with connection notifications
+- Improved category management, inventory safeguards, customer balances, and backup handling
+- Polished **Maya “Buy me a coffee”** card with subtle glow, shimmer, and accessible motion
+- Updated user guide, PHCorner release post, and verified Windows installer checksums
+- **23 automated tests passing**, including the end-to-end sales workflow
+
 ## ✨ Features
 
 ### 💰 Point of Sale
@@ -140,13 +149,14 @@ pnpm run typecheck
 - **Frontend:** React 19 + TypeScript + Tailwind CSS + Zustand
 - **Backend:** Electron 44 + better-sqlite3
 - **Build:** electron-vite + electron-builder
-- **Testing:** Vitest (21 tests including end-to-end workflow)
+- **Testing:** Vitest (23 tests including end-to-end workflow)
 - **Code Quality:** ESLint + TypeScript strict mode
 
 ## 📁 Project Structure
 
 ```
 TINDA-POS/
+├── TINDA-POS-LIVE.md       # Release status, verification & next-update scratchpad
 ├── source/                  # Application source code
 │   ├── src/
 │   │   ├── main/            # Electron main process
