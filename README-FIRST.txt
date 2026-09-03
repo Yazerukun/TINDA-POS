@@ -10,11 +10,11 @@ sari-sari stores and small businesses.
  QUICK START (3 simple steps)
 --------------------------------------------------------------
 1) RUN THE INSTALLER
-   - Double-click  TindaPOS-Setup-1.0.0.exe
+   - Double-click  TindaPOS-Setup-1.0.1.exe
    - Click "Install" and follow the on-screen steps.
    - TINDA POS is installed; it will open automatically after install.
 
-   (Prefer a portable version? Use  TindaPOS-Portable-1.0.0.exe
+   (Prefer a portable version? Use  TindaPOS-Portable-1.0.1.exe
     instead - no install needed, just run the file.)
 
 2) COMPLETE STORE SETUP (first time only)

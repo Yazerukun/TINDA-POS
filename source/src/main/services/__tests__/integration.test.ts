@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -21,6 +21,7 @@ import { processRefund, processVoid } from '../transaction'
 import { createProduct, getProduct } from '../../repositories/products'
 import { createCustomer, getCustomer } from '../../repositories/customers'
 import { createBackup, listBackups } from '../../repositories/backup'
+import { updateSettings } from '../../repositories/settings'
 import { getDb, closeDb, integrityCheck } from '../../database/connection'
 import type { ProductInput } from '../../../shared/types'
 
@@ -61,6 +62,12 @@ describe('End-to-end integration (real SQLite file)', () => {
     // An initial MANUAL backup must be auto-created on first-run setup so there
     // is always a restore point representing a fully-initialized store.
     expect(listBackups(db).length).toBeGreaterThanOrEqual(1)
+
+    // A configured Windows cloud-sync folder receives the same backup file.
+    const syncDir = join(dataDir, 'OneDrive', 'TINDA POS Backups')
+    updateSettings(db, { backup_location: syncDir, auto_backup_enabled: true })
+    const mirrored = await createBackup(db, 'MANUAL')
+    expect(existsSync(join(syncDir, mirrored.filename))).toBe(true)
 
     // re-setup is idempotent (won't re-create admin)
     const again = completeSetup({ store: { store_name: 'Test Store' }, admin: { username: 'admin', password: 'secret', pin: '1234' }, receipt: {}, data_dir: dataDir, load_demo: false })

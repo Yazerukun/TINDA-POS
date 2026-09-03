@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Plus, RotateCcw, FolderOpen, HardDriveDownload } from 'lucide-react'
-import type { BackupInfo } from '@shared/types'
+import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save } from 'lucide-react'
+import type { BackupInfo, StoreSettings } from '@shared/types'
 import { shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -12,10 +12,15 @@ export function Backup(): React.JSX.Element {
   const [loading, setLoading] = useState(true)
   const [confirm, setConfirm] = useState<BackupInfo | null>(null)
   const [busy, setBusy] = useState(false)
+  const [settings, setSettings] = useState<StoreSettings | null>(null)
 
   const load = async () => {
     setLoading(true)
-    try { setRows(await window.api.backup.list()) } catch (e) { toastError('Failed to load backups', String((e as Error)?.message || e)) } finally { setLoading(false) }
+    try {
+      const [backups, currentSettings] = await Promise.all([window.api.backup.list(), window.api.settings.get()])
+      setRows(backups)
+      setSettings(currentSettings)
+    } catch (e) { toastError('Failed to load backups', String((e as Error)?.message || e)) } finally { setLoading(false) }
   }
   useEffect(() => { void load() }, [])
 
@@ -38,6 +43,26 @@ export function Backup(): React.JSX.Element {
     } catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
   }
 
+  const chooseSyncFolder = async () => {
+    const folder = await window.api.backup.selectSyncFolder()
+    if (folder) setSettings((current) => current ? { ...current, backup_location: folder } : current)
+  }
+
+  const saveSyncSettings = async () => {
+    if (!settings) return
+    setBusy(true)
+    try {
+      const updated = await window.api.settings.update({
+        backup_location: settings.backup_location,
+        auto_backup_enabled: settings.auto_backup_enabled,
+        auto_backup_daily: settings.auto_backup_daily,
+        auto_backup_on_exit: settings.auto_backup_on_exit
+      })
+      setSettings(updated)
+      toastSuccess('Backup settings saved')
+    } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
+  }
+
   return (
     <div className="p-6">
       <PageHeader
@@ -47,6 +72,29 @@ export function Backup(): React.JSX.Element {
           <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
         }
       />
+
+      {settings && (
+        <div className="card mb-4 max-w-3xl p-4">
+          <div className="mb-3 flex items-start gap-3">
+            <Cloud className="mt-0.5 h-5 w-5 text-brand-400" />
+            <div>
+              <p className="font-semibold text-slate-100">Automatic online backup</p>
+              <p className="text-xs text-slate-500">Choose a folder inside OneDrive, Google Drive for desktop, or Dropbox. TINDA POS copies backups there and the Windows sync app uploads them whenever internet is available.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <input readOnly value={settings.backup_location} placeholder="No synced folder selected" className="input min-w-72 flex-1" />
+            <button onClick={() => void chooseSyncFolder()} disabled={busy} className="btn-ghost"><FolderOpen className="mr-1 inline h-4 w-4" /> Choose Folder</button>
+            {settings.backup_location && <button onClick={() => void window.api.backup.openSyncFolder()} className="btn-ghost">Open</button>}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-300">
+            <label className="flex items-center gap-2"><input type="checkbox" checked={settings.auto_backup_enabled} onChange={(e) => setSettings({ ...settings, auto_backup_enabled: e.target.checked })} /> Enable synced backups</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={settings.auto_backup_daily} onChange={(e) => setSettings({ ...settings, auto_backup_daily: e.target.checked })} /> Daily on app start</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={settings.auto_backup_on_exit} onChange={(e) => setSettings({ ...settings, auto_backup_on_exit: e.target.checked })} /> On app exit</label>
+          </div>
+          <button onClick={() => void saveSyncSettings()} disabled={busy} className="btn-primary mt-3 flex items-center gap-2"><Save className="h-4 w-4" /> Save Backup Settings</button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="card h-14 animate-pulse" />)}</div>

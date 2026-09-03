@@ -5,6 +5,7 @@ import { hashSecret } from '../../security/passwords'
 import * as users from '../../repositories/users'
 import * as products from '../../repositories/products'
 import * as customers from '../../repositories/customers'
+import * as categories from '../../repositories/categories'
 import { validatePaymentTotals } from '../checkout'
 import type { CartItem } from '../../../shared/types'
 import type { PaymentInput } from '../../../shared/ipc'
@@ -102,6 +103,32 @@ describe('Utang / credit limit (Section 55)', () => {
     const c = customers.getCustomer(db, cust.id)
     expect(customers.canExtendCredit(c, 85000, false)).toBe(false)
     expect(customers.canExtendCredit(c, 85000, true)).toBe(true)
+  })
+
+  it('manual negative adjustment deducts from the customer balance', () => {
+    const db = makeDb()
+    const admin = addAdmin(db)
+    const cust = customers.createCustomer(db, { full_name: 'Maria', credit_limit_c: 100000 })
+    customers.applyCreditEntry(db, { customer_id: cust.id, entry_type: 'CREDIT_SALE', amount_c: 50000, user_id: admin })
+    customers.applyCreditEntry(db, { customer_id: cust.id, entry_type: 'ADJUSTMENT', amount_c: -12500, user_id: admin })
+    expect(customers.getCustomer(db, cust.id).balance_c).toBe(37500)
+  })
+})
+
+describe('Product categories', () => {
+  it('adds categories, rejects blank names, and safely blocks deletion while in use', () => {
+    const db = makeDb()
+    const admin = addAdmin(db)
+    const category = categories.createCategory(db, ' Drinks ')
+    expect(category.name).toBe('Drinks')
+    expect(() => categories.createCategory(db, '   ')).toThrow(/required/)
+    const productId = addMilo(db)
+    db.prepare('UPDATE products SET category_id = ? WHERE id = ?').run(category.id, productId)
+    expect(() => categories.removeCategory(db, category.id)).toThrow(/still has products/)
+    db.prepare('UPDATE products SET category_id = NULL WHERE id = ?').run(productId)
+    categories.removeCategory(db, category.id)
+    expect(categories.listCategories(db)).toHaveLength(0)
+    void admin
   })
 })
 

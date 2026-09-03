@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy } from 'lucide-react'
 import type { User } from '@shared/types'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 
-type Tab = 'HOME' | 'RECEIPT' | 'USERS'
+type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
@@ -21,10 +21,39 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('HOME')} className={`btn-ghost flex items-center gap-2 ${tab === 'HOME' ? '!border-brand-500 !text-brand-400' : ''}`}><Store className="h-4 w-4" /> Store</button>
         <button onClick={() => setTab('RECEIPT')} className={`btn-ghost flex items-center gap-2 ${tab === 'RECEIPT' ? '!border-brand-500 !text-brand-400' : ''}`}><Receipt className="h-4 w-4" /> Receipt</button>
         <button onClick={() => setTab('USERS')} className={`btn-ghost flex items-center gap-2 ${tab === 'USERS' ? '!border-brand-500 !text-brand-400' : ''}`}><Users className="h-4 w-4" /> Users</button>
+        <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
       {tab === 'HOME' && <StoreSettingsTab />}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
+      {tab === 'ABOUT' && <AboutTab />}
+    </div>
+  )
+}
+
+function AboutTab(): React.JSX.Element {
+  const copyGcash = async () => {
+    try {
+      await navigator.clipboard.writeText('09912255156')
+      toastSuccess('GCash number copied')
+    } catch { toastError('Could not copy number') }
+  }
+  return (
+    <div className="card max-w-xl overflow-hidden">
+      <div className="developer-card p-8 text-center">
+        <div className="coffee-float relative z-10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-pop ring-1 ring-white/10"><Coffee className="h-7 w-7" /></div>
+        <p className="dev-signature signature-reveal relative z-10 text-3xl italic text-white">Crafted with care</p>
+        <p className="mt-1 text-sm text-slate-400">by</p>
+        <p className="dev-signature signature-reveal relative z-10 text-2xl font-bold text-brand-300">Dev Francis</p>
+        <div className="mx-auto my-5 h-px max-w-xs bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
+        <p className="text-sm text-slate-300">TINDA POS is free. If it helps your store, you may support the developer with a small coffee donation.</p>
+        <button onClick={() => void copyGcash()} className="donation-card mx-auto mt-4 flex items-center gap-3 rounded-xl px-5 py-3 text-left">
+          <Heart className="h-5 w-5 fill-brand-400 text-brand-400" />
+          <span><span className="block text-[10px] uppercase tracking-[0.2em] text-slate-500">GCash · Pang-kape</span><span className="font-mono text-lg font-bold tracking-wider text-white">0991 225 5156</span></span>
+          <Copy className="ml-2 h-4 w-4 text-slate-400" />
+        </button>
+        <p className="mt-3 text-[10px] text-slate-600">Donations are optional and do not unlock any features.</p>
+      </div>
     </div>
   )
 }

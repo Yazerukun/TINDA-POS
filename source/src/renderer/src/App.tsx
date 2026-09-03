@@ -4,8 +4,10 @@ import { Splash } from './components/Splash'
 import { FirstRun } from './pages/FirstRun'
 import { Login } from './pages/Login'
 import { Shell } from './layouts/Shell'
+import { useConnectionNotifications } from './hooks/useOnlineStatus'
 
 export default function App(): React.JSX.Element {
+  useConnectionNotifications()
   const { user, ready, firstRun, bootstrap } = useAuth()
   const [bootErr, setBootErr] = useState<string | null>(null)
 

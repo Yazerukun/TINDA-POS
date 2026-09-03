@@ -10,13 +10,13 @@ import {
   HardDriveDownload,
   Settings,
   Users,
-  LogOut,
-  WifiOff
+  LogOut
 } from 'lucide-react'
 import { useNav, type PageKey } from '../../stores/nav'
 import { useAuth } from '../../stores/auth'
 import { useSettings } from '../../stores/settings'
 import { hasPermission, type Permission } from '@shared/roles'
+import { ConnectionStatus } from '../ConnectionStatus'
 
 const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission: Permission }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
@@ -52,10 +52,7 @@ export function Sidebar(): React.JSX.Element {
       </div>
 
       <div className="px-3 pb-2">
-        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5">
-          <WifiOff className="h-3.5 w-3.5 text-emerald-400" />
-          <span className="text-[11px] font-semibold text-emerald-400">OFFLINE READY</span>
-        </div>
+        <ConnectionStatus />
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
@@ -94,6 +91,7 @@ export function Sidebar(): React.JSX.Element {
           <LogOut className="h-4 w-4" />
           Logout
         </button>
+        <p className="dev-signature signature-reveal mt-3 text-center text-xs italic text-slate-600">by Dev Francis</p>
       </div>
     </aside>
   )

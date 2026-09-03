@@ -12,9 +12,11 @@ export function findCategoryByName(db: Database.Database, name: string): Categor
 }
 
 export function createCategory(db: Database.Database, name: string): Category {
-  const existing = findCategoryByName(db, name)
+  const trimmed = name.trim()
+  if (!trimmed) throw new Error('Category name is required.')
+  const existing = findCategoryByName(db, trimmed)
   if (existing) return existing
-  const info = db.prepare('INSERT INTO categories (name) VALUES (?)').run(name.trim())
+  const info = db.prepare('INSERT INTO categories (name) VALUES (?)').run(trimmed)
   return db.prepare('SELECT * FROM categories WHERE id = ?').get(Number(info.lastInsertRowid)) as Category
 }
 

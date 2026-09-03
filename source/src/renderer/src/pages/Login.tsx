@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../stores/auth'
+import { ConnectionStatus } from '../components/ConnectionStatus'
 
 export function Login(): React.JSX.Element {
   const { login, loginPin } = useAuth()
@@ -35,10 +36,7 @@ export function Login(): React.JSX.Element {
           </div>
           <h1 className="text-xl font-bold text-white">TINDA POS</h1>
           <p className="text-xs text-slate-400">Offline POS System</p>
-          <span className="badge mt-3 border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            OFFLINE READY
-          </span>
+          <ConnectionStatus className="mt-3" />
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-ink-900 p-1">
@@ -74,6 +72,7 @@ export function Login(): React.JSX.Element {
         <p className="mt-6 text-center text-[11px] text-slate-500">
           TINDA POS works fully offline. Your data stays on this device.
         </p>
+        <p className="dev-signature signature-reveal mt-2 text-center text-sm italic text-slate-600">by Dev Francis</p>
       </div>
     </div>
   )

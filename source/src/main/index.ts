@@ -59,7 +59,12 @@ app.setName('TINDA POS')
 app.whenReady().then(() => {
   // Initialize DB and run migrations up front.
   try {
-    getDb()
+    const database = getDb()
+    const settings = getSettings(database)
+    if (settings.auto_backup_enabled && settings.auto_backup_daily) {
+      const { createBackupSync, needsDailyBackup } = require('./repositories/backup') as typeof import('./repositories/backup')
+      if (needsDailyBackup(database)) createBackupSync(database, 'AUTO')
+    }
   } catch (e) {
     // Surface fatal DB errors; dialog box handled by renderer via integrity check.
     console.error('Database init failed:', e)
@@ -96,7 +101,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   const settings = getSettings(getDb())
-  if (settings.auto_backup_on_exit) {
+  if (settings.auto_backup_enabled && settings.auto_backup_on_exit) {
     try {
       const { createBackupSync } = require('./repositories/backup') as typeof import('./repositories/backup')
       createBackupSync(getDb(), 'AUTO')

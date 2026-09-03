@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags } from 'lucide-react'
 import type { Product, Category } from '@shared/types'
 import { money } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -29,6 +29,7 @@ export function Inventory(): React.JSX.Element {
   const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT'>('ALL')
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<ProductForm | null>(null)
+  const [managingCategories, setManagingCategories] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -115,6 +116,7 @@ export function Inventory(): React.JSX.Element {
           <option value="LOW">Low stock</option>
           <option value="OUT">Out of stock</option>
         </select>
+        <button onClick={() => setManagingCategories(true)} className="btn-ghost flex items-center gap-2"><Tags className="h-4 w-4" /> Categories</button>
         <button onClick={() => void load()} className="btn-ghost flex items-center gap-2"><RefreshCw className="h-4 w-4" /> Refresh</button>
       </div>
 
@@ -151,7 +153,53 @@ export function Inventory(): React.JSX.Element {
       )}
 
       {editing && <ProductModal form={editing} categories={categories} onSave={saveProduct} onClose={() => setEditing(null)} />}
+      {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
     </div>
+  )
+}
+
+function CategoryModal({ categories, onChanged, onClose }: { categories: Category[]; onChanged: () => Promise<void>; onClose: () => void }): React.JSX.Element {
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const add = async () => {
+    if (!name.trim()) { toastError('Category name is required'); return }
+    setBusy(true)
+    try {
+      await window.api.categories.create(name)
+      setName('')
+      await onChanged()
+      toastSuccess('Category added')
+    } catch (e) { toastError('Add category failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
+  }
+
+  const remove = async (category: Category) => {
+    if (!confirm(`Delete category "${category.name}"? Products must be moved first if this category is in use.`)) return
+    setBusy(true)
+    try {
+      await window.api.categories.remove(category.id)
+      await onChanged()
+      toastSuccess('Category deleted')
+    } catch (e) { toastError('Delete category failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
+  }
+
+  return (
+    <Modal open onClose={onClose} title="Manage Categories" maxWidth="max-w-md" footer={<button onClick={onClose} className="btn-ghost">Close</button>}>
+      <form onSubmit={(e) => { e.preventDefault(); void add() }} className="mb-4 flex gap-2">
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="New category name" className="input flex-1" autoFocus />
+        <button type="submit" disabled={busy || !name.trim()} className="btn-primary flex items-center gap-1"><Plus className="h-4 w-4" /> Add</button>
+      </form>
+      <div className="max-h-80 space-y-2 overflow-y-auto">
+        {categories.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No categories yet.</p>}
+        {categories.map((category) => (
+          <div key={category.id} className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2">
+            <span className="text-sm font-medium text-slate-200">{category.name}</span>
+            <button onClick={() => void remove(category)} disabled={busy} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Delete category"><Trash2 className="h-4 w-4" /></button>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-slate-500">A category used by a product cannot be deleted until those products are moved or uncategorized.</p>
+    </Modal>
   )
 }
 

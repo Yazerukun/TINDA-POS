@@ -265,6 +265,8 @@ export interface TindaApi {
     create: (reason?: string) => Promise<BackupInfo>
     restore: (filename: string) => Promise<void>
     openFolder: () => Promise<void>
+    selectSyncFolder: () => Promise<string | null>
+    openSyncFolder: () => Promise<void>
   }
 
   audit: {

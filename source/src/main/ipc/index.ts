@@ -21,7 +21,7 @@ import * as checkoutSvc from '../services/checkout'
 import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
-import { app, shell } from 'electron'
+import { app, dialog, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
 
@@ -353,6 +353,21 @@ handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
 })
 handle('backup:openFolder', () => {
   shell.openPath(backupRepo.backupDir())
+})
+handle('backup:selectSyncFolder', async () => {
+  sessionSvc.requirePermission('backup:manage')
+  const result = await dialog.showOpenDialog({
+    title: 'Select OneDrive, Google Drive, or another synced backup folder',
+    properties: ['openDirectory', 'createDirectory']
+  })
+  if (result.canceled || !result.filePaths[0]) return null
+  return result.filePaths[0]
+})
+handle('backup:openSyncFolder', () => {
+  sessionSvc.requirePermission('backup:manage')
+  const location = settingRepo.getSettings(db()).backup_location.trim()
+  if (!location) throw new Error('No synced backup folder configured.')
+  return shell.openPath(location)
 })
 
 // ---- Audit ----

@@ -112,7 +112,9 @@ const api: TindaApi = {
     list: () => invoke<import('@shared/types').BackupInfo[]>('backup:list'),
     create: (reason) => invoke<import('@shared/types').BackupInfo>('backup:create', reason),
     restore: (filename) => invoke<void>('backup:restore', filename),
-    openFolder: () => invoke<void>('backup:openFolder')
+    openFolder: () => invoke<void>('backup:openFolder'),
+    selectSyncFolder: () => invoke<string | null>('backup:selectSyncFolder'),
+    openSyncFolder: () => invoke<void>('backup:openSyncFolder')
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)

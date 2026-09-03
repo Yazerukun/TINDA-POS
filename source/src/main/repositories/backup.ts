@@ -2,7 +2,8 @@ import type Database from 'better-sqlite3'
 import type { BackupInfo } from '@shared/types'
 import { appDirs, closeDb } from '../database/connection'
 import { existsSync, copyFileSync, mkdirSync, openSync, readSync, readdirSync, statSync, closeSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { join, basename, resolve } from 'node:path'
+import { getSettings } from './settings'
 
 export const SQLITE_MAGIC = 'SQLite format 3\x00'
 
@@ -41,7 +42,27 @@ export function createBackupSync(db: Database.Database, kind = 'MANUAL'): Backup
   db.prepare(
     `INSERT INTO backup_history (filename, path, size, kind, status) VALUES (?, ?, ?, ?, 'OK')`
   ).run(name, dest, statSync(dest).size, kind)
+  mirrorBackup(db, dest, name)
   return { filename: name, path: dest, size: statSync(dest).size, created_at: new Date().toISOString() }
+}
+
+/** Mirror into a folder managed by a Windows cloud-sync client. */
+export function mirrorBackup(db: Database.Database, source: string, filename: string): void {
+  const settings = getSettings(db)
+  const configured = settings.backup_location.trim()
+  if (!settings.auto_backup_enabled || !configured) return
+  const local = resolve(backupDir())
+  const remote = resolve(configured)
+  if (remote === local) return
+  if (!existsSync(remote)) mkdirSync(remote, { recursive: true })
+  copyFileSync(source, join(remote, basename(filename)))
+}
+
+export function needsDailyBackup(db: Database.Database, now = new Date()): boolean {
+  const settings = getSettings(db)
+  if (!settings.auto_backup_enabled || !settings.auto_backup_daily) return false
+  const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  return !readdirSync(backupDir()).some((file) => file.startsWith(`${BACKUP_PREFIX}${day}-`) && file.endsWith('.db'))
 }
 
 export function listBackups(_db: Database.Database): BackupInfo[] {

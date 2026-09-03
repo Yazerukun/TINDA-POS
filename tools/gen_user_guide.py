@@ -67,8 +67,8 @@ story.append(bullets([
     "<b>Offline:</b> no internet connection is ever required to run the app.",
 ]))
 story.append(H2("Installing on Windows"))
-story.append(P("The Windows build is distributed as a single setup file: <b>TindaPOS-Setup-1.0.0.exe</b>."))
-story.append(step("1", "Double-click <b>TindaPOS-Setup-1.0.0.exe</b> to start the installer."))
+story.append(P("The Windows build is distributed as <b>TindaPOS-Setup-1.0.1.exe</b>. A no-install <b>TindaPOS-Portable-1.0.1.exe</b> is also included."))
+story.append(step("1", "Double-click <b>TindaPOS-Setup-1.0.1.exe</b> to start the installer, or open the Portable file to run without installation."))
 story.append(step("2", "If Windows SmartScreen warns you, click <b>More info</b> then <b>Run anyway</b>. The app is not code-signed yet, so this notice is expected."))
 story.append(step("3", "Choose the <b>Installation directory</b> (the default location is fine)."))
 story.append(step("4", "Tick the options to create a <b>Desktop shortcut</b> and a <b>Start Menu</b> shortcut."))
@@ -177,6 +177,10 @@ story.append(step("3", "Set the <b>unit</b> (sachet, can, piece, bottle, etc.) a
 story.append(step("4", "Optionally set a <b>Low-stock alert level</b> so you get warned before you run out."))
 story.append(step("5", "Click <b>Save</b>."))
 story.append(P("Products are shown with colored badges \u2014 green when healthy, amber when low, red when out of stock \u2014 so you always know what to reorder.", "callout"))
+story.append(H3("Managing product categories"))
+story.append(step("1", "Open <b>Inventory</b> and click <b>Categories</b>."))
+story.append(step("2", "Enter a category name and click <b>Add</b>. Blank and duplicate names are prevented."))
+story.append(step("3", "To remove one, click its trash icon. A category still assigned to a product cannot be deleted; move or uncategorize those products first."))
 
 # ============================================================
 sec("Customers &amp; Utang (Credit)")
@@ -192,6 +196,8 @@ story.append(H3("Recording a payment"))
 story.append(step("1", "Find the customer with the outstanding balance."))
 story.append(step("2", "Click <b>Pay</b> (or <b>Adjust</b> to fix an error)."))
 story.append(step("3", "Enter the amount paid. The balance is reduced and the payment is logged to their ledger."))
+story.append(H3("Correcting a balance"))
+story.append(P("Use <b>Adjust</b> when correcting an encoding mistake. Enter a positive amount to add debt or a negative amount to deduct debt. Add a clear reason so the correction can be audited. The balance and ledger refresh immediately."))
 story.append(P("Customers who go over their <b>credit limit</b> are flagged, and full history is kept for every sale-on-credit and payment.", "callout"))
 
 # ============================================================
@@ -248,10 +254,17 @@ story.append(bullets([
 # ============================================================
 sec("Backup &amp; Restore")
 story.append(P("Your data is the most valuable thing in the app \u2014 back it up regularly."))
-story.append(H3("Creating a backup"))
+story.append(H3("Creating a local backup"))
 story.append(step("1", "Open the <b>Backup</b> page."))
-story.append(step("2", "Click <b>Create Backup</b>. A timestamped backup file is saved to your backup folder."))
-story.append(step("3", "Copy that file somewhere safe (USB drive, cloud drive, another computer)."))
+story.append(step("2", "Click <b>Back Up Now</b>. A small timestamped SQLite backup file is saved locally."))
+story.append(H3("Optional automatic online backup (Windows)"))
+story.append(step("1", "Install and sign in to <b>OneDrive</b>, <b>Google Drive for desktop</b>, or <b>Dropbox</b> on the Windows PC."))
+story.append(step("2", "On the Backup page, click <b>Choose Folder</b> and select a folder inside that cloud drive."))
+story.append(step("3", "Enable <b>synced backups</b>, then choose <b>Daily on app start</b> and/or <b>On app exit</b>. Click <b>Save Backup Settings</b>."))
+story.append(step("4", "TINDA POS creates the local backup first, then copies it to the selected synced folder. If internet is offline, the Windows sync client uploads it when the connection returns."))
+story.append(P("The uploaded backup can be viewed or downloaded using the matching cloud app on a phone or tablet. Restoring the database is still performed in the Windows TINDA POS app.", "callout"))
+story.append(H3("Online / offline status"))
+story.append(P("The login screen and sidebar show <b>ONLINE READY</b> when internet is available and <b>OFFLINE READY</b> when disconnected. TINDA POS also shows a notification whenever the connection changes. Going offline never interrupts sales; configured cloud backups sync after internet returns."))
 story.append(H3("Restoring a backup"))
 story.append(step("1", "On the Backup page, choose a previous backup from the list."))
 story.append(step("2", "Click <b>Restore</b> and confirm. Your data is restored to that point in time."))
@@ -291,7 +304,7 @@ sec("Data, Storage &amp; Safety")
 story.append(H3("Where is my data? (Offline-first)"))
 story.append(P(
     "TINDA POS stores everything in a local SQLite database on your computer. "
-    "<b>No cloud, no internet, no data leaving your store.</b>"
+    "Internet is not required for sales. Cloud backup is optional and only uses the folder selected by the owner."
 ))
 story.append(bullets([
     "<b>Windows:</b> <font face='Courier'>%APPDATA%\\TINDA POS</font>",
@@ -306,7 +319,8 @@ story.append(bullets([
     "<b>Linux AppImage won't launch</b> \u2014 install <font face='Courier'>libfuse2</font>, or run <font face='Courier'>--appimage-extract-and-run</font>.",
 ]))
 story.append(H3("Support"))
-story.append(P("For questions and feedback, or to report a problem, reach out via the PHCorner thread where you downloaded TINDA POS."))
+story.append(P("TINDA POS was created and is maintained by <b>Dev Francis</b>. For questions and feedback, or to report a problem, reach out via the PHCorner thread where you downloaded TINDA POS."))
+story.append(P("If TINDA POS helps your store and you would like to buy the developer a coffee, optional donations may be sent through <b>GCash: 0991 225 5156</b>. Donations are never required and do not unlock any features.", "callout"))
 
 # ---- Table of contents ----
 story_titles = {
@@ -365,7 +379,7 @@ out.append(Paragraph("Offline Point-of-Sale for Sari-Sari Stores", ParagraphStyl
 out.append(Spacer(1, 2.1 * inch))
 out.append(Paragraph("User Guide &amp; Installation Manual", ParagraphStyle("csub", parent=ST["sub"], fontSize=16, textColor=WHITE)))
 out.append(Spacer(1, 0.08 * inch))
-out.append(Paragraph("Windows \u00b7 Linux \u00b7 Version 1.0.0", ST["small"]))
+out.append(Paragraph("Windows \u00b7 Version 1.0.1", ST["small"]))
 out.append(PageBreak())
 out += toc
 out.append(PageBreak())

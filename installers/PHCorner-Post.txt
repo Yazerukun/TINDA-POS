@@ -1,45 +1,45 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TITLE: [FREE] TINDA POS v1.0.0 — Offline POS App for Sari-Sari Stores (Windows)
+TITLE: [FREE] TINDA POS v1.0.1 — Offline POS App for Sari-Sari Stores (Windows)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [TAGS: free software, POS, sari-sari store, point of sale, offline, electron, react]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Mga lods! Gumawa ako ng free POS app para sa mga sari-sari store owners dito sa Pinas. Fully offline, walang internet na kailangan, at libre na talaga.
-
-🔗 Download: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.0
-📖 Source code: https://github.com/Yazerukun/TINDA-POS
+Mga lods! Updated na sa v1.0.1 ang free POS app para sa mga sari-sari store owners dito sa Pinas. Fully offline pa rin ang POS, walang subscription, at libre na talaga. Optional lang ang online backup kung gusto ninyo.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💡 ANO TONG TINDA POS?
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Desktop POS app na ginawa specifically para sa mga sari-sari store at small businesses sa Pinas. 100% offline — walang cloud, walang subscription, walang data na umaalis sa computer ninyo.
+Desktop POS app na ginawa specifically para sa mga sari-sari store at small businesses sa Pinas. Offline-first — tuloy ang benta kahit walang internet. May optional automatic backup sa OneDrive, Google Drive for Desktop, o Dropbox folder kapag gusto ng owner.
 
-Gawa sa Electron + React + TypeScript + SQLite. Matibay, mabilis, at reliable.
+Gawa sa Electron, React, TypeScript, at SQLite. Matibay, mabilis, at reliable.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💰 POS / Benta
-• Mabilis na checkout — product grid + search (pangalan, SKU, o barcode)
+• Mabilis na checkout — product grid at search (pangalan, SKU, o barcode)
 • Cash — may automatic sukli/change computation
 • GCash & Maya — may reference number tracking
 • Utang (credit) — may customer picker at credit limit
-• Split payment — pwede CASH + GCASH sa iisang transaction
+• Split payment — pwede CASH at GCASH sa iisang transaction
 • Hold & Resume — itabi muna ang cart habang nagse-serve ng ibang customer
 
 📦 Inventory
 • Products with TINGI units (sachet, can, stick, piraso, etc.)
-• Categories, suppliers, at SKU/barcode support
+• Add at delete product categories mula mismo sa Inventory
+• Safe category deletion — blocked habang may product pang gumagamit nito
+• Suppliers at SKU/barcode support
 • Low-stock at out-of-stock alerts (color-coded badges)
 • Auto-update ng stock sa bawat sale, refund, at void
 
 👥 Customers & Utang
 • Customer directory with credit limits
 • Full utang ledger — track bawat sale-on-credit at payment
+• Payment at manual deduction agad nag-a-update sa customer balance
 • Over-limit protection — blocked ang bagong utang pag lampas na sa limit
 
 📊 Dashboard & Reports
@@ -70,6 +70,11 @@ Gawa sa Electron + React + TypeScript + SQLite. Matibay, mabilis, at reliable.
 🗄️ Backup & Restore
 • One-click backup
 • Restore from any previous backup
+• Optional automatic copy sa OneDrive, Google Drive for Desktop, o Dropbox synced folder
+• Daily backup on app start at backup on exit
+• Kapag offline, Windows sync client ang kusang mag-upload pag may internet ulit
+• Live ONLINE READY / OFFLINE READY indicator na may connection notification
+• Backup files puwedeng makita/download sa cloud app ng cellphone o tablet
 • Data stored separately sa app — kahit i-uninstall, hindi mawawala
 
 🔐 Multi-User
@@ -78,22 +83,25 @@ Gawa sa Electron + React + TypeScript + SQLite. Matibay, mabilis, at reliable.
 • Only admins pwede mag-void
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📥 DOWNLOAD
+📥 DOWNLOAD (React to see links!)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Windows 10/11:
-• Installer: TindaPOS-Setup-1.0.0.exe (~110 MB)
-• Portable: TindaPOS-Portable-1.0.0.exe (~110 MB) — walang install, i-run lang
+• Installer: TindaPOS-Setup-1.0.1.exe (~110 MB)
+• Portable: TindaPOS-Portable-1.0.1.exe (~110 MB) — walang install, i-run lang
+• User Guide: TindaPOS-User-Guide.pdf — basahin niyo lalo na first time!
 
-User Guide: TindaPOS-User-Guide.pdf — basahin niyo lalo na first time!
-
-👉 https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.0
+[ Spoiler: 👍 React mo para makita ang download links! ]
+[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe ] 👉 INSTALLER (Setup) — Click to Download [/url]
+[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe ] 👉 PORTABLE (No Install) — Click to Download [/url]
+[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf ] 👉 USER GUIDE (PDF) — Click to Download [/url]
+[ / Spoiler ]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚀 HOW TO INSTALL (Windows)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. Download ang TindaPOS-Setup-1.0.0.exe
+1. Download ang TindaPOS-Setup-1.0.1.exe
 2. Double-click to install
 3. Pag lumabas ang SmartScreen, click "More info" → "Run anyway" (hindi pa signed)
 4. Follow the wizard — choose install location, desktop shortcut
@@ -128,13 +136,13 @@ Click Finish → logged in na kayo agad!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Q: Offline ba talaga?
-A: Oo 100%. Walang internet na kailangan. Walang cloud. Walang datos na umaalis sa store ninyo.
+A: Oo. Gumagana lahat ng POS features kahit walang internet. Optional lang ang synced online backup at owner ang pipili kung ie-enable ito.
 
 Q: Saan naka-save ang data?
 A: Windows: %APPDATA%\TINDA POS — Hindi nabubura kahit i-uninstall ang app.
 
 Q: Safe ba ang backup?
-A: Oo — gumawa ng backup sa Backup page, tapos i-copy sa USB or cloud. I-restore pag kailangan.
+A: Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for Desktop, o Dropbox folder. Makikita rin ang uploaded file sa cloud app ng cellphone/tablet. Sa Windows TINDA POS pa rin ginagawa ang restore.
 
 Q: Pwede ba mag-barcode scanner?
 A: Oo — kahit anong USB barcode scanner, automatic na gumagana. Walang special drivers needed.
@@ -148,10 +156,15 @@ A: Oo, 100% free. Walang trial, walang subscription, walang hidden fees.
 
 May bug? May suggestions? May questions? Reply lang dito sa thread!
 
-GitHub Issues: https://github.com/Yazerukun/TINDA-POS/issues
+[ url=https://github.com/Yazerukun/TINDA-POS/issues ] 👉 GitHub Issues — Click to Report [/url]
 
 Salamat po sa inyong support! 🙏
 
+☕ Made with care by Dev Francis.
+Kung nakatulong ang TINDA POS sa negosyo ninyo at gusto ninyong manlibre ng kape:
+GCash: 0991 225 5156
+Optional lang po ang donation — libre at kumpleto ang lahat ng features.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Batch ID: TindaPOS-1.0.0
+Batch ID: TindaPOS-1.0.1
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

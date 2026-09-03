@@ -16,7 +16,7 @@
 
 ## What is TINDA POS?
 
-TINDA POS is a **free, offline point-of-sale app** built for Philippine sari-sari stores and small businesses. It works **completely offline** — no internet, no cloud, no data leaving your store.
+TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sari-sari stores and small businesses. Sales work completely offline. Owners may optionally mirror backups to a folder managed by OneDrive, Google Drive for desktop, or Dropbox.
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
@@ -32,13 +32,14 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 ### 📦 Inventory
 - Products with **tingi units** (sachet, can, stick, piraso)
-- Categories, suppliers, and SKU/barcode support
+- Add/delete category manager, suppliers, and SKU/barcode support
 - Low-stock & out-of-stock alerts with color-coded badges
 - Stock automatically updated on every sale, refund, and void
 
 ### 👥 Customers & Utang
 - Customer directory with credit limits
 - Full utang ledger — track every sale-on-credit and payment
+- Payments and manual deductions refresh balances immediately
 - Over-limit protection blocks new utang when limit is reached
 
 ### 📊 Dashboard & Reports
@@ -69,6 +70,9 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 ### 🗄️ Backup & Restore
 - One-click backup to timestamped file
 - Restore from any previous backup
+- Optional daily/on-exit copy to a Windows cloud-synced folder
+- Live ONLINE READY/OFFLINE READY indicator with connection notifications
+- View or download uploaded backups from the cloud provider's phone/tablet app
 - Data stored separately from the app — survives reinstalls
 
 ### 🔐 Multi-User
@@ -80,21 +84,21 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 | Platform | File | Size |
 |----------|------|------|
-| **Windows 10/11** | [TindaPOS-Setup-1.0.0.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-Setup-1.0.0.exe) | ~110 MB |
-| **Windows (Portable)** | [TindaPOS-Portable-1.0.0.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-Portable-1.0.0.exe) | ~110 MB |
-| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) | ~20 KB |
+| **Windows 10/11** | [TindaPOS-Setup-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe) | ~110 MB |
+| **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | ~110 MB |
+| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~21 KB |
 
-> 📖 **First time?** Read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.0/TindaPOS-User-Guide.pdf) — it covers installation, setup, and how to use every feature.
+> 📖 **First time?** Read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) — it covers installation, setup, and how to use every feature.
 
 ## 🚀 Quick Start
 
 ### Windows
-1. Download `TindaPOS-Setup-1.0.0.exe`
+1. Download `TindaPOS-Setup-1.0.1.exe`
 2. Double-click to install (click **More info → Run anyway** if SmartScreen appears)
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
 
-> 💡 **Portable?** Use `TindaPOS-Portable-1.0.0.exe` instead — no install needed, just run.
+> 💡 **Portable?** Use `TindaPOS-Portable-1.0.1.exe` instead — no install needed, just run.
 
 ### System Requirements
 - **OS:** Windows 10/11 (64-bit)
@@ -162,13 +166,13 @@ TINDA-POS/
 ## ❓ FAQ
 
 **Offline ba talaga?**
-Oo. Walang internet na kailangan, walang cloud, walang datos na umaalis sa store ninyo.
+Oo. Walang internet na kailangan para magbenta. Optional lang ang cloud-synced backup at owner ang pipili kung ie-enable ito.
 
 **Saan naka-save ang data?**
 Windows: `%APPDATA%\TINDA POS` — Hindi nabubura kapag in-uninstall.
 
 **Safe ba ang backup?**
-Oo — gumawa lang ng backup anytime sa Backup page, tapos i-copy sa USB/cloud.
+Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for desktop, o Dropbox folder.
 
 **Pwede ba mag-add ng barcode scanner?**
 Oo — any USB barcode scanner works. No special drivers needed.
@@ -187,6 +191,6 @@ Proprietary. Free to use for personal and small business purposes. Do not redist
 
 **Made with ❤️ for Filipino sari-sari store owners**
 
-*Batch ID: TindaPOS-1.0.0*
+*Batch ID: TindaPOS-1.0.1*
 
 </div>

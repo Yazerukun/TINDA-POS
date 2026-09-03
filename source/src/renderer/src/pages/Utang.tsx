@@ -42,6 +42,20 @@ export function Utang(): React.JSX.Element {
     setLedger(l)
   }
 
+  const actionDone = async () => {
+    const customerId = action?.customer.id
+    setAction(null)
+    await load()
+    if (customerId && selected?.id === customerId) {
+      const [customer, entries] = await Promise.all([
+        window.api.customers.get(customerId),
+        window.api.customers.ledger(customerId, { limit: 50 })
+      ])
+      setSelected(customer)
+      setLedger(entries)
+    }
+  }
+
   return (
     <div className="p-6">
       <PageHeader title="Utang" subtitle={`Customers with credit · total outstanding ${money(totalOutstanding)}`} />
@@ -85,7 +99,7 @@ export function Utang(): React.JSX.Element {
       {selected && (
         <LedgerModal customer={selected} entries={ledger} onClose={() => setSelected(null)} onPay={() => setAction({ type: 'PAY', customer: selected })} />
       )}
-      {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => { setAction(null); void load() }} />}
+      {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => void actionDone()} />}
     </div>
   )
 }
@@ -125,7 +139,7 @@ function CreditActionModal({ action, onClose, onDone }: { action: { type: 'PAY' 
   const amountC = Math.round((parseFloat(amount) || 0) * 100)
 
   const submit = async () => {
-    if (amountC <= 0) { toastError('Enter a valid amount'); return }
+    if (action.type === 'ADJUST' ? amountC === 0 : amountC <= 0) { toastError('Enter a valid amount'); return }
     setSubmitting(true)
     try {
       if (action.type === 'PAY') {
@@ -159,7 +173,7 @@ function CreditActionModal({ action, onClose, onDone }: { action: { type: 'PAY' 
         <p className="text-xl font-black text-amber-400">{money(action.customer.balance_c)}</p>
       </div>
       <div className="space-y-3">
-        <div><label className="label">Amount (₱) {isPay ? '' : action.type === 'ADJUST' ? '(positive = add debt, negative = forgive)' : ''}</label><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="input w-full" autoFocus /></div>
+        <div><label className="label">Amount (₱) {isPay ? '' : action.type === 'ADJUST' ? '(positive = add debt, negative = deduct)' : ''}</label><input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="input w-full" autoFocus /></div>
         {action.type === 'ADJUST' && <div><label className="label">Reason *</label><input value={reason} onChange={(e) => setReason(e.target.value)} className="input w-full" /></div>}
         <div><label className="label">Notes</label><input value={notes} onChange={(e) => setNotes(e.target.value)} className="input w-full" /></div>
       </div>
