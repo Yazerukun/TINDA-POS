@@ -21,7 +21,7 @@ import * as checkoutSvc from '../services/checkout'
 import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
-import { app, dialog, shell } from 'electron'
+import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
 
@@ -48,6 +48,34 @@ const user = () => sessionSvc.requireUser()
 handle('app:info', () => ({ name: 'TINDA POS', version: app.getVersion() ?? '1.0.0', offline: true }))
 handle('app:dataDir', () => appDirs().root)
 handle('app:checkIntegrity', () => require('../database/connection').integrityCheck())
+handle('app:isOnline', async () => {
+  if (!net.isOnline()) return false
+
+  const probes = [
+    ['https://connectivitycheck.gstatic.com/generate_204', 204],
+    ['https://www.msftconnecttest.com/connecttest.txt', 200]
+  ] as const
+
+  const results = await Promise.all(
+    probes.map(async ([url, expectedStatus]) => {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 4_000)
+      try {
+        const response = await net.fetch(url, {
+          method: 'GET',
+          signal: controller.signal
+        })
+        return response.status === expectedStatus
+      } catch {
+        return false
+      } finally {
+        clearTimeout(timeout)
+      }
+    })
+  )
+
+  return results.some(Boolean)
+})
 
 // ---- Auth ----
 handle('auth:status', () => authSvc.authStatus())

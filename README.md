@@ -23,7 +23,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 ## What's New in v1.0.1
 
 - Optional cloud-folder backups for OneDrive, Google Drive for desktop, and Dropbox
-- Live connection status with online and offline notifications
+- Reliable connection status with real internet checks and online/offline notifications
 - Improved category management, inventory safeguards, customer balances, and backup reliability
 - Refined interface animations with reduced-motion accessibility
 - Updated documentation and verified Windows release packages

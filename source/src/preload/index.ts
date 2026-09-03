@@ -7,7 +7,8 @@ const api: TindaApi = {
   app: {
     info: () => invoke<{ name: string; version: string; offline: boolean }>('app:info'),
     dataDir: () => invoke<string>('app:dataDir'),
-    checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity')
+    checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
+    isOnline: () => invoke<boolean>('app:isOnline')
   },
   auth: {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),

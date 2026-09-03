@@ -105,6 +105,7 @@ export interface TindaApi {
     info: () => Promise<{ name: string; version: string; offline: boolean }>
     dataDir: () => Promise<string>
     checkIntegrity: () => Promise<{ ok: boolean; message: string }>
+    isOnline: () => Promise<boolean>
   }
 
   auth: {
