@@ -20,16 +20,15 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
-## 🆕 What's New in v1.0.1
+## What's New in v1.0.1
 
-- Optional cloud-folder backup support for OneDrive, Google Drive for desktop, and Dropbox
-- Live ONLINE READY/OFFLINE READY status with connection notifications
-- Improved category management, inventory safeguards, customer balances, and backup handling
-- Polished **Maya “Buy me a coffee”** card with subtle glow, shimmer, and accessible motion
-- Updated user guide, PHCorner release post, and verified Windows installer checksums
-- **23 automated tests passing**, including the end-to-end sales workflow
+- Optional cloud-folder backups for OneDrive, Google Drive for desktop, and Dropbox
+- Live connection status with online and offline notifications
+- Improved category management, inventory safeguards, customer balances, and backup reliability
+- Refined interface animations with reduced-motion accessibility
+- Updated documentation and verified Windows release packages
 
-## ✨ Features
+## Features
 
 ### 💰 Point of Sale
 - Fast checkout with product grid + search (name, SKU, or barcode)
@@ -89,7 +88,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - Fast PIN login for daily use
 - Only admins can void sales
 
-## 📥 Download
+## Download
 
 | Platform | File | Size |
 |----------|------|------|
@@ -97,9 +96,9 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 | **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | ~110 MB |
 | **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~21 KB |
 
-> 📖 **First time?** Read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) — it covers installation, setup, and how to use every feature.
+> New users should read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) for installation, setup, and complete usage instructions.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Windows
 1. Download `TindaPOS-Setup-1.0.1.exe`
@@ -107,7 +106,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
 
-> 💡 **Portable?** Use `TindaPOS-Portable-1.0.1.exe` instead — no install needed, just run.
+> For use without installation, download and run `TindaPOS-Portable-1.0.1.exe`.
 
 ### System Requirements
 - **OS:** Windows 10/11 (64-bit)
@@ -116,7 +115,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - **Display:** 1366×768 or higher
 - **Internet:** Not required
 
-## 🏗️ Building from Source
+## Building from Source
 
 ```bash
 # Clone the repo
@@ -152,11 +151,10 @@ pnpm run typecheck
 - **Testing:** Vitest (23 tests including end-to-end workflow)
 - **Code Quality:** ESLint + TypeScript strict mode
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 TINDA-POS/
-├── TINDA-POS-LIVE.md       # Release status, verification & next-update scratchpad
 ├── source/                  # Application source code
 │   ├── src/
 │   │   ├── main/            # Electron main process
@@ -173,7 +171,7 @@ TINDA-POS/
 └── docs/                    # Project progress & build guides
 ```
 
-## ❓ FAQ
+## Frequently Asked Questions
 
 **Offline ba talaga?**
 Oo. Walang internet na kailangan para magbenta. Optional lang ang cloud-synced backup at owner ang pipili kung ie-enable ito.
@@ -187,11 +185,11 @@ Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for
 **Pwede ba mag-add ng barcode scanner?**
 Oo — any USB barcode scanner works. No special drivers needed.
 
-## 🤝 Contributing
+## Contributing
 
 This is a personal project, but bug reports and suggestions are welcome via [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues).
 
-## 📄 License
+## License
 
 Proprietary. Free to use for personal and small business purposes. Do not redistribute or sell without permission.
 
@@ -199,8 +197,6 @@ Proprietary. Free to use for personal and small business purposes. Do not redist
 
 <div align="center">
 
-**Made with ❤️ for Filipino sari-sari store owners**
-
-*Batch ID: TindaPOS-1.0.1*
+**Built for Filipino sari-sari stores and small businesses.**
 
 </div>
