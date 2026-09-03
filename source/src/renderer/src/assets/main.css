@@ -106,7 +106,35 @@
     animation: coffee-float 3.2s ease-in-out infinite;
   }
   .donation-card {
-    @apply relative border border-brand-500/30 bg-brand-500/10 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand-400/50 hover:bg-brand-500/15 hover:shadow-glow;
+    @apply relative border border-brand-500/30 bg-brand-500/10 shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-brand-400/60 hover:bg-brand-500/15 hover:shadow-glow active:translate-y-0 active:scale-[.985];
+    overflow: hidden;
+  }
+  .donation-card::after {
+    content: '';
+    position: absolute;
+    inset: -80% -35%;
+    width: 28%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    transform: rotate(18deg) translateX(-500%);
+    animation: donation-shimmer 5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .maya-logo-shell {
+    position: relative;
+    z-index: 1;
+    animation: maya-glow 3.2s ease-in-out infinite;
+    transition: transform 300ms cubic-bezier(.2,.8,.2,1);
+  }
+  .donation-card:hover .maya-logo-shell {
+    transform: translateY(-2px) rotate(-1deg) scale(1.04);
+  }
+  .maya-mark {
+    transform-origin: center;
+    animation: maya-mark 2.8s ease-in-out infinite;
+  }
+  .maya-spark {
+    transform-origin: center;
+    animation: maya-spark 2.8s ease-in-out infinite;
   }
   .connection-pulse {
     animation: connection-pulse 2s ease-in-out infinite;
@@ -144,13 +172,33 @@
   0%, 100% { opacity: .65; transform: scale(.9); }
   50% { opacity: 1; transform: scale(1.12); }
 }
+@keyframes donation-shimmer {
+  0%, 68% { transform: rotate(18deg) translateX(-500%); }
+  88%, 100% { transform: rotate(18deg) translateX(650%); }
+}
+@keyframes maya-mark {
+  0%, 100% { opacity: .82; }
+  50% { opacity: 1; }
+}
+@keyframes maya-spark {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-1px) rotate(-3deg) scale(1.06); }
+}
+@keyframes maya-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,168,107,.08), 0 8px 20px rgba(0,0,0,.18); }
+  50% { box-shadow: 0 0 0 5px rgba(0,168,107,.08), 0 10px 26px rgba(0,168,107,.20); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .developer-card::before,
   .developer-card::after,
   .signature-reveal,
   .coffee-float,
-  .connection-pulse {
+  .connection-pulse,
+  .donation-card::after,
+  .maya-logo-shell,
+  .maya-mark,
+  .maya-spark {
     animation: none !important;
   }
 }

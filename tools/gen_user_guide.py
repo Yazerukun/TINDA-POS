@@ -320,7 +320,7 @@ story.append(bullets([
 ]))
 story.append(H3("Support"))
 story.append(P("TINDA POS was created and is maintained by <b>Dev Francis</b>. For questions and feedback, or to report a problem, reach out via the PHCorner thread where you downloaded TINDA POS."))
-story.append(P("If TINDA POS helps your store and you would like to buy the developer a coffee, optional donations may be sent through <b>GCash: 0991 225 5156</b>. Donations are never required and do not unlock any features.", "callout"))
+story.append(P("If TINDA POS helps your store and you would like to buy the developer a coffee, optional donations may be sent through <b>Maya: 0991 225 5156</b>. Donations are never required and do not unlock any features.", "callout"))
 
 # ---- Table of contents ----
 story_titles = {

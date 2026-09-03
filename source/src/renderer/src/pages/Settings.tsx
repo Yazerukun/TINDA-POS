@@ -32,10 +32,10 @@ export function Settings(): React.JSX.Element {
 }
 
 function AboutTab(): React.JSX.Element {
-  const copyGcash = async () => {
+  const copyMaya = async () => {
     try {
       await navigator.clipboard.writeText('09912255156')
-      toastSuccess('GCash number copied')
+      toastSuccess('Maya number copied')
     } catch { toastError('Could not copy number') }
   }
   return (
@@ -47,14 +47,23 @@ function AboutTab(): React.JSX.Element {
         <p className="dev-signature signature-reveal relative z-10 text-2xl font-bold text-brand-300">Dev Francis</p>
         <div className="mx-auto my-5 h-px max-w-xs bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
         <p className="text-sm text-slate-300">TINDA POS is free. If it helps your store, you may support the developer with a small coffee donation.</p>
-        <button onClick={() => void copyGcash()} className="donation-card mx-auto mt-4 flex items-center gap-3 rounded-xl px-5 py-3 text-left">
-          <Heart className="h-5 w-5 fill-brand-400 text-brand-400" />
-          <span><span className="block text-[10px] uppercase tracking-[0.2em] text-slate-500">GCash · Pang-kape</span><span className="font-mono text-lg font-bold tracking-wider text-white">0991 225 5156</span></span>
+        <button onClick={() => void copyMaya()} className="donation-card mx-auto mt-4 flex items-center gap-3 rounded-xl px-5 py-3 text-left">
+          <div className="maya-logo-shell flex h-11 w-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-card"><MayaMark /></div>
+          <span><span className="dev-signature block text-base font-bold text-brand-300">Buy me a coffee</span><span className="font-mono text-lg font-bold tracking-wider text-white">0991 225 5156</span><span className="block text-[9px] uppercase tracking-[0.18em] text-slate-500">Maya · tap to copy</span></span>
           <Copy className="ml-2 h-4 w-4 text-slate-400" />
         </button>
         <p className="mt-3 text-[10px] text-slate-600">Donations are optional and do not unlock any features.</p>
       </div>
     </div>
+  )
+}
+
+function MayaMark(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 76 32" className="h-8 w-[4.5rem]" role="img" aria-label="Maya">
+      <g className="maya-spark" fill="#00a86b"><path d="M5 8h7l5 7 5-7h7L17 24Z" /><path d="M17 8h6l-6 8-6-8Z" opacity=".55" /></g>
+      <text className="maya-mark" x="30" y="22" fill="#111827" fontFamily="Arial, sans-serif" fontSize="17" fontWeight="800" letterSpacing="-1">maya</text>
+    </svg>
   )
 }
 
