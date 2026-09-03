@@ -176,11 +176,12 @@ story.append(P(
     "If a customer needs to step away (e.g. forgot their wallet), you can <b>hold</b> the current cart "
     "and serve the next customer. The held sale is saved without affecting stock."
 ))
-story.append(step("1", "Click <b>Hold</b> on the POS page to save the current cart."))
-story.append(step("2", "Serve other customers normally."))
-story.append(step("3", "When the first customer returns, click <b>Resume</b> on the held sale to restore the cart."))
-story.append(step("4", "If the customer changes their mind, click <b>Delete</b> on the held sale to discard it."))
-story.append(P("Held sales do NOT reduce stock until the sale is actually completed.", "callout"))
+story.append(step("1", "With products in the cart, click <b>Hold</b> beside Clear and Checkout. The cart receives a reference code, is saved to the database, and is cleared for the next customer."))
+story.append(step("2", "Serve other customers normally. The <b>Held</b> button at the top of the cart shows how many saved carts are waiting."))
+story.append(step("3", "When the customer returns, click <b>Held</b>, find the reference, and click <b>Resume</b>. If another cart is open, TINDA POS asks before replacing it."))
+story.append(step("4", "If the customer changes their mind, click <b>Delete</b> and confirm to discard that held sale."))
+story.append(P("Held sales persist after restarting TINDA POS and do NOT reduce stock until checkout. For safety, reselect the customer before an Utang checkout after resuming.", "callout"))
+story.append(P("The <b>Clear</b> button only empties the current cart. Use <b>Hold</b> instead when you need to restore it later."))
 story.append(H3("Safety Protections"))
 story.append(bullets([
     "<b>Insufficient stock</b> — you cannot sell more than what is on hand. The app blocks the checkout if quantity exceeds available stock.",

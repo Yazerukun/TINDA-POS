@@ -6,6 +6,7 @@ import * as salesRepo from '../repositories/sales'
 import * as shiftRepo from '../repositories/shifts'
 import * as custRepo from '../repositories/customers'
 import * as auditRepo from '../repositories/audit'
+import * as heldRepo from '../repositories/heldSales'
 import { requirePermission, requireUser } from './session'
 import { getSettings } from '../repositories/settings'
 import { randomBytes } from 'node:crypto'
@@ -158,6 +159,7 @@ export function holdSale(payload: CheckoutPayload): import('@shared/types').Held
   const lines = buildLines(db, payload.items)
   const subtotal = lines.reduce((s, l) => s + l.cart.subtotal_c, 0)
   const discount = payload.discount_c || 0
+  if (discount > subtotal) throw new Error('Discount exceeds subtotal.')
   const total = subtotal - discount
   const token = randomBytes(4).toString('hex').toUpperCase()
   const items = lines.map((l) => l.cart)
@@ -175,7 +177,7 @@ export function holdSale(payload: CheckoutPayload): import('@shared/types').Held
     }
     return id
   })()
-  return db.prepare('SELECT * FROM held_sales WHERE id = ?').get(heldId) as import('@shared/types').HeldSale
+  return heldRepo.getHeldSale(db, heldId)
 }
 
 export function reprint(saleId: number): string[] {

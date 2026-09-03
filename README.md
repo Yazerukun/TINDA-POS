@@ -33,11 +33,12 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 ### 💰 Point of Sale
 - Fast checkout with product grid + search (name, SKU, or barcode)
 - Working category dropdown for quickly filtering the POS product grid
+- Persistent Hold/Resume queue with reference codes and safe held-sale deletion
 - **Cash** with automatic sukli/change calculation
 - **GCash & Maya** with reference number tracking
 - **Utang (credit)** with customer picker
 - **Split payment** — combine Cash + GCash/Maya in one sale
-- Hold & resume sales for serving multiple customers
+- Hold, resume, or delete pending carts while serving multiple customers
 
 ### 📦 Inventory
 - Products with **tingi units** (sachet, can, stick, piraso)

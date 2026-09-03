@@ -261,13 +261,23 @@ handle('pos:hold', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const v = require('../validation/schemas').validateCheckout(payload)
   return checkoutSvc.holdSale(v)
 })
-handle('pos:held', () => heldRepo.heldSalesFor(db(), user().id))
+handle('pos:held', () => {
+  sessionSvc.requirePermission('pos:resume-sale')
+  return heldRepo.heldSalesFor(db(), user().id)
+})
 handle('pos:resumeHeld', (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('pos:resume-sale')
   const h = heldRepo.getHeldSale(db(), id)
+  if (h.user_id !== user().id) throw new Error('Held sale not found.')
   heldRepo.deleteHeldSale(db(), id)
   return h
 })
-handle('pos:deleteHeld', (_e: IpcMainInvokeEvent, id: number) => heldRepo.deleteHeldSale(db(), id))
+handle('pos:deleteHeld', (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('pos:resume-sale')
+  const h = heldRepo.getHeldSale(db(), id)
+  if (h.user_id !== user().id) throw new Error('Held sale not found.')
+  heldRepo.deleteHeldSale(db(), id)
+})
 handle('pos:reprint', (_e: IpcMainInvokeEvent, saleId: number) => {
   sessionSvc.requirePermission('transactions:view')
   return checkoutSvc.reprint(saleId)

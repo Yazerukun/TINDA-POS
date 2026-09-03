@@ -15,10 +15,10 @@ import {
   Loader2,
   ChevronDown
 } from 'lucide-react'
-import type { Product, Customer, Sale, Category } from '@shared/types'
+import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
-import { toastSuccess, toastError, toastInfo } from '../stores/toast'
+import { toastSuccess, toastError } from '../stores/toast'
 import type { PaymentInput } from '@shared/ipc'
 
 interface CartItem {
@@ -41,6 +41,7 @@ interface CartState {
   clear: () => void
   setCustomer: (id: number | null) => void
   setDiscountPesos: (v: number) => void
+  replace: (items: CartItem[], discount_pesos: number) => void
 }
 
 export const usePosCart = create<CartState>((set) => ({
@@ -68,7 +69,8 @@ export const usePosCart = create<CartState>((set) => ({
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
   clear: () => set({ items: [], customer_id: null, discount_pesos: 0 }),
   setCustomer: (id) => set({ customer_id: id }),
-  setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) })
+  setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
+  replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos })
 }))
 
 export function POS(): React.JSX.Element {
@@ -226,9 +228,94 @@ function CartPanel(): React.JSX.Element {
   const { items, discount_pesos } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [customerOpen, setCustomerOpen] = useState(false)
+  const [heldOpen, setHeldOpen] = useState(false)
+  const [heldSales, setHeldSales] = useState<HeldSale[]>([])
+  const [holdBusy, setHoldBusy] = useState(false)
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + i.unit_price_c * i.qty, 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
+
+  const loadHeldSales = async () => {
+    try {
+      setHeldSales(await window.api.pos.held())
+    } catch (e) {
+      toastError('Held sales failed', String((e as Error)?.message || e))
+    }
+  }
+
+  useEffect(() => { void loadHeldSales() }, [])
+
+  const holdCurrentSale = async () => {
+    if (!items.length || holdBusy) return
+    setHoldBusy(true)
+    try {
+      const held = await window.api.pos.hold({
+        items: items.map((item) => ({
+          product_id: item.product_id,
+          name: item.name,
+          unit_name: item.unit_name,
+          qty: item.qty,
+          qty_base: item.qty,
+          unit_price_c: item.unit_price_c,
+          cost_base_c: item.cost_base_c,
+          stock_base: item.stock_base,
+          subtotal_c: item.unit_price_c * item.qty
+        })),
+        discount_c: discount_pesos,
+        customer_id: null,
+        payments: []
+      })
+      usePosCart.getState().clear()
+      await loadHeldSales()
+      toastSuccess('Sale held', `Reference ${held.token}`)
+    } catch (e) {
+      toastError('Hold failed', String((e as Error)?.message || e))
+    } finally {
+      setHoldBusy(false)
+    }
+  }
+
+  const resumeHeldSale = async (id: number) => {
+    if (items.length && !confirm('Replace the current cart with this held sale?')) return
+    setHoldBusy(true)
+    try {
+      const [held, productResult] = await Promise.all([
+        window.api.pos.resumeHeld(id),
+        window.api.products.search('', { status: 'ACTIVE', limit: 1000 })
+      ])
+      const catalog = new Map(productResult.rows.map((product) => [product.id, product]))
+      usePosCart.getState().replace(held.items.map((item) => ({
+        product_id: item.product_id as number,
+        name: item.name,
+        unit_name: item.unit_name,
+        qty: item.qty,
+        unit_price_c: item.unit_price_c,
+        cost_base_c: item.cost_base_c,
+        stock_base: item.product_id == null ? 0 : catalog.get(item.product_id)?.stock ?? 0
+      })), held.discount_c)
+      setHeldOpen(false)
+      await loadHeldSales()
+      toastSuccess('Sale resumed', `Reference ${held.token}`)
+    } catch (e) {
+      toastError('Resume failed', String((e as Error)?.message || e))
+    } finally {
+      setHoldBusy(false)
+    }
+  }
+
+  const deleteHeldSale = async (held: HeldSale) => {
+    if (!confirm(`Delete held sale ${held.token}?`)) return
+    setHoldBusy(true)
+    try {
+      await window.api.pos.deleteHeld(held.id)
+      await loadHeldSales()
+      toastSuccess('Held sale deleted', held.token)
+    } catch (e) {
+      toastError('Delete failed', String((e as Error)?.message || e))
+    } finally {
+      setHoldBusy(false)
+    }
+  }
 
   return (
     <aside className="flex w-[22rem] shrink-0 flex-col border-l border-ink-line bg-ink-900">
@@ -237,11 +324,16 @@ function CartPanel(): React.JSX.Element {
           <ShoppingCart className="h-4 w-4" /> Cart
           {items.length > 0 && <span className="badge bg-brand-600/20 text-brand-300">{items.length}</span>}
         </h2>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setHeldOpen(true)} className="btn-ghost-2 rounded-lg px-2 py-1 text-xs" title="Resume held sales">
+            Held {heldSales.length > 0 && `(${heldSales.length})`}
+          </button>
         {items.length > 0 && (
           <button onClick={() => usePosCart.getState().clear()} className="rounded-lg p-1.5 text-slate-500 hover:bg-ink-800 hover:text-danger-400" title="Clear cart">
             <Trash2 className="h-4 w-4" />
           </button>
         )}
+        </div>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
@@ -308,14 +400,14 @@ function CartPanel(): React.JSX.Element {
       <div className="grid grid-cols-3 gap-2 px-4 pb-4 pt-1">
         <button
           disabled={items.length === 0}
-          onClick={() => toastInfo('Hold', 'Hold sale will be available in a later build.')}
+          onClick={() => void holdCurrentSale()}
           className="btn-ghost flex flex-col items-center gap-0.5 py-2 text-xs disabled:opacity-40"
         >
-          <Pause className="h-4 w-4" /> Hold
+          {holdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />} Hold
         </button>
         <button
           disabled={items.length === 0}
-          onClick={() => !items.length ? undefined : setCheckoutOpen(true)}
+          onClick={() => usePosCart.getState().clear()}
           className="btn-secondary col-span-1 py-2 text-xs disabled:opacity-40"
         >
           Clear
@@ -331,6 +423,25 @@ function CartPanel(): React.JSX.Element {
 
       {checkoutOpen && <CheckoutModal subtotal={subtotal} total={total} onClose={() => setCheckoutOpen(false)} />}
       {customerOpen && <CustomerPicker onClose={() => setCustomerOpen(false)} />}
+      {heldOpen && (
+        <Modal open onClose={() => setHeldOpen(false)} title="Held Sales" maxWidth="max-w-lg">
+          <div className="space-y-2">
+            {heldSales.length === 0 && <p className="py-8 text-center text-sm text-slate-500">No held sales.</p>}
+            {heldSales.map((held) => (
+              <div key={held.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-line bg-ink-900 p-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-white">Hold #{held.token}</p>
+                  <p className="text-xs text-slate-500">{new Date(held.created_at).toLocaleString()} · {money(held.total_c)}</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button disabled={holdBusy} onClick={() => void deleteHeldSale(held)} className="btn-ghost-2 px-2.5 py-1.5 text-xs text-danger-400">Delete</button>
+                  <button disabled={holdBusy} onClick={() => void resumeHeldSale(held.id)} className="btn-primary px-2.5 py-1.5 text-xs">Resume</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
     </aside>
   )
 }

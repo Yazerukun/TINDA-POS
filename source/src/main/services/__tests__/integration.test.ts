@@ -16,12 +16,13 @@ afterAll(() => {
 
 // Import services AFTER setting env so getDb() resolves the right path.
 import { completeSetup, login, logout } from '../auth'
-import { checkout } from '../checkout'
+import { checkout, holdSale } from '../checkout'
 import { processRefund, processVoid } from '../transaction'
 import { createProduct, getProduct } from '../../repositories/products'
 import { createCustomer, getCustomer } from '../../repositories/customers'
 import { createBackup, listBackups } from '../../repositories/backup'
 import { updateSettings } from '../../repositories/settings'
+import { deleteHeldSale, getHeldSale, heldSalesFor } from '../../repositories/heldSales'
 import { getDb, closeDb, integrityCheck } from '../../database/connection'
 import type { ProductInput } from '../../../shared/types'
 
@@ -81,6 +82,21 @@ describe('End-to-end integration (real SQLite file)', () => {
     // create a customer for utang
     const cust = createCustomer(db, { full_name: 'Juan', credit_limit_c: 100000 })
     expect(cust.balance_c).toBe(0)
+
+    // Holding persists the cart without reducing stock; it can be resumed and removed.
+    const held = holdSale({
+      items: [{ product_id: milo.id, name: milo.name, unit_name: 'sachet', qty: 2, qty_base: 2, unit_price_c: 900, cost_base_c: 600, stock_base: 50, subtotal_c: 1800 }],
+      discount_c: 100,
+      customer_id: null,
+      payments: []
+    })
+    expect(held.items).toHaveLength(1)
+    expect(held.total_c).toBe(1700)
+    expect(getProduct(db, milo.id).stock).toBe(50)
+    expect(heldSalesFor(db, setup.user.id)).toHaveLength(1)
+    expect(getHeldSale(db, held.id).items[0]?.product_id).toBe(milo.id)
+    deleteHeldSale(db, held.id)
+    expect(heldSalesFor(db, setup.user.id)).toHaveLength(0)
 
     // 3. Cash checkout of 3 sachets
     const cashSale = checkout({
