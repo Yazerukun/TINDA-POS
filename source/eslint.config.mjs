@@ -25,6 +25,7 @@ export default tseslint.config(
       '**/installers/**',
       '**/electron-cache/**',
       '**/temp/**',
+      '**/.qa/**',
       '*.config.*',
       'postcss.config.cjs',
       'eslint.config.mjs',

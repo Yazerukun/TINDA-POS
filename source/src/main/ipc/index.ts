@@ -1,6 +1,6 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { ipcMain } from 'electron'
-import { getDb } from '../database/connection'
+import { getDb, getDbFile } from '../database/connection'
 import * as authSvc from '../services/auth'
 import * as sessionSvc from '../services/session'
 import * as settingRepo from '../repositories/settings'
@@ -21,6 +21,7 @@ import * as checkoutSvc from '../services/checkout'
 import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
+import * as dataManagementSvc from '../services/dataManagement'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
@@ -47,6 +48,8 @@ const user = () => sessionSvc.requireUser()
 // ---- App ----
 handle('app:info', () => ({ name: 'TINDA POS', version: app.getVersion() ?? '1.0.0', offline: true }))
 handle('app:dataDir', () => appDirs().root)
+handle('app:databaseFile', () => getDbFile())
+handle('app:openDataDir', () => { sessionSvc.requirePermission('settings:manage'); return shell.openPath(appDirs().root) })
 handle('app:checkIntegrity', () => require('../database/connection').integrityCheck())
 handle('app:isOnline', async () => {
   if (!net.isOnline()) return false
@@ -387,11 +390,16 @@ handle('backup:create', async (_e: IpcMainInvokeEvent, reason?: string) => {
 })
 handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
   sessionSvc.requirePermission('backup:manage')
-  return backupRepo.restoreBackup(db(), filename)
+  backupRepo.restoreBackup(db(), filename)
+  setTimeout(() => {
+    app.relaunch()
+    app.exit(0)
+  }, 500)
 })
 handle('backup:openFolder', () => {
   shell.openPath(backupRepo.backupDir())
 })
+handle('backup:dir', () => backupRepo.backupDir())
 handle('backup:selectSyncFolder', async () => {
   sessionSvc.requirePermission('backup:manage')
   const result = await dialog.showOpenDialog({
@@ -406,6 +414,11 @@ handle('backup:openSyncFolder', () => {
   const location = settingRepo.getSettings(db()).backup_location.trim()
   if (!location) throw new Error('No synced backup folder configured.')
   return shell.openPath(location)
+})
+handle('backup:resetDatabase', (_e: IpcMainInvokeEvent, confirmation: string) => {
+  dataManagementSvc.resetActiveDatabase(confirmation)
+  app.relaunch()
+  app.exit(0)
 })
 
 // ---- Audit ----

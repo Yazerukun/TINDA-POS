@@ -1,25 +1,14 @@
-# TINDA POS — Installers
+# TINDA POS — Release Files
 
-Final shipped installers live here.
+The v1.0.1 GitHub release contains:
 
-| File | Type | Size | Status |
-|------|------|------|--------|
-| `TindaPOS-Setup-1.0.1.exe` | Windows installer (NSIS) | 110 MB | **BUILT** — ready to post |
-| `TindaPOS-Portable-1.0.1.exe` | Windows portable app | 110 MB | **BUILT** — ready to post |
-| `TindaPOS-1.0.0.AppImage` | Linux package | 133 MB | Built in `../source/builds/`, verified |
-| `TindaPOS-User-Guide.pdf` | 11-page organized guide (install + manual) | 25 KB | **BUILT** — ready to post |
+| File | Type | Exact size |
+|------|------|------------|
+| `TindaPOS-Setup-1.0.1.exe` | Windows NSIS installer | 114,690,966 bytes |
+| `TindaPOS-Portable-1.0.1.exe` | Windows portable package | 102,535,252 bytes |
+| `TindaPOS-User-Guide.pdf` | Printable user guide | 25,611 bytes |
+| `SHA256SUMS.txt` | Release verification hashes | — |
 
-Build outputs also live under `../source/builds/`:
-- `win-unpacked/TindaPOS.exe` — unpacked Windows app (portable test)
-- `linux-unpacked/…` — unpacked Linux app
+Download links are listed in the project README. The maintained text manual is at `docs/USER-MANUAL.md`.
 
-## PHCorner release bundle
-
-1. `TindaPOS-Setup-1.0.1.exe` — Windows installer
-2. `TindaPOS-Portable-1.0.1.exe` — Windows portable app
-3. `TindaPOS-1.0.0.AppImage` — Linux package
-4. `TindaPOS-User-Guide.pdf` — installation + user guide
-
-Rebuild notes:
-- Windows `.exe` is built on Linux via **Wine** (`electron-builder --win nsis`).
-- The PDF generator lives in `../tools/gen_user_guide.py` (reportlab).
+Setup and Portable use the same `%APPDATA%\TINDA POS` data directory. Moving either executable does not create a new database.

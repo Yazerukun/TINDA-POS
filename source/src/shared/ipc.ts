@@ -104,8 +104,10 @@ export interface TindaApi {
   app: {
     info: () => Promise<{ name: string; version: string; offline: boolean }>
     dataDir: () => Promise<string>
-    checkIntegrity: () => Promise<{ ok: boolean; message: string }>
-    isOnline: () => Promise<boolean>
+    databaseFile: () => Promise<string>
+      openDataDir: () => Promise<void>
+      checkIntegrity: () => Promise<{ ok: boolean; message: string }>
+      isOnline: () => Promise<boolean>
   }
 
   auth: {
@@ -268,6 +270,8 @@ export interface TindaApi {
     openFolder: () => Promise<void>
     selectSyncFolder: () => Promise<string | null>
     openSyncFolder: () => Promise<void>
+    dir: () => Promise<string>
+    resetDatabase: (confirmation: string) => Promise<void>
   }
 
   audit: {

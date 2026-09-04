@@ -1,6 +1,6 @@
 ==============================================
  TINDA POS  -  Windows Customer Release
- Software Version: 1.0.0
+ Software Version: 1.0.1
 ==============================================
 
 THANK YOU for choosing TINDA POS, an offline Point-of-Sale system for
@@ -27,6 +27,11 @@ sari-sari stores and small businesses.
    - Add products (Inventory page) and start selling from the POS page.
    - Create backups regularly (Backup page).
 
+NEW IN v1.0.1:
+   - Persistent Hold/Resume Sale
+   - Protected Database Reset under Settings > Data
+   - Validated Backup Restore with a safety backup and rollback
+
 --------------------------------------------------------------
  IMPORTANT: WORKS FULLY OFFLINE
 --------------------------------------------------------------
@@ -45,6 +50,9 @@ is stored OUTSIDE the program folder, under:
 
 Because data is kept separate from the app, INSTALLING A NEW VERSION
 or UNINSTALLING does NOT delete your store data.
+
+The Setup and Portable editions use this same data location. Moving the
+EXE to another drive or folder does NOT create a new database.
 
 TIP: Keep a copy of this whole "TINDA POS" user-data folder somewhere
 safe (another drive, USB, or cloud) as an extra backup.

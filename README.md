@@ -22,11 +22,12 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 ## What's New in v1.0.1
 
-- Optional cloud-folder backups for OneDrive, Google Drive for desktop, and Dropbox
-- Reliable connection status with real internet checks and online/offline notifications
-- Improved category management, inventory safeguards, customer balances, and backup reliability
-- Refined interface animations with reduced-motion accessibility
-- Updated documentation and verified Windows release packages
+- Protected Database Reset with exact confirmation and a verified safety backup
+- Persistent Hold Sale with restart-safe resume/delete, cashier isolation, and duplicate-click protection
+- Hardened Backup Restore with SQLite integrity checks and automatic rollback on failure
+- Settings → Data now shows database/backup locations and all data-management actions
+- Improved category filtering and reliable online/offline connectivity checks
+- Windows Setup and Portable packages verified with **33/33 automated tests** and isolated packaged-app QA
 
 ## Features
 
@@ -94,9 +95,10 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 | Platform | File | Size |
 |----------|------|------|
-| **Windows 10/11** | [TindaPOS-Setup-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe) | ~110 MB |
-| **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | ~110 MB |
+| **Windows 10/11** | [TindaPOS-Setup-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe) | 109.38 MB |
+| **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | 97.79 MB |
 | **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~25 KB |
+| **Checksums** | [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/SHA256SUMS.txt) | SHA-256 |
 
 > New users should read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) for installation, setup, and complete usage instructions.
 
@@ -108,7 +110,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
 
-> For use without installation, download and run `TindaPOS-Portable-1.0.1.exe`.
+> For use without installation, download and run `TindaPOS-Portable-1.0.1.exe`. Setup and Portable intentionally share `%APPDATA%\TINDA POS`; moving the EXE does not create a new database.
 
 ### System Requirements
 - **OS:** Windows 10/11 (64-bit)
@@ -150,7 +152,7 @@ pnpm run typecheck
 - **Frontend:** React 19 + TypeScript + Tailwind CSS + Zustand
 - **Backend:** Electron 44 + better-sqlite3
 - **Build:** electron-vite + electron-builder
-- **Testing:** Vitest (23 tests including end-to-end workflow)
+- **Testing:** Vitest (33 tests including category filtering, reset, hold-sale, restore rollback, and end-to-end workflows)
 - **Code Quality:** ESLint + TypeScript strict mode
 
 ## Project Structure
@@ -179,7 +181,7 @@ TINDA-POS/
 Oo. Walang internet na kailangan para magbenta. Optional lang ang cloud-synced backup at owner ang pipili kung ie-enable ito.
 
 **Saan naka-save ang data?**
-Windows: `%APPDATA%\TINDA POS` — Hindi nabubura kapag in-uninstall.
+Windows: `%APPDATA%\TINDA POS` — Hindi nabubura kapag in-uninstall. The active database is `%APPDATA%\TINDA POS\database\tindapos.db`.
 
 **Safe ba ang backup?**
 Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for desktop, o Dropbox folder.

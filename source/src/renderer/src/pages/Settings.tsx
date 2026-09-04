@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy } from 'lucide-react'
-import type { User } from '@shared/types'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw } from 'lucide-react'
+import type { BackupInfo, User } from '@shared/types'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 
-type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'ABOUT'
+type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
@@ -21,12 +21,101 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('HOME')} className={`btn-ghost flex items-center gap-2 ${tab === 'HOME' ? '!border-brand-500 !text-brand-400' : ''}`}><Store className="h-4 w-4" /> Store</button>
         <button onClick={() => setTab('RECEIPT')} className={`btn-ghost flex items-center gap-2 ${tab === 'RECEIPT' ? '!border-brand-500 !text-brand-400' : ''}`}><Receipt className="h-4 w-4" /> Receipt</button>
         <button onClick={() => setTab('USERS')} className={`btn-ghost flex items-center gap-2 ${tab === 'USERS' ? '!border-brand-500 !text-brand-400' : ''}`}><Users className="h-4 w-4" /> Users</button>
+        <button onClick={() => setTab('DATA')} className={`btn-ghost flex items-center gap-2 ${tab === 'DATA' ? '!border-brand-500 !text-brand-400' : ''}`}><DatabaseZap className="h-4 w-4" /> Data</button>
         <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
       {tab === 'HOME' && <StoreSettingsTab />}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
+      {tab === 'DATA' && <DataTab />}
       {tab === 'ABOUT' && <AboutTab />}
+    </div>
+  )
+}
+
+function DataTab(): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
+  const [resetting, setResetting] = useState(false)
+  const [databaseFile, setDatabaseFile] = useState('Loading...')
+  const [backupDir, setBackupDir] = useState('Loading...')
+  const [backups, setBackups] = useState<BackupInfo[] | null>(null)
+
+  useEffect(() => {
+    void Promise.all([window.api.app.databaseFile(), window.api.backup.dir()]).then(([database, backup]) => {
+      setDatabaseFile(database)
+      setBackupDir(backup)
+    }).catch((e) => toastError('Could not load data locations', String((e as Error)?.message || e)))
+  }, [])
+
+  const backupNow = async () => {
+    try { const backup = await window.api.backup.create('Settings Data page'); toastSuccess('Safety backup created', backup.filename) }
+    catch (e) { toastError('Backup failed', String((e as Error)?.message || e)) }
+  }
+
+  const showRestore = async () => {
+    try { setBackups(await window.api.backup.list()) }
+    catch (e) { toastError('Could not load backups', String((e as Error)?.message || e)) }
+  }
+
+  const restore = async (backup: BackupInfo) => {
+    if (!window.confirm(`Restore ${backup.filename}? Current data will be safety-backed up first.`)) return
+    try { await window.api.backup.restore(backup.filename); toastSuccess('Backup restored', 'TINDA POS is restarting...') }
+    catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) }
+  }
+
+  const reset = async () => {
+    if (confirmation !== 'RESET') return
+    setResetting(true)
+    try {
+      await window.api.backup.resetDatabase(confirmation)
+    } catch (e) {
+      toastError('Database reset failed', String((e as Error)?.message || e))
+      setResetting(false)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      <div className="card p-5">
+        <h2 className="text-base font-semibold text-slate-100">Database & backups</h2>
+        <div className="mt-3 space-y-3 text-sm">
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current database location</p><p className="mt-1 break-all font-mono text-slate-300">{databaseFile}</p></div>
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Backup location</p><p className="mt-1 break-all font-mono text-slate-300">{backupDir}</p></div>
+          <p className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-3 text-xs text-sky-300">Setup and Portable intentionally use this configured app-data location. Moving the EXE to another drive does not create a new database.</p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button onClick={() => void window.api.app.openDataDir()} className="btn-ghost flex items-center gap-2"><FolderOpen className="h-4 w-4" /> Open Data Folder</button>
+          <button onClick={() => void backupNow()} className="btn-primary flex items-center gap-2"><HardDriveDownload className="h-4 w-4" /> Backup Now</button>
+          <button onClick={() => void showRestore()} className="btn-ghost flex items-center gap-2"><RotateCcw className="h-4 w-4" /> Restore Backup</button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-red-500/40 bg-red-950/20 p-5">
+        <h2 className="text-base font-bold text-red-300">Danger zone — active store database</h2>
+        <p className="mt-2 text-sm font-semibold text-red-200">THIS WILL RESET THE ACTIVE STORE DATABASE.</p>
+        <p className="mt-1 text-sm text-slate-400">Products, sales, users, shifts, and settings will be removed from the active database. A verified safety backup will be created first; if backup creation fails, reset is aborted.</p>
+        <button onClick={() => setOpen(true)} className="btn-danger mt-4 flex items-center gap-2"><DatabaseZap className="h-4 w-4" /> Reset Database</button>
+      </div>
+
+      {open && <Modal open onClose={() => { if (!resetting) { setOpen(false); setConfirmation('') } }} title="Reset Database" maxWidth="max-w-md" footer={
+        <>
+          <button onClick={() => { setOpen(false); setConfirmation('') }} disabled={resetting} className="btn-ghost">Cancel</button>
+          <button onClick={() => void reset()} disabled={resetting || confirmation !== 'RESET'} className="btn-danger">{resetting ? 'Resetting...' : 'Reset and Restart'}</button>
+        </>
+      }>
+        <p className="text-sm font-semibold text-red-300">THIS WILL RESET THE ACTIVE STORE DATABASE.</p>
+        <p className="mt-2 text-sm text-amber-400">A verified safety backup will be created first. The app will restart and show first-time setup.</p>
+        <div className="mt-4"><label className="label">Type RESET to confirm</label><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className="input w-full" autoFocus /></div>
+      </Modal>}
+
+      {backups && <Modal open onClose={() => setBackups(null)} title="Restore Backup" maxWidth="max-w-lg" footer={<button onClick={() => setBackups(null)} className="btn-ghost">Cancel</button>}>
+        <p className="mb-3 text-sm text-amber-400">Restoring replaces the active database, creates a safety backup, verifies integrity, and restarts TINDA POS.</p>
+        <div className="max-h-72 space-y-2 overflow-y-auto">
+          {backups.length === 0 && <p className="py-5 text-center text-sm text-slate-500">No backups available.</p>}
+          {backups.map((backup) => <button key={backup.filename} onClick={() => void restore(backup)} className="flex w-full items-center justify-between rounded-lg border border-ink-line p-3 text-left hover:border-brand-500/50"><span className="font-mono text-xs text-slate-300">{backup.filename}</span><RotateCcw className="h-4 w-4 text-brand-400" /></button>)}
+        </div>
+      </Modal>}
     </div>
   )
 }

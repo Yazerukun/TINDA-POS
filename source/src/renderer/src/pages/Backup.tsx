@@ -37,9 +37,8 @@ export function Backup(): React.JSX.Element {
     setBusy(true)
     try {
       await window.api.backup.restore(b.filename)
-      toastSuccess('Backup restored')
+      toastSuccess('Backup restored', 'TINDA POS is restarting...')
       setConfirm(null)
-      void load()
     } catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
   }
 
@@ -136,7 +135,7 @@ export function Backup(): React.JSX.Element {
             <button onClick={() => void restore(confirm)} disabled={busy} className="btn-danger">Restore</button>
           </>
         }>
-          <p className="text-sm text-amber-400">Restoring will overwrite current data with the backup from {shortDateTime(confirm.created_at)}. A safety backup will be made first.</p>
+          <p className="text-sm text-amber-400">Restoring will overwrite current data with the backup from {shortDateTime(confirm.created_at)}. A safety backup will be made first, then TINDA POS will restart automatically.</p>
         </Modal>
       )}
     </div>

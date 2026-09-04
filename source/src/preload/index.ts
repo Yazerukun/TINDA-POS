@@ -7,6 +7,8 @@ const api: TindaApi = {
   app: {
     info: () => invoke<{ name: string; version: string; offline: boolean }>('app:info'),
     dataDir: () => invoke<string>('app:dataDir'),
+    databaseFile: () => invoke<string>('app:databaseFile'),
+    openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
     isOnline: () => invoke<boolean>('app:isOnline')
   },
@@ -115,7 +117,9 @@ const api: TindaApi = {
     restore: (filename) => invoke<void>('backup:restore', filename),
     openFolder: () => invoke<void>('backup:openFolder'),
     selectSyncFolder: () => invoke<string | null>('backup:selectSyncFolder'),
-    openSyncFolder: () => invoke<void>('backup:openSyncFolder')
+    openSyncFolder: () => invoke<void>('backup:openSyncFolder'),
+    dir: () => invoke<string>('backup:dir'),
+    resetDatabase: (confirmation) => invoke<void>('backup:resetDatabase', confirmation)
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)
