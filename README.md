@@ -22,15 +22,6 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 **Current stable release: v1.0.2 Hotfix 1** — the v1.0.2 receipt-printer and data-mode hotfix.
 
-## What's New in v1.0.2
-
-- Persistent Hold / Resume / Delete with restart persistence, cashier isolation, and duplicate-submission protection
-- Hardened Backup / Restore with validation, integrity checks, a safety backup, WAL/SHM cleanup, and rollback protection
-- Protected Database Reset requiring ADMIN/settings permission, exact `RESET` confirmation, and a verified safety backup
-- Settings → Data now shows database and backup locations and all data-management actions
-- Improved category creation/refresh, real connectivity checks, and collision-free demo SKUs
-- **33/33 tests**, ESLint, TypeScript, and production build passing
-
 ## Features
 
 ### 💰 Point of Sale
@@ -122,7 +113,7 @@ The supported target is Windows 10/11 64-bit.
 ## Quick Start
 
 ### Windows
-1. After packaging, download the v1.0.2 Setup or Portable package from the official release page.
+1. After packaging, download the v1.0.2 Hotfix 1 Setup or Portable package from the official release page.
 2. Run the package (click **More info → Run anyway** if SmartScreen appears on the unsigned build).
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
@@ -169,7 +160,7 @@ pnpm run typecheck
 - **Frontend:** React 19 + TypeScript + Tailwind CSS + Zustand
 - **Backend:** Electron 44 + better-sqlite3
 - **Build:** electron-vite + electron-builder
-- **Testing:** Vitest (33 tests including category filtering, reset, hold-sale, restore rollback, and end-to-end workflows)
+- **Testing:** Vitest (71 tests including category filtering, reset, hold-sale, restore rollback, and end-to-end workflows)
 - **Code Quality:** ESLint + TypeScript strict mode
 
 ## Project Structure
