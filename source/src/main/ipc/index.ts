@@ -293,12 +293,14 @@ handle('pos:reprint', (_e: IpcMainInvokeEvent, saleId: number) => {
 handle('printer:list', async (event: IpcMainInvokeEvent) => {
   sessionSvc.requirePermission('settings:manage')
   const printers = await printingSvc.listPrinters(event.sender)
-  return printers.map((printer) => ({ name: printer.name, displayName: printer.displayName || printer.name, isDefault: false }))
+  // Report the exact system device name (never normalized) and mark the real
+  // Windows default so Settings can suggest it on first setup.
+  return printers.map((printer) => ({ name: printer.name, displayName: printer.displayName || printer.name, isDefault: (printer as { isDefault?: boolean }).isDefault === true }))
 })
 handle('printer:save', (_e: IpcMainInvokeEvent, input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number }) => {
   sessionSvc.requirePermission('settings:manage')
   if (!['58mm', '80mm'].includes(input.paperWidth)) throw new Error('Invalid receipt paper width.')
-  const copies = Math.max(1, Math.min(9, Math.trunc(input.copies)))
+  const copies = Math.min(3, Math.max(1, Math.trunc(input.copies)))
   return settingRepo.updateSettings(db(), { receipt_printer: input.name, auto_print_after_sale: input.autoPrint, receipt_paper_width: input.paperWidth, receipt_copies: copies })
 })
 handle('printer:testPrint', async () => {

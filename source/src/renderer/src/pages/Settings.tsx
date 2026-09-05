@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2 } from 'lucide-react'
 import type { BackupInfo, User } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
+import { printerPick, printerStatusLabel } from '@shared/printer'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
@@ -266,15 +267,43 @@ function StoreSettingsTab(): React.JSX.Element {
 
 function ReceiptSettingsTab(): React.JSX.Element {
   const { settings, update } = useSettings()
-  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '58mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
+  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '80mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [printers, setPrinters] = useState<PrinterChoice[]>([])
 
   useEffect(() => {
     if (settings) setF({ receipt_header: settings.receipt_header, receipt_footer: settings.receipt_footer, receipt_printer: settings.receipt_printer, auto_print_after_sale: settings.auto_print_after_sale, receipt_paper_width: settings.receipt_paper_width, receipt_copies: settings.receipt_copies })
   }, [settings])
-  useEffect(() => { window.api.printer.list().then(setPrinters).catch((e) => toastError('Could not list printers', String((e as Error)?.message || e))) }, [])
+
+  // Refresh the installed printer list (also used by the Refresh Printers button
+  // so a newly connected/installed printer appears without restarting the app).
+  const loadPrinters = async (): Promise<void> => {
+    setRefreshing(true)
+    try {
+      const list = await window.api.printer.list()
+      setPrinters(list)
+    } catch (e) {
+      toastError('Could not list printers', String((e as Error)?.message || e))
+    } finally {
+      setRefreshing(false)
+    }
+  }
+  useEffect(() => { void loadPrinters() }, [])
+
+  // First setup only: when nothing is saved yet and Windows reports a default
+  // printer, suggest it in the dropdown. The owner still confirms by pressing
+  // Save — TINDA POS never silently prints to a random default printer.
+  useEffect(() => {
+    if (!settings) return
+    const pick = printerPick(printers, settings.receipt_printer)
+    if (pick.status === 'NOT_CONFIGURED' && pick.name) {
+      setF((prev) => (prev.receipt_printer === settings.receipt_printer ? { ...prev, receipt_printer: pick.name } : prev))
+    }
+  }, [printers, settings])
+
+  const pick = printerPick(printers, f.receipt_printer)
 
   const save = async () => {
     setSaving(true)
@@ -299,10 +328,19 @@ function ReceiptSettingsTab(): React.JSX.Element {
       <div className="space-y-3">
         <div><label className="label">Receipt Header (shown on top)</label><textarea value={f.receipt_header} onChange={(e) => set({ receipt_header: e.target.value })} rows={2} className="input w-full" /></div>
         <div><label className="label">Receipt Footer (message at bottom)</label><textarea value={f.receipt_footer} onChange={(e) => set({ receipt_footer: e.target.value })} rows={2} className="input w-full" /></div>
-        <div><label className="label">Printer</label><select value={f.receipt_printer} onChange={(e) => set({ receipt_printer: e.target.value })} className="input w-full"><option value="">No printer selected</option>{printers.map((printer) => <option key={printer.name} value={printer.name}>{printer.displayName}{printer.isDefault ? ' (Default)' : ''}</option>)}</select></div>
-        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">Printing happens only after the sale commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
-        <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={9} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Number(e.target.value)) })} className="input w-full" /></div></div>
-        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Uses the exact Windows printer name reported by Electron. Sales still complete if the printer is missing or offline.</p>
+        <div><label className="label">Printer</label><select value={f.receipt_printer} onChange={(e) => set({ receipt_printer: e.target.value })} className="input w-full"><option value="">No receipt printer configured</option>{printers.map((printer) => <option key={printer.name} value={printer.name}>{printer.displayName}{printer.isDefault ? ' (Default)' : ''}</option>)}{pick.status === 'UNAVAILABLE' && <option value={pick.name}>{pick.name} (unavailable)</option>}</select></div>
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2">
+          <div>
+            <p className="text-sm text-slate-200">Status: <span className={`font-semibold ${pick.status === 'READY' ? 'text-emerald-400' : pick.status === 'UNAVAILABLE' ? 'text-amber-400' : 'text-slate-400'}`}>{printerStatusLabel(pick.status)}</span></p>
+            <p className="text-xs text-slate-500">Ready only when the saved printer is actually installed.</p>
+          </div>
+          <button onClick={() => void loadPrinters()} disabled={refreshing} className="btn-ghost flex items-center gap-1.5 text-xs">{refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />} Refresh Printers</button>
+        </div>
+        {pick.status === 'UNAVAILABLE' && <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">Selected receipt printer is unavailable: <span className="font-mono">{pick.name}</span>. Refresh Printers or choose another printer before printing — sales are never blocked or rolled back.</p>}
+        {pick.status === 'NOT_CONFIGURED' && printers.length === 0 && <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">No receipt printer configured. Install a thermal receipt printer in Windows, then press Refresh Printers.</p>}
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">One silent print job, sent only after the sale commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
+        <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm (default)</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={3} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Math.min(3, Math.trunc(Number(e.target.value) || 1))) })} className="input w-full" /></div></div>
+        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. For automatic cutting, enable Auto Cut in the Windows driver/preferences of that printer. Sales still complete if the printer is missing or offline.</p>
         <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
       </div>
     </div>

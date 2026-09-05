@@ -5,6 +5,7 @@ import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
+import { ReceiptPaper } from '../components/ReceiptPaper'
 import { toastSuccess, toastError } from '../stores/toast'
 
 export function Transactions(): React.JSX.Element {
@@ -111,6 +112,7 @@ export function Transactions(): React.JSX.Element {
 }
 
 function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React.JSX.Element {
+  const [receiptLines, setReceiptLines] = useState<string[] | null>(null)
   const print = async () => {
     try {
       const result = await window.api.printer.printReceipt(sale.id)
@@ -118,10 +120,18 @@ function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React
       else toastError('Receipt printing failed', result.message)
     } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) }
   }
+  const openReceiptPreview = async () => {
+    try {
+      // Reconstruct the EXISTING transaction only — no checkout, no stock change.
+      const lines = await window.api.pos.reprint(sale.id)
+      setReceiptLines(lines)
+    } catch (e) { toastError('Could not generate receipt', String((e as Error)?.message || e)) }
+  }
   return (
-    <Modal open onClose={onClose} title={sale.transaction_no} maxWidth="max-w-md" footer={
-      <><button onClick={() => { void window.api.pos.reprint(sale.id).then(() => toastSuccess('Receipt generated successfully')) }} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> View Receipt</button><button onClick={() => void print()} className="btn-primary flex items-center gap-2"><Printer className="h-4 w-4" /> Print Receipt</button></>
-    }>
+    <>
+      <Modal open onClose={onClose} title={sale.transaction_no} maxWidth="max-w-md" footer={
+        <><button onClick={() => void openReceiptPreview()} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> View Receipt</button><button onClick={() => void print()} className="btn-primary flex items-center gap-2"><Printer className="h-4 w-4" /> Print Receipt</button></>
+      }>
       <div className="mb-3 flex justify-between text-sm text-slate-400">
         <span>{shortDateTime(sale.created_at)}</span><span>{sale.cashier_name}</span>
       </div>
@@ -144,7 +154,15 @@ function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React
           ))}
         </div>
       </div>
-    </Modal>
+      </Modal>
+      {receiptLines && (
+        <Modal open onClose={() => setReceiptLines(null)} title={`Receipt — ${sale.transaction_no}`} maxWidth="max-w-lg" footer={
+          <button onClick={() => setReceiptLines(null)} className="btn-primary">Close</button>
+        }>
+          <ReceiptPaper lines={receiptLines} />
+        </Modal>
+      )}
+    </>
   )
 }
 

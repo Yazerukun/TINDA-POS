@@ -95,6 +95,38 @@ If the safety backup fails, Reset Database is cancelled without deleting the act
 
 Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Windows receipt-printer support is implemented, including printer discovery, Test Print, Auto Print, and manual Print Receipt. Native Windows/thermal-printer validation is still pending.
 
+## Receipt printer (Windows)
+
+TINDA POS prints through the Windows printer subsystem using the exact device name Windows reports (Electron printer discovery). No vendor-specific driver logic is used, so any Windows-installed thermal receipt printer works.
+
+**Recommended printer:**
+
+- 80mm USB Thermal Receipt Printer
+- Windows-compatible driver installed
+- ESC/POS-compatible preferred
+- Auto-cutter recommended
+
+**Example compatible printer families** (not an exclusive list — no model is claimed certified until physically tested):
+
+- Epson TM-T82 series (TM-T82III / TM-T82IV / TM-T82X)
+- Xprinter 80mm receipt-printer series (e.g. XP-Q801K, XP-S300H)
+
+58mm printers are supported, but **80mm is the default** and recommended for clearer receipts.
+
+**Setup:**
+
+1. Install the printer in Windows so it appears in Printers.
+2. Settings → Receipt → Printer: choose the printer. On first setup the Windows default printer is suggested; if you install a printer while TINDA POS is open, press **Refresh Printers**.
+3. Choose Paper Width (80mm default or 58mm), Copies (1–3), and Auto Print After Sale (silent single print after each completed sale; no Windows dialog).
+4. Press **Test Print** — this prints a test slip and does NOT create a sale.
+5. Press **Save Receipt**.
+
+The printer Status shown in Settings is honest: **Ready** only when the saved printer is actually installed; **Unavailable** when a previously selected printer disappears (the sale still completes — you are prompted to refresh the list or choose again; TINDA POS never silently routes receipts to another printer); **Not configured** when nothing is selected.
+
+Automatic cutting is performed by the printer driver: enable **Auto Cut** in the thermal printer's Windows driver/preferences if the printer does not cut automatically.
+
+Receipt printing never happens before a sale is committed, and a printer failure never blocks, rolls back, duplicates, or double-charges a sale. View Receipt shows the same 80mm/58mm layout that will be printed.
+
 ## Other workflows
 
 - **Expenses and Shifts:** record expenses and reconcile expected versus actual cash.

@@ -104,5 +104,36 @@ describe('receipt printing', () => {
     }
     expect(ipc).toContain("sessionSvc.requirePermission('settings:manage')")
     expect(ipc).toContain("sessionSvc.requirePermission('transactions:view')")
+    expect(ipc).toContain('isDefault: (printer as { isDefault?: boolean }).isDefault === true')
+    expect(ipc).toContain('Math.min(3, Math.max(1, Math.trunc(input.copies)))')
+  })
+
+  it('defaults the receipt paper width to 80mm', () => {
+    expect(defaultSettings.receipt_paper_width).toBe('80mm')
+  })
+
+  it('reports the paper width in test-print content and prints no transaction', () => {
+    const lines = testPrintLines({ ...defaultSettings, store_name: 'QA Store', receipt_paper_width: '58mm' }, 'QA Printer', new Date('2026-09-05T00:00:00Z'))
+    expect(lines).toContain('Paper: 58mm')
+    expect(lines).toContain('Printer configuration successful')
+    expect(lines).toContain('Thank you!')
+  })
+
+  it('clamps copies to the allowed 1-3 range and reports real Electron callback failures', async () => {
+    const webContents = {
+      getPrintersAsync: vi.fn().mockResolvedValue([{ name: 'Receipt Printer' }]),
+      print: vi.fn((_options, callback) => callback(false, 'Printer is offline or out of paper'))
+    } as unknown as WebContents
+    const failed = await submitPrint(webContents, { ...defaultSettings, receipt_printer: 'Receipt Printer', receipt_copies: 9 })
+    expect(failed).toMatchObject({ ok: false, code: 'FAILED' })
+    expect(failed.message).toContain('Printer is offline or out of paper')
+    expect(webContents.print).toHaveBeenCalledWith(expect.objectContaining({ copies: 3, silent: true, printBackground: false, deviceName: 'Receipt Printer' }), expect.any(Function))
+  })
+
+  it('sends exactly one silent auto-print job per sale when enabled', async () => {
+    const printer = vi.fn().mockResolvedValue({ ok: true, code: 'PRINTED', message: 'ok' })
+    const result = await autoPrintAfterCheckout({ ...defaultSettings, auto_print_after_sale: true }, sale, printer)
+    expect(result.code).toBe('PRINTED')
+    expect(printer).toHaveBeenCalledTimes(1)
   })
 })

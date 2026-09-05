@@ -18,6 +18,7 @@ import {
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
+import { ReceiptPaper } from '../components/ReceiptPaper'
 import { toastSuccess, toastError } from '../stores/toast'
 import type { PaymentInput } from '@shared/ipc'
 import type { PrintResult } from '@shared/ipc'
@@ -532,9 +533,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
           <p className="text-sm text-slate-400">{done.sale.transaction_no}</p>
         </div>
         <p className={`mb-3 rounded-lg border p-2 text-xs ${done.print.ok ? 'border-emerald-500/30 text-emerald-300' : 'border-amber-500/30 text-amber-300'}`}>{done.print.message}</p>
-        <div className="rounded-lg border border-ink-line bg-ink-950 p-3 font-mono text-[11px] leading-5 text-slate-300">
-          {done.receipt.map((line, i) => <div key={i} className="whitespace-pre-wrap">{line}</div>)}
-        </div>
+        <ReceiptPaper lines={done.receipt} />
       </Modal>
     )
   }

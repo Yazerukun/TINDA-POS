@@ -1,25 +1,16 @@
 import { BrowserWindow } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
 import type { Sale, StoreSettings } from '@shared/types'
+import { receiptHtml } from '@shared/receiptHtml'
 import { buildReceiptLines } from './checkout'
+
+// Re-exported so existing consumers keep importing from the printing service.
+export { escapeHtml, receiptHtml } from '@shared/receiptHtml'
 
 export interface PrintResult {
   ok: boolean
   code: 'PRINTED' | 'DISABLED' | 'NO_PRINTER' | 'UNAVAILABLE' | 'FAILED'
   message: string
-}
-
-export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]!)
-}
-
-export function receiptHtml(lines: string[], width: '58mm' | '80mm'): string {
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    @page { size: ${width} auto; margin: 3mm; }
-    html, body { margin: 0; padding: 0; width: ${width}; background: white; color: black; }
-    body { box-sizing: border-box; padding: 2mm; font: 10pt/1.28 Consolas, "Courier New", monospace; }
-    pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-  </style></head><body><pre>${escapeHtml(lines.join('\n'))}</pre></body></html>`
 }
 
 export function testPrintLines(settings: StoreSettings, printer: string, now = new Date()): string[] {
@@ -29,10 +20,12 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
     '',
     `Store: ${settings.store_name}`,
     `Printer: ${printer}`,
+    `Paper: ${settings.receipt_paper_width}`,
     `Date: ${now.toLocaleString('en-PH')}`,
     '--------------------------',
-    'Printing is working.',
-    '--------------------------'
+    'Printer configuration successful',
+    '--------------------------',
+    'Thank you!'
   ]
 }
 
@@ -41,10 +34,11 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
   if (!selected) return { ok: false, code: 'NO_PRINTER', message: 'No receipt printer is configured.' }
   const printers = await webContents.getPrintersAsync()
   if (!printers.some((printer) => printer.name === selected)) {
-    return { ok: false, code: 'UNAVAILABLE', message: 'The selected printer is unavailable.' }
+    return { ok: false, code: 'UNAVAILABLE', message: `The selected receipt printer "${selected}" is unavailable.` }
   }
+  const copies = Math.min(3, Math.max(1, Math.trunc(settings.receipt_copies || 1)))
   return new Promise((resolve) => {
-    webContents.print({ silent: true, deviceName: selected, printBackground: false, copies: Math.max(1, settings.receipt_copies) }, (success, failureReason) => {
+    webContents.print({ silent: true, deviceName: selected, printBackground: false, copies }, (success, failureReason) => {
       resolve(success
         ? { ok: true, code: 'PRINTED', message: 'Receipt printed successfully.' }
         : { ok: false, code: 'FAILED', message: failureReason || 'Receipt printing failed.' })
@@ -55,7 +49,7 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
 async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
   const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } })
   try {
-    await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(receiptHtml(lines, settings.receipt_paper_width))}`)
+    await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(receiptHtml(lines, settings.receipt_paper_width, settings.currency))}`)
     return await submitPrint(window.webContents, settings)
   } finally {
     if (!window.isDestroyed()) window.destroy()
