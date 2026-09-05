@@ -5,7 +5,7 @@
 ## Current release
 
 - Version: **1.0.1**
-- Status: Fresh Windows Setup and Portable builds completed
+- Status: Release verification complete
 - Repository root: this directory
 - Application source: `source/`
 - Windows installers: `installers/`
@@ -28,7 +28,8 @@
 - [x] SHA-256 verification
 - [x] User Guide contains `Maya: 0991 225 5156`
 - [x] PHCorner post contains `Maya: 0991 225 5156`
-- [ ] Finish full live GUI click-through of the final Windows build
+- [x] Full packaged-app GUI smoke test of all 11 main screens
+- [x] Final packaged database integrity check
 
 ## Release files
 
@@ -48,3 +49,4 @@
 ## Session notes
 
 - 2026-09-03 — Reconstructed interrupted v1.0.1 work and created this live scratchpad.
+- 2026-09-05 — Completed final installed-build GUI smoke test (Dashboard, POS, Inventory, Customers, Utang, Expenses, Suppliers, Transactions, Reports, Backup, and Settings); verified checkout data and database integrity.
