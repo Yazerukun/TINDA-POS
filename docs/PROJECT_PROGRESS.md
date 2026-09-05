@@ -3,15 +3,21 @@
 > Offline POS System for Sari-Sari Stores.
 > Legend: `[x]` Complete (implemented, tested, working) · `[~]` In progress · `[ ]` Not started
 
-## Current release preparation — v1.0.2
+## Current release — v1.0.2 Hotfix 1 (SHIPPED)
 
-- Active source version: **1.0.2**
-- Scope: stability, data safety, and completed POS workflow fixes; no new features
-- Current verified baseline: ESLint PASS, TypeScript PASS, **33/33 tests PASS**, production build PASS
-- Documentation: v1.0.2 release notes, README, user manual source, PHCorner copy, and customer release instructions updated
-- Windows v1.0.2 Setup/Portable assets: **not built yet**
-- Upgrade, clean-install, packaged-app, checksum, tag, and GitHub release work remains for later phases
-- Existing `v1.0.1` tag, release notes, checksums, and published assets remain historical and unchanged
+- Active source version: **1.0.2** (internal); published build id: **v1.0.2 Hotfix 1**
+- **ONLY release live on GitHub**: `v1.0.2-hotfix.1` — promoted to **Latest stable** (prerelease removed)
+- Old releases `v1.0.0`, `v1.0.1`, and `v1.0.2` (release + tags) **deleted** from remote and local
+- Remote + local tags now: `v1.0.2-hotfix.1` only
+- Verified baseline: ESLint PASS, TypeScript PASS, **71/71 tests PASS**, production build PASS
+- GitHub release assets (all live, verified):
+  - `TindaPOS-Setup-1.0.2.exe`     → sha256 `f47f0835…` (114,849,176 B) — unchanged from hotfix build
+  - `TindaPOS-Portable-1.0.2.exe`  → sha256 `57088221…` (114,639,565 B) — unchanged from hotfix build
+  - `TindaPOS-User-Guide.pdf`      → sha256 `b82fefc1…` (90,061 B, 10 pages) — regenerated for Hotfix 1
+  - `SHA256SUMS.txt`               → sha256 of sums file `1bfa488d…` (275 B)
+- User manual source: `docs/USER-MANUAL.md` → PDF `installers/TindaPOS-User-Guide.pdf`
+- Release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
+- **Do NOT rebuild EXEs for doc-only releases** — only PDF + SHA256SUMS change; keep Setup/Portable digests stable.
 
 ## Phase status
 
@@ -120,3 +126,29 @@
 - `builds/TindaPOS-Setup-1.0.0.exe` + `builds/TindaPOS-Portable-1.0.0.exe`
 - `installers/` (setup + portable + `SHA256SUMS.txt` + `README.md` + User Guide PDF)
 - `installers/TINDA-POS-Windows/` — clean customer folder (setup + portable + `README-FIRST.txt`)
+
+---
+
+## v1.0.2 HOTFIX 1 RELEASE (Phase 22 — 2026-09-05)
+
+> Receipt-printer + data-mode hotfix. Source version stayed 1.0.2; published
+> build id "Hotfix 1". Gates green: `lint` 0/0 · `typecheck` 0 · `npm test` 71/71 ·
+> production build PASS. No business-logic changes after release.
+
+### What shipped in the build
+- Start New Store (protected, ADMIN/settings permission, exact `RESET` confirm, safety backup)
+- Settings → Data clarity: Shared AppData (`%APPDATA%\TINDA POS`) vs **Portable Data Mode** (data beside EXE in `TindaPOS-Data\`, Copy Current Store / Start Fresh / switch back)
+- Receipt printer support (Windows): discovery, Refresh Printers, Test Print, Auto Print After Sale, Manual Print Receipt
+- 80mm default / 58mm supported, custom receipt header/footer; printer failure never blocks or rolls back a sale; Retry Print never duplicates; manual print never creates a new sale
+- Cash/SUKLI input fix (pesos, not raw cents), full-refund status fix, restore temp-file cleanup
+- Native Windows/thermal-printer validation **still pending** (real Win10/11 machine)
+
+### Docs + release updates performed (git commit trail)
+- `2d5d2c1` fix: v1.0.2 customer feedback · `3cb3a5d` feat: finalize receipt printer support + hotfix QA
+- `082b384` docs: finalize v1.0.2 hotfix.1 release notes
+- `b23a2ac` docs: update user manual for v1.0.2 hotfix.1 (README download links + PDF assets + SHA256SUMS)
+- `1a5c645` docs: clean up README (single "What's New in v1.0.2 Hotfix 1", 71/71, dropped stale 33/33 block)
+- Branch: `master` · pushed to `origin` = GitHub Yazerukun/TINDA-POS
+
+### Log
+- **2026-09-05** — v1.0.2 Hotfix 1 shipped as the **only, latest-stable GitHub release**. Deleted `v1.0.0`, `v1.0.1`, and the stale `v1.0.2` release+tags (remote + local). Regenerated User Guide PDF (10 pages, 90,061 B, `b82fefc1…`) from rewritten `docs/USER-MANUAL.md`; synced all installer copies + Windows dir SHA256SUMS. Re-uploaded only `TindaPOS-User-Guide.pdf` + `SHA256SUMS.txt` to the live release (EXEs untouched). README cleaned to a single "What's New in Hotfix 1" section. RC staging copy kept at `/home/ian/TINDA-POS-v1.0.2-HOTFIX.1-FINAL-RC/` for future asset uploads.
