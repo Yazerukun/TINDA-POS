@@ -3,6 +3,7 @@ import Database from 'better-sqlite3'
 import { existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { runMigrations } from './migrations'
+import { readModeFile, resolveDataLocation, type DataLocationInfo } from './dataLocation'
 
 export interface AppDirs {
   root: string
@@ -16,10 +17,14 @@ export interface AppDirs {
 
 let dirsCache: AppDirs | null = null
 
+export function dataLocationInfo(): DataLocationInfo {
+  const sharedRoot = process.env.TINDA_DATA_DIR?.trim() || app.getPath('userData')
+  return resolveDataLocation({ sharedRoot, saved: readModeFile(sharedRoot) })
+}
+
 export function appDirs(): AppDirs {
   if (dirsCache) return dirsCache
-  const env = process.env.TINDA_DATA_DIR
-  const root = env && env.trim().length > 0 ? env : app.getPath('userData')
+  const root = dataLocationInfo().root
   const dirs: AppDirs = {
     root,
     database: join(root, 'database'),
@@ -66,6 +71,10 @@ export function closeDb(): void {
 export function reopenDb(): Database.Database {
   closeDb()
   return getDb()
+}
+
+export function clearAppDirsCache(): void {
+  dirsCache = null
 }
 
 export function migrate(database: Database.Database): void {

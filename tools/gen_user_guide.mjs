@@ -99,13 +99,22 @@ const requiredContent = [
   'does not create a fresh database', 'Backup and Restore', 'validates', 'safety backup',
   'restarts automatically', 'Reset Database', 'ADMIN/settings permission', 'type RESET exactly',
   'first-run wizard', 'ONLINE READY', 'OFFLINE READY', 'remains usable offline',
-  'Receipt Generation', 'not integrated in v1.0.2'
+  'Receipt Generation', 'printer discovery, Test Print, Auto Print', 'manual Print Receipt',
+  'Native Windows/thermal-printer validation is still pending'
+]
+
+const stalePrinterClaims = [
+  'not integrated in v1.0.2',
+  'direct physical-printer output is not yet integrated',
+  'printing is not wired to a device'
 ]
 
 function assertRequiredContent(text, label) {
   const normalized = text.replace(/[*`]/g, '')
   const missing = requiredContent.filter((item) => !normalized.includes(item))
   if (missing.length) throw new Error(`${label} is missing required content: ${missing.join(', ')}`)
+  const stale = stalePrinterClaims.filter((item) => normalized.includes(item))
+  if (stale.length) throw new Error(`${label} still contains outdated printer claim(s): ${stale.join(', ')}`)
   if (/^#?\s*TINDA POS v1\.0\.1 User Manual/im.test(text)) throw new Error(`${label} still contains a v1.0.1 manual header.`)
 }
 

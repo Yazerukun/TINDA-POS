@@ -1,25 +1,39 @@
 ==============================================
- TINDA POS - Windows v1.0.2 Release Candidate
+ TINDA POS - Windows v1.0.2 Hotfix Bundle
 ==============================================
 
-TEST BUILD ONLY - NOT YET THE PUBLIC RELEASE
+HOTFIX CANDIDATE — client-feedback fixes baked in
+(Source still uncommitted locally; GitHub release not updated yet)
 
 Included files:
 - TindaPOS-Setup-1.0.2.exe - Windows installer
 - TindaPOS-Portable-1.0.2.exe - no-install edition
 - TindaPOS-User-Guide.pdf - v1.0.2 user guide
+- SHA256SUMS.txt - checksums for the three files above
 
-TINDA POS is an offline-first point-of-sale application for sari-sari
-stores and small businesses. Normal sales, inventory, customers, utang,
-expenses, and reports remain available without internet.
+WHAT THIS HOTFIX ADDS (on top of public v1.0.2 tag)
+- Settings → Data: clear Shared AppData / Portable mode controls
+- Start New Store (protected) + safer Reset Database
+- Portable Data Mode: Copy Current Store / Start Fresh / switch back
+- Real Electron printer discovery, Test Print, Auto Print, Manual Print
+- Custom receipt header/footer
+- Cash / SUKLI input fix (pesos, not raw cents)
+- Partial refund can continue until sale is fully REFUNDED
+- Restore temp cleanup + portable restore relaunch fixes
 
 DATA LOCATION
-The Setup and Portable editions intentionally share the Windows user-data
-profile under %APPDATA%\TINDA POS. Moving the Portable EXE does not create
-a fresh database. Back up the store before installing an update and do not
-manually delete the AppData database.
+Default mode is Shared AppData:
+  %APPDATA%\TINDA POS\database\tindapos.db
+Moving the Portable EXE does NOT move or reset the store database.
+Optional Portable Data Mode keeps data beside the EXE in TindaPOS-Data\.
 
-RELEASE-CANDIDATE NOTICE
-This folder is for isolated QA only. Final checksums and public download
-links will be created only after release validation is complete.
+PACKAGED QA (isolated Wine profile only — no customer data)
+- Cash Received defaults to pesos (₱50 → "50", ₱100 → "100") — PASS
+- Partial refund → continued refund → fully REFUNDED — PASS
+- DB integrity_check: ok
+
+VERIFY BEFORE INSTALL
+  sha256sum -c SHA256SUMS.txt
+
+Back up the live store before updating. Do not delete AppData manually.
 ==============================================

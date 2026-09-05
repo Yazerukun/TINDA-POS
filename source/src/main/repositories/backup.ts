@@ -21,6 +21,14 @@ export function backupDir(): string {
 
 const BACKUP_PREFIX = 'tindapos-'
 
+export function cleanupTemporaryDatabase(file: string): void {
+  const name = basename(file)
+  if (!name.startsWith('.restore-') && !name.startsWith('.rollback-')) throw new Error('Refusing to clean a non-temporary database path.')
+  rmSync(file, { force: true })
+  rmSync(`${file}-wal`, { force: true })
+  rmSync(`${file}-shm`, { force: true })
+}
+
 export function isValidBackupFile(file: string | Buffer): boolean {
   const buf = Buffer.isBuffer(file) ? file : Buffer.from(file)
   return buf.length >= 16 && buf.subarray(0, 16).toString('latin1') === SQLITE_MAGIC
@@ -123,7 +131,12 @@ export function restoreBackup(db: Database.Database, filename: string, testHooks
   const staging = join(database, `.restore-${timestamp()}.db`)
   const rollback = join(database, `.rollback-${timestamp()}.db`)
   copyFileSync(src, staging)
-  validateBackupDatabase(staging)
+  try {
+    validateBackupDatabase(staging)
+  } catch (error) {
+    cleanupTemporaryDatabase(staging)
+    throw error
+  }
 
   // Close and clear the cached connection so the next getDb() reopens the
   // restored file. Using closeDb() (not db.close()) also nulls the module
@@ -145,7 +158,7 @@ export function restoreBackup(db: Database.Database, filename: string, testHooks
     return dest
   } catch (error) {
     closeDb()
-    rmSync(staging, { force: true })
+    cleanupTemporaryDatabase(staging)
     rmSync(dest, { force: true })
     try {
       if (existsSync(rollback)) renameSync(rollback, dest)
@@ -157,8 +170,8 @@ export function restoreBackup(db: Database.Database, filename: string, testHooks
     }
     throw new Error(`Restore failed; the original database was recovered: ${error instanceof Error ? error.message : String(error)}`)
   } finally {
-    rmSync(staging, { force: true })
-    rmSync(rollback, { force: true })
+    cleanupTemporaryDatabase(staging)
+    cleanupTemporaryDatabase(rollback)
   }
 }
 

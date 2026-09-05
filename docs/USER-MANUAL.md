@@ -93,7 +93,7 @@ If the safety backup fails, Reset Database is cancelled without deleting the act
 
 ## Transactions and Receipt Generation
 
-Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Direct physical Windows printer output is **not integrated in v1.0.2**.
+Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Windows receipt-printer support is implemented, including printer discovery, Test Print, Auto Print, and manual Print Receipt. Native Windows/thermal-printer validation is still pending.
 
 ## Other workflows
 

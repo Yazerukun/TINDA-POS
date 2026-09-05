@@ -22,6 +22,7 @@ import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
 import * as dataManagementSvc from '../services/dataManagement'
+import * as printingSvc from '../services/printing'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
@@ -254,10 +255,12 @@ handle('customers:approveOverlimit', (_e: IpcMainInvokeEvent, input: unknown) =>
 
 // ---- POS ----
 handle('pos:searchProducts', (_e: IpcMainInvokeEvent, q: string) => prodRepo.searchProductsSimple(db(), q))
-handle('pos:checkout', (_e: IpcMainInvokeEvent, payload: unknown) => {
+handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
   user()
   const v = require('../validation/schemas').validateCheckout(payload)
-  return checkoutSvc.checkout(v)
+  const completed = checkoutSvc.checkout(v)
+  const settings = settingRepo.getSettings(db())
+  return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
 })
 handle('pos:hold', (_e: IpcMainInvokeEvent, payload: unknown) => {
   user()
@@ -284,6 +287,27 @@ handle('pos:deleteHeld', (_e: IpcMainInvokeEvent, id: number) => {
 handle('pos:reprint', (_e: IpcMainInvokeEvent, saleId: number) => {
   sessionSvc.requirePermission('transactions:view')
   return checkoutSvc.reprint(saleId)
+})
+
+// ---- Printer ----
+handle('printer:list', async (event: IpcMainInvokeEvent) => {
+  sessionSvc.requirePermission('settings:manage')
+  const printers = await printingSvc.listPrinters(event.sender)
+  return printers.map((printer) => ({ name: printer.name, displayName: printer.displayName || printer.name, isDefault: false }))
+})
+handle('printer:save', (_e: IpcMainInvokeEvent, input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number }) => {
+  sessionSvc.requirePermission('settings:manage')
+  if (!['58mm', '80mm'].includes(input.paperWidth)) throw new Error('Invalid receipt paper width.')
+  const copies = Math.max(1, Math.min(9, Math.trunc(input.copies)))
+  return settingRepo.updateSettings(db(), { receipt_printer: input.name, auto_print_after_sale: input.autoPrint, receipt_paper_width: input.paperWidth, receipt_copies: copies })
+})
+handle('printer:testPrint', async () => {
+  sessionSvc.requirePermission('settings:manage')
+  return printingSvc.printTest(settingRepo.getSettings(db()))
+})
+handle('printer:printReceipt', async (_e: IpcMainInvokeEvent, saleId: number) => {
+  sessionSvc.requirePermission('transactions:view')
+  return printingSvc.printSale(settingRepo.getSettings(db()), getSale(db(), saleId))
 })
 
 // ---- Transactions ----
@@ -391,10 +415,7 @@ handle('backup:create', async (_e: IpcMainInvokeEvent, reason?: string) => {
 handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
   sessionSvc.requirePermission('backup:manage')
   backupRepo.restoreBackup(db(), filename)
-  setTimeout(() => {
-    app.relaunch()
-    app.exit(0)
-  }, 500)
+  dataManagementSvc.relaunchAfterDataChange()
 })
 handle('backup:openFolder', () => {
   shell.openPath(backupRepo.backupDir())
@@ -417,8 +438,23 @@ handle('backup:openSyncFolder', () => {
 })
 handle('backup:resetDatabase', (_e: IpcMainInvokeEvent, confirmation: string) => {
   dataManagementSvc.resetActiveDatabase(confirmation)
-  app.relaunch()
-  app.exit(0)
+  dataManagementSvc.relaunchAfterDataChange()
+})
+handle('backup:startNewStore', (_e: IpcMainInvokeEvent, confirmation: string) => {
+  dataManagementSvc.startNewStore(confirmation)
+  dataManagementSvc.relaunchAfterDataChange()
+})
+handle('backup:locationStatus', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return dataManagementSvc.getDataLocationStatus()
+})
+handle('backup:usePortableData', (_e: IpcMainInvokeEvent, choice: 'FRESH' | 'COPY') => {
+  dataManagementSvc.usePortableData(choice)
+  dataManagementSvc.relaunchAfterDataChange()
+})
+handle('backup:useSharedAppData', () => {
+  dataManagementSvc.useSharedAppData()
+  dataManagementSvc.relaunchAfterDataChange()
 })
 
 // ---- Audit ----

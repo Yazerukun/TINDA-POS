@@ -109,8 +109,9 @@
 - [ ] Code-signing (future release step, removes SmartScreen warning)
 
 **Known non-blocker/safety-by-design notes:**
-- Receipt reprint button is cosmetic (no physical printer) — printing is not wired to a device,
-  but a missing printer can never block checkout (crash-safety by design).
+- Receipt printing now uses the real Windows printer API (printer discovery, Test Print, Auto Print,
+  manual Print Receipt); a missing or unavailable printer still never blocks checkout
+  (crash-safety by design).
 - Native `dialog.*` not used (no external backup-location/file picker); exports/backups live under
   the app data dir. Configurable drive selection not yet wired.
 - Portable build produced, but final validation of the portable exe still needs a real Windows machine.

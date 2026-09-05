@@ -61,7 +61,7 @@ safe (another drive, USB, or cloud) as an extra backup.
  GETTING HELP
 --------------------------------------------------------------
 - See TindaPOS-User-Guide.pdf for the full manual.
-- Standard USB barcode scanners work as keyboard input. Receipt details
-  can be reconstructed in Transactions; direct physical-printer output
-  is not yet integrated.
+- Standard USB barcode scanners work as keyboard input. Windows receipt-printer
+  support is implemented: printer discovery, Test Print, Auto Print, and manual
+  Print Receipt. Native Windows/thermal-printer validation is still pending.
 ==============================================

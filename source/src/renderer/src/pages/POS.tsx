@@ -20,6 +20,9 @@ import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import type { PaymentInput } from '@shared/ipc'
+import type { PrintResult } from '@shared/ipc'
+import { useNav } from '../stores/nav'
+import { cashInputFromCents } from '../lib/payment'
 
 interface CartItem {
   product_id: number
@@ -449,10 +452,12 @@ function CartPanel(): React.JSX.Element {
 function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: number; onClose: () => void }): React.JSX.Element {
   const { items, customer_id, discount_pesos } = usePosCart()
   const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
-  const [cash, setCash] = useState<string>(String(total))
+  const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [done, setDone] = useState<{ sale: Sale; receipt: string[] } | null>(null)
+  const [done, setDone] = useState<{ sale: Sale; receipt: string[]; print: PrintResult } | null>(null)
+  const [printing, setPrinting] = useState(false)
+  const setPage = useNav((state) => state.setPage)
 
   const cashC = Math.round((parseFloat(cash) || 0) * 100)
   const change = cashC - total
@@ -473,7 +478,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
         method === 'UTANG'
           ? [{ method, amount_c: total }]
           : method === 'CASH'
-            ? [{ method, amount_c: total, reference: reference || null }]
+            ? [{ method, amount_c: cashC, reference: null }]
             : [{ method, amount_c: total, reference: reference || null }]
       const payload = {
         items: items.map((i) => ({
@@ -494,8 +499,8 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
       const res = await window.api.pos.checkout(payload)
       setDone(res)
       usePosCart.getState().clear()
-      onClose()
-      toastSuccess('Sale completed', res.sale.transaction_no)
+      if (res.print.ok || res.print.code === 'DISABLED') toastSuccess('Sale completed successfully', res.sale.transaction_no)
+      else toastError('Sale completed successfully', res.print.message)
     } catch (e) {
       toastError('Checkout failed', String((e as Error)?.message || e))
     } finally {
@@ -504,13 +509,29 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   }
 
   if (done) {
+    const retryPrint = async () => {
+      setPrinting(true)
+      try {
+        const result = await window.api.printer.printReceipt(done.sale.id)
+        setDone({ ...done, print: result })
+        if (result.ok) toastSuccess('Receipt printed successfully')
+        else toastError('Receipt printing failed', result.message)
+      } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) } finally { setPrinting(false) }
+    }
     return (
-      <Modal open onClose={() => setDone(null)} title="Sale Complete" footer={<button onClick={() => setDone(null)} className="btn-primary">Done</button>}>
+      <Modal open onClose={onClose} title="Sale Complete" footer={
+        <>
+          {!done.print.ok && done.print.code !== 'DISABLED' && <button onClick={() => void retryPrint()} disabled={printing} className="btn-ghost">Retry Print</button>}
+          {(done.print.code === 'NO_PRINTER' || done.print.code === 'UNAVAILABLE') && <button onClick={() => { onClose(); setPage('settings') }} className="btn-ghost">Configure Printer</button>}
+          <button onClick={onClose} className="btn-primary">Done</button>
+        </>
+      }>
         <div className="mb-3 text-center">
           <Check className="mx-auto mb-2 h-12 w-12 text-emerald-400" />
           <p className="text-lg font-bold text-white">{money(done.sale.total_c)}</p>
           <p className="text-sm text-slate-400">{done.sale.transaction_no}</p>
         </div>
+        <p className={`mb-3 rounded-lg border p-2 text-xs ${done.print.ok ? 'border-emerald-500/30 text-emerald-300' : 'border-amber-500/30 text-amber-300'}`}>{done.print.message}</p>
         <div className="rounded-lg border border-ink-line bg-ink-950 p-3 font-mono text-[11px] leading-5 text-slate-300">
           {done.receipt.map((line, i) => <div key={i} className="whitespace-pre-wrap">{line}</div>)}
         </div>

@@ -56,7 +56,8 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
       }
     }
 
-    const allRefunded = sale.items.every((si) => si.qty_base <= si.refunded_qty_base)
+    const updatedSale = getSale(db, sale.id)
+    const allRefunded = updatedSale.items.every((si) => si.qty_base <= si.refunded_qty_base)
     if (allRefunded) updateSaleStatus(db, sale.id, 'REFUNDED')
     else updateSaleStatus(db, sale.id, 'PARTIALLY_REFUNDED')
 

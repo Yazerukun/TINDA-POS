@@ -74,12 +74,18 @@ const api: TindaApi = {
   },
   pos: {
     searchProducts: (q) => invoke<import('@shared/types').Product[]>('pos:searchProducts', q),
-    checkout: (payload: CheckoutPayload) => invoke<{ sale: import('@shared/types').Sale; receipt: string[] }>('pos:checkout', payload),
+    checkout: (payload: CheckoutPayload) => invoke<{ sale: import('@shared/types').Sale; receipt: string[]; print: import('@shared/ipc').PrintResult }>('pos:checkout', payload),
     hold: (payload: CheckoutPayload) => invoke<import('@shared/types').HeldSale>('pos:hold', payload),
     held: () => invoke<import('@shared/types').HeldSale[]>('pos:held'),
     resumeHeld: (id) => invoke<import('@shared/types').HeldSale>('pos:resumeHeld', id),
     deleteHeld: (id) => invoke<void>('pos:deleteHeld', id),
     reprint: (saleId) => invoke<string[]>('pos:reprint', saleId)
+  },
+  printer: {
+    list: () => invoke<import('@shared/ipc').PrinterChoice[]>('printer:list'),
+    save: (input) => invoke<import('@shared/types').StoreSettings>('printer:save', input),
+    testPrint: () => invoke<import('@shared/ipc').PrintResult>('printer:testPrint'),
+    printReceipt: (saleId) => invoke<import('@shared/ipc').PrintResult>('printer:printReceipt', saleId)
   },
   transactions: {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),
@@ -119,7 +125,11 @@ const api: TindaApi = {
     selectSyncFolder: () => invoke<string | null>('backup:selectSyncFolder'),
     openSyncFolder: () => invoke<void>('backup:openSyncFolder'),
     dir: () => invoke<string>('backup:dir'),
-    resetDatabase: (confirmation) => invoke<void>('backup:resetDatabase', confirmation)
+    resetDatabase: (confirmation) => invoke<void>('backup:resetDatabase', confirmation),
+    startNewStore: (confirmation) => invoke<void>('backup:startNewStore', confirmation),
+    locationStatus: () => invoke<import('@shared/ipc').DataLocationStatus>('backup:locationStatus'),
+    usePortableData: (choice) => invoke<void>('backup:usePortableData', choice),
+    useSharedAppData: () => invoke<void>('backup:useSharedAppData')
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)

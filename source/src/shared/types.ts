@@ -370,6 +370,9 @@ export interface StoreSettings {
   auto_backup_daily: boolean
   auto_backup_on_exit: boolean
   receipt_printer: string
+  auto_print_after_sale: boolean
+  receipt_paper_width: '58mm' | '80mm'
+  receipt_copies: number
   theme: string
   data_dir: string
 }

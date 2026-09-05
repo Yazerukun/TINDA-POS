@@ -19,6 +19,9 @@ export const defaultSettings: StoreSettings = {
   auto_backup_daily: true,
   auto_backup_on_exit: true,
   receipt_printer: '',
+  auto_print_after_sale: false,
+  receipt_paper_width: '58mm',
+  receipt_copies: 1,
   theme: 'dark',
   data_dir: ''
 }

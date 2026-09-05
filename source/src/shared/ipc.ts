@@ -68,6 +68,27 @@ export interface LoginResult {
   shiftOpen: boolean
 }
 
+export interface PrintResult {
+  ok: boolean
+  code: 'PRINTED' | 'DISABLED' | 'NO_PRINTER' | 'UNAVAILABLE' | 'FAILED'
+  message: string
+}
+
+export interface PrinterChoice { name: string; displayName: string; isDefault: boolean }
+
+export interface DataLocationStatus {
+  mode: 'SHARED' | 'PORTABLE'
+  label: 'Shared AppData' | 'Portable Data'
+  root: string
+  databaseFile: string
+  backupDir: string
+  portableAvailable: boolean
+  sharedRoot: string
+  portableRoot: string | null
+  sharedHasData: boolean
+  portableHasData: boolean
+}
+
 /**
  * Canonical payload for the first-run setup wizard.
  * This is the SINGLE source of truth. Renderer, preload, IPC handler, and
@@ -199,12 +220,19 @@ export interface TindaApi {
 
   pos: {
     searchProducts: (q: string) => Promise<Product[]>
-    checkout: (payload: CheckoutPayload) => Promise<{ sale: import('./types').Sale; receipt: string[] }>
+    checkout: (payload: CheckoutPayload) => Promise<{ sale: import('./types').Sale; receipt: string[]; print: PrintResult }>
     hold: (payload: CheckoutPayload) => Promise<HeldSale>
     held: () => Promise<HeldSale[]>
     resumeHeld: (id: number) => Promise<HeldSale>
     deleteHeld: (id: number) => Promise<void>
     reprint: (saleId: number) => Promise<string[]>
+  }
+
+  printer: {
+    list: () => Promise<PrinterChoice[]>
+    save: (input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number }) => Promise<StoreSettings>
+    testPrint: () => Promise<PrintResult>
+    printReceipt: (saleId: number) => Promise<PrintResult>
   }
 
   transactions: {
@@ -272,6 +300,10 @@ export interface TindaApi {
     openSyncFolder: () => Promise<void>
     dir: () => Promise<string>
     resetDatabase: (confirmation: string) => Promise<void>
+    startNewStore: (confirmation: string) => Promise<void>
+    locationStatus: () => Promise<DataLocationStatus>
+    usePortableData: (choice: 'FRESH' | 'COPY') => Promise<void>
+    useSharedAppData: () => Promise<void>
   }
 
   audit: {

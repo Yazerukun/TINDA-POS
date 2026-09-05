@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText } from 'lucide-react'
+import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText, Printer } from 'lucide-react'
 import type { Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -88,11 +88,11 @@ export function Transactions(): React.JSX.Element {
                   <td>
                     <div className="flex gap-1">
                       <button onClick={() => setView(s)} className="btn-ghost-2 rounded-lg p-2" title="View"><Eye className="h-4 w-4" /></button>
+                      {(s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (
+                        <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-2" title="Refund"><RotateCcw className="h-4 w-4" /></button>
+                      )}
                       {s.status === 'COMPLETED' && (
-                        <>
-                          <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-2" title="Refund"><RotateCcw className="h-4 w-4" /></button>
-                          <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
-                        </>
+                        <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
                       )}
                     </div>
                   </td>
@@ -111,9 +111,16 @@ export function Transactions(): React.JSX.Element {
 }
 
 function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React.JSX.Element {
+  const print = async () => {
+    try {
+      const result = await window.api.printer.printReceipt(sale.id)
+      if (result.ok) toastSuccess('Receipt printed successfully')
+      else toastError('Receipt printing failed', result.message)
+    } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) }
+  }
   return (
     <Modal open onClose={onClose} title={sale.transaction_no} maxWidth="max-w-md" footer={
-      <button onClick={() => { void window.api.pos.reprint(sale.id).then(() => toastSuccess('Receipt generated successfully')) }} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> Generate Receipt</button>
+      <><button onClick={() => { void window.api.pos.reprint(sale.id).then(() => toastSuccess('Receipt generated successfully')) }} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> View Receipt</button><button onClick={() => void print()} className="btn-primary flex items-center gap-2"><Printer className="h-4 w-4" /> Print Receipt</button></>
     }>
       <div className="mb-3 flex justify-between text-sm text-slate-400">
         <span>{shortDateTime(sale.created_at)}</span><span>{sale.cashier_name}</span>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database } from 'lucide-react'
 import type { BackupInfo, User } from '@shared/types'
+import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
@@ -35,16 +36,21 @@ export function Settings(): React.JSX.Element {
 
 function DataTab(): React.JSX.Element {
   const [open, setOpen] = useState(false)
+  const [newStoreOpen, setNewStoreOpen] = useState(false)
+  const [portableOpen, setPortableOpen] = useState(false)
   const [confirmation, setConfirmation] = useState('')
+  const [newStoreConfirmation, setNewStoreConfirmation] = useState('')
   const [resetting, setResetting] = useState(false)
   const [databaseFile, setDatabaseFile] = useState('Loading...')
   const [backupDir, setBackupDir] = useState('Loading...')
   const [backups, setBackups] = useState<BackupInfo[] | null>(null)
+  const [location, setLocation] = useState<DataLocationStatus | null>(null)
 
   useEffect(() => {
-    void Promise.all([window.api.app.databaseFile(), window.api.backup.dir()]).then(([database, backup]) => {
+    void Promise.all([window.api.app.databaseFile(), window.api.backup.dir(), window.api.backup.locationStatus()]).then(([database, backup, status]) => {
       setDatabaseFile(database)
       setBackupDir(backup)
+      setLocation(status)
     }).catch((e) => toastError('Could not load data locations', String((e as Error)?.message || e)))
   }, [])
 
@@ -75,14 +81,36 @@ function DataTab(): React.JSX.Element {
     }
   }
 
+  const startNewStore = async () => {
+    if (newStoreConfirmation !== 'NEW STORE') return
+    setResetting(true)
+    try { await window.api.backup.startNewStore(newStoreConfirmation) }
+    catch (e) { toastError('Start New Store failed', String((e as Error)?.message || e)); setResetting(false) }
+  }
+
+  const switchToPortable = async (choice: 'FRESH' | 'COPY') => {
+    if (!window.confirm(`${choice === 'COPY' ? 'Copy the current store into' : 'Start a fresh store in'} Portable Data? A verified safety backup is created first. The Shared AppData database remains unchanged.`)) return
+    setResetting(true)
+    try { await window.api.backup.usePortableData(choice) }
+    catch (e) { toastError('Portable Data activation failed', String((e as Error)?.message || e)); setResetting(false) }
+  }
+
+  const switchToShared = async () => {
+    if (!window.confirm(`Switch to the existing Shared AppData database at ${location?.sharedRoot}? Neither database will be overwritten.`)) return
+    setResetting(true)
+    try { await window.api.backup.useSharedAppData() }
+    catch (e) { toastError('Data mode switch failed', String((e as Error)?.message || e)); setResetting(false) }
+  }
+
   return (
     <div className="max-w-2xl space-y-4">
       <div className="card p-5">
         <h2 className="text-base font-semibold text-slate-100">Database & backups</h2>
         <div className="mt-3 space-y-3 text-sm">
-          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current database location</p><p className="mt-1 break-all font-mono text-slate-300">{databaseFile}</p></div>
-          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Backup location</p><p className="mt-1 break-all font-mono text-slate-300">{backupDir}</p></div>
-          <p className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-3 text-xs text-sky-300">Setup and Portable intentionally use this configured app-data location. Moving the EXE to another drive does not create a new database.</p>
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Data Mode</p><p className="mt-1 font-semibold text-brand-300">{location?.label ?? 'Loading...'}</p></div>
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Database Location</p><p className="mt-1 break-all font-mono text-slate-300">{databaseFile}</p></div>
+          <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Backup Location</p><p className="mt-1 break-all font-mono text-slate-300">{backupDir}</p></div>
+          <p className="rounded-lg border border-sky-500/20 bg-sky-500/10 p-3 text-xs text-sky-300">Moving the TINDA POS executable does not move or reset your store database. Your store data is stored separately for safety.</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button onClick={() => void window.api.app.openDataDir()} className="btn-ghost flex items-center gap-2"><FolderOpen className="h-4 w-4" /> Open Data Folder</button>
@@ -91,10 +119,24 @@ function DataTab(): React.JSX.Element {
         </div>
       </div>
 
+      <div className="card p-5">
+        <h2 className="text-base font-semibold text-slate-100">Data mode</h2>
+        <p className="mt-2 text-sm text-slate-400">Shared AppData keeps one safe store database regardless of where the EXE is moved. Portable Data intentionally keeps a separate TindaPOS-Data folder beside the Portable EXE.</p>
+        {location?.mode === 'SHARED' ? <button onClick={() => setPortableOpen(true)} disabled={!location?.portableAvailable || resetting} className="btn-ghost mt-4 flex items-center gap-2"><Database className="h-4 w-4" /> Use Portable Data</button> : <button onClick={() => void switchToShared()} disabled={resetting} className="btn-ghost mt-4 flex items-center gap-2"><Database className="h-4 w-4" /> Use Shared AppData</button>}
+        {location && !location.portableAvailable && location.mode === 'SHARED' && <p className="mt-2 text-xs text-slate-500">Portable Data can be enabled only when running the Portable edition.</p>}
+        {location?.mode === 'PORTABLE' && location.sharedHasData && <p className="mt-2 text-xs text-amber-400">Shared AppData also contains a store. Switching selects it; neither database is overwritten.</p>}
+      </div>
+
+      <div className="rounded-xl border border-amber-500/40 bg-amber-950/20 p-5">
+        <h2 className="text-base font-bold text-amber-300">Start New Store</h2>
+        <p className="mt-2 text-sm text-slate-300">Creates a fresh store setup while protecting the previous store with a verified safety backup. Existing backup files remain.</p>
+        <button onClick={() => setNewStoreOpen(true)} className="btn-ghost mt-4">Start New Store</button>
+      </div>
+
       <div className="rounded-xl border border-red-500/40 bg-red-950/20 p-5">
         <h2 className="text-base font-bold text-red-300">Danger zone — active store database</h2>
         <p className="mt-2 text-sm font-semibold text-red-200">THIS WILL RESET THE ACTIVE STORE DATABASE.</p>
-        <p className="mt-1 text-sm text-slate-400">Products, sales, users, shifts, and settings will be removed from the active database. A verified safety backup will be created first; if backup creation fails, reset is aborted.</p>
+        <p className="mt-1 text-sm text-slate-400">Administrative destructive reset for troubleshooting/reinitialization. Products, sales, users, shifts, and settings will be removed from the active database. A verified safety backup will be created first; if backup creation fails, reset is aborted.</p>
         <button onClick={() => setOpen(true)} className="btn-danger mt-4 flex items-center gap-2"><DatabaseZap className="h-4 w-4" /> Reset Database</button>
       </div>
 
@@ -107,6 +149,14 @@ function DataTab(): React.JSX.Element {
         <p className="text-sm font-semibold text-red-300">THIS WILL RESET THE ACTIVE STORE DATABASE.</p>
         <p className="mt-2 text-sm text-amber-400">A verified safety backup will be created first. The app will restart and show first-time setup.</p>
         <div className="mt-4"><label className="label">Type RESET to confirm</label><input value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className="input w-full" autoFocus /></div>
+      </Modal>}
+
+      {newStoreOpen && <Modal open onClose={() => { if (!resetting) { setNewStoreOpen(false); setNewStoreConfirmation('') } }} title="Start New Store" maxWidth="max-w-md" footer={<><button onClick={() => setNewStoreOpen(false)} disabled={resetting} className="btn-ghost">Cancel</button><button onClick={() => void startNewStore()} disabled={resetting || newStoreConfirmation !== 'NEW STORE'} className="btn-danger">{resetting ? 'Preparing...' : 'Start Fresh and Restart'}</button></>}>
+        <p className="text-sm font-semibold text-amber-300">The current store database will be replaced with a fresh database.</p><p className="mt-2 text-sm text-slate-400">A verified safety backup is created first. If backup creation or verification fails, this operation aborts. Existing backup files remain.</p><div className="mt-4"><label className="label">Type NEW STORE to confirm</label><input value={newStoreConfirmation} onChange={(e) => setNewStoreConfirmation(e.target.value)} className="input w-full" autoFocus /></div>
+      </Modal>}
+
+      {portableOpen && <Modal open onClose={() => setPortableOpen(false)} title="Use Portable Data" maxWidth="max-w-md" footer={<button onClick={() => setPortableOpen(false)} className="btn-ghost">Cancel</button>}>
+        <p className="mb-3 text-sm text-slate-400">Portable data will be stored beside this Portable EXE at:</p><p className="mb-4 break-all font-mono text-xs text-brand-300">{location?.portableRoot}</p><div className="grid gap-3"><button onClick={() => void switchToPortable('FRESH')} className="rounded-lg border border-ink-line p-3 text-left hover:border-brand-500"><span className="block font-semibold text-white">Start Fresh</span><span className="text-xs text-slate-400">Keep Shared AppData unchanged and open first-run setup in a new portable database.</span></button><button onClick={() => void switchToPortable('COPY')} className="rounded-lg border border-ink-line p-3 text-left hover:border-brand-500"><span className="block font-semibold text-white">Copy Current Store</span><span className="text-xs text-slate-400">Checkpoint, safety-back up, copy, integrity-check, and preserve the original Shared AppData database.</span></button></div>
       </Modal>}
 
       {backups && <Modal open onClose={() => setBackups(null)} title="Restore Backup" maxWidth="max-w-lg" footer={<button onClick={() => setBackups(null)} className="btn-ghost">Cancel</button>}>
@@ -216,16 +266,32 @@ function StoreSettingsTab(): React.JSX.Element {
 
 function ReceiptSettingsTab(): React.JSX.Element {
   const { settings, update } = useSettings()
-  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '' })
+  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '58mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
+  const [printers, setPrinters] = useState<PrinterChoice[]>([])
+
+  useEffect(() => {
+    if (settings) setF({ receipt_header: settings.receipt_header, receipt_footer: settings.receipt_footer, receipt_printer: settings.receipt_printer, auto_print_after_sale: settings.auto_print_after_sale, receipt_paper_width: settings.receipt_paper_width, receipt_copies: settings.receipt_copies })
+  }, [settings])
+  useEffect(() => { window.api.printer.list().then(setPrinters).catch((e) => toastError('Could not list printers', String((e as Error)?.message || e))) }, [])
 
   const save = async () => {
     setSaving(true)
     try {
       await update({ receipt_header: f.receipt_header, receipt_footer: f.receipt_footer })
+      await window.api.printer.save({ name: f.receipt_printer, autoPrint: f.auto_print_after_sale, paperWidth: f.receipt_paper_width, copies: f.receipt_copies })
       toastSuccess('Receipt settings saved')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
+  }
+
+  const testPrint = async () => {
+    try {
+      await window.api.printer.save({ name: f.receipt_printer, autoPrint: f.auto_print_after_sale, paperWidth: f.receipt_paper_width, copies: f.receipt_copies })
+      const result = await window.api.printer.testPrint()
+      if (result.ok) toastSuccess('Test print sent', result.message)
+      else toastError('Test print failed', result.message)
+    } catch (e) { toastError('Test print failed', String((e as Error)?.message || e)) }
   }
 
   return (
@@ -233,8 +299,11 @@ function ReceiptSettingsTab(): React.JSX.Element {
       <div className="space-y-3">
         <div><label className="label">Receipt Header (shown on top)</label><textarea value={f.receipt_header} onChange={(e) => set({ receipt_header: e.target.value })} rows={2} className="input w-full" /></div>
         <div><label className="label">Receipt Footer (message at bottom)</label><textarea value={f.receipt_footer} onChange={(e) => set({ receipt_footer: e.target.value })} rows={2} className="input w-full" /></div>
-        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Receipt preview and generation are available. Direct physical-printer output is not integrated in v1.0.2.</p>
-        <button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button>
+        <div><label className="label">Printer</label><select value={f.receipt_printer} onChange={(e) => set({ receipt_printer: e.target.value })} className="input w-full"><option value="">No printer selected</option>{printers.map((printer) => <option key={printer.name} value={printer.name}>{printer.displayName}{printer.isDefault ? ' (Default)' : ''}</option>)}</select></div>
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">Printing happens only after the sale commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
+        <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={9} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Number(e.target.value)) })} className="input w-full" /></div></div>
+        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Uses the exact Windows printer name reported by Electron. Sales still complete if the printer is missing or offline.</p>
+        <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
       </div>
     </div>
   )

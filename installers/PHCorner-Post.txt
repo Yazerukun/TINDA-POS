@@ -47,7 +47,7 @@ Customers / Utang
 • Over-limit protection
 
 Transactions / Reports
-• Reconstructed receipt details, refund, and void records; direct physical-printer output is not yet integrated
+• Reconstructed receipt details, refund, and void records; Windows receipt-printer support is implemented (printer discovery, Test Print, Auto Print, manual Print Receipt — native Windows/thermal-printer validation still pending)
 • Dashboard summaries
 • Sales, inventory, and utang reports
 • CSV export

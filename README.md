@@ -64,7 +64,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - View full receipt for any sale
 - Refund items (stock automatically restored)
 - Void mistaken sales (stock restored, utang removed)
-- Reconstruct receipt details anytime; direct physical-printer output is not yet integrated
+- Reconstruct receipt details anytime; Windows receipt-printer support is implemented — printer discovery, Test Print, Auto Print, and manual Print Receipt (native Windows/thermal-printer validation still pending)
 
 ### ⏱️ Shifts
 - Auto-opens on first sale of the day

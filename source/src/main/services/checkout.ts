@@ -39,12 +39,15 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
   })
 }
 
-export function buildReceiptLines(store: { store_name: string; address: string; phone: string; currency: string; footer: string }, sale: Sale): string[] {
+export function buildReceiptLines(store: { header: string; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
   const lines: string[] = []
+  if (store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
   lines.push('TINDA POS')
   if (store.store_name) lines.push(store.store_name)
+  if (store.owner_name) lines.push(`Owner: ${store.owner_name}`)
   if (store.address) lines.push(store.address)
   if (store.phone) lines.push(`Tel: ${store.phone}`)
+  if (store.tin) lines.push(`TIN: ${store.tin}`)
   lines.push('--------------------------------')
   lines.push(sale.transaction_no)
   lines.push(new Date(sale.created_at.replace(' ', 'T')).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }))
@@ -62,9 +65,13 @@ export function buildReceiptLines(store: { store_name: string; address: string; 
   const cash = sale.payments.find((p) => p.method === 'CASH')
   if (cash) {
     lines.push(`Cash          ${(cash.amount_c / 100).toFixed(2)}`)
-    lines.push(`SUKLI         ${((cash.amount_c - sale.total_c) / 100).toFixed(2)}`)
+    const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
+    lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
-  for (const p of sale.payments) if (p.method !== 'CASH') lines.push(`${p.method}          ${(p.amount_c / 100).toFixed(2)}`)
+  for (const p of sale.payments) if (p.method !== 'CASH') {
+    lines.push(`${p.method}          ${(p.amount_c / 100).toFixed(2)}`)
+    if (p.reference) lines.push(`Reference: ${p.reference}`)
+  }
   lines.push('--------------------------------')
   lines.push(store.footer || 'Salamat po!')
   return lines
@@ -146,7 +153,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
-    { store_name: settings.store_name, address: settings.address, phone: settings.phone, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
   return { sale, receipt }
@@ -185,7 +192,7 @@ export function reprint(saleId: number): string[] {
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   return buildReceiptLines(
-    { store_name: settings.store_name, address: settings.address, phone: settings.phone, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
 }
