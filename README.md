@@ -20,7 +20,7 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
-**Current development version: v1.0.2** — Windows release assets will be added after final Windows packaging.
+**Current stable release: v1.0.2 Hotfix 1** — the v1.0.2 receipt-printer and data-mode hotfix.
 
 ## What's New in v1.0.2
 
@@ -100,11 +100,24 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - Fast PIN login for daily use
 - Only admins can void sales
 
+## What's New in v1.0.2 Hotfix 1
+
+- Windows receipt-printer support: printer auto-detection, **Refresh Printers**, **Test Print**, **Auto Print After Sale**, and **Manual Print Receipt**
+- 80mm default receipt width with 58mm support, custom receipt header/footer
+- **Start New Store** and clearer **Settings → Data** (Shared AppData vs Portable Data Mode + Copy Current Store)
+- Cash/SUKLI input fix (pesos, not raw cents), full-refund status fix, restore temp-file cleanup
+- **71/71 tests**, ESLint, TypeScript, and production build passing
+
 ## Download
 
-**v1.0.2 release assets will be added after final Windows packaging.** No v1.0.2 download links are published yet.
+**Latest Stable Release: TINDA POS v1.0.2 Hotfix 1** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
 
-The supported target is Windows 10/11 64-bit. Setup and Portable packages are planned for the final v1.0.2 release.
+- [TindaPOS-Setup-1.0.2.exe](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-Setup-1.0.2.exe) — Windows installer
+- [TindaPOS-Portable-1.0.2.exe](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-Portable-1.0.2.exe) — no-install portable edition
+- [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-User-Guide.pdf) — full user manual (PDF)
+- [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/SHA256SUMS.txt) — checksums (verify with `sha256sum -c SHA256SUMS.txt`)
+
+The supported target is Windows 10/11 64-bit.
 
 ## Quick Start
 

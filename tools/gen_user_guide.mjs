@@ -140,7 +140,7 @@ function documentHtml(markdown) {
   pre { background: #f1f5f9; border-left: 1mm solid #10b981; padding: 3mm; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
   strong { color: #0f172a; }
 </style></head><body>
-  <section class="cover"><p class="brand">TINDA POS v1.0.2</p><p class="guide">User Guide</p><p class="version">Version 1.0.2</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
+  <section class="cover"><p class="brand">TINDA POS</p><p class="guide">User Guide</p><p class="version">v1.0.2 Hotfix 1</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
   <main><h1 style="display:none">TINDA POS v1.0.2 User Manual</h1>${markdownToHtml(markdown)}</main>
 </body></html>`
 }
