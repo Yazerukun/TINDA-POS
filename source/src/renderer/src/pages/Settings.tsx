@@ -216,14 +216,14 @@ function StoreSettingsTab(): React.JSX.Element {
 
 function ReceiptSettingsTab(): React.JSX.Element {
   const { settings, update } = useSettings()
-  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '' })
+  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '' })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
 
   const save = async () => {
     setSaving(true)
     try {
-      await update({ receipt_header: f.receipt_header, receipt_footer: f.receipt_footer, receipt_printer: f.receipt_printer })
+      await update({ receipt_header: f.receipt_header, receipt_footer: f.receipt_footer })
       toastSuccess('Receipt settings saved')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
   }
@@ -233,7 +233,7 @@ function ReceiptSettingsTab(): React.JSX.Element {
       <div className="space-y-3">
         <div><label className="label">Receipt Header (shown on top)</label><textarea value={f.receipt_header} onChange={(e) => set({ receipt_header: e.target.value })} rows={2} className="input w-full" /></div>
         <div><label className="label">Receipt Footer (message at bottom)</label><textarea value={f.receipt_footer} onChange={(e) => set({ receipt_footer: e.target.value })} rows={2} className="input w-full" /></div>
-        <div><label className="label">Receipt Printer</label><input value={f.receipt_printer} onChange={(e) => set({ receipt_printer: e.target.value })} className="input w-full" placeholder="Leave blank for system default" /></div>
+        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Receipt preview and generation are available. Direct physical-printer output is not integrated in v1.0.2.</p>
         <button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button>
       </div>
     </div>

@@ -22,7 +22,7 @@ WHITE = white
 
 OUT = os.environ.get(
     "TINDA_USER_GUIDE_OUT",
-    "/mnt/D/TINDA-POS/installers/TindaPOS-User-Guide.pdf",
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "installers", "TindaPOS-User-Guide.pdf")),
 )
 
 ss = getSampleStyleSheet()
@@ -73,8 +73,8 @@ story.append(bullets([
     "<b>Offline:</b> no internet connection is ever required to run the app.",
 ]))
 story.append(H2("Installing on Windows"))
-story.append(P("The Windows build is distributed as <b>TindaPOS-Setup-1.0.1.exe</b>. A no-install <b>TindaPOS-Portable-1.0.1.exe</b> is also included."))
-story.append(step("1", "Double-click <b>TindaPOS-Setup-1.0.1.exe</b> to start the installer, or open the Portable file to run without installation."))
+story.append(P("TINDA POS v1.0.2 will be distributed as a Windows Setup package and a no-install Portable package after final packaging is complete."))
+story.append(step("1", "Download the official v1.0.2 Setup or Portable package after it is published on the GitHub release page."))
 story.append(step("2", "If Windows SmartScreen warns you, click <b>More info</b> then <b>Run anyway</b>. The app is not code-signed yet, so this notice is expected."))
 story.append(step("3", "Choose the <b>Installation directory</b> (the default location is fine)."))
 story.append(step("4", "Tick the options to create a <b>Desktop shortcut</b> and a <b>Start Menu</b> shortcut."))
@@ -98,7 +98,7 @@ story.append(step("2", "Open <b>Inventory</b>, create categories, then add produ
 story.append(step("3", "Open <b>POS</b>, add products to the cart, choose a payment method, and confirm the sale."))
 story.append(step("4", "Add regular customers before allowing <b>Utang</b>, and record every payment in their ledger."))
 story.append(step("5", "Open <b>Backup</b> at the end of the day and create a backup."))
-story.append(H2("Latest v1.0.1 improvements"))
+story.append(H2("Latest v1.0.2 improvements"))
 story.append(bullets([
     "The badge now performs a <b>real internet check</b> instead of trusting the computer's Wi-Fi indicator alone.",
     "<b>ONLINE READY</b> means internet was verified; <b>OFFLINE READY</b> means sales remain available while cloud syncing waits.",
@@ -299,6 +299,13 @@ story.append(bullets([
 story.append(H3("Restoring a backup"))
 story.append(step("1", "On the Backup page, choose a previous backup from the list."))
 story.append(step("2", "Click <b>Restore</b> and confirm. Your data is restored to that point in time."))
+story.append(P("Before replacement, TINDA POS validates the backup, checks SQLite integrity, and creates a safety backup of the current database. A successful restore restarts the app. If replacement fails, rollback protection recovers the original database."))
+story.append(H3("Settings → Data and Database Reset"))
+story.append(P("Open <b>Settings → Data</b> to view the active database and backup locations, create a backup, restore a backup, or open the protected reset workflow."))
+story.append(step("1", "Sign in with an account that has Settings permission (ADMIN by default)."))
+story.append(step("2", "Choose <b>Reset Database</b>, read the warning, and type <b>RESET</b> exactly."))
+story.append(step("3", "TINDA POS creates and verifies a safety backup before removing the active database, preserves existing backups, and restarts into first-run setup."))
+story.append(P("Windows Setup and Portable intentionally share <b>%APPDATA%\\TINDA POS\\database\\tindapos.db</b>. Moving the EXE does not create a fresh database. Never delete the AppData database just to update the application.", "callout"))
 story.append(P("Back up at least once a week (or every day if the store is busy). Keep copies off the machine so you're safe even if the computer breaks.", "callout"))
 
 # ============================================================
@@ -413,7 +420,7 @@ out.append(Paragraph("Offline Point-of-Sale for Sari-Sari Stores", ParagraphStyl
 out.append(Spacer(1, 2.1 * inch))
 out.append(Paragraph("User Guide &amp; Installation Manual", ParagraphStyle("csub", parent=ST["sub"], fontSize=16, textColor=WHITE)))
 out.append(Spacer(1, 0.08 * inch))
-out.append(Paragraph("Windows \u00b7 Version 1.0.1", ST["small"]))
+out.append(Paragraph("Windows \u00b7 Version 1.0.2", ST["small"]))
 out.append(PageBreak())
 out += toc
 out.append(PageBreak())

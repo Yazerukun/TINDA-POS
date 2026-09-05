@@ -8,10 +8,10 @@ the prebuilds directory, so **no compilation toolchain is required.**
 > machine via Wine** — no separate Windows machine or online service needed.
 > See "Build on Linux via Wine" below.
 
-The Windows deliverables (both BUILT): `D:\TINDA-POS\installers\`:
+The planned v1.0.2 Windows deliverables (not built yet) are:
 
-- `TindaPOS-Setup-1.0.0.exe` — NSIS installer (point customer to this)
-- `TindaPOS-Portable-1.0.0.exe` — portable, no-install version
+- `TindaPOS-Setup-1.0.2.exe` — NSIS installer
+- `TindaPOS-Portable-1.0.2.exe` — portable, no-install version
 - `SHA256SUMS.txt` — checksums
 - `TINDA-POS-Windows/` — clean customer folder (installers + README-FIRST.txt)
 
@@ -36,8 +36,8 @@ NSIS installer and the portable exe in one pass:
 
 Output: `source/builds/` →
 
-- `TindaPOS-Setup-1.0.0.exe` — NSIS installer
-- `TindaPOS-Portable-1.0.0.exe` — portable build
+- `TindaPOS-Setup-1.0.2.exe` — NSIS installer
+- `TindaPOS-Portable-1.0.2.exe` — portable build
 - `win-unpacked\TindaPOS.exe` — the unpacked app (portable test)
 
 Copy both exes to `D:\TINDA-POS\installers\` to ship, then regenerate
@@ -73,6 +73,9 @@ Notes:
 From `D:\TINDA-POS\source`:
 
 ```powershell
+# 0. Regenerate the v1.0.2 User Guide PDF with the installed Electron runtime
+npm run docs:pdf
+
 # 1. Install exact deps from lockfile (fast, uses existing prebuilds)
 pnpm install --frozen-lockfile
 
@@ -87,10 +90,12 @@ pnpm install --frozen-lockfile
 .\node_modules\.bin\electron-builder --win --config electron-builder.yml
 ```
 
+The primary PDF generator is `tools/gen_user_guide.mjs`; it reads `docs/USER-MANUAL.md`, validates required release content, and writes `installers/TindaPOS-User-Guide.pdf`. The older Python/ReportLab generator is retained as a legacy alternative.
+
 The output lands in `D:\TINDA-POS\builds\`:
 
-- `TindaPOS-Setup-1.0.0.exe` — the NSIS installer (the deliverable)
-- `TindaPOS-Portable-1.0.0.exe` — the portable version
+- `TindaPOS-Setup-1.0.2.exe` — the NSIS installer (the deliverable)
+- `TindaPOS-Portable-1.0.2.exe` — the portable version
 - `win-unpacked\TindaPOS.exe` — the unpacked app (portable test)
 
 Copy both exes to `D:\TINDA-POS\installers\` to ship.

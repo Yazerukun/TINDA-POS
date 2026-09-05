@@ -1,170 +1,125 @@
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TITLE: [FREE] TINDA POS v1.0.1 — Offline POS App for Sari-Sari Stores (Windows)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TITLE: [UPDATED] TINDA POS v1.0.2 — FREE Offline POS for Sari-Sari Stores | Inventory, Utang, Tingi, GCash/Maya, Backup [Windows]
 
-[TAGS: free software, POS, sari-sari store, point of sale, offline, electron, react]
+[TAGS: free software, POS, sari-sari store, point of sale, offline, inventory, utang, Windows]
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Mga lods! TINDA POS v1.0.2 is a free, offline-first desktop POS made for sari-sari stores and small businesses in the Philippines. Walang subscription at tuloy ang benta kahit walang internet. Local sa inyong computer ang main database; optional lang ang backup copy to a folder managed by OneDrive, Google Drive for Desktop, or Dropbox.
 
-Mga lods! Updated na sa v1.0.1 ang free POS app para sa mga sari-sari store owners dito sa Pinas. Fully offline pa rin ang POS, walang subscription, at libre na talaga. Optional lang ang online backup kung gusto ninyo.
+========================================
+WHAT'S NEW — v1.0.2
+========================================
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 ANO TONG TINDA POS?
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Persistent Hold / Resume / Delete — puwedeng itabi ang cart, balikan, o burahin safely.
+• Held sales survive app restart at bawat cashier ay sariling held sales lang ang makikita.
+• Duplicate-click protection para hindi dalawang beses ma-hold ang parehong cart.
+• Improved category creation at instant refresh ng category options.
+• Real ONLINE READY / OFFLINE READY connectivity status.
+• Safer Backup / Restore with SQLite validation, integrity check, safety backup, WAL/SHM cleanup, at rollback protection.
+• Protected Database Reset with ADMIN/settings permission, exact RESET confirmation, at verified safety backup.
+• Settings → Data page para makita ang database/backup locations at data-management actions.
+• Unique demo-data SKUs para walang random duplicate during sample-data setup.
+• Verified baseline: ESLint PASS, TypeScript PASS, production build PASS, at 33/33 automated tests PASS.
 
-Desktop POS app na ginawa specifically para sa mga sari-sari store at small businesses sa Pinas. Offline-first — tuloy ang benta kahit walang internet. May optional automatic backup sa OneDrive, Google Drive for Desktop, o Dropbox folder kapag gusto ng owner.
+========================================
+FEATURES
+========================================
 
-Gawa sa Electron, React, TypeScript, at SQLite. Matibay, mabilis, at reliable.
+POS / Benta
+• Product search by name, SKU, or barcode
+• Category filter
+• Cash with automatic sukli
+• GCash at Maya with reference-number recording
+• Utang with customer and credit-limit protection
+• Split payment
+• Persistent Hold / Resume / Delete
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✨ FEATURES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTE: Recording methods ang GCash at Maya. Walang direct GCash/Maya API transaction ang app.
 
-💰 POS / Benta
-• Mabilis na checkout — product grid at search (pangalan, SKU, o barcode)
-• Cash — may automatic sukli/change computation
-• GCash & Maya — may reference number tracking
-• Utang (credit) — may customer picker at credit limit
-• Split payment — pwede CASH at GCASH sa iisang transaction
-• Hold & Resume — itabi muna ang cart habang nagse-serve ng ibang customer
+Inventory
+• Products, categories, suppliers, SKU, at barcode
+• Tingi units gaya ng sachet, stick, piece, pack, tray, at kilo conversions
+• Low-stock at out-of-stock alerts
+• Automatic stock updates after sale, refund, or void
 
-📦 Inventory
-• Products with TINGI units (sachet, can, stick, piraso, etc.)
-• Add at delete product categories mula mismo sa Inventory
-• Safe category deletion — blocked habang may product pang gumagamit nito
-• Suppliers at SKU/barcode support
-• Low-stock at out-of-stock alerts (color-coded badges)
-• Auto-update ng stock sa bawat sale, refund, at void
+Customers / Utang
+• Customer directory and credit limits
+• Full utang ledger
+• Payments and adjustments
+• Over-limit protection
 
-👥 Customers & Utang
-• Customer directory with credit limits
-• Full utang ledger — track bawat sale-on-credit at payment
-• Payment at manual deduction agad nag-a-update sa customer balance
-• Over-limit protection — blocked ang bagong utang pag lampas na sa limit
+Transactions / Reports
+• Reconstructed receipt details, refund, and void records; direct physical-printer output is not yet integrated
+• Dashboard summaries
+• Sales, inventory, and utang reports
+• CSV export
 
-📊 Dashboard & Reports
-• Sales, profit, utang, expenses — nasa dashboard agad
-• Daily, weekly, monthly reports
-• Export to CSV (Excel compatible)
+Backup / Restore / Reset
+• Timestamped local backups
+• Optional daily and app-exit copies to a cloud-synced folder
+• Backup validation and database integrity checking before restore
+• Safety backup before restore or reset
+• Automatic app restart after successful restore/reset
+• Existing backup files remain preserved after reset
 
-🔄 Transactions
-• View full receipt kahit kailan
-• Refund items — auto-restore ng stock
-• Void mistaken sales — stock balik, utang bura
-• Receipt reprint anytime
+========================================
+DATA SAFETY
+========================================
 
-⏱️ Shifts
-• Auto-open sa unang benta ng araw
-• Close shift with expected vs actual cash reconciliation
-• Track expenses per shift
+Default Windows database:
+%APPDATA%\TINDA POS\database\tindapos.db
 
-💸 Expenses
-• Record rent, kuryente, tubig, load, etc.
-• Categorized para malinis ang reporting
-• Kasama sa profit computation
+Installer and Portable intentionally use the same AppData database. Kapag nilipat o ni-rename ang Portable EXE, hindi ito gagawa ng bagong database. Huwag manually burahin ang AppData database para lang mag-update.
 
-📋 Suppliers & Purchases
-• Supplier directory with contact info
-• Track kung saan ka bumibili
+Before upgrading from v1.0.1:
+1. Gumawa muna ng Backup Now.
+2. Install/run v1.0.2 using the same Windows account and data profile.
+3. The data should remain preserved because it is separate from the program files.
 
-🗄️ Backup & Restore
-• One-click backup
-• Restore from any previous backup
-• Optional automatic copy sa OneDrive, Google Drive for Desktop, o Dropbox synced folder
-• Daily backup on app start at backup on exit
-• Kapag offline, Windows sync client ang kusang mag-upload pag may internet ulit
-• Live ONLINE READY / OFFLINE READY indicator na may connection notification
-• Backup files puwedeng makita/download sa cloud app ng cellphone o tablet
-• Data stored separately sa app — kahit i-uninstall, hindi mawawala
+The complete v1.0.1 → v1.0.2 upgrade test will be performed during final release validation; it is not yet claimed as passed.
 
-🔐 Multi-User
-• Admin at Cashier roles
-• Fast PIN login para sa daily use
-• Only admins pwede mag-void
+========================================
+DOWNLOAD
+========================================
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📥 DOWNLOAD (React to see links!)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Download links will be updated after v1.0.2 Windows packaging]
 
-Windows 10/11:
-• Installer: TindaPOS-Setup-1.0.1.exe (~110 MB)
-• Portable: TindaPOS-Portable-1.0.1.exe (~110 MB) — walang install, i-run lang
-• User Guide: TindaPOS-User-Guide.pdf — basahin niyo lalo na first time!
+No fake or preliminary v1.0.2 installer link is posted yet. Wait for the official Setup, Portable, User Guide PDF, and SHA-256 checksum assets on the GitHub release page.
 
-[ Spoiler: 👍 React mo para makita ang download links! ]
-[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe ] 👉 INSTALLER (Setup) — Click to Download [/url]
-[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe ] 👉 PORTABLE (No Install) — Click to Download [/url]
-[ url=https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf ] 👉 USER GUIDE (PDF) — Click to Download [/url]
-[ / Spoiler ]
+Supported target: Windows 10/11 64-bit
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 HOW TO INSTALL (Windows)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+========================================
+FIRST RUN
+========================================
 
-1. Download ang TindaPOS-Setup-1.0.1.exe
-2. Double-click to install
-3. Pag lumabas ang SmartScreen, click "More info" → "Run anyway" (hindi pa signed)
-4. Follow the wizard — choose install location, desktop shortcut
-5. Click Install, tapos Run
+1. Enter store details.
+2. Create the Admin username, password, and 4-digit PIN.
+3. Configure receipt details and optionally load sample data.
+4. Add products or start testing the sample catalog.
 
-Kung ayaw niyo mag-install, gamitin ang Portable version — i-double-click lang, walang install needed.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🧙 FIRST RUN SETUP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Pag-bukas ng app, may 3-step wizard:
-
-Step 1 — Store Details
-• Store Name (ito ang lalabas sa receipt)
-• Owner Name, Address, Phone
-
-Step 2 — Admin Account
-• Username (default: admin)
-• Password (at least 4 chars)
-• Quick PIN (4 digits para mabilis mag-login)
-• ⚠️ Tandaan niyo ang username at password!
-
-Step 3 — Receipt & Data
-• Receipt Header at Footer (e.g. store address, "Salamat po!")
-• ☑️ Load sample data — lagyan ng ~18 common items para ma-try agad
-
-Click Finish → logged in na kayo agad!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-❓ FAQ
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+========================================
+FAQ
+========================================
 
 Q: Offline ba talaga?
-A: Oo. Gumagana lahat ng POS features kahit walang internet. Optional lang ang synced online backup at owner ang pipili kung ie-enable ito.
+A: Oo. Local ang checkout, inventory, customers, utang, expenses, at reports. Optional lang ang synced-folder backup.
 
 Q: Saan naka-save ang data?
-A: Windows: %APPDATA%\TINDA POS — Hindi nabubura kahit i-uninstall ang app.
+A: Sa %APPDATA%\TINDA POS. Separate ito sa installed program files.
 
-Q: Safe ba ang backup?
-A: Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for Desktop, o Dropbox folder. Makikita rin ang uploaded file sa cloud app ng cellphone/tablet. Sa Windows TINDA POS pa rin ginagawa ang restore.
+Q: Safe ba ang Restore at Reset?
+A: May validation, integrity check, at safety backup. Exact RESET confirmation at authorized account ang kailangan para sa reset.
 
-Q: Pwede ba mag-barcode scanner?
-A: Oo — kahit anong USB barcode scanner, automatic na gumagana. Walang special drivers needed.
+Q: Pwede ang barcode scanner?
+A: Oo. Standard USB barcode scanners work like keyboard input.
 
-Q: Libre talaga?
-A: Oo, 100% free. Walang trial, walang subscription, walang hidden fees.
+========================================
+SUPPORT
+========================================
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🐛 SUPPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Bug reports and suggestions:
+https://github.com/Yazerukun/TINDA-POS/issues
 
-May bug? May suggestions? May questions? Reply lang dito sa thread!
+Made with care by Dev Francis.
+Maya support: 0991 225 5156
+Optional lang ang donation; libre at kumpleto ang app.
 
-[ url=https://github.com/Yazerukun/TINDA-POS/issues ] 👉 GitHub Issues — Click to Report [/url]
-
-Salamat po sa inyong support! 🙏
-
-☕ Made with care by Dev Francis.
-Kung nakatulong ang TINDA POS sa negosyo ninyo at gusto ninyong manlibre ng kape:
-Maya: 0991 225 5156
-Optional lang po ang donation — libre at kumpleto ang lahat ng features.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Batch ID: TindaPOS-1.0.1
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Batch ID: TindaPOS-1.0.2-DOCS

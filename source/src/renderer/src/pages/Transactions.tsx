@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Search, Eye, RotateCcw, Ban, ListOrdered, Printer } from 'lucide-react'
+import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText } from 'lucide-react'
 import type { Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -113,7 +113,7 @@ export function Transactions(): React.JSX.Element {
 function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React.JSX.Element {
   return (
     <Modal open onClose={onClose} title={sale.transaction_no} maxWidth="max-w-md" footer={
-      <button onClick={() => { void window.api.pos.reprint(sale.id).then(() => toastSuccess('Receipt sent to printer')) }} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Reprint</button>
+      <button onClick={() => { void window.api.pos.reprint(sale.id).then(() => toastSuccess('Receipt generated successfully')) }} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> Generate Receipt</button>
     }>
       <div className="mb-3 flex justify-between text-sm text-slate-400">
         <span>{shortDateTime(sale.created_at)}</span><span>{sale.cashier_name}</span>

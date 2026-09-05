@@ -46,7 +46,7 @@ export function loadDemoData(db: Database.Database): void {
   createExpenseCategory(db, 'Ice')
   createSupplier(db, { name: 'PRC Distributor', contact_person: 'Mang Tony', phone: '0917-123-4567', address: 'Palengke', notes: 'Main distributor' })
   void categoryIds
-  for (const p of DEMO_PRODUCTS) {
+  for (const [index, p] of DEMO_PRODUCTS.entries()) {
     const cat = DEMO_CATEGORIES.find((c) => c === p.category)
     const units = (p.units ?? [{ name: p.base_unit, conv: 1 }]).map((u) => ({
       name: u.name,
@@ -61,7 +61,7 @@ export function loadDemoData(db: Database.Database): void {
       {
         category_id: cat ? createCategory(db, cat).id : null,
         name: p.name,
-        sku: 'SKU-' + Math.floor(1000 + Math.random() * 9000),
+        sku: `SKU-${String(1001 + index).padStart(4, '0')}`,
         barcode: baseBarcode,
         description: null,
         base_unit: p.base_unit,

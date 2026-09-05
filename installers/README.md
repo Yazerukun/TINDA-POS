@@ -1,6 +1,8 @@
 # TINDA POS — Release Files
 
-The v1.0.1 GitHub release contains:
+v1.0.2 release assets will be added after final Windows packaging. No v1.0.2 executable or download link is available yet.
+
+The existing v1.0.1 GitHub release remains published with its original assets:
 
 | File | Type | Exact size |
 |------|------|------------|

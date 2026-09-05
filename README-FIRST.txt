@@ -1,6 +1,6 @@
 ==============================================
  TINDA POS  -  Windows Customer Release
- Software Version: 1.0.0
+ Software Version: 1.0.2 (PACKAGING PENDING)
 ==============================================
 
 THANK YOU for choosing TINDA POS, an offline Point-of-Sale system for
@@ -10,12 +10,11 @@ sari-sari stores and small businesses.
  QUICK START (3 simple steps)
 --------------------------------------------------------------
 1) RUN THE INSTALLER
-   - Double-click  TindaPOS-Setup-1.0.1.exe
+   - After final packaging, download the official v1.0.2 Setup file.
    - Click "Install" and follow the on-screen steps.
    - TINDA POS is installed; it will open automatically after install.
 
-   (Prefer a portable version? Use  TindaPOS-Portable-1.0.1.exe
-    instead - no install needed, just run the file.)
+   (A v1.0.2 Portable file will also be published for no-install use.)
 
 2) COMPLETE STORE SETUP (first time only)
    - On first open, the Store Setup screen appears.
@@ -53,7 +52,7 @@ safe (another drive, USB, or cloud) as an extra backup.
  GETTING HELP
 --------------------------------------------------------------
 - See TindaPOS-User-Guide.pdf for the full manual.
-- Need a receipt printer or USB barcode scanner? Both work with
-  standard Windows devices - no special drivers are required. If no
-  printer is installed, the POS still works normally.
+- Standard USB barcode scanners work as keyboard input. Receipt details
+  can be reconstructed in Transactions; direct physical-printer output
+  is not yet integrated.
 ==============================================

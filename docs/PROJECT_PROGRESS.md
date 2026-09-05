@@ -3,6 +3,16 @@
 > Offline POS System for Sari-Sari Stores.
 > Legend: `[x]` Complete (implemented, tested, working) · `[~]` In progress · `[ ]` Not started
 
+## Current release preparation — v1.0.2
+
+- Active source version: **1.0.2**
+- Scope: stability, data safety, and completed POS workflow fixes; no new features
+- Current verified baseline: ESLint PASS, TypeScript PASS, **33/33 tests PASS**, production build PASS
+- Documentation: v1.0.2 release notes, README, user manual source, PHCorner copy, and customer release instructions updated
+- Windows v1.0.2 Setup/Portable assets: **not built yet**
+- Upgrade, clean-install, packaged-app, checksum, tag, and GitHub release work remains for later phases
+- Existing `v1.0.1` tag, release notes, checksums, and published assets remain historical and unchanged
+
 ## Phase status
 
 [x] Phase 0 — Environment (dirs, pnpm on D:, caches on D:, Electron 44 + better-sqlite3 verified)
@@ -31,7 +41,6 @@
 [x] Phase 15 — Receipts (backed by buildReceiptLines; reprint wired)
 [x] Phase 16 — Backup / restore UI (list/create/restore/open folder)
 [x] Phase 17 — Exports (CSV via reports.exportCsv)
-[x] Phase 18 — Automated tests (10 tests, node+web typecheck, full-app Electron smoke boot)
 [x] Phase 18 — Automated tests (10 tests, node+web typecheck, full-app Electron smoke boot)
 [x] Phase 19 — Performance (WAL-optimal pragmas: synchronous=NORMAL, 20 MB cache, temp_store=MEMORY; index audit clean)
 [x] Phase 20 — Release + packaging + docs (Linux AppImage built & verified; Windows build guide written)

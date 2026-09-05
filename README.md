@@ -20,14 +20,16 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
-## What's New in v1.0.1
+**Current development version: v1.0.2** — Windows release assets will be added after final Windows packaging.
 
-- Protected Database Reset with exact confirmation and a verified safety backup
-- Persistent Hold Sale with restart-safe resume/delete, cashier isolation, and duplicate-click protection
-- Hardened Backup Restore with SQLite integrity checks and automatic rollback on failure
-- Settings → Data now shows database/backup locations and all data-management actions
-- Improved category filtering and reliable online/offline connectivity checks
-- Windows Setup and Portable packages verified with **33/33 automated tests** and isolated packaged-app QA
+## What's New in v1.0.2
+
+- Persistent Hold / Resume / Delete with restart persistence, cashier isolation, and duplicate-submission protection
+- Hardened Backup / Restore with validation, integrity checks, a safety backup, WAL/SHM cleanup, and rollback protection
+- Protected Database Reset requiring ADMIN/settings permission, exact `RESET` confirmation, and a verified safety backup
+- Settings → Data now shows database and backup locations and all data-management actions
+- Improved category creation/refresh, real connectivity checks, and collision-free demo SKUs
+- **33/33 tests**, ESLint, TypeScript, and production build passing
 
 ## Features
 
@@ -39,7 +41,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - **GCash & Maya** with reference number tracking
 - **Utang (credit)** with customer picker
 - **Split payment** — combine Cash + GCash/Maya in one sale
-- Hold, resume, or delete pending carts while serving multiple customers
+- Hold, resume, or delete pending carts while serving multiple customers; holds survive restart and remain cashier-specific
 
 ### 📦 Inventory
 - Products with **tingi units** (sachet, can, stick, piraso)
@@ -62,7 +64,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - View full receipt for any sale
 - Refund items (stock automatically restored)
 - Void mistaken sales (stock restored, utang removed)
-- Receipt reprint anytime
+- Reconstruct receipt details anytime; direct physical-printer output is not yet integrated
 
 ### ⏱️ Shifts
 - Auto-opens on first sale of the day
@@ -79,12 +81,19 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - Track which products come from each supplier
 
 ### 🗄️ Backup & Restore
-- One-click backup to timestamped file
-- Restore from any previous backup
+- One-click backup to a timestamped local SQLite file
+- Restore validates the backup and creates a safety backup before replacement
+- Integrity verification, WAL/SHM cleanup, and rollback protection guard restore operations
 - Optional daily/on-exit copy to a Windows cloud-synced folder
 - Live ONLINE READY/OFFLINE READY indicator with connection notifications
 - View or download uploaded backups from the cloud provider's phone/tablet app
 - Data stored separately from the app — survives reinstalls
+
+### ⚙️ Settings → Data
+- View the active database and backup locations
+- Create and restore safety backups
+- Protected Database Reset requires ADMIN/settings permission and exact `RESET` confirmation
+- Reset restarts into first-run setup while preserving existing backups
 
 ### 🔐 Multi-User
 - Admin and Cashier roles with permission controls
@@ -93,24 +102,19 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 ## Download
 
-| Platform | File | Size |
-|----------|------|------|
-| **Windows 10/11** | [TindaPOS-Setup-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Setup-1.0.1.exe) | 109.38 MB |
-| **Windows (Portable)** | [TindaPOS-Portable-1.0.1.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-Portable-1.0.1.exe) | 97.79 MB |
-| **User Guide** | [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) | ~25 KB |
-| **Checksums** | [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/SHA256SUMS.txt) | SHA-256 |
+**v1.0.2 release assets will be added after final Windows packaging.** No v1.0.2 download links are published yet.
 
-> New users should read the [User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.1/TindaPOS-User-Guide.pdf) for installation, setup, and complete usage instructions.
+The supported target is Windows 10/11 64-bit. Setup and Portable packages are planned for the final v1.0.2 release.
 
 ## Quick Start
 
 ### Windows
-1. Download `TindaPOS-Setup-1.0.1.exe`
-2. Double-click to install (click **More info → Run anyway** if SmartScreen appears)
+1. After packaging, download the v1.0.2 Setup or Portable package from the official release page.
+2. Run the package (click **More info → Run anyway** if SmartScreen appears on the unsigned build).
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
 
-> For use without installation, download and run `TindaPOS-Portable-1.0.1.exe`. Setup and Portable intentionally share `%APPDATA%\TINDA POS`; moving the EXE does not create a new database.
+> Setup and Portable intentionally share `%APPDATA%\TINDA POS`; moving the EXE does not create a new database.
 
 ### System Requirements
 - **OS:** Windows 10/11 (64-bit)
@@ -179,6 +183,9 @@ TINDA-POS/
 
 **Offline ba talaga?**
 Oo. Walang internet na kailangan para magbenta. Optional lang ang cloud-synced backup at owner ang pipili kung ie-enable ito.
+
+**Direktang kumokonekta ba ang GCash/Maya sa provider?**
+Hindi. Recording methods ang GCash at Maya; sine-save ng TINDA POS ang payment method, amount, at reference number pero walang direct wallet API integration.
 
 **Saan naka-save ang data?**
 Windows: `%APPDATA%\TINDA POS` — Hindi nabubura kapag in-uninstall. The active database is `%APPDATA%\TINDA POS\database\tindapos.db`.
