@@ -174,8 +174,8 @@
 - v1.0.2-hotfix.1 → v1.0.3 = one manual upgrade; documented in README, manual, `docs/RELEASE_NOTES_v1.0.3.md`
 
 ### Windows artifacts (built for the v1.0.3 stable release)
-- `source/builds/TindaPOS-Setup-1.0.3.exe` (114,994,846 B) · `TindaPOS-Portable-1.0.3.exe` (114,785,243 B)
-- `latest.yml`: version 1.0.3, sha512 `pJlQkW24YDEQYx+trzq6I3iayMNIGko/JIjQrmDcy91rknNNd5DgWJ1Hq5XKKVsqZBO5oOqp5w2vLU01erOrlA==`; `app-update.yml` packaged (owner Yazerukun, repo TINDA-POS)
+- Canonical release artifacts: `TindaPOS-Setup-1.0.3.exe` (115,349,028 B) · `TindaPOS-Portable-1.0.3.exe` (115,118,573 B)
+- `latest.yml`: version 1.0.3, sha512 `ZtyQIsmzxJLOKnyzMYFiOEjzO8hDssRgPthNd8f96xcpKqwJqJT8TB3a/xcdj0zUhjCXQ0c3Hu66Hh1xg0Y2nQ==`; `app-update.yml` packaged (owner Yazerukun, repo TINDA-POS)
 - exe File Version 1.0.3.0 / Product "TINDA POS" / Product Version 1.0.3 (exiftool)
 
 ### WINE QA (Omarchy)
@@ -237,3 +237,13 @@ PASS — renderer `hasRoot`, body `Set up TINDA POS`, DB created
 - `a54cb52` ci: drop bogus blockmap-in-latest.yml check (blockmap is sibling file)
 - `0b14eee` ci: locate better_sqlite3.node recursively (pnpm asar layout)
 - `c8d6400` ci: check better-sqlite3 win32-x64 prebuild (prebuilds layout)
+
+## v1.0.3 STABLE RELEASE — PUBLISHED (2026-09-06)
+
+- Release source commit: `d05180414d2faf342003b209cf22789583c8b593`
+- Immutable tag: `v1.0.3` (points exactly to the release source commit)
+- Stable GitHub release: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.3>
+- Native Windows CI QA run `34034394935`: PASS — lint, typecheck, 119/119 tests, build, Setup/Portable packaging, metadata, better-sqlite3 binding, and both launch smokes
+- FINAL WINE SMOKE (Wine 11.16): PASS — fresh Portable and `win-unpacked` launched, renderer setup mounted, and SQLite DB creation succeeded
+- Public asset downloads and SHA-256 verification: PASS; `/releases/latest` resolves to `v1.0.3`
+- Accepted limitations: first complete production updater replacement cycle waits for a newer stable release; physical thermal-printer validation remains pending
