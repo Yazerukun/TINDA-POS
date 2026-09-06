@@ -138,7 +138,7 @@ If the safety backup fails, Reset Database is cancelled without deleting the act
 
 ## Transactions and Receipt Generation
 
-Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Windows receipt-printer support is implemented, including printer discovery, Test Print, Auto Print, and manual Print Receipt. Native Windows/thermal-printer validation is still pending.
+Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Windows receipt-printer support is implemented, including printer discovery, Test Print, Auto Print, and manual Print Receipt. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.
 
 ## Receipt Printer Setup
 
@@ -302,4 +302,4 @@ Files for the current stable release:
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 
-The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending; no printer model is claimed certified.
+The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.
