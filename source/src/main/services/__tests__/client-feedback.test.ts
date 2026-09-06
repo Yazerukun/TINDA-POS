@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import type { WebContents } from 'electron'
 import type { Sale } from '../../../shared/types'
@@ -29,16 +30,17 @@ describe('data location modes', () => {
   })
 
   it('resolves Portable Data beside the verified portable executable directory without hardcoding a drive', () => {
-    expect(portableRootFromEnvironment({ PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' })).toMatch(/E:\/Apps\/TINDA POS\/TindaPOS-Data$/)
+    const fwd = (p: string) => p.replaceAll(path.sep, '/')
+    expect(fwd(portableRootFromEnvironment({ PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' }))).toMatch(/E:\/Apps\/TINDA POS\/TindaPOS-Data$/)
     const info = resolveDataLocation({ sharedRoot: 'C:/shared', env: { PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' }, saved: { mode: 'PORTABLE', portableRoot: 'E:/Apps/TINDA POS/TindaPOS-Data' } })
     expect(info.mode).toBe('PORTABLE')
-    expect(info.databaseFile).toMatch(/TindaPOS-Data\/database\/tindapos\.db$/)
+    expect(fwd(info.databaseFile)).toMatch(/TindaPOS-Data\/database\/tindapos\.db$/)
   })
 
   it('forces isolated QA profiles to Shared mode even if a portable preference exists', () => {
     const info = resolveDataLocation({ sharedRoot: '/real', env: { TINDA_DATA_DIR: '/tmp/tinda-qa', PORTABLE_EXECUTABLE_DIR: '/media/usb' }, saved: { mode: 'PORTABLE', portableRoot: '/media/usb/TindaPOS-Data' } })
     expect(info.mode).toBe('SHARED')
-    expect(info.root).toBe('/tmp/tinda-qa')
+    expect(info.root.replaceAll(path.sep, '/')).toMatch(/\/tmp\/tinda-qa$/)
   })
 })
 
