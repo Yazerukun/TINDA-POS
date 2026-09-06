@@ -85,4 +85,39 @@ First release is **manual, one-time**: download the v1.0.3 EXE and run it. After
 - **NO** GitHub tag/release assets/Latest for v1.0.3.
 - `v1.0.2-hotfix.1` untouched (remains the live stable release with its original asset digests).
 - No force push, no tag deletion, no `installers/` asset re-upload.
-- Source + docs changes on `master` are **uncommitted** and awaiting review.
+- Source + docs changes are **committed and pushed** to `origin/master` (branch now at latest CI-verified commit).
+
+---
+
+## 9. PHASE 2 — NATIVE WINDOWS CI QA (network of record for this delivery)
+
+Pushed to `origin/master`, then validated end-to-end on `windows-latest` via
+`.github/workflows/windows-v1.0.3-qa.yml` (`workflow_dispatch`, pinned commit, **no publish**).
+
+### CI gate results — **ALL PASS**
+| Step | Result |
+| --- | --- |
+| Lint / typecheck / tests | PASS (119/119) |
+| Build + package Setup + Portable | PASS |
+| exe metadata | FileVersion 1.0.3, Product TINDA POS |
+| latest.yml | version 1.0.3, Setup listed (blockmap verified as sibling file) |
+| win32 better-sqlite3 binding | `app.asar.unpacked/node_modules/better-sqlite3/prebuilds/win32-x64.node` present |
+| Installed launch smoke (`TindaPOS.exe`) | PASS — renderer `hasRoot`, "Set up TINDA POS" wizard, DB created (`AppData\Roaming\TINDA POS\database\tindapos.db`, 323,584 B) |
+| Portable launch smoke | PASS — same renderer + DB attests (Shared AppData by design) |
+| docs:pdf (best-effort) | PASS on runner |
+
+### Issues found & fixed during CI bring-up
+- pnpm 11 fresh-install: legacy `onlyBuiltDependencies` no longer grants builds; pnpm
+  auto-writes `allowBuilds: {pkg: "set this to true or false"}` placeholders and errors
+  (`ERR_PNPM_IGNORED_BUILDS`). Fixed with `allowBuilds: {*: true}` map + lockfile refresh.
+- `client-feedback.test.ts` had 2 Linux-only path assertions → made separator-agnostic.
+- Workflow self-check bugs: 3-part `FileVersion` (`1.0.3` vs `1.0.3.0`), UTF-8 BOM,
+  multiline anchors, blockmap-is-a-sibling-file, pnpm prebuilds layout — all fixed.
+
+### Remaining native-Windows items (PENDING — need a real machine / future release source)
+- Setup install→uninstall→reinstall without store-data loss (physical installer walk).
+- v1.0.2-hotfix.1 → v1.0.3 existing-store upgrade + `PRAGMA integrity_check`.
+- Full live updater replacement `download → quitAndInstall → relaunch` (requires a real
+  newer stable source; simulated with mocked transports in `update-service.test.ts`).
+
+**Phase 2 verdict: NATIVE WINDOWS APP/INSTALL QA = PASS · FULL LIVE UPDATER REPLACEMENT QA = PENDING.**

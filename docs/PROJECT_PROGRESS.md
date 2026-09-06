@@ -187,3 +187,54 @@
 
 ### Commit
 - `fa29870` feat: in-app update system v1.0.3 (not released) — branch `master` (28 files, +2030/−73). Not pushed. Artifacts stay under `source/builds/` (gitignored).
+
+---
+
+## v1.0.3 PHASE 2 — PUSH + NATIVE WINDOWS CI QA (Phase 24 — 2026-09-06)
+
+> Source pushed to `origin/master` (`6241688` → `cd50e53` → fixes). GitHub Actions
+> **NATIVE WINDOWS CI QA** (`windows-latest`) green. `v1.0.2-hotfix.1` (only
+> tagged release) untouched. **NO v1.0.3 tag / release / assets.**
+
+### What happened
+- Pushed v1.0.3 commits; HEAD == origin/master == `*latest*` (see git log below).
+- Added `.github/workflows/windows-v1.0.3-qa.yml` (`workflow_dispatch`, pins commit,
+  no publish) + `source/scripts/qa/windows-smoke.mjs` (CDP-based native launch QA:
+  renderer up, first-run wizard reachable, AppData SQLite DB created).
+- Fixed pnpm-11 install on fresh machines: `pnpm-workspace.yaml` now uses the
+  **`allowBuilds` map** (`pkg: true`) — `onlyBuiltDependencies` is legacy and pnpm
+  auto-writes `"set this to true or false"` placeholders + fails. Also refreshed
+  lockfile (in-range minors only).
+- Fixed cross-platform test (`client-feedback.test.ts` path assertions) — 2 tests
+  failed on Windows only.
+
+### Native Windows CI QA run — PASS (all steps)
+lint · typecheck · **tests 119/119** · build · package Setup+Portable ·
+exe metadata (FileVersion 1.0.3, Product TINDA POS) · `latest.yml` (version 1.0.3,
+Setup listed; blockmap is a sibling file, not listed) ·
+`better-sqlite3/prebuilds/win32-x64.node` present ·
+**launch smokes**: installed `TindaPOS.exe` PASS + portable `TindaPOS-Portable-1.0.3.exe`
+PASS — renderer `hasRoot`, body `Set up TINDA POS`, DB created
+`C:\Users\runneradmin\AppData\Roaming\TINDA POS\database\tindapos.db` (323584 B).
+
+### Still pending (native physical)
+- Setup install/uninstall/reinstall persistence (needs a real machine install)
+- v1.0.2-hotfix.1 → v1.0.3 data upgrade walk (needs existing-store restore)
+- Full live updater replacement (`download → quitAndInstall → relaunch`) with a
+  real newer public/private update source; simulated via mocked transports in unit
+  tests only. **Result today: NATIVE WINDOWS APP/INSTALL QA = PASS, FULL LIVE UPDATER
+  REPLACEMENT QA = PENDING.**
+
+### Commit trail (Phase 2)
+- `6241688` docs: record v1.0.3 commit fa29870 in project progress
+- `cd50e53` ci: add native Windows v1.0.3 QA workflow + CDP smoke harness
+- `b5e4fc5` fix: use pnpm 11 allowBuilds map for native build scripts
+- `e9b31e3` chore: refresh pnpm lockfile (in-range minor updates)
+- `baee08d` test: make data-location path assertions cross-platform (CI Windows)
+- `150a4d8` test: null-guard portable root for typecheck
+- `89e5dab` ci: accept 3-part FileVersion on native Windows metadata check
+- `aa63769` ci: strip BOM/whitespace before matching latest.yml
+- `0aef169` ci: use multiline anchors for latest.yml version check
+- `a54cb52` ci: drop bogus blockmap-in-latest.yml check (blockmap is sibling file)
+- `0b14eee` ci: locate better_sqlite3.node recursively (pnpm asar layout)
+- `c8d6400` ci: check better-sqlite3 win32-x64 prebuild (prebuilds layout)
