@@ -1,0 +1,112 @@
+name: TINDA POS v1.0.3 Native Windows CI QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit SHA / ref to test (default: latest master)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  windows-ci-qa:
+    name: NATIVE WINDOWS CI QA
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+    steps:
+      - name: Resolve ref
+        id: ref
+        shell: bash
+        run: |
+          if [ -z "${{ github.event.inputs.commit }}" ]; then
+            echo "ref=master" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.event.inputs.commit }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
+          fetch-depth: 1
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: source/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: source
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: source
+        run: pnpm run lint
+
+      - name: Typecheck
+        working-directory: source
+        run: pnpm run typecheck
+
+      - name: Tests
+        working-directory: source
+        run: pnpm test
+
+      - name: Build (main / preload / renderer)
+        working-directory: source
+        run: pnpm run build
+
+      - name: Package Windows Setup + Portable (no publish)
+        working-directory: source
+        run: pnpm exec electron-builder --win --publish never
+
+      - name: Verify executable metadata + latest.yml + blockmap
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $b = 'source/builds'
+          if (-not (Test-Path "$b/TindaPOS-Setup-1.0.3.exe")) { throw 'Setup exe missing' }
+          if (-not (Test-Path "$b/TindaPOS-Portable-1.0.3.exe")) { throw 'Portable exe missing' }
+          if (-not (Test-Path "$b/TindaPOS-Setup-1.0.3.exe.blockmap")) { throw 'blockmap missing' }
+          $v = (Get-Item "$b/TindaPOS-Setup-1.0.3.exe").VersionInfo
+          Write-Output "Setup FileVersion=$($v.FileVersion) Product=$($v.ProductName) ProductVersion=$($v.ProductVersion)"
+          if ($v.FileVersion -ne '1.0.3.0') { throw "Unexpected FileVersion $($v.FileVersion)" }
+          if ($v.ProductName -ne 'TINDA POS') { throw "Unexpected ProductName $($v.ProductName)" }
+          $yml = Get-Content "$b/latest.yml" -Raw
+          if ($yml -notmatch '^version:\s*1\.0\.3\s*$') { throw 'latest.yml version != 1.0.3' }
+          if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe') { throw 'latest.yml missing Setup asset' }
+          if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe.blockmap') { throw 'latest.yml missing blockmap' }
+          Write-Output 'latest.yml OK (version 1.0.3, Setup + blockmap listed)'
+
+      - name: Verify win32-x64 better-sqlite3 native binding
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $binding = 'source/builds/win-unpacked/resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node'
+          if (-not (Test-Path $binding)) { throw "better-sqlite3 native binding missing: $binding" }
+          Write-Output "win32 better-sqlite3 binding present: $binding"
+          $upd = 'source/builds/win-unpacked/resources/app-update.yml'
+          if (-not (Test-Path $upd)) { throw 'app-update.yml missing' }
+          Write-Output 'app-update.yml present'
+
+      - name: Native packaged launch smoke (installed edition)
+        shell: bash
+        run: node source/scripts/qa/windows-smoke.mjs "source/builds/win-unpacked/TindaPOS.exe" --label installed
+
+      - name: Native portable launch smoke
+        shell: bash
+        run: node source/scripts/qa/windows-smoke.mjs "source/builds/TindaPOS-Portable-1.0.3.exe" --label portable
+
+      - name: User guide PDF (best-effort on runner)
+        working-directory: source
+        continue-on-error: true
+        run: pnpm run docs:pdf

@@ -18,7 +18,7 @@ pnpm-store/
 
 # === Wine prefix ===
 .wine/
-qa/
+/qa/
 
 # === Installers (large .exe binaries) ===
 *.exe
