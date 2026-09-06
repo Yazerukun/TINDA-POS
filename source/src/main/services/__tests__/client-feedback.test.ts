@@ -31,7 +31,7 @@ describe('data location modes', () => {
 
   it('resolves Portable Data beside the verified portable executable directory without hardcoding a drive', () => {
     const fwd = (p: string) => p.replaceAll(path.sep, '/')
-    expect(fwd(portableRootFromEnvironment({ PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' }))).toMatch(/E:\/Apps\/TINDA POS\/TindaPOS-Data$/)
+    expect(fwd(portableRootFromEnvironment({ PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' }) ?? '')).toMatch(/E:\/Apps\/TINDA POS\/TindaPOS-Data$/)
     const info = resolveDataLocation({ sharedRoot: 'C:/shared', env: { PORTABLE_EXECUTABLE_DIR: 'E:/Apps/TINDA POS' }, saved: { mode: 'PORTABLE', portableRoot: 'E:/Apps/TINDA POS/TindaPOS-Data' } })
     expect(info.mode).toBe('PORTABLE')
     expect(fwd(info.databaseFile)).toMatch(/TindaPOS-Data\/database\/tindapos\.db$/)
