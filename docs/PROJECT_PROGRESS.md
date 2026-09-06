@@ -185,5 +185,5 @@
 - Startup auto-update check runs (headless TLS attempt fails fast, app continues normally → offline-first silent-fail path observed)
 - **Limit**: `PORTABLE_EXECUTABLE_DIR` is not propagated into Electron's env by the Wine process launcher, so the portable `TindaPOS-Data\` staging + *Show in folder* path was verified by unit tests only; native Windows restart-and-install fidelity remains **PENDING** (needs a real Win10/11 or CI Windows runner)
 
-### Uncommitted
-- Branch `master`; all v1.0.3 source + docs changes currently uncommitted (commit after review).
+### Commit
+- `fa29870` feat: in-app update system v1.0.3 (not released) — branch `master` (28 files, +2030/−73). Not pushed. Artifacts stay under `source/builds/` (gitignored).
