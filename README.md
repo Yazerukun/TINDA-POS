@@ -22,6 +22,8 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 **Current stable release: v1.0.3** — adds the in-app update system.
 
+Released September 6, 2026. This is a stable release, not a prerelease.
+
 ## Features
 
 ### 💰 Point of Sale
@@ -55,7 +57,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - View full receipt for any sale
 - Refund items (stock automatically restored)
 - Void mistaken sales (stock restored, utang removed)
-- Reconstruct receipt details anytime; Windows receipt-printer support is implemented — printer discovery, Test Print, Auto Print, and manual Print Receipt (native Windows/thermal-printer validation still pending)
+- Reconstruct receipt details anytime; Windows receipt-printer support is implemented — printer discovery, Test Print, Auto Print, and manual Print Receipt (native Windows application/packaging QA passed; physical thermal-printer validation remains pending)
 
 ### ⏱️ Shifts
 - Auto-opens on first sale of the day
@@ -101,6 +103,15 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - **Operation-safe:** updates cannot interrupt a checkout, payment, refund, void, backup, restore, Start New Store, or reset ("Please finish the current operation before installing the update.").
 - **Offline-first:** check failures are silent; TINDA POS keeps working fully offline.
 - HTTPS only, official repo only (`Yazerukun/TINDA-POS`), nothing remote is ever executed.
+
+## Release QA & Verification
+
+- Source gates: lint, strict typecheck, production build, PDF generation, and `git diff --check` all pass.
+- Automated tests: **119/119 passing**, including updater, backup protection, data-location, printing, holds, restore rollback, and end-to-end workflows.
+- Native Windows CI run `34034394935`: PASS for Setup and Portable packaging, renderer startup, SQLite database creation, `better-sqlite3` win32-x64 loading, and both launch smokes.
+- FINAL WINE SMOKE (Wine 11.16): PASS for fresh Portable and `win-unpacked` builds; first-run setup renderer and SQLite database creation verified.
+- Public release verification: all six release assets download successfully, published SHA-256 checksums match, and `/releases/latest` resolves to v1.0.3.
+- Accepted limitations: the first complete production updater replacement cycle will be validated when a newer stable release exists; physical thermal-printer QA remains pending.
 
 ## Updating from v1.0.2 Hotfix 1
 
