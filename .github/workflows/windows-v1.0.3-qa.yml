@@ -79,7 +79,7 @@ jobs:
           if (-not (Test-Path "$b/TindaPOS-Setup-1.0.3.exe.blockmap")) { throw 'blockmap missing' }
           $v = (Get-Item "$b/TindaPOS-Setup-1.0.3.exe").VersionInfo
           Write-Output "Setup FileVersion=$($v.FileVersion) Product=$($v.ProductName) ProductVersion=$($v.ProductVersion)"
-          if ($v.FileVersion -ne '1.0.3.0') { throw "Unexpected FileVersion $($v.FileVersion)" }
+          if ($v.FileVersion -notmatch '^1\.0\.3(\.0)?$') { throw "Unexpected FileVersion $($v.FileVersion)" }
           if ($v.ProductName -ne 'TINDA POS') { throw "Unexpected ProductName $($v.ProductName)" }
           $yml = Get-Content "$b/latest.yml" -Raw
           if ($yml -notmatch '^version:\s*1\.0\.3\s*$') { throw 'latest.yml version != 1.0.3' }
