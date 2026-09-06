@@ -81,7 +81,7 @@ jobs:
           Write-Output "Setup FileVersion=$($v.FileVersion) Product=$($v.ProductName) ProductVersion=$($v.ProductVersion)"
           if ($v.FileVersion -notmatch '^1\.0\.3(\.0)?$') { throw "Unexpected FileVersion $($v.FileVersion)" }
           if ($v.ProductName -ne 'TINDA POS') { throw "Unexpected ProductName $($v.ProductName)" }
-          $yml = Get-Content "$b/latest.yml" -Raw
+          $yml = (Get-Content "$b/latest.yml" -Raw).TrimStart([char]0xFEFF).Trim()
           if ($yml -notmatch '^version:\s*1\.0\.3\s*$') { throw 'latest.yml version != 1.0.3' }
           if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe') { throw 'latest.yml missing Setup asset' }
           if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe.blockmap') { throw 'latest.yml missing blockmap' }
