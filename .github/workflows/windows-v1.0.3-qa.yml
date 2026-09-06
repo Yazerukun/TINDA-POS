@@ -90,9 +90,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $binding = 'source/builds/win-unpacked/resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node'
-          if (-not (Test-Path $binding)) { throw "better-sqlite3 native binding missing: $binding" }
-          Write-Output "win32 better-sqlite3 binding present: $binding"
+          $binding = Get-ChildItem -Recurse 'source/builds/win-unpacked/resources/app.asar.unpacked' -Filter 'better_sqlite3.node' | Select-Object -First 1
+          if (-not $binding) { throw 'better-sqlite3 native binding missing under app.asar.unpacked' }
+          Write-Output "win32 better-sqlite3 binding present: $($binding.FullName)"
           $upd = 'source/builds/win-unpacked/resources/app-update.yml'
           if (-not (Test-Path $upd)) { throw 'app-update.yml missing' }
           Write-Output 'app-update.yml present'
