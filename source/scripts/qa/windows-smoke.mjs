@@ -135,6 +135,22 @@ function killTree() {
   }
 }
 
+async function waitForRoot(target, timeoutS = 60) {
+  const deadline = Date.now() + timeoutS * 1000;
+  let page = null;
+  while (Date.now() < deadline) {
+    if (exited) return null;
+    try {
+      page = await evaluateInPage(target);
+      if (page.hasRoot) return page;
+    } catch (e) {
+      console.warn(`[${label}] CDP evaluate retry: ${e.message}`);
+    }
+    await sleep(1500);
+  }
+  return page;
+}
+
 async function main() {
   startApp();
   let pass = true;
@@ -146,13 +162,18 @@ async function main() {
   } else {
     console.log(`[${label}] CDP page target up: ${target.url || target.title}`);
     try {
-      const page = await evaluateInPage(target);
-      console.log(`[${label}] renderer: title=${JSON.stringify(page.title)} hasRoot=${page.hasRoot}`);
-      console.log(`[${label}] body text: ${JSON.stringify(page.text)}`);
-      if (!page.hasRoot) {
-        console.error(`[${label}] FAIL: renderer root (#root) not found`);
+      const page = await waitForRoot(target);
+      if (!page) {
+        console.error(`[${label}] FAIL: app exited while waiting for renderer root (#root)`);
         pass = false;
       } else {
+        console.log(`[${label}] renderer: title=${JSON.stringify(page.title)} hasRoot=${page.hasRoot}`);
+        console.log(`[${label}] body text: ${JSON.stringify(page.text)}`);
+      }
+      if (page && !page.hasRoot) {
+        console.error(`[${label}] FAIL: renderer root (#root) not found after wait`);
+        pass = false;
+      } else if (page) {
         console.log(`[${label}] login/setup renderer is reachable`);
       }
     } catch (e) {
