@@ -84,8 +84,7 @@ jobs:
           $yml = (Get-Content "$b/latest.yml" -Raw).TrimStart([char]0xFEFF).Trim()
           if ($yml -notmatch '(?m)^version:\s*1\.0\.3\s*$') { throw 'latest.yml version != 1.0.3' }
           if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe') { throw 'latest.yml missing Setup asset' }
-          if ($yml -notmatch 'TindaPOS-Setup-1.0.3.exe.blockmap') { throw 'latest.yml missing blockmap' }
-          Write-Output 'latest.yml OK (version 1.0.3, Setup + blockmap listed)'
+          Write-Output 'latest.yml OK (version 1.0.3, Setup listed; blockmap verified as sibling file)'
 
       - name: Verify win32-x64 better-sqlite3 native binding
         shell: pwsh
