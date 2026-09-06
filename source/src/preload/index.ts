@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { TindaApi } from '@shared/ipc'
+import type { IpcRendererEvent } from 'electron'
 import type { CheckoutPayload, RefundPayload, VoidPayload, CompleteSetupPayload } from '@shared/ipc'
+import type { UpdateStatusEvent } from '@shared/update'
 
 const invoke = <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => ipcRenderer.invoke(channel, ...args)
 const api: TindaApi = {
@@ -11,6 +13,20 @@ const api: TindaApi = {
     openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
     isOnline: () => invoke<boolean>('app:isOnline')
+  },
+  update: {
+    state: () => invoke<UpdateStatusEvent>('update:state'),
+    check: (manual) => invoke<UpdateStatusEvent>('update:check', manual),
+    download: () => invoke<UpdateStatusEvent>('update:download'),
+    install: () => invoke<UpdateStatusEvent>('update:install'),
+    dismiss: () => invoke<void>('update:dismiss'),
+    onEvent: (cb) => {
+      const listener = (_e: IpcRendererEvent, event: UpdateStatusEvent): void => cb(event)
+      ipcRenderer.on('update:event', listener)
+      return () => {
+        ipcRenderer.removeListener('update:event', listener)
+      }
+    }
   },
   auth: {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),

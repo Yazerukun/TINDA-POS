@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { registerIpcHandlers } from './ipc'
 import { getDb, closeDb, appDirs } from './database/connection'
 import { getSettings } from './repositories/settings'
+import { startAutoUpdateCheck } from './services/updateRuntime'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -89,6 +90,7 @@ app.whenReady().then(() => {
     ])
   )
   createWindow()
+  startAutoUpdateCheck()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

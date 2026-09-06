@@ -91,6 +91,20 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - Fast PIN login for daily use
 - Only admins can void sales
 
+## In-App Update System (v1.0.3 — implemented, not yet released)
+
+The next version adds a safe in-app update system. This feature is **implemented in the source and will ship with v1.0.3**; it is not live in any published release yet.
+
+- **Settings → About → Software Update** — check for updates, see What's New, download, and install without visiting a website.
+- **Automatic check** — once per day on startup, checking the official GitHub release page for **stable versions only** (drafts/prereleases/invalid versions ignored).
+- **Non-intrusive notification** — never blocks checkout.
+- **Installed editions:** download the update, then **Restart & Install** only when you choose to. A validated **safety backup** of the store database is created before every update.
+- **Portable edition:** never overwrites itself — downloads the new Portable EXE to `Downloads\TINDA-POS-Updates`, and you run it from there. `TindaPOS-Data\` is always preserved.
+- **Operation-safe:** updates cannot interrupt a checkout, payment, refund, void, backup, restore, Start New Store, or reset ("Please finish the current operation before installing the update.").
+- **Offline-first:** check failures are silent; TINDA POS keeps working fully offline.
+- HTTPS only, official repo only (`Yazerukun/TINDA-POS`), nothing remote is ever executed.
+- First upgrade from v1.0.2 Hotfix 1 to v1.0.3 is a normal manual download; later versions update in place.
+
 ## What's New in v1.0.2 Hotfix 1
 
 - Windows receipt-printer support: printer auto-detection, **Refresh Printers**, **Test Print**, **Auto Print After Sale**, and **Manual Print Receipt**

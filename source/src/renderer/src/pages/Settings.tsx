@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2 } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2, Download, Sparkles } from 'lucide-react'
 import type { BackupInfo, User } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel } from '@shared/printer'
@@ -7,6 +7,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useUpdate } from '../stores/update'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'ABOUT'
 
@@ -179,23 +180,104 @@ function AboutTab(): React.JSX.Element {
     } catch { toastError('Could not copy number') }
   }
   return (
-    <div className="card max-w-xl overflow-hidden">
-      <div className="developer-card p-8 text-center">
-        <div className="coffee-float relative z-10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-pop ring-1 ring-white/10"><Coffee className="h-7 w-7" /></div>
-        <p className="dev-signature signature-reveal relative z-10 text-3xl italic text-white">Crafted with care</p>
-        <p className="mt-1 text-sm text-slate-400">by</p>
-        <p className="dev-signature signature-reveal relative z-10 text-2xl font-bold text-brand-300">Dev Francis</p>
-        <div className="mx-auto my-5 h-px max-w-xs bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
-        <p className="text-sm text-slate-300">TINDA POS is free. If it helps your store, you may support the developer with a small coffee donation.</p>
-        <button onClick={() => void copyMaya()} className="donation-card mx-auto mt-4 flex items-center gap-3 rounded-xl px-5 py-3 text-left">
-          <div className="maya-logo-shell flex h-11 w-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-card"><MayaMark /></div>
-          <span><span className="dev-signature block text-base font-bold text-brand-300">Buy me a coffee</span><span className="font-mono text-lg font-bold tracking-wider text-white">0991 225 5156</span><span className="block text-[9px] uppercase tracking-[0.18em] text-slate-500">Maya · tap to copy</span></span>
-          <Copy className="ml-2 h-4 w-4 text-slate-400" />
-        </button>
-        <p className="mt-3 text-[10px] text-slate-600">Donations are optional and do not unlock any features.</p>
+    <div className="max-w-xl space-y-4">
+      <SoftwareUpdatePanel />
+      <div className="card overflow-hidden">
+        <div className="developer-card p-8 text-center">
+          <div className="coffee-float relative z-10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-pop ring-1 ring-white/10"><Coffee className="h-7 w-7" /></div>
+          <p className="dev-signature signature-reveal relative z-10 text-3xl italic text-white">Crafted with care</p>
+          <p className="mt-1 text-sm text-slate-400">by</p>
+          <p className="dev-signature signature-reveal relative z-10 text-2xl font-bold text-brand-300">Dev Francis</p>
+          <div className="mx-auto my-5 h-px max-w-xs bg-gradient-to-r from-transparent via-brand-500/50 to-transparent" />
+          <p className="text-sm text-slate-300">TINDA POS is free. If it helps your store, you may support the developer with a small coffee donation.</p>
+          <button onClick={() => void copyMaya()} className="donation-card mx-auto mt-4 flex items-center gap-3 rounded-xl px-5 py-3 text-left">
+            <div className="maya-logo-shell flex h-11 w-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-card"><MayaMark /></div>
+            <span><span className="dev-signature block text-base font-bold text-brand-300">Buy me a coffee</span><span className="font-mono text-lg font-bold tracking-wider text-white">0991 225 5156</span><span className="block text-[9px] uppercase tracking-[0.18em] text-slate-500">Maya · tap to copy</span></span>
+            <Copy className="ml-2 h-4 w-4 text-slate-400" />
+          </button>
+          <p className="mt-3 text-[10px] text-slate-600">Donations are optional and do not unlock any features.</p>
+        </div>
       </div>
     </div>
   )
+}
+
+function SoftwareUpdatePanel(): React.JSX.Element | null {
+  const { event, check, download, dismiss } = useUpdate()
+  const [busy, setBusy] = useState(false)
+  const [showNotes, setShowNotes] = useState(true)
+  if (!event) return null
+
+  const installed = event.installedVersion
+  const label = statusLabel(event.status)
+  const note = event.message
+  const available = event.available?.version ?? ''
+
+  return (
+    <div className="card p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 text-sm font-bold text-white"><Download className="h-4 w-4 text-brand-400" /> Software Update</h3>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${event.status === 'ERROR' || event.status === 'OFFLINE' || event.status === 'UNABLE_TO_CHECK' ? 'bg-red-500/15 text-red-300' : event.status === 'CHECKING' || event.status === 'DOWNLOADING' ? 'bg-brand-500/15 text-brand-300' : 'bg-emerald-500/15 text-emerald-300'}`}>{label}</span>
+      </div>
+      <div className="space-y-1 text-sm text-slate-300">
+        <p>Installed version: <span className="font-mono text-white">v{installed}</span></p>
+        {available && <p>Available version: <span className="font-mono text-white">v{available}</span></p>}
+        {event.lastCheckedAt && <p className="text-xs text-slate-500">Last checked: {new Date(event.lastCheckedAt).toLocaleString()}</p>}
+        {note && <p className="pt-1 text-xs text-slate-400">{note}</p>}
+        {event.status === 'DOWNLOADING' && event.progress && (
+          <div className="pt-2">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
+              <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${event.progress.percent}%` }} />
+            </div>
+            <p className="pt-1 text-xs text-slate-500">{event.progress.percent}%</p>
+          </div>
+        )}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => { setBusy(true); void check(true).finally(() => setBusy(false)) }}
+          disabled={busy || event.status === 'CHECKING' || event.status === 'DOWNLOADING'}
+          className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs"
+        >
+          {event.status === 'CHECKING' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          Check for Updates
+        </button>
+        {event.status === 'UPDATE_AVAILABLE' && event.available && (
+          <button onClick={() => { setBusy(true); void download().finally(() => setBusy(false)) }} disabled={busy} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Download className="h-3.5 w-3.5" /> Download Update
+          </button>
+        )}
+        {event.status === 'UPDATE_AVAILABLE' && (
+          <button onClick={() => void dismiss()} className="btn-ghost px-3 py-1.5 text-xs">Later</button>
+        )}
+        {event.available && (
+          <button onClick={() => setShowNotes((v) => !v)} className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs"><Sparkles className="h-3.5 w-3.5" /> {showNotes ? 'Hide What\'s New' : 'What\'s New'}</button>
+        )}
+      </div>
+      {showNotes && event.available && (
+        <div className="mt-3 max-h-44 overflow-y-auto rounded-lg bg-ink-900/70 p-3 text-xs leading-relaxed text-slate-300">
+          <p className="mb-1 font-semibold text-white">What&apos;s New in v{event.available.version}</p>
+          <pre className="whitespace-pre-wrap font-sans">{event.available.releaseNotes}</pre>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'CHECKING': return 'Checking for updates…'
+    case 'UP_TO_DATE': return 'Up to date'
+    case 'UPDATE_AVAILABLE': return 'Update available'
+    case 'DOWNLOADING': return 'Downloading'
+    case 'DOWNLOADED': return 'Downloaded'
+    case 'READY_TO_INSTALL': return 'Ready to install'
+    case 'OFFLINE': return 'Offline'
+    case 'UNABLE_TO_CHECK': return 'Unable to check'
+    case 'ERROR': return 'Update failed'
+    case 'DISMISSED': return 'Up to date'
+    default: return 'Idle'
+  }
 }
 
 function MayaMark(): React.JSX.Element {

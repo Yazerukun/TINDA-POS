@@ -1,29 +1,19 @@
-# TINDA POS v1.0.2 User Manual
+# TINDA POS v1.0.3 User Manual
 
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
-This guide covers **TINDA POS v1.0.2 Hotfix 1** — the current stable release. The app's internal version stays 1.0.2; "Hotfix 1" identifies the latest published build.
+This guide covers **TINDA POS v1.0.3**, which adds the in-app update system. v1.0.3 is the next release after the current stable **v1.0.2 Hotfix 1** and is not published yet.
 
-## What's New in v1.0.2 Hotfix 1
+## What's New in v1.0.3
 
-- **Start New Store** — create a brand-new, empty store from Settings → Data.
-- **Clearer Settings → Data** — the screen now explains the Shared AppData vs Portable data locations and how to switch.
-- **Portable Data Mode** — keep the store database beside the Portable EXE in `TindaPOS-Data\`.
-  - **Copy Current Store** — carry the existing store into the portable data folder.
-  - Switch back to **Shared AppData** anytime.
-- **Windows printer discovery** — TINDA POS lists the thermal receipt printers installed in Windows.
-- **Refresh Printers** — re-discover printers, including ones installed while TINDA POS is open.
-- **Test Print** — prints a test slip without creating a sale.
-- **Auto Print After Sale** — silently prints a receipt after each completed sale.
-- **Manual Print Receipt** — reprint an existing sale from Transactions.
-- **80mm default receipt** — clearer, more readable layout out of the box.
-- **58mm support** — for compact receipt printers.
-- **Custom receipt header/footer** — store-specific text now appears on printed receipts.
-- **Cash/SUKLI correction** — cash received is entered in pesos, not raw cents.
-- **Full-refund status fix** — continuing a partial refund now ends with the sale **REFUNDED**.
-- **Restore temporary-file cleanup** — leftover `.restore-*` sidecar files are removed after restore.
-- **71/71 automated tests PASS**, lint PASS, typecheck PASS, production build PASS.
-- Native Windows and physical thermal-printer validation is still pending (see below).
+- **In-app Software Update** — check for updates, see What's New, download, and update directly from Settings → About → Software Update, without visiting a website.
+- **Automatic update check** — on startup, TINDA POS quietly checks the official GitHub release page (at most once per day). If an update is available, a non-intrusive notification appears.
+- **What's New** — released updates show their change notes as plain text inside the update prompt. Nothing from the internet is ever executed.
+- **One-click Restart & Install** — installed (Setup) builds download the update and offer **Restart & Install**; the app never restarts on its own.
+- **Portable-friendly updates** — the Portable edition never overwrites itself. It downloads the new Portable EXE into the `Downloads\TINDA-POS-Updates` folder, and you run the new version from there.
+- **Safety first** — before an update installs, TINDA POS creates and validates a safety backup of your store database. Updates are held if that backup cannot be made, and you are never interrupted in the middle of a checkout, refund, backup, restore, or store reset.
+- **Stable-only updates** — only released stable versions are offered; drafts, prereleases, and invalid versions are ignored.
+- **Offline-friendly** — with no internet, checks fail quietly and TINDA POS keeps working fully offline.
 
 ## Install and first setup
 
@@ -270,13 +260,44 @@ Stock is restored based on the refunded quantities, and any related utang/credit
 - A rejected restore usually means the file is missing, corrupted, or not a compatible TINDA POS SQLite backup.
 - If a receipt does not print, check the printer is powered on, installed in Windows, and selected in Settings → Receipt / Printer, then use **Refresh Printers** and **Test Print**.
 
+## Software Update
+
+TINDA POS can update itself from Settings → About → **Software Update**.
+
+- **Installed version** — the version you are running is always shown here.
+- **Check for Updates** — checks the official GitHub release page now. Use this any time; the automatic check runs at most once per day.
+- Update states shown include **Checking**, **Up to date**, **Update available**, **Downloading**, **Downloaded**, **Ready to install**, **Offline**, and **Unable to check**.
+- When an update is available you will also see a notification in the corner of the screen — it never blocks or interrupts checkout.
+- **What's New** — shows the plain-text change notes for the update. TINDA POS never runs or renders remote content.
+- **Download Update** — downloads the updates. For installed (Setup) editions, TINDA POS first makes and validates a **safety backup** of your store database. If that backup cannot be created, the update stops and tells you.
+- **Restart & Install** — applies the downloaded update by restarting the app. This only happens when you choose it. Use **Install Later** to keep working if a customer is at the counter.
+- During checkout, payment, refund, void, backup, restore, **Start New Store**, or **Reset Database**, the install button is blocked with the message "Please finish the current operation before installing the update."
+
+### Portable edition updates
+
+The Portable EXE cannot replace itself while running:
+
+1. Choose **Download Update** — the new `TindaPOS-Portable-*.exe` is saved to `Downloads\TINDA-POS-Updates`.
+2. **Show in folder** — opens the Downloads folder for you.
+3. Close the old TINDA POS, then run the downloaded EXE from its own folder.
+
+Your store data is never in the program folder — it stays in your data location (Shared AppData, or `TindaPOS-Data\` beside a portable data folder), so moving to the new version does not touch your data.
+
+### Offline behavior
+
+If TINDA POS cannot reach the internet, the automatic check fails quietly. A manual **Check for Updates** reports "No internet connection. TINDA POS will continue working offline." — the store keeps working normally.
+
+### Updating from v1.0.2 Hotfix 1 to v1.0.3
+
+v1.0.2 Hotfix 1 predates the update system, so that first step to v1.0.3 is a normal manual upgrade: download the v1.0.3 Setup or Portable package from the GitHub release page and install/run it as usual. Once on v1.0.3, later versions update in place.
+
 ## Download
 
-**Latest Stable Release: TINDA POS v1.0.2 Hotfix 1**
+**Current Stable Release: TINDA POS v1.0.2 Hotfix 1** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
 
-Download: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
+**Next release (v1.0.3):** not published yet. When released it will appear at <https://github.com/Yazerukun/TINDA-POS/releases> and update automatically on all v1.0.3 installations thereafter.
 
-Files:
+Files for the current stable release:
 
 - `TindaPOS-Setup-1.0.2.exe` — Windows installer
 - `TindaPOS-Portable-1.0.2.exe` — no-install portable edition

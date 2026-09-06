@@ -27,7 +27,7 @@ function inlineMarkdown(value) {
 }
 
 function markdownToHtml(markdown) {
-  const lines = markdown.replace(/^# TINDA POS v1\.0\.2 User Manual\s*/u, '').split(/\r?\n/)
+  const lines = markdown.replace(/^# TINDA POS v1\.0\.3 User Manual\s*/u, '').split(/\r?\n/)
   const blocks = []
   let paragraph = []
   let listType = null
@@ -92,7 +92,7 @@ function markdownToHtml(markdown) {
 }
 
 const requiredContent = [
-  'TINDA POS v1.0.2', 'POS and Checkout', 'Cash and Sukli', 'GCash and Maya recording', 'Utang',
+  'TINDA POS v1.0.3', 'POS and Checkout', 'Cash and Sukli', 'GCash and Maya recording', 'Utang',
   'Split Payment', 'Hold Sale', 'Held Sales', 'Resume', 'Delete', 'survive app restart',
   'does not deduct stock', 'Inventory and Tingi Units', 'Settings → Data',
   '%APPDATA%\\TINDA POS\\database\\tindapos.db', 'Installer and Portable',
@@ -100,11 +100,13 @@ const requiredContent = [
   'restarts automatically', 'Reset Database', 'ADMIN/settings permission', 'type RESET exactly',
   'first-run wizard', 'ONLINE READY', 'OFFLINE READY', 'remains usable offline',
   'Receipt Generation', 'printer discovery, Test Print, Auto Print', 'manual Print Receipt',
-  'Native Windows/thermal-printer validation is still pending'
+  'Native Windows/thermal-printer validation is still pending',
+  'Software Update', 'Restart & Install', 'Check for Updates'
 ]
 
 const stalePrinterClaims = [
   'not integrated in v1.0.2',
+  'not integrated in v1.0.3',
   'direct physical-printer output is not yet integrated',
   'printing is not wired to a device'
 ]
@@ -120,7 +122,7 @@ function assertRequiredContent(text, label) {
 
 function documentHtml(markdown) {
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>TINDA POS v1.0.2 User Guide</title><style>
+<html><head><meta charset="utf-8"><title>TINDA POS v1.0.3 User Guide</title><style>
   @page { size: A4; margin: 18mm 16mm 20mm; }
   * { box-sizing: border-box; }
   html { font-family: Arial, Helvetica, sans-serif; color: #172033; font-size: 10.5pt; line-height: 1.5; }
@@ -140,8 +142,8 @@ function documentHtml(markdown) {
   pre { background: #f1f5f9; border-left: 1mm solid #10b981; padding: 3mm; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
   strong { color: #0f172a; }
 </style></head><body>
-  <section class="cover"><p class="brand">TINDA POS</p><p class="guide">User Guide</p><p class="version">v1.0.2 Hotfix 1</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
-  <main><h1 style="display:none">TINDA POS v1.0.2 User Manual</h1>${markdownToHtml(markdown)}</main>
+  <section class="cover"><p class="brand">TINDA POS</p><p class="guide">User Guide</p><p class="version">v1.0.3</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
+  <main><h1 style="display:none">TINDA POS v1.0.3 User Manual</h1>${markdownToHtml(markdown)}</main>
 </body></html>`
 }
 
@@ -188,7 +190,7 @@ async function main() {
     throw error
   }
 
-  process.stdout.write(`${JSON.stringify({ output: outputPath, bytes: check.length, pages: pageCount, version: '1.0.2' })}\n`)
+  process.stdout.write(`${JSON.stringify({ output: outputPath, bytes: check.length, pages: pageCount, version: '1.0.3' })}\n`)
 }
 
 void main().then(() => {

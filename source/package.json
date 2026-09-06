@@ -1,7 +1,7 @@
 {
   "name": "tinda-pos",
   "productName": "TINDA POS",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TINDA POS — Offline POS System for Sari-Sari Stores",
   "main": "out/main/index.js",
   "author": "TINDA POS",
@@ -27,6 +27,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "better-sqlite3": "^13.0.3",
+    "electron-updater": "^6.6.2",
     "lucide-react": "^1.37.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

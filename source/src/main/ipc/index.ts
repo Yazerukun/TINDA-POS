@@ -26,6 +26,8 @@ import * as printingSvc from '../services/printing'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
+import { beginCriticalOperation } from '../services/operationGuard'
+import { getUpdateService } from '../services/updateRuntime'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -256,16 +258,26 @@ handle('customers:approveOverlimit', (_e: IpcMainInvokeEvent, input: unknown) =>
 // ---- POS ----
 handle('pos:searchProducts', (_e: IpcMainInvokeEvent, q: string) => prodRepo.searchProductsSimple(db(), q))
 handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
-  user()
-  const v = require('../validation/schemas').validateCheckout(payload)
-  const completed = checkoutSvc.checkout(v)
-  const settings = settingRepo.getSettings(db())
-  return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
+  const release = beginCriticalOperation('CHECKOUT')
+  try {
+    user()
+    const v = require('../validation/schemas').validateCheckout(payload)
+    const completed = checkoutSvc.checkout(v)
+    const settings = settingRepo.getSettings(db())
+    return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
+  } finally {
+    release()
+  }
 })
 handle('pos:hold', (_e: IpcMainInvokeEvent, payload: unknown) => {
-  user()
-  const v = require('../validation/schemas').validateCheckout(payload)
-  return checkoutSvc.holdSale(v)
+  const release = beginCriticalOperation('HOLD_SALE')
+  try {
+    user()
+    const v = require('../validation/schemas').validateCheckout(payload)
+    return checkoutSvc.holdSale(v)
+  } finally {
+    release()
+  }
 })
 handle('pos:held', () => {
   sessionSvc.requirePermission('pos:resume-sale')
@@ -315,8 +327,22 @@ handle('printer:printReceipt', async (_e: IpcMainInvokeEvent, saleId: number) =>
 // ---- Transactions ----
 handle('transactions:list', (_e: IpcMainInvokeEvent, opts: unknown) => listSales(db(), (opts ?? {}) as object))
 handle('transactions:get', (_e: IpcMainInvokeEvent, id: number) => getSale(db(), id))
-handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0]))
-handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0]))
+handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
+  const release = beginCriticalOperation('REFUND')
+  try {
+    return txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
+  } finally {
+    release()
+  }
+})
+handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
+  const release = beginCriticalOperation('VOID')
+  try {
+    return txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
+  } finally {
+    release()
+  }
+})
 
 // ---- Expenses ----
 handle('expenses:categories', () => { user(); return expRepo.listExpenseCategories(db()) })
@@ -409,15 +435,25 @@ handle('reports:exportCsv', (_e: IpcMainInvokeEvent, kind: string, opts?: unknow
 // ---- Backup ----
 handle('backup:list', () => backupRepo.listBackups(db()))
 handle('backup:create', async (_e: IpcMainInvokeEvent, reason?: string) => {
-  sessionSvc.requirePermission('backup:manage')
-  const info = await backupRepo.createBackup(db(), 'MANUAL')
-  auditRepo.audit(db(), { action: 'BACKUP', user_id: user().id, reason: reason ?? 'Manual backup' })
-  return info
+  const release = beginCriticalOperation('BACKUP')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    const info = await backupRepo.createBackup(db(), 'MANUAL')
+    auditRepo.audit(db(), { action: 'BACKUP', user_id: user().id, reason: reason ?? 'Manual backup' })
+    return info
+  } finally {
+    release()
+  }
 })
 handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
-  sessionSvc.requirePermission('backup:manage')
-  backupRepo.restoreBackup(db(), filename)
-  dataManagementSvc.relaunchAfterDataChange()
+  const release = beginCriticalOperation('RESTORE')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    backupRepo.restoreBackup(db(), filename)
+    dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
 })
 handle('backup:openFolder', () => {
   shell.openPath(backupRepo.backupDir())
@@ -439,25 +475,52 @@ handle('backup:openSyncFolder', () => {
   return shell.openPath(location)
 })
 handle('backup:resetDatabase', (_e: IpcMainInvokeEvent, confirmation: string) => {
-  dataManagementSvc.resetActiveDatabase(confirmation)
-  dataManagementSvc.relaunchAfterDataChange()
+  const release = beginCriticalOperation('RESET_DATABASE')
+  try {
+    dataManagementSvc.resetActiveDatabase(confirmation)
+    dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
 })
 handle('backup:startNewStore', (_e: IpcMainInvokeEvent, confirmation: string) => {
-  dataManagementSvc.startNewStore(confirmation)
-  dataManagementSvc.relaunchAfterDataChange()
+  const release = beginCriticalOperation('START_NEW_STORE')
+  try {
+    dataManagementSvc.startNewStore(confirmation)
+    dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
 })
 handle('backup:locationStatus', () => {
   sessionSvc.requirePermission('settings:manage')
   return dataManagementSvc.getDataLocationStatus()
 })
 handle('backup:usePortableData', (_e: IpcMainInvokeEvent, choice: 'FRESH' | 'COPY') => {
-  dataManagementSvc.usePortableData(choice)
-  dataManagementSvc.relaunchAfterDataChange()
+  const release = beginCriticalOperation('PORTABLE_SWITCH')
+  try {
+    dataManagementSvc.usePortableData(choice)
+    dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
 })
 handle('backup:useSharedAppData', () => {
-  dataManagementSvc.useSharedAppData()
-  dataManagementSvc.relaunchAfterDataChange()
+  const release = beginCriticalOperation('PORTABLE_SWITCH')
+  try {
+    dataManagementSvc.useSharedAppData()
+    dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
 })
+
+// ---- Updates ----
+handle('update:state', () => getUpdateService().getState())
+handle('update:check', (_e, manual: boolean) => getUpdateService().check({ manual: manual === true }))
+handle('update:download', () => getUpdateService().download())
+handle('update:install', () => getUpdateService().install())
+handle('update:dismiss', () => getUpdateService().dismiss())
 
 // ---- Audit ----
 handle('audit:list', (_e: IpcMainInvokeEvent, opts?: unknown) => {

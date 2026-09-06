@@ -4,6 +4,7 @@ import { useSettings } from '../stores/settings'
 import { useNav } from '../stores/nav'
 import { Sidebar } from '../components/layout/Sidebar'
 import { ToastHost } from '../components/ui/ToastHost'
+import { UpdateNotification } from '../components/update/UpdateNotification'
 import { Dashboard } from '../pages/Dashboard'
 import { POS } from '../pages/POS'
 import { Inventory } from '../pages/Inventory'
@@ -42,6 +43,7 @@ export function Shell(): React.JSX.Element {
         {user && page === 'settings' && <Settings />}
       </main>
       <ToastHost />
+      <UpdateNotification />
     </div>
   )
 }

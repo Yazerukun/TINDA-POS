@@ -1,6 +1,10 @@
 appId: com.tindapos.desktop
 productName: TINDA POS
 copyright: Copyright © 2026 TINDA POS
+publish:
+  provider: github
+  owner: Yazerukun
+  repo: TINDA-POS
 directories:
   output: builds
   buildResources: build
