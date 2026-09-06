@@ -2,7 +2,7 @@
 
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
-This guide covers **TINDA POS v1.0.3**, which adds the in-app update system. v1.0.3 is the next release after the current stable **v1.0.2 Hotfix 1** and is not published yet.
+This guide covers **TINDA POS v1.0.3**, the current stable release (September 6, 2026). It adds the in-app update system.
 
 ## What's New in v1.0.3
 
@@ -17,7 +17,7 @@ This guide covers **TINDA POS v1.0.3**, which adds the in-app update system. v1.
 
 ## Install and first setup
 
-1. Download the latest stable **TINDA POS v1.0.2 Hotfix 1** package (see the Download section at the end of this guide).
+1. Download the latest stable **TINDA POS v1.0.3** package (see the Download section at the end of this guide).
 2. Complete the first-run wizard: store details, administrator account, and receipt settings.
 3. Log in, then add products from **Inventory**.
 
@@ -293,15 +293,13 @@ v1.0.2 Hotfix 1 predates the update system, so that first step to v1.0.3 is a no
 
 ## Download
 
-**Current Stable Release: TINDA POS v1.0.2 Hotfix 1** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
-
-**Next release (v1.0.3):** not published yet. When released it will appear at <https://github.com/Yazerukun/TINDA-POS/releases> and update automatically on all v1.0.3 installations thereafter.
+**Current Stable Release: TINDA POS v1.0.3** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.3>
 
 Files for the current stable release:
 
-- `TindaPOS-Setup-1.0.2.exe` — Windows installer
-- `TindaPOS-Portable-1.0.2.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.3.exe` — Windows installer
+- `TindaPOS-Portable-1.0.3.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 
-The supported target is Windows 10/11 64-bit. Native Windows and physical thermal-printer validation is still pending; no printer model is claimed certified.
+The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending; no printer model is claimed certified.

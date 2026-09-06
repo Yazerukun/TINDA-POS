@@ -1,54 +1,64 @@
-# TINDA POS v1.0.3 Release Notes (DRAFT — NOT RELEASED)
+# TINDA POS v1.0.3
 
-> This is the working draft for the next release. v1.0.3 is **not published**.
-> The current stable release remains **v1.0.2 Hotfix 1**.
+**Release Date:** September 6, 2026
+**Status:** Stable (Latest)
+**Download:** <https://github.com/Yazerukun/TINDA-POS/releases/latest>
 
-## What's New
+## Highlights
 
-### In-App Update System
+- **In-app stable update checking** — TINDA POS quietly checks the official GitHub release page (at most once per day) for **stable versions only**. Drafts, prereleases, and invalid versions are ignored; comparison is true semver.
+- **New version notifications** — a non-intrusive notification appears when an update is ready; it never blocks or interrupts checkout.
+- **What's New release notes** — released updates show their change notes as plain text inside the app. Nothing from the internet is ever executed.
+- **Download progress** — updates download in the background with a live progress bar.
+- **Restart & Install for installed builds** — the Setup edition downloads the update and applies it only when the user chooses **Restart & Install** or **Install Later**. The app never restarts on its own.
+- **Portable update download workflow** — the Portable edition never overwrites itself: it downloads the new `TindaPOS-Portable-*.exe` to `Downloads\TINDA-POS-Updates`, opens the folder, and the user runs the new version from there. `TindaPOS-Data\` and Shared AppData are never touched.
+- **Pre-update safety backup** — a validated store-database backup is created before every installed update; if it cannot be made, the update pauses with a clear message.
+- **Critical-operation protection** — install/restart is blocked during checkout, payment, refund, void, backup, restore, Start New Store, or reset.
+- **Settings → About Software Update section** — installed version, update status, last-check time, What's New, and update controls all in one place.
+- **Stable-release-only filtering** — no drafts, no prereleases, no invalid tags.
+- **Official GitHub source enforcement** — HTTPS only, official repository (`Yazerukun/TINDA-POS`) only.
+- **Offline-first operation preserved** — check failures are silent for the automatic check; TINDA POS keeps working fully offline.
+- **Existing store data preserved** — business data stays in Shared AppData (`%APPDATA%\TINDA POS\database\tindapos.db`) or a portable `TindaPOS-Data\` folder, never in the install directory.
+- **Stability and QA improvements** — cross-platform test fixes and a native-Windows CI pipeline; **119/119 automated tests PASS**.
 
-- **Software Update screen** — Settings → About → Software Update shows the installed version, update status, What's New, and a **Check for Updates** button.
-- **Automatic daily check** — on startup TINDA POS quietly checks the official GitHub release page at most once per day for **stable versions only** (drafts, prereleases, and invalid tags are ignored; comparison is true semver, not string).
-- **Non-intrusive notification** — an update-ready banner appears in the corner; it never blocks or interrupts checkout.
-- **Restart & Install** — installed (Setup) editions download the update, then apply it only when the user chooses **Restart & Install** or **Install Later**. The app never restarts on its own.
-- **Portable flow** — the Portable edition cannot replace itself: it downloads the new `TindaPOS-Portable-*.exe` to `Downloads\TINDA-POS-Updates`, opens the folder, and the user runs the new version from there. `TindaPOS-Data\` and Shared AppData are never touched.
-- **Pre-update safety backup** — a store-database backup is created and validated before every installed update; if it cannot be made, the update pauses with a clear message.
-- **Operation guard** — install/restart is blocked during checkout, payment, refund, void, backup, restore, Start New Store, or reset.
-- **Offline-first** — check failures are silent for the automatic check; TINDA POS keeps working fully offline.
-- **Security** — HTTPS, official repository only (`Yazerukun/TINDA-POS`); What's New is rendered as plain text; no remote content is executed.
+## IMPORTANT UPGRADE NOTE
 
-### Updating from v1.0.2 Hotfix 1
+Users on **v1.0.2-hotfix.1** must perform **ONE manual update** to v1.0.3.
 
-v1.0.2 Hotfix 1 predates the update system, so the step to v1.0.3 is a **normal manual upgrade** — download the v1.0.3 Setup or Portable package from the GitHub releases page and run it. Once on v1.0.3, all later versions update in place.
+Reason: **v1.0.2 Hotfix 1 does not contain the new updater system.**
 
-## Data Safety
+Starting from **v1.0.3**, TINDA POS can detect future stable updates from inside the app.
 
-- Business data lives in Shared AppData (`%APPDATA%\TINDA POS\database\tindapos.db`) or a portable `TindaPOS-Data\` folder — never in the install directory.
-- Updater bookkeeping (`update-state.json`) is app-internal metadata and never travels with backups or restores.
-- Update storage, last-check timestamps, and dismissals are remembered across restarts.
+### For installer users
 
-## Testing
+1. Back up your store (`Settings → Data → Create Backup`, or verify at `%APPDATA%\TINDA POS\backups`).
+2. Download `TindaPOS-Setup-1.0.3.exe` from the release page.
+3. Run the installer and install **over the existing TINDA POS installation**.
+4. Your store data in Shared AppData is preserved.
 
-- **119/119 automated tests PASS** (71 existing + 48 new update-system tests) covering:
-  - semver comparison (numeric, prerelease ordering, stability),
-  - GitHub release parsing and stable-only filtering,
-  - official-URL security guard,
-  - 24h auto-check throttle and manual bypass,
-  - offline / timeout / HTTP / rate-limit / invalid-metadata failures,
-  - update available (newer patch/minor/major, older remote, dismissed),
-  - download progress, safety-backup success and failure,
-  - install-later dismissal, restart-and-install, critical-operation blocking,
-  - portable detection, portable download, no self-overwrite.
-- Lint, typecheck, production build, and PDF generation all PASS on Omarchy Linux.
+### For portable users
 
-## Windows Packaging (built under Wine on Omarchy — NOT native QA)
+Download the new **Portable v1.0.3** EXE.
 
-- Setup `TindaPOS-Setup-1.0.3.exe` and Portable `TindaPOS-Portable-1.0.3.exe` built via the existing Wine/electron-builder workflow.
-- electron-updater metadata generated: `latest.yml`, blockmaps.
-- **WINE PACKAGED QA** only. Native-Windows restart-and-install behavior is **PENDING** until validated on real Windows.
-- Physical thermal-printer validation remains pending (existing limitation, unchanged).
+- If using **Shared AppData**: existing store data remains available — just run the new EXE.
+- If using **Portable Data Mode**: keep your existing `TindaPOS-Data` folder safe and use it with the new Portable version (you may re-point the store location from Settings → Data).
+
+## Updater QA — honest note
+
+The update-checking, notification, download-state, backup-protection, install-controls, and Windows packaging paths were validated during v1.0.3 QA:
+
+- Native Windows CI (`windows-latest`): lint, typecheck, tests, packaging, Setup/Portable launch, renderer, and SQLite database creation all PASS.
+- Update logic (semver, stable-only filtering, official-URL guard, throttle, offline/HTTP/rate-limit failures, download progress, safety-backup success/failure, install-later, restart-and-install, critical-operation blocking, portable detection/no self-overwrite) is covered by automated tests.
+
+The **first complete production update-replacement cycle** (v1.0.3 → next stable → quitAndInstall → replace → relaunch) will be additionally validated when the next stable release is published. No future production release exists yet.
+
+## Windows Packaging
+
+- Setup `TindaPOS-Setup-1.0.3.exe` and Portable `TindaPOS-Portable-1.0.3.exe` built via the existing Wine/electron-builder workflow on Omarchy Linux, plus a fresh canonical build validated by the native Windows CI workflow.
+- `latest.yml` + blockmap generated by electron-builder for in-app updates.
+- No code-signing; SmartScreen may warn on first run (verify the published SHA-256 values first).
 
 ## Remaining Limitations
 
-- Installed-edition restart-and-install has not yet been validated on native Windows.
-- No code-signing; SmartScreen may warn on first run.
+- The first full production quitAndInstall replacement cycle will be validated on the next stable release.
+- Physical thermal-printer validation remains pending (existing limitation, unchanged) — no printer model is claimed certified.

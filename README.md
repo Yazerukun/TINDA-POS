@@ -20,7 +20,7 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
-**Current stable release: v1.0.2 Hotfix 1** — the v1.0.2 receipt-printer and data-mode hotfix.
+**Current stable release: v1.0.3** — adds the in-app update system.
 
 ## Features
 
@@ -91,9 +91,7 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 - Fast PIN login for daily use
 - Only admins can void sales
 
-## In-App Update System (v1.0.3 — implemented, not yet released)
-
-The next version adds a safe in-app update system. This feature is **implemented in the source and will ship with v1.0.3**; it is not live in any published release yet.
+## What's New in v1.0.3
 
 - **Settings → About → Software Update** — check for updates, see What's New, download, and install without visiting a website.
 - **Automatic check** — once per day on startup, checking the official GitHub release page for **stable versions only** (drafts/prereleases/invalid versions ignored).
@@ -103,7 +101,22 @@ The next version adds a safe in-app update system. This feature is **implemented
 - **Operation-safe:** updates cannot interrupt a checkout, payment, refund, void, backup, restore, Start New Store, or reset ("Please finish the current operation before installing the update.").
 - **Offline-first:** check failures are silent; TINDA POS keeps working fully offline.
 - HTTPS only, official repo only (`Yazerukun/TINDA-POS`), nothing remote is ever executed.
-- First upgrade from v1.0.2 Hotfix 1 to v1.0.3 is a normal manual download; later versions update in place.
+
+## Updating from v1.0.2 Hotfix 1
+
+**This is a ONE-TIME MANUAL UPDATE.** v1.0.2 Hotfix 1 predates the in-app update system, so it cannot update itself.
+
+**Installer users:**
+1. Back up your store (`Settings → Data → Create Backup`, or verify at `%APPDATA%\TINDA POS\backups`).
+2. Download `TindaPOS-Setup-1.0.3.exe`.
+3. Run the installer and install **over the existing TINDA POS installation**.
+4. Existing store data in Shared AppData remains preserved.
+
+**Portable users:** download the new Portable v1.0.3 EXE.
+- If using **Shared AppData**: existing store data remains available — just run the new EXE.
+- If using **Portable Data Mode**: keep the existing `TindaPOS-Data` folder safe and use it with the new Portable version.
+
+From v1.0.3 onward, TINDA POS can notify users about future stable updates from inside the app.
 
 ## What's New in v1.0.2 Hotfix 1
 
@@ -111,23 +124,26 @@ The next version adds a safe in-app update system. This feature is **implemented
 - 80mm default receipt width with 58mm support, custom receipt header/footer
 - **Start New Store** and clearer **Settings → Data** (Shared AppData vs Portable Data Mode + Copy Current Store)
 - Cash/SUKLI input fix (pesos, not raw cents), full-refund status fix, restore temp-file cleanup
-- **71/71 tests**, ESLint, TypeScript, and production build passing
+
+> v1.0.2 Hotfix 1 was superseded by v1.0.3. See **Updating from v1.0.2 Hotfix 1** above.
 
 ## Download
 
-**Latest Stable Release: TINDA POS v1.0.2 Hotfix 1** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.2-hotfix.1>
+**Latest Stable Release: TINDA POS v1.0.3** — <https://github.com/Yazerukun/TINDA-POS/releases/latest>
 
-- [TindaPOS-Setup-1.0.2.exe](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-Setup-1.0.2.exe) — Windows installer
-- [TindaPOS-Portable-1.0.2.exe](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-Portable-1.0.2.exe) — no-install portable edition
-- [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/TindaPOS-User-Guide.pdf) — full user manual (PDF)
-- [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/latest/download/SHA256SUMS.txt) — checksums (verify with `sha256sum -c SHA256SUMS.txt`)
+- [TindaPOS-Setup-1.0.3.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-Setup-1.0.3.exe) — Windows installer
+- [TindaPOS-Portable-1.0.3.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-Portable-1.0.3.exe) — no-install portable edition
+- [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-User-Guide.pdf) — full user manual (PDF)
+- [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/SHA256SUMS.txt) — checksums (verify with `sha256sum -c SHA256SUMS.txt`)
+
+> **v1.0.2 Hotfix 1 users:** this is a one-time **manual** update — download and install/run the v1.0.3 package directly. See **Updating from v1.0.2 Hotfix 1**.
 
 The supported target is Windows 10/11 64-bit.
 
 ## Quick Start
 
 ### Windows
-1. After packaging, download the v1.0.2 Hotfix 1 Setup or Portable package from the official release page.
+1. After packaging, download the v1.0.3 Setup or Portable package from the official release page.
 2. Run the package (click **More info → Run anyway** if SmartScreen appears on the unsigned build).
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!
@@ -174,7 +190,7 @@ pnpm run typecheck
 - **Frontend:** React 19 + TypeScript + Tailwind CSS + Zustand
 - **Backend:** Electron 44 + better-sqlite3
 - **Build:** electron-vite + electron-builder
-- **Testing:** Vitest (71 tests including category filtering, reset, hold-sale, restore rollback, and end-to-end workflows)
+- **Testing:** Vitest (119 tests including the update system, data location, receipt printing, category filtering, reset, hold-sale, restore rollback, and end-to-end workflows)
 - **Code Quality:** ESLint + TypeScript strict mode
 
 ## Project Structure
