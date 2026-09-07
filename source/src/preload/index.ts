@@ -61,14 +61,23 @@ const api: TindaApi = {
     update: (id, input) => invoke<import('@shared/types').Product>('products:update', id, input),
     archive: (id) => invoke<import('@shared/types').Product>('products:archive', id),
     restore: (id) => invoke<import('@shared/types').Product>('products:restore', id),
-    count: (status) => invoke<number>('products:count', status)
+    count: (status) => invoke<number>('products:count', status),
+    csvTemplate: () => invoke<string>('products:csvTemplate'),
+    previewCsv: (text) => invoke('products:previewCsv', text),
+    importCsv: (text, strategy) => invoke('products:importCsv', text, strategy)
   },
   inventory: {
+    onChanged: (cb) => {
+      const listener = (_e: IpcRendererEvent, event: import('@shared/types').InventoryChangedEvent): void => cb(event)
+      ipcRenderer.on('inventory:changed', listener)
+      return () => ipcRenderer.removeListener('inventory:changed', listener)
+    },
     movements: (opts) => invoke<{ rows: import('@shared/types').InventoryMovement[]; total: number }>('inventory:movements', opts),
     receive: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:receive', input),
     adjust: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:adjust', input),
     movement: (type, input) => invoke<import('@shared/types').InventoryMovement>('inventory:movement', type, input),
-    count: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:count', input)
+    count: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:count', input),
+    restock: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:restock', input)
   },
   suppliers: {
     list: (opts) => invoke<import('@shared/types').Supplier[]>('suppliers:list', opts),
@@ -131,7 +140,12 @@ const api: TindaApi = {
     utang: () => invoke<{ rows: import('@shared/types').Customer[]; total_outstanding_c: number; payments_c: number }>('reports:utang'),
     cashier: (opts) => invoke<{ rows: import('@shared/types').Sale[]; summary: import('@shared/types').ReportSummary }>('reports:cashier', opts),
     shifts: (opts) => invoke<{ rows: import('@shared/types').Shift[]; summary: import('@shared/types').ReportSummary }>('reports:shifts', opts),
-    exportCsv: (kind, opts) => invoke<import('@shared/types').ExportResult>('reports:exportCsv', kind, opts)
+    exportCsv: (kind, opts) => invoke<import('@shared/types').ExportResult>('reports:exportCsv', kind, opts),
+    xRead: () => invoke<import('@shared/types').ReadReport>('reports:xRead'),
+    printXRead: () => invoke<import('@shared/ipc').PrintResult>('reports:printXRead'),
+    finalizeZ: (input) => invoke<import('@shared/types').ZRead>('reports:finalizeZ', input),
+    zHistory: () => invoke<import('@shared/types').ZRead[]>('reports:zHistory'),
+    printZRead: (id) => invoke<import('@shared/ipc').PrintResult>('reports:printZRead', id)
   },
   backup: {
     list: () => invoke<import('@shared/types').BackupInfo[]>('backup:list'),

@@ -194,9 +194,13 @@ export interface TindaApi {
     archive: (id: number) => Promise<Product>
     restore: (id: number) => Promise<Product>
     count: (status?: string) => Promise<number>
+    csvTemplate: () => Promise<string>
+    previewCsv: (text: string) => Promise<{ rows: Array<Record<string, unknown> & { row_number: number; product_name: string; valid: boolean; duplicate: boolean; reasons: string[] }>; total: number; valid: number; invalid: number; duplicates: number }>
+    importCsv: (text: string, strategy: 'SKIP' | 'UPDATE') => Promise<{ created: number; updated: number; skipped: number; product_ids: number[] }>
   }
 
   inventory: {
+    onChanged: (cb: (event: import('./types').InventoryChangedEvent) => void) => () => void
     movements: (opts: { product_id?: number; movement_type?: InventoryMovementType | ''; limit?: number; offset?: number; from?: string; to?: string }) => Promise<{
       rows: InventoryMovement[]
       total: number
@@ -205,6 +209,7 @@ export interface TindaApi {
     adjust: (input: { product_id: number; qty_base: number; reason: string }) => Promise<InventoryMovement>
     movement: (type: InventoryMovementType, input: { product_id: number; qty_base: number; reason?: string; notes?: string }) => Promise<InventoryMovement>
     count: (input: { product_id: number; actual_base: number; notes?: string }) => Promise<InventoryMovement>
+    restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string }) => Promise<InventoryMovement>
   }
 
   suppliers: {
@@ -298,6 +303,11 @@ export interface TindaApi {
     }>
     shifts: (opts?: { from?: string; to?: string }) => Promise<{ rows: Shift[]; summary: ReportSummary }>
     exportCsv: (kind: 'SALES' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS', opts?: { from?: string; to?: string }) => Promise<ExportResult>
+    xRead: () => Promise<import('./types').ReadReport>
+    printXRead: () => Promise<PrintResult>
+    finalizeZ: (input: { actual_cash_c: number; note?: string }) => Promise<import('./types').ZRead>
+    zHistory: () => Promise<import('./types').ZRead[]>
+    printZRead: (id: number) => Promise<PrintResult>
   }
 
   backup: {

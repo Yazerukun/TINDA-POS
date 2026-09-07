@@ -46,7 +46,7 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
   })
 }
 
-async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
+export async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
   const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } })
   try {
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(receiptHtml(lines, settings.receipt_paper_width, settings.currency))}`)
@@ -63,6 +63,8 @@ export async function listPrinters(webContents: WebContents): Promise<PrinterInf
 export async function printSale(settings: StoreSettings, sale: Sale): Promise<PrintResult> {
   const lines = buildReceiptLines({
     header: settings.receipt_header,
+    title: settings.receipt_title,
+    show_app_name: settings.receipt_show_app_name,
     store_name: settings.store_name,
     owner_name: settings.owner_name,
     address: settings.address,

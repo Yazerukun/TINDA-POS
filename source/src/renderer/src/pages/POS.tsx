@@ -110,6 +110,7 @@ export function POS(): React.JSX.Element {
     void search('')
     window.api.categories.list().then(setCategories).catch(() => {})
   }, [])
+  useEffect(() => window.api.inventory.onChanged(() => { void search(q, catFilter === 'ALL' ? null : catFilter) }), [q, catFilter])
 
   useEffect(() => {
     if (!categoryMenuOpen) return

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3 } from 'lucide-react'
-import type { SalesReportRow, ReportSummary } from '@shared/types'
+import { FileDown, BarChart3, Printer, LockKeyhole } from 'lucide-react'
+import type { SalesReportRow, ReportSummary, ReadReport, ZRead } from '@shared/types'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { toastSuccess, toastError } from '../stores/toast'
@@ -16,10 +16,12 @@ export function Reports(): React.JSX.Element {
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
   const [groupBy, setGroupBy] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY')
   const [data, setData] = useState<CompState | null>(null)
-  const [tab, setTab] = useState<'SALES' | 'INVENTORY' | 'UTANG'>('SALES')
+  const [tab, setTab] = useState<'SALES' | 'INVENTORY' | 'UTANG' | 'X' | 'Z' | 'ZHISTORY'>('SALES')
   const [inv, setInv] = useState<{ rows: { name: string; stock: number; base_unit: string; inventory_value_c: number }[]; summary: { total_units: number; inventory_value_c: number; low_stock: number; out_of_stock: number } } | null>(null)
   const [utang, setUtang] = useState<{ rows: { full_name: string; balance_c: number; credit_limit_c: number }[]; total_outstanding_c: number } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [read, setRead] = useState<ReadReport | null>(null)
+  const [history, setHistory] = useState<ZRead[]>([])
 
   const loadSales = async () => {
     setLoading(true)
@@ -40,7 +42,7 @@ export function Reports(): React.JSX.Element {
   // Loaders are redefined per render; this effect intentionally keys on tab and
   // (re)loads only when the active report changes, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else void loadUtang() }, [tab])
+  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'X' || tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>toastError('No open shift',String((e as Error).message||e))); else void window.api.reports.zHistory().then(setHistory) }, [tab])
 
   const exportCsv = async () => {
     try {
@@ -54,13 +56,16 @@ export function Reports(): React.JSX.Element {
     <div className="p-6">
       <PageHeader
         title="Reports"
-        actions={<button onClick={() => void exportCsv()} className="btn-primary flex items-center gap-2"><FileDown className="h-4 w-4" /> Export CSV</button>}
+        actions={(['SALES','INVENTORY','UTANG'] as const).includes(tab as 'SALES'|'INVENTORY'|'UTANG') ? <button onClick={() => void exportCsv()} className="btn-primary flex items-center gap-2"><FileDown className="h-4 w-4" /> Export CSV</button> : undefined}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button onClick={() => setTab('SALES')} className={`btn-ghost ${tab === 'SALES' ? '!border-brand-500 !text-brand-400' : ''}`}>Sales</button>
         <button onClick={() => setTab('INVENTORY')} className={`btn-ghost ${tab === 'INVENTORY' ? '!border-brand-500 !text-brand-400' : ''}`}>Inventory</button>
         <button onClick={() => setTab('UTANG')} className={`btn-ghost ${tab === 'UTANG' ? '!border-brand-500 !text-brand-400' : ''}`}>Utang</button>
+        <button onClick={() => setTab('X')} className={`btn-ghost ${tab === 'X' ? '!border-brand-500 !text-brand-400' : ''}`}>X-Read</button>
+        <button onClick={() => setTab('Z')} className={`btn-ghost ${tab === 'Z' ? '!border-brand-500 !text-brand-400' : ''}`}>Z-Read</button>
+        <button onClick={() => setTab('ZHISTORY')} className={`btn-ghost ${tab === 'ZHISTORY' ? '!border-brand-500 !text-brand-400' : ''}`}>Z-Read History</button>
       </div>
 
       {tab === 'SALES' && (
@@ -148,6 +153,9 @@ export function Reports(): React.JSX.Element {
         </>
       ) : null)}
 
+      {(tab === 'X' || tab === 'Z') && read && <ReadPanel report={read} finalize={tab === 'Z'} onFinalized={()=>{setRead(null);setTab('ZHISTORY')}}/>}
+      {tab === 'ZHISTORY' && <div className="card overflow-hidden"><table className="table"><thead><tr><th>Report</th><th>Finalized</th><th>Cashier</th><th>Net Sales</th><th></th></tr></thead><tbody>{history.map(z=><tr key={z.id}><td>{z.report_no}</td><td>{shortDate(z.finalized_at)}</td><td>{z.snapshot.cashier_name}</td><td>{money(z.snapshot.net_sales_c)}</td><td><button className="btn-ghost flex gap-1" onClick={()=>void window.api.reports.printZRead(z.id)}><Printer className="h-4 w-4"/>Print</button></td></tr>)}{history.length===0&&<tr><td colSpan={5} className="py-8 text-center text-slate-500">No finalized Z-Reads yet.</td></tr>}</tbody></table></div>}
+
       {tab === 'UTANG' && (loading ? <div className="h-40 animate-pulse card" /> : utang ? (
         <>
           <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-3">
@@ -173,6 +181,13 @@ export function Reports(): React.JSX.Element {
       ) : null)}
     </div>
   )
+}
+
+function ReadPanel({report,finalize,onFinalized}:{report:ReadReport;finalize:boolean;onFinalized:()=>void}):React.JSX.Element {
+  const [actual,setActual]=useState(String(report.expected_cash_c/100)); const [busy,setBusy]=useState(false)
+  const finish=async()=>{if(!confirm('Finalize Z-Read? This will finalize the current reporting period. Transactions and history will remain saved.'))return;setBusy(true);try{await window.api.reports.finalizeZ({actual_cash_c:Math.round(Number(actual)*100)});toastSuccess('Z-Read finalized');onFinalized()}catch(e){toastError('Z-Read failed',String((e as Error).message||e))}finally{setBusy(false)}}
+  const stats:[string,number|string][]=[['Gross Sales',report.gross_sales_c],['Discounts',report.discount_c],['Refunds',report.refunds_c],['Voids',report.voids_c],['Net Sales',report.net_sales_c],['Cash',report.cash_c],['GCash',report.gcash_c],['Maya',report.maya_c],['Utang',report.utang_c],['Expenses',report.expenses_c],['Expected Cash',report.expected_cash_c],['Transactions',String(report.transaction_count)]]
+  return <div><div className="mb-4 rounded-lg border border-ink-line p-4"><p className="font-bold">{finalize?'Z-Read Final Summary':'Current Shift — Read Only'}</p><p className="text-sm text-slate-400">Cashier: {report.cashier_name} · Shift #{report.shift_id} · Generated {new Date(report.report_at).toLocaleString()}</p></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{stats.map(([l,v])=><Stat key={l} label={l} v={typeof v==='number'?money(v):v}/>)}</div><div className="mt-4 flex gap-2">{finalize?<><div><label className="label">Actual Cash (₱)</label><input className="input" type="number" min="0" value={actual} onChange={e=>setActual(e.target.value)}/></div><button className="btn-primary self-end flex gap-2" disabled={busy} onClick={()=>void finish()}><LockKeyhole className="h-4 w-4"/>Finalize Z-Read</button></>:<button className="btn-primary flex gap-2" onClick={()=>void window.api.reports.printXRead()}><Printer className="h-4 w-4"/>Print X-Read</button>}</div>{finalize&&<p className="mt-3 text-sm text-amber-300">Finalization closes this shift. Transactions, payments, stock history, expenses, and customer ledgers remain saved.</p>}</div>
 }
 
 function Stat({ label, v }: { label: string; v: string }): React.JSX.Element {

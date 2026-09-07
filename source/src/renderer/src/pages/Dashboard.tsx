@@ -51,6 +51,9 @@ export function Dashboard(): React.JSX.Element | null {
     load()
     return () => { alive = false }
   }, [])
+  useEffect(() => window.api.inventory.onChanged(() => {
+    void window.api.products.search('', { status: 'ACTIVE', limit: 1000 }).then((result) => setAlertProducts(result.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)))
+  }), [])
 
   if (error) {
     return (

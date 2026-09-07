@@ -39,10 +39,13 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
   })
 }
 
-export function buildReceiptLines(store: { header: string; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
+export function buildReceiptLines(store: { header: string; title?: string; show_app_name?: boolean; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
   const lines: string[] = []
   if (store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
-  lines.push('TINDA POS')
+  const title = store.title?.trim() ?? ''
+  const showApp = store.show_app_name !== false
+  if (title) lines.push(title)
+  if (showApp && title.toUpperCase() !== 'TINDA POS') lines.push('TINDA POS')
   if (store.store_name) lines.push(store.store_name)
   if (store.owner_name) lines.push(`Owner: ${store.owner_name}`)
   if (store.address) lines.push(store.address)
@@ -153,7 +156,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
-    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
   return { sale, receipt }
@@ -192,7 +195,7 @@ export function reprint(saleId: number): string[] {
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   return buildReceiptLines(
-    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
 }

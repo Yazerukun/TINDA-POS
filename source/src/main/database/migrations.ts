@@ -369,5 +369,20 @@ CREATE TABLE backup_history (
   status TEXT NOT NULL DEFAULT 'OK',
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );`
+  },
+  {
+    version: 2,
+    name: 'z_read_snapshots',
+    sql: `
+CREATE TABLE IF NOT EXISTS z_reads (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER NOT NULL UNIQUE REFERENCES shifts(id),
+  report_no TEXT NOT NULL UNIQUE,
+  snapshot_json TEXT NOT NULL,
+  finalized_by INTEGER NOT NULL REFERENCES users(id),
+  finalized_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_z_reads_finalized_at ON z_reads(finalized_at);
+`
   }
 ]

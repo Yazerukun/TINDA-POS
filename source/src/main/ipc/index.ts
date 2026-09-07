@@ -23,6 +23,9 @@ import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
 import * as dataManagementSvc from '../services/dataManagement'
 import * as printingSvc from '../services/printing'
+import * as importSvc from '../services/productImport'
+import * as readSvc from '../services/readReports'
+import { emitInventoryChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
@@ -169,6 +172,14 @@ handle('products:restore', (_e: IpcMainInvokeEvent, id: number) => {
   return prodRepo.setProductStatus(db(), id, 'ACTIVE', user().id)
 })
 handle('products:count', (_e: IpcMainInvokeEvent, status?: string) => prodRepo.productCount(db(), status))
+handle('products:csvTemplate', () => { sessionSvc.requirePermission('products:manage'); return importSvc.CSV_TEMPLATE })
+handle('products:previewCsv', (_e: IpcMainInvokeEvent, text: string) => { sessionSvc.requirePermission('products:manage'); return importSvc.previewCsv(db(), text) })
+handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {
+  sessionSvc.requirePermission('products:manage')
+  const result = importSvc.importCsv(db(), text, strategy, user().id)
+  emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
+  return result
+})
 
 // ---- Inventory ----
 handle('inventory:movements', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listMovements(db(), (opts ?? {}) as object))
@@ -176,13 +187,34 @@ handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:receive')
   const i = input as { product_id: number; qty_base: number; unit_name: string; cost_c: number; reason?: string }
   prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'PURCHASE', i.reason ?? 'Stock receiving', user().id, i.cost_c ? `cost ${i.cost_c}` : undefined)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'PURCHASE', product_ids: [i.product_id] })
+  return movement
+})
+handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
+  sessionSvc.requirePermission('inventory:receive')
+  const i = input as { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string }
+  if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to add must be greater than zero.')
+  if (!Number.isFinite(i.cost_c) || i.cost_c < 0) throw new Error('Cost cannot be negative.')
+  const product = prodRepo.getProduct(db(), i.product_id)
+  const unit = product.units.find((u) => u.name === i.unit_name)
+  if (!unit) throw new Error('Select a valid product unit.')
+  const qtyBase = i.quantity * unit.conversion_to_base
+  if (!Number.isInteger(qtyBase)) throw new Error('Restock must convert to a whole base unit.')
+  const supplier = i.supplier_id ? supRepo.getSupplier(db(), i.supplier_id) : null
+  const reason = [`Restock: ${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, supplier ? `Supplier: ${supplier.name}` : '', i.cost_c ? `Cost: ${i.cost_c}` : '', i.notes?.trim() || ''].filter(Boolean).join(' | ')
+  db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference))()
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'RESTOCK', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:adjust', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
   const i = input as { product_id: number; qty_base: number; reason: string }
   prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'ADJUSTMENT', i.reason, user().id)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:movement', (_e: IpcMainInvokeEvent, type: string, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
@@ -198,7 +230,9 @@ handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
   const p = prodRepo.getProduct(db(), i.product_id)
   const diff = i.actual_base - p.stock
   prodRepo.adjustStock(db(), i.product_id, diff, 'ADJUSTMENT', `Inventory count: expected ${p.stock}, actual ${i.actual_base}`, user().id, i.notes)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 
 // ---- Suppliers ----
@@ -263,6 +297,7 @@ handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
     user()
     const v = require('../validation/schemas').validateCheckout(payload)
     const completed = checkoutSvc.checkout(v)
+    emitInventoryChanged({ reason: 'SALE', product_ids: completed.sale.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
     const settings = settingRepo.getSettings(db())
     return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
   } finally {
@@ -330,7 +365,9 @@ handle('transactions:get', (_e: IpcMainInvokeEvent, id: number) => getSale(db(),
 handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const release = beginCriticalOperation('REFUND')
   try {
-    return txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
+    const result = txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
+    emitInventoryChanged({ reason: 'REFUND', product_ids: [...new Set(result.items.map((item) => item.product_id))] })
+    return result
   } finally {
     release()
   }
@@ -338,7 +375,9 @@ handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
 handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const release = beginCriticalOperation('VOID')
   try {
-    return txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
+    const result = txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
+    emitInventoryChanged({ reason: 'VOID', product_ids: result.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    return result
   } finally {
     release()
   }
@@ -430,6 +469,32 @@ handle('reports:shifts', (_e: IpcMainInvokeEvent, opts?: unknown) => {
 handle('reports:exportCsv', (_e: IpcMainInvokeEvent, kind: string, opts?: unknown) => {
   sessionSvc.requirePermission('reports:export')
   return exportSvc.exportCsv(kind as Parameters<typeof exportSvc.exportCsv>[0], (opts ?? {}) as { from?: string; to?: string })
+})
+handle('reports:xRead', () => {
+  sessionSvc.requirePermission('reports:view')
+  const shift = shiftRepo.currentShiftFor(db(), user().id)
+  if (!shift) throw new Error('No open shift for X-Read.')
+  return readSvc.calculateRead(db(), shift.id, 'X')
+})
+handle('reports:printXRead', async () => {
+  sessionSvc.requirePermission('reports:view')
+  const shift = shiftRepo.currentShiftFor(db(), user().id)
+  if (!shift) throw new Error('No open shift for X-Read.')
+  return printingSvc.printLines(settingRepo.getSettings(db()), readSvc.readReportLines(readSvc.calculateRead(db(), shift.id, 'X')))
+})
+handle('reports:finalizeZ', (_e: IpcMainInvokeEvent, input: { actual_cash_c: number; note?: string }) => {
+  const u = user()
+  if (!u.roles.some((role) => role === 'ADMIN' || role === 'MANAGER')) throw new Error('Only an Admin or Manager can finalize a Z-Read.')
+  const shift = shiftRepo.currentShiftFor(db(), u.id)
+  if (!shift) throw new Error('No open shift to finalize.')
+  const z = readSvc.finalizeZ(db(), shift.id, u.id, input.actual_cash_c, input.note)
+  auditRepo.audit(db(), { action: 'Z_READ_FINALIZE', user_id: u.id, entity_type: 'SHIFT', entity_id: shift.id, new_value: z.report_no })
+  return z
+})
+handle('reports:zHistory', () => { sessionSvc.requirePermission('reports:view'); return readSvc.listZ(db()) })
+handle('reports:printZRead', async (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view'); const z = readSvc.getZ(db(), id)
+  return printingSvc.printLines(settingRepo.getSettings(db()), readSvc.readReportLines(z.snapshot, z.report_no))
 })
 
 // ---- Backup ----

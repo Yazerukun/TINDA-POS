@@ -360,6 +360,8 @@ export interface StoreSettings {
   tin: string
   currency: string
   receipt_header: string
+  receipt_title: string
+  receipt_show_app_name: boolean
   receipt_footer: string
   logo_path: string | null
   default_low_stock: number
@@ -375,6 +377,48 @@ export interface StoreSettings {
   receipt_copies: number
   theme: string
   data_dir: string
+}
+
+export interface InventoryChangedEvent {
+  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE'
+  product_ids: number[]
+}
+
+export interface ReadReport {
+  shift_id: number
+  report_type: 'X' | 'Z'
+  report_at: string
+  cashier_id: number
+  cashier_name: string
+  opened_at: string
+  closed_at: string | null
+  starting_cash_c: number
+  gross_sales_c: number
+  discount_c: number
+  refunds_c: number
+  voids_c: number
+  net_sales_c: number
+  cash_c: number
+  gcash_c: number
+  maya_c: number
+  utang_c: number
+  expenses_c: number
+  cash_in_c: number
+  cash_out_c: number
+  expected_cash_c: number
+  transaction_count: number
+  void_count: number
+  split_count: number
+}
+
+export interface ZRead {
+  id: number
+  shift_id: number
+  report_no: string
+  snapshot: ReadReport
+  finalized_by: number
+  finalized_by_name: string
+  finalized_at: string
 }
 
 export interface BackupInfo {

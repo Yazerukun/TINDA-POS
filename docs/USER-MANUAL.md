@@ -1,8 +1,151 @@
-# TINDA POS v1.0.3 User Manual
+# TINDA POS v1.0.4 User Manual
 
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
-This guide covers **TINDA POS v1.0.3**, the current stable release (September 6, 2026). It adds the in-app update system.
+This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
+
+> TINDA POS v1.0.4 is a local release candidate for testing. The current public Latest version remains v1.0.3.
+
+## Quick start and first-time setup
+
+**WHERE TO GO:** Open TINDA POS → First-time Setup.
+
+1. Enter the store name and optional address, owner, phone, and TIN.
+2. Create the Admin username, password, and PIN. Isulat ito sa ligtas na lugar.
+3. Choose basic receipt settings, then finish setup and log in.
+4. Open **Inventory → New Product** to add your first item.
+
+Roles are simple: **Admin** controls users, settings, data, and all workflows; **Manager** manages store operations and may finalize Z-Reads; **Cashier** sells, handles their shift, and sees permitted reports. Never share an Admin password with every cashier.
+
+## Login and Dashboard
+
+Enter your username/password or assigned PIN on Login. The Dashboard shows today's sales, transactions, expenses, utang, recent sales, and low/out-of-stock products. Stock alerts update automatically after a successful stock transaction.
+
+## Products, SKU, barcode, and categories
+
+**WHERE TO GO:** Inventory → New Product.
+
+Enter a product name, optional unique SKU/barcode, category, base unit, cost, selling price, low-stock level, and opening stock. Click **Save**. Use the pencil button to edit a product. SKU is your own product code; barcode is the code scanned at POS. Duplicate SKU or barcode values are rejected. Use **Inventory → Categories** to add or organize categories.
+
+Opening stock is saved with an inventory-history entry. Editing ordinary details does not silently rewrite stock.
+
+## Restock (Paano mag restock?)
+
+**WHERE TO GO:** Inventory → **Restock**, or click the Restock button on a product card.
+
+**WHAT TO ENTER:**
+
+1. Piliin ang product.
+2. Enter **Quantity to Add**.
+3. Choose the unit, such as sachet or box.
+4. Optionally choose supplier and enter cost, reference, and notes.
+5. Check the conversion and **New Stock** preview.
+6. Click **Save Restock**.
+
+**EXAMPLE:** Current Stock: 24 sachets. Restock: 2 boxes. If 1 box = 24 sachets, the preview shows `2 × 24 = 48 sachets`; New Stock: 72 sachets.
+
+Quantity must be greater than zero and cost cannot be negative. Restock creates a PURCHASE/receiving movement with user and timestamp; it never silently overwrites stock.
+
+## Stock adjustment and low stock
+
+Use the authorized inventory adjustment/count workflow for damage, loss, expiration, return, or a physical-count correction. Enter the real reason. Low Stock means the quantity reached its configured alert; Out of Stock means zero. Restock is for deliveries, while Adjustment is for corrections.
+
+## CSV Product Import
+
+**WHERE TO GO:** Inventory → **Import CSV**.
+
+1. Click **Download Template**.
+2. Fill in `product_name` and `selling_price`. SKU, barcode, category, cost, stock, low-stock level, supplier, and base unit are optional.
+3. Save as CSV and click **Select CSV**.
+4. Review Total, Valid, Invalid, and Duplicate counts.
+5. Fix every invalid row using the exact row number/reason shown.
+6. For existing SKU/barcode values, choose **Skip Existing** or **Update Existing**.
+7. Click **Import Products**.
+
+Nothing is saved during Preview. The final import is all-or-nothing: if a fatal database error occurs, all changes roll back. Opening stock creates inventory history. Successful imports appear automatically in Inventory and POS.
+
+## Tingi and multi-unit products
+
+The base unit is the smallest stock unit, such as sachet, piece, or bottle. A larger selling/restock unit uses the existing conversion—for example, 1 box = 24 sachets. Stock is always protected and recorded in whole base units.
+
+## X-Read
+
+**WHERE TO GO:** Reports → X-Read.
+
+X-Read shows the current open shift: sales, discounts, refunds, voids, net sales, Cash/GCash/Maya/Utang, split payments, expenses, expected cash, and transaction count. Click **Print X-Read** for a paper copy. X-Read is read-only: it does not close the shift, reset totals, change stock, or finalize anything. You may generate it many times.
+
+## Z-Read and Z-Read History
+
+**WHERE TO GO:** Reports → Z-Read.
+
+1. Review the final summary.
+2. Enter actual cash for reconciliation.
+3. Click **Finalize Z-Read** and read the confirmation.
+4. Confirm only when the reporting period is finished.
+
+Z-Read closes/finalizes that shift and saves an immutable snapshot. It never deletes transactions, payments, expenses, inventory history, or customer ledger entries. The same shift cannot be finalized twice. Only Admin/Manager may finalize.
+
+Open **Reports → Z-Read History** to inspect and print an old saved snapshot. Old Z-Reads do not change when later database activity occurs.
+
+## Realtime stock
+
+After a successful sale, refund, void, restock, adjustment, CSV import, or purchase receiving, Inventory, POS, and Dashboard stock views refresh automatically. Hindi kailangang paulit-ulit pindutin ang Refresh. TINDA POS uses committed events, not aggressive internet polling; a failed/rolled-back transaction sends no success event.
+
+## Suppliers, purchases, receiving, and expenses
+
+Use **Suppliers** to maintain supplier contact details and review linked products/purchases. Purchase receiving adds stock using the same inventory movement history. Record operating expenses under **Expenses**, choosing the category, amount, date, description/reference, and notes. These expenses are included in shift reports.
+
+## Refund, Void, Shifts, and cash reconciliation
+
+Open **Transactions**, select the saved sale, and choose Refund for returned quantities or Void for an eligible mistaken sale. A reason is required. Stock and related utang records are reversed through their histories. Never create a fake negative sale.
+
+Open a shift with starting cash before selling. At closing/Z-Read, compare expected cash with actual drawer cash and record a useful note for any difference. Cash-in and cash-out movements belong to the open shift.
+
+## Users, roles, audit logs, and Settings
+
+Admin can manage users under **Settings → Users**. Give each person only the role needed. Authorized Admin users can review audit logs where exposed by the application. Under Settings, configure store details, receipt/printer, data modes, users, and About/software updates.
+
+## Common Questions / Madalas Itanong
+
+**Q: Paano mag restock?**
+
+A: Inventory → Restock, choose product/unit, enter the delivered quantity, verify New Stock, then Save Restock.
+
+**Q: Paano tanggalin ang “TINDA POS” sa receipt?**
+
+A: Settings → Receipt → turn OFF **Show TINDA POS App Name**. Leave Receipt Title blank for no heading, or enter your store title.
+
+**Q: Paano mag-import ng CSV products?**
+
+A: Inventory → Import CSV → Download Template → fill it in → Select CSV → fix invalid rows → choose duplicate handling → Import.
+
+**Q: Ano ang X-Read?**
+
+A: Current shift report only. It does not finalize or change data.
+
+**Q: Ano ang Z-Read?**
+
+A: Final, saved snapshot of the shift/reporting period.
+
+**Q: Mawawala ba ang transactions pagkatapos ng Z-Read?**
+
+A: Hindi. Transactions and all histories remain saved.
+
+**Q: Kailangan ba i-refresh ang inventory pagkatapos ng sale/restock?**
+
+A: Hindi normally; relevant screens update automatically after success.
+
+**Q: Gagana ba offline?**
+
+A: Yes. Core POS functions use the local database. Internet is needed only for update checking or third-party folder syncing.
+
+**Q: Saan naka-save ang database?**
+
+A: Settings → Data shows the exact active database. Shared Windows mode normally uses `%APPDATA%\TINDA POS\database\tindapos.db`; Portable Data Mode uses `TindaPOS-Data` beside the Portable app.
+
+**Q: Paano gumawa ng backup?**
+
+A: Settings → Data → Backup Now. Keep another copy on a separate drive or synced folder.
 
 ## What's New in v1.0.3
 
