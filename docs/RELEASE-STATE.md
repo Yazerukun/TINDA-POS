@@ -19,7 +19,7 @@ RC COMMIT:
 089a570ae5e0a2e56511066579fdf18888e98087
 
 CURRENT STAGE:
-06 WINDOWS RC BUILD — pending
+07 WINE QA — pending
 
 LAST UPDATED:
 2026-09-08 Asia/Hong_Kong
@@ -53,7 +53,7 @@ STAGE STATUS:
 [x] 03 DATABASE QA
 [x] 04 AUTOMATED QA
 [x] 05 RC FREEZE
-[ ] 06 WINDOWS RC BUILD
+[x] 06 WINDOWS RC BUILD
 [ ] 07 WINE QA
 [ ] 08 SOFTWARE UPDATER QA
 [ ] 09 OWNER WINDOWS SPOT-CHECK
@@ -78,12 +78,16 @@ DATABASE:
 - integrity_check: ok
 
 WINDOWS RC:
-- Setup: PENDING
-- Portable: PENDING
-- blockmap: PENDING
-- latest.yml: PENDING
-- PDF: PENDING
-- hashes: PENDING
+- Setup: PASS — TindaPOS-Setup-1.0.5.exe, 109480871 bytes
+- Portable: PASS — TindaPOS-Portable-1.0.5.exe, 109250406 bytes
+- blockmap: PASS — TindaPOS-Setup-1.0.5.exe.blockmap, same canonical build
+- latest.yml: PASS — version/path/size/SHA-512 match Setup
+- PDF: PASS — v1.0.5, 15 pages
+- hashes: PASS — SHA256SUMS-RC.txt verified
+- Source: 089a570ae5e0a2e56511066579fdf18888e98087
+- Product/App/File versions: TINDA POS / 1.0.5 / 1.0.5.0
+- Native module: only better-sqlite3 win32-x64 prebuild packaged
+- Provider: github / Yazerukun / TINDA-POS; no QA URL shipped
 
 UPDATER:
 - From: v1.0.4
@@ -104,10 +108,10 @@ OWNER WINDOWS SPOT-CHECK:
 - Result: N/A unless scope changes or owner requests it.
 
 BLOCKERS:
-- None through Stage 05.
+- None through Stage 06.
 
 NEXT REQUIRED ACTION:
-- Build the canonical Windows v1.0.5 Setup and Portable RC artifacts from RC commit 089a570.
+- Run Setup and Portable Wine QA against the canonical v1.0.5 RC artifacts.
 
 HISTORICAL UPDATER EXCEPTION:
 - v1.0.3 detects updates but cannot complete automatic installed updates because of incompatible ESM/CommonJS `electron-updater` interop.
