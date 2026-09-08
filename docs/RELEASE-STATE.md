@@ -13,13 +13,13 @@ BRANCH:
 v1.0.5-dev
 
 CURRENT COMMIT:
-c8a1a4c (Stage 02 starting baseline)
+089a570 (v1.0.5 source RC)
 
 RC COMMIT:
-N/A — RC not frozen
+089a570ae5e0a2e56511066579fdf18888e98087
 
 CURRENT STAGE:
-05 RC FREEZE — final audit and local commit in progress
+06 WINDOWS RC BUILD — pending
 
 LAST UPDATED:
 2026-09-08 Asia/Hong_Kong
@@ -52,7 +52,7 @@ STAGE STATUS:
 [x] 02 DEVELOPMENT
 [x] 03 DATABASE QA
 [x] 04 AUTOMATED QA
-[ ] 05 RC FREEZE — IN PROGRESS
+[x] 05 RC FREEZE
 [ ] 06 WINDOWS RC BUILD
 [ ] 07 WINE QA
 [ ] 08 SOFTWARE UPDATER QA
@@ -104,10 +104,10 @@ OWNER WINDOWS SPOT-CHECK:
 - Result: N/A unless scope changes or owner requests it.
 
 BLOCKERS:
-- None through Stage 04.
+- None through Stage 05.
 
 NEXT REQUIRED ACTION:
-- Audit the exact source/docs/PDF diff, exclude local QA/release folders, and create the local RC commit.
+- Build the canonical Windows v1.0.5 Setup and Portable RC artifacts from RC commit 089a570.
 
 HISTORICAL UPDATER EXCEPTION:
 - v1.0.3 detects updates but cannot complete automatic installed updates because of incompatible ESM/CommonJS `electron-updater` interop.
