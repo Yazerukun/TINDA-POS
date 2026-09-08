@@ -4,44 +4,55 @@ CURRENT STABLE:
 v1.0.4
 
 TARGET VERSION:
-TBD — no new release authorized
+v1.0.5
 
 RELEASE TYPE:
-TBD
+PATCH
 
 BRANCH:
-v1.0.4-user-feedback
+v1.0.5-dev
 
 CURRENT COMMIT:
-HEAD — resolve with `git rev-parse HEAD`; baseline before the workflow-policy commit: 7dc2d40
+c8a1a4c (Stage 02 starting baseline)
 
 RC COMMIT:
-N/A — no target RC is in progress
+N/A — RC not frozen
 
 CURRENT STAGE:
-Permanent release workflow installed (documentation policy only); no target release active
+05 RC FREEZE — final audit and local commit in progress
 
 LAST UPDATED:
 2026-09-08 Asia/Hong_Kong
 
 SCOPE:
-- Install the permanent release workflow and checkpoint system.
-- Record v1.0.4 as the fixed updater baseline.
-- Record the historical v1.0.3 manual-update exception.
-- Add mandatory agent and README references.
+- Inventory Stock Receiving history/view over legitimate existing receiving movements.
+- Realtime available stock in POS derived from database stock minus current cart quantity.
+- Automated tests and beginner-friendly User Manual updates.
+- Database migration only if genuinely required.
+- Release/update metadata only when the RC stage is reached.
 
 OUT OF SCOPE:
-- Application code or package changes.
-- Binary rebuilds or release-asset changes.
-- Pushes, tags, GitHub releases, or Latest changes.
+- Unrelated UI redesign, accounting changes, or pricing changes.
+- New payment methods or unrelated reports.
+- Unrelated inventory features.
+- Pushes, tags, GitHub releases, uploads, or Latest changes without explicit owner approval after Stage 10.
+
+RELEASE PLAN:
+- Features: Stock Receiving; realtime cart stock availability.
+- Bug fixes: Prevent misleading stock display and oversell while maintaining single post-checkout DB deduction.
+- User feedback: Inventory receiving visibility and instant cart-aware POS availability.
+- Updater changes: NO
+- Database changes: TBD after architecture inspection; avoid if existing movement data is sufficient.
+- Printer changes: NO
+- Documentation changes: YES
 
 STAGE STATUS:
 
-[ ] 01 PLAN
-[ ] 02 DEVELOPMENT
-[ ] 03 DATABASE QA
-[ ] 04 AUTOMATED QA
-[ ] 05 RC FREEZE
+[x] 01 PLAN
+[x] 02 DEVELOPMENT
+[x] 03 DATABASE QA
+[x] 04 AUTOMATED QA
+[ ] 05 RC FREEZE — IN PROGRESS
 [ ] 06 WINDOWS RC BUILD
 [ ] 07 WINE QA
 [ ] 08 SOFTWARE UPDATER QA
@@ -51,54 +62,55 @@ STAGE STATUS:
 [ ] 12 GITHUB RELEASE
 [ ] 13 POST-RELEASE VERIFY
 
-No future target release has been authorized. The unchecked stages are intentionally pending, not failed. For the next release, begin at Stage 01 and do not infer scope.
-
 AUTOMATED QA:
-- Typecheck: NOT RUN — documentation-policy installation only
-- Lint: NOT RUN — documentation-policy installation only
-- Tests: NOT RUN — documentation-policy installation only
-- Passed: N/A
-- Failed: N/A
-- Build: NOT RUN — explicitly out of scope
-- PDF: NOT RUN — explicitly out of scope
-- git diff --check: PASS (documentation changes)
+- Typecheck: PASS
+- Lint: PASS (0 errors, 0 warnings)
+- Tests: 18 test files / 134 total
+- Passed: 134
+- Failed: 0
+- Build: PASS
+- PDF: PASS — v1.0.5, 15 pages, 108097 bytes
+- git diff --check: PASS
 
 DATABASE:
-- Migration: N/A — no application/database change
-- Previous DB tested: N/A
-- integrity_check: N/A
+- Migration: PASS — additive schema v3 structured receiving metadata; no stock rewrite
+- Previous DB tested: PASS — copied v1.0.4 acceptance database migrated from schema 2 to 3
+- integrity_check: ok
 
 WINDOWS RC:
-- Setup: N/A
-- Portable: N/A
-- blockmap: N/A
-- latest.yml: N/A
-- PDF: N/A
-- hashes: N/A
+- Setup: PENDING
+- Portable: PENDING
+- blockmap: PENDING
+- latest.yml: PENDING
+- PDF: PENDING
+- hashes: PENDING
 
 UPDATER:
-- From: v1.0.4 fixed baseline
-- To: TBD
-- autoUpdater initialized: NOT TESTED — no target release
-- Detection: NOT TESTED — no target release
-- Download: NOT TESTED — no target release
-- Long download: NOT TESTED — no target release
-- Interruption: NOT TESTED — no target release
-- Retry: NOT TESTED — no target release
-- Safety backup: NOT TESTED — no target release
-- Restart & Install: NOT TESTED — no target release
-- Relaunch: NOT TESTED — no target release
-- Portable staging: NOT TESTED — no target release
+- From: v1.0.4
+- To: local v1.0.5 RC
+- autoUpdater initialized: PENDING
+- Detection: PENDING
+- Download: PENDING
+- Long download: PENDING
+- Interruption: PENDING
+- Retry: PENDING
+- Safety backup: PENDING
+- Restart & Install: PENDING
+- Relaunch: PENDING
+- Portable staging: PENDING
+
+OWNER WINDOWS SPOT-CHECK:
+- Required: NO under current scope because updater/installer behavior is unchanged; revise to REQUIRED if that changes.
+- Result: N/A unless scope changes or owner requests it.
+
+BLOCKERS:
+- None through Stage 04.
+
+NEXT REQUIRED ACTION:
+- Audit the exact source/docs/PDF diff, exclude local QA/release folders, and create the local RC commit.
 
 HISTORICAL UPDATER EXCEPTION:
 - v1.0.3 detects updates but cannot complete automatic installed updates because of incompatible ESM/CommonJS `electron-updater` interop.
 - Supported one-time path: v1.0.3 -> manual Setup install -> v1.0.4.
 - Do not alter or silently replace historical v1.0.3 assets.
-- v1.0.4 is the fixed updater baseline for all future previous-stable -> target-RC tests.
-
-BLOCKERS:
-- None for documentation-policy installation.
-- Stable publication remains prohibited until a future target completes all required gates and receives explicit owner approval.
-
-NEXT REQUIRED ACTION:
-- When the owner defines a new release, create the Stage 01 release plan from this checkpoint.
+- v1.0.4 remains the fixed updater baseline.

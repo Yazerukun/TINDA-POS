@@ -124,6 +124,29 @@ export interface InventoryMovement {
   created_at: string
 }
 
+export type StockReceivingSource = 'RESTOCK' | 'PURCHASE' | 'CSV OPENING STOCK' | 'INITIAL STOCK' | 'MANUAL RECEIVING'
+
+export interface StockReceivingRecord {
+  id: number
+  product_id: number
+  product_name: string
+  quantity_received: number
+  received_unit: string
+  base_quantity: number
+  base_unit: string
+  previous_stock: number
+  new_stock: number
+  supplier_id: number | null
+  supplier_name: string | null
+  unit_cost_c: number | null
+  total_cost_c: number | null
+  reference: string | null
+  notes: string | null
+  received_by: string
+  source: StockReceivingSource
+  created_at: string
+}
+
 export interface Customer {
   id: number
   full_name: string

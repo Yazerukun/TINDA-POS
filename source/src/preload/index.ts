@@ -73,6 +73,7 @@ const api: TindaApi = {
       return () => ipcRenderer.removeListener('inventory:changed', listener)
     },
     movements: (opts) => invoke<{ rows: import('@shared/types').InventoryMovement[]; total: number }>('inventory:movements', opts),
+    receiving: (opts) => invoke<{ rows: import('@shared/types').StockReceivingRecord[]; total: number; total_cost_c: number }>('inventory:receiving', opts),
     receive: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:receive', input),
     adjust: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:adjust', input),
     movement: (type, input) => invoke<import('@shared/types').InventoryMovement>('inventory:movement', type, input),

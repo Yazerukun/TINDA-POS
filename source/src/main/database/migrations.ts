@@ -384,5 +384,19 @@ CREATE TABLE IF NOT EXISTS z_reads (
 );
 CREATE INDEX IF NOT EXISTS idx_z_reads_finalized_at ON z_reads(finalized_at);
 `
+  },
+  {
+    version: 3,
+    name: 'structured_stock_receiving_metadata',
+    sql: `
+ALTER TABLE inventory_movements ADD COLUMN source TEXT;
+ALTER TABLE inventory_movements ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL;
+ALTER TABLE inventory_movements ADD COLUMN received_unit TEXT;
+ALTER TABLE inventory_movements ADD COLUMN received_quantity INTEGER;
+ALTER TABLE inventory_movements ADD COLUMN unit_cost_c INTEGER;
+ALTER TABLE inventory_movements ADD COLUMN receiving_notes TEXT;
+CREATE INDEX IF NOT EXISTS idx_movements_supplier ON inventory_movements(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_movements_source ON inventory_movements(source);
+`
   }
 ]

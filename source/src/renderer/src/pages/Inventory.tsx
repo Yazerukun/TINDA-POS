@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download } from 'lucide-react'
-import type { Product, Category, Supplier } from '@shared/types'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X } from 'lucide-react'
+import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource } from '@shared/types'
 import { money } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -33,9 +33,10 @@ export function Inventory(): React.JSX.Element {
   const [managingCategories, setManagingCategories] = useState(false)
   const [importing, setImporting] = useState(false)
   const [restocking, setRestocking] = useState<Product | true | null>(null)
+  const [viewingReceiving, setViewingReceiving] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const [p, c] = await Promise.all([
@@ -49,10 +50,10 @@ export function Inventory(): React.JSX.Element {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { void load() }, [])
-  useEffect(() => window.api.inventory.onChanged(() => { void load() }), [])
+  useEffect(() => { void load() }, [load])
+  useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
 
   useEffect(() => {
     if (!filterMenuOpen) return
@@ -134,6 +135,7 @@ export function Inventory(): React.JSX.Element {
         subtitle={`${products.length} active products · stock value ${money(totalValue)}`}
         actions={<div className="flex flex-wrap gap-2">
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
+          <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
           <button onClick={() => setEditing(blankForm())} className="btn-primary flex items-center gap-2">
             <Plus className="h-4 w-4" /> New Product
@@ -221,8 +223,63 @@ export function Inventory(): React.JSX.Element {
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
+      {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
     </div>
   )
+}
+
+function StockReceivingView({ onClose }: { onClose: () => void }): React.JSX.Element {
+  const [rows, setRows] = useState<StockReceivingRecord[]>([])
+  const [total, setTotal] = useState(0)
+  const [totalCost, setTotalCost] = useState(0)
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [supplierId, setSupplierId] = useState('')
+  const [source, setSource] = useState<StockReceivingSource | ''>('')
+  const [detail, setDetail] = useState<StockReceivingRecord | null>(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const result = await window.api.inventory.receiving({ search, from, to, supplier_id: supplierId ? Number(supplierId) : undefined, source, limit: 500 })
+      setRows(result.rows)
+      setTotal(result.total)
+      setTotalCost(result.total_cost_c)
+    } catch (e) { toastError('Stock Receiving failed', String((e as Error).message || e)) } finally { setLoading(false) }
+  }, [search, from, to, supplierId, source])
+  useEffect(() => { void window.api.suppliers.list({ status: 'ACTIVE' }).then(setSuppliers) }, [])
+  useEffect(() => { void load() }, [load])
+  useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
+  const clear = () => { setSearch(''); setFrom(''); setTo(''); setSupplierId(''); setSource('') }
+  return <Modal open onClose={onClose} title="Stock Receiving" maxWidth="max-w-7xl" footer={<button className="btn-ghost" onClick={onClose}>Close</button>}>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <div className="card p-3"><p className="text-xs text-slate-500">Receiving Records</p><p className="text-2xl font-bold text-white">{total}</p></div>
+        <div className="card p-3"><p className="text-xs text-slate-500">Total Receiving Cost</p><p className="text-2xl font-bold text-brand-400">{money(totalCost)}</p></div>
+      </div>
+      <form onSubmit={(e) => { e.preventDefault(); void load() }} className="grid gap-2 md:grid-cols-6">
+        <input className="input md:col-span-2" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search product" />
+        <input className="input" type="date" value={from} onChange={e => setFrom(e.target.value)} aria-label="Date from" />
+        <input className="input" type="date" value={to} onChange={e => setTo(e.target.value)} aria-label="Date to" />
+        <select className="input" value={supplierId} onChange={e => setSupplierId(e.target.value)}><option value="">All suppliers</option>{suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+        <select className="input" value={source} onChange={e => setSource(e.target.value as StockReceivingSource | '')}><option value="">All sources</option>{['RESTOCK','PURCHASE','CSV OPENING STOCK','INITIAL STOCK','MANUAL RECEIVING'].map(s => <option key={s} value={s}>{s}</option>)}</select>
+        <div className="flex gap-2 md:col-span-6"><button className="btn-primary" type="submit">Apply Filters</button><button className="btn-ghost flex items-center gap-1" type="button" onClick={clear}><X className="h-4 w-4"/>Clear Filters</button></div>
+      </form>
+      <div className="max-h-[55vh] overflow-auto rounded-lg border border-ink-line">
+        <table className="table min-w-[1200px]"><thead><tr><th>Date / Time</th><th>Product</th><th>Received</th><th>Base Qty</th><th>Previous</th><th>New</th><th>Supplier</th><th>Unit Cost</th><th>Total Cost</th><th>Reference</th><th>Received By</th><th>Source</th></tr></thead>
+          <tbody>{rows.map(row => <tr key={row.id} onClick={() => setDetail(row)} className="cursor-pointer hover:bg-ink-800"><td>{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td><td className="font-medium text-white">{row.product_name}</td><td>{row.quantity_received} {row.received_unit}</td><td>{row.base_quantity} {row.base_unit}</td><td>{row.previous_stock}</td><td>{row.new_stock}</td><td>{row.supplier_name || '—'}</td><td>{row.unit_cost_c == null ? '—' : money(row.unit_cost_c)}</td><td>{row.total_cost_c == null ? '—' : money(row.total_cost_c)}</td><td>{row.reference || '—'}</td><td>{row.received_by || '—'}</td><td><span className="badge">{row.source}</span></td></tr>)}</tbody>
+        </table>
+        {!loading && rows.length === 0 && <p className="py-10 text-center text-sm text-slate-500">No receiving records match these filters.</p>}
+        {loading && <p className="py-10 text-center text-sm text-slate-500">Loading receiving records…</p>}
+      </div>
+    </div>
+    {detail && <Modal open onClose={() => setDetail(null)} title="Receiving Details" maxWidth="max-w-lg" footer={<button className="btn-ghost" onClick={() => setDetail(null)}>Close</button>}><dl className="grid grid-cols-2 gap-3 text-sm">{[
+      ['Product', detail.product_name], ['Date / Time', new Date(detail.created_at.replace(' ', 'T')).toLocaleString()], ['Quantity', `${detail.quantity_received} ${detail.received_unit}`], ['Base Quantity', `${detail.base_quantity} ${detail.base_unit}`], ['Previous Stock', detail.previous_stock], ['New Stock', detail.new_stock], ['Supplier', detail.supplier_name || '—'], ['Unit Cost', detail.unit_cost_c == null ? '—' : money(detail.unit_cost_c)], ['Total Cost', detail.total_cost_c == null ? '—' : money(detail.total_cost_c)], ['Reference', detail.reference || '—'], ['Received By', detail.received_by || '—'], ['Source', detail.source], ['Notes', detail.notes || '—']
+    ].map(([label, value]) => <div key={String(label)} className={label === 'Notes' ? 'col-span-2' : ''}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-medium text-slate-200">{value}</dd></div>)}</dl></Modal>}
+  </Modal>
 }
 
 function CsvImportModal({ onDone, onClose }: { onDone: () => void; onClose: () => void }): React.JSX.Element {
@@ -248,7 +305,7 @@ function RestockModal({ products, initial, onDone, onClose }: { products: Produc
     <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={e=>{const id=Number(e.target.value);setProductId(id);const p=products.find(x=>x.id===id);setUnit(p?.units[0]?.name??p?.base_unit??'')}}>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
     <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div><div className="grid grid-cols-2 gap-3"><div><label className="label">Quantity to Add</label><input className="input w-full" type="number" min="0.01" step="any" value={quantity} onChange={e=>setQuantity(e.target.value)}/></div><div><label className="label">Unit</label><select className="input w-full" value={selectedUnit?.name??''} onChange={e=>setUnit(e.target.value)}>{product?.units.map(u=><option key={u.id} value={u.name}>{u.name}</option>)}</select></div></div>
     <div className="rounded-lg bg-brand-500/10 p-3 text-sm">Conversion: {quantity||0} × {selectedUnit?.conversion_to_base??1} = {addBase||0} {product?.base_unit}<br/><b>New Stock: {newStock||product?.stock||0} {product?.base_unit}</b></div>
-    <div><label className="label">Supplier (optional)</label><select className="input w-full" value={supplierId??''} onChange={e=>setSupplierId(e.target.value?Number(e.target.value):null)}><option value="">None</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><div><label className="label">Cost (₱)</label><input className="input w-full" type="number" min="0" value={cost} onChange={e=>setCost(e.target.value)}/></div><div><label className="label">Reference (optional)</label><input className="input w-full" value={reference} onChange={e=>setReference(e.target.value)}/></div><div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
+    <div><label className="label">Supplier (optional)</label><select className="input w-full" value={supplierId??''} onChange={e=>setSupplierId(e.target.value?Number(e.target.value):null)}><option value="">None</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><div><label className="label">Unit Cost (₱)</label><input className="input w-full" type="number" min="0" value={cost} onChange={e=>setCost(e.target.value)}/></div><div><label className="label">Reference (optional)</label><input className="input w-full" value={reference} onChange={e=>setReference(e.target.value)}/></div><div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
   </div></Modal>
 }
 

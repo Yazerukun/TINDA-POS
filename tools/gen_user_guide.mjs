@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url'
 const toolDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(toolDir, '..')
 const manualPath = join(repoRoot, 'docs', 'USER-MANUAL.md')
+const packagePath = join(repoRoot, 'source', 'package.json')
+const version = JSON.parse(readFileSync(packagePath, 'utf8')).version
 const outputPath = join(repoRoot, 'installers', 'TindaPOS-User-Guide.pdf')
 const temporaryPdf = join(repoRoot, 'installers', `.TindaPOS-User-Guide-${process.pid}.tmp.pdf`)
 const previousPdf = join(repoRoot, 'installers', `.TindaPOS-User-Guide-${process.pid}.previous.pdf`)
@@ -27,7 +29,7 @@ function inlineMarkdown(value) {
 }
 
 function markdownToHtml(markdown) {
-  const lines = markdown.replace(/^# TINDA POS v1\.0\.4 User Manual\s*/u, '').split(/\r?\n/)
+  const lines = markdown.replace(new RegExp(`^# TINDA POS v${version.replaceAll('.', '\\.')} User Manual\\s*`, 'u'), '').split(/\r?\n/)
   const blocks = []
   let paragraph = []
   let listType = null
@@ -92,7 +94,7 @@ function markdownToHtml(markdown) {
 }
 
 const requiredContent = [
-  'TINDA POS v1.0.4', 'CSV Product Import', 'Restock', 'X-Read', 'Z-Read', 'Realtime stock', 'POS and Checkout', 'Cash and Sukli', 'GCash and Maya recording', 'Utang',
+  `TINDA POS v${version}`, 'CSV Product Import', 'Restock', 'Stock Receiving', 'Realtime cart stock', 'X-Read', 'Z-Read', 'Realtime stock', 'POS and Checkout', 'Cash and Sukli', 'GCash and Maya recording', 'Utang',
   'Split Payment', 'Hold Sale', 'Held Sales', 'Resume', 'Delete', 'survive app restart',
   'does not deduct stock', 'Inventory and Tingi Units', 'Settings → Data',
   '%APPDATA%\\TINDA POS\\database\\tindapos.db', 'Installer and Portable',
@@ -122,7 +124,7 @@ function assertRequiredContent(text, label) {
 
 function documentHtml(markdown) {
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>TINDA POS v1.0.4 User Guide</title><style>
+<html><head><meta charset="utf-8"><title>TINDA POS v${version} User Guide</title><style>
   @page { size: A4; margin: 18mm 16mm 20mm; }
   * { box-sizing: border-box; }
   html { font-family: Arial, Helvetica, sans-serif; color: #172033; font-size: 10.5pt; line-height: 1.5; }
@@ -142,8 +144,8 @@ function documentHtml(markdown) {
   pre { background: #f1f5f9; border-left: 1mm solid #10b981; padding: 3mm; white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; }
   strong { color: #0f172a; }
 </style></head><body>
-  <section class="cover"><p class="brand">TINDA POS</p><p class="guide">User Guide</p><p class="version">v1.0.4</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
-  <main><h1 style="display:none">TINDA POS v1.0.4 User Manual</h1>${markdownToHtml(markdown)}</main>
+  <section class="cover"><p class="brand">TINDA POS</p><p class="guide">User Guide</p><p class="version">v${version}</p><p class="subtitle">Offline POS System for Sari-Sari Stores</p></section>
+  <main><h1 style="display:none">TINDA POS v${version} User Manual</h1>${markdownToHtml(markdown)}</main>
 </body></html>`
 }
 
@@ -190,7 +192,7 @@ async function main() {
     throw error
   }
 
-  process.stdout.write(`${JSON.stringify({ output: outputPath, bytes: check.length, pages: pageCount, version: '1.0.4' })}\n`)
+  process.stdout.write(`${JSON.stringify({ output: outputPath, bytes: check.length, pages: pageCount, version })}\n`)
 }
 
 void main().then(() => {

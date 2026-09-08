@@ -205,6 +205,11 @@ export interface TindaApi {
       rows: InventoryMovement[]
       total: number
     }>
+    receiving: (opts?: { search?: string; from?: string; to?: string; supplier_id?: number; source?: import('./types').StockReceivingSource | ''; limit?: number; offset?: number }) => Promise<{
+      rows: import('./types').StockReceivingRecord[]
+      total: number
+      total_cost_c: number
+    }>
     receive: (input: { product_id: number; qty_base: number; unit_name: string; cost_c: number; reason?: string }) => Promise<InventoryMovement>
     adjust: (input: { product_id: number; qty_base: number; reason: string }) => Promise<InventoryMovement>
     movement: (type: InventoryMovementType, input: { product_id: number; qty_base: number; reason?: string; notes?: string }) => Promise<InventoryMovement>

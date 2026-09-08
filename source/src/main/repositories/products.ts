@@ -258,7 +258,15 @@ export function adjustStock(
   movementType: string,
   reason: string | null,
   userId: number,
-  reference?: string
+  reference?: string,
+  receiving?: {
+    source?: string
+    supplier_id?: number | null
+    received_unit?: string
+    received_quantity?: number
+    unit_cost_c?: number | null
+    notes?: string | null
+  }
 ): void {
   const p = db.prepare('SELECT id, stock, base_unit FROM products WHERE id = ?').get(productId) as
     | { id: number; stock: number; base_unit: string }
@@ -271,9 +279,12 @@ export function adjustStock(
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
   db.prepare(
     `INSERT INTO inventory_movements
-     (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId)
+     (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
+      source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
+    receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
+    receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
 }
 
 export function listProductsBySupplier(db: Database.Database, supplierId: number): Product[] {

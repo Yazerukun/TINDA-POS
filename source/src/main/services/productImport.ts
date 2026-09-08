@@ -72,7 +72,7 @@ export function importCsv(db: Database.Database, text: string, strategy: 'SKIP' 
       if (row.stock !== '') {
         const targetStock = Number(row.stock)
         const change = row.existing_id ? targetStock - priorStock : targetStock
-        if (change) products.adjustStock(db, id, change, 'INITIAL_STOCK', row.existing_id ? 'Stock updated from CSV import' : 'Opening stock from CSV import', userId, `CSV row ${row.row_number}`)
+        if (change) products.adjustStock(db, id, change, 'INITIAL_STOCK', row.existing_id ? 'Stock updated from CSV import' : 'Opening stock from CSV import', userId, `CSV row ${row.row_number}`, { source: 'CSV OPENING STOCK', received_unit: input.base_unit, received_quantity: change, unit_cost_c: input.purchase_cost_c })
       }
       productIds.push(id)
     }

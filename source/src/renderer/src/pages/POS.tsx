@@ -24,6 +24,7 @@ import type { PaymentInput } from '@shared/ipc'
 import type { PrintResult } from '@shared/ipc'
 import { useNav } from '../stores/nav'
 import { cashInputFromCents } from '../lib/payment'
+import { availableBase, cartHasStockConflict, maxQuantity, reservedBase } from '../lib/cartStock'
 
 interface CartItem {
   product_id: number
@@ -33,6 +34,7 @@ interface CartItem {
   unit_price_c: number
   cost_base_c: number
   stock_base: number
+  conversion_to_base: number
 }
 
 interface CartState {
@@ -46,6 +48,7 @@ interface CartState {
   setCustomer: (id: number | null) => void
   setDiscountPesos: (v: number) => void
   replace: (items: CartItem[], discount_pesos: number) => void
+  syncStocks: (products: Product[]) => void
 }
 
 export const usePosCart = create<CartState>((set) => ({
@@ -55,7 +58,8 @@ export const usePosCart = create<CartState>((set) => ({
   add: (p) =>
     set((s) => {
       const ex = s.items.find((i) => i.product_id === p.id)
-      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, qty: i.qty + 1 } : i)) }
+      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: p.stock, qty: Math.min(i.qty + 1, maxQuantity(p.stock, i.conversion_to_base)) } : i)) }
+      if (p.stock < 1) return s
       return {
         items: [...s.items, {
           product_id: p.id,
@@ -64,17 +68,22 @@ export const usePosCart = create<CartState>((set) => ({
           qty: 1,
           unit_price_c: p.default_price_c,
           cost_base_c: p.purchase_cost_c,
-          stock_base: p.stock
+          stock_base: p.stock,
+          conversion_to_base: 1
         }]
       }
     }),
   setQty: (product_id, qty) =>
-    set((s) => ({ items: s.items.map((i) => (i.product_id === product_id ? { ...i, qty: Math.max(0, qty) } : i)).filter((i) => i.qty > 0) })),
+    set((s) => ({ items: s.items.map((i) => (i.product_id === product_id ? { ...i, qty: Math.min(Math.max(0, Number.isFinite(qty) ? qty : 0), maxQuantity(i.stock_base, i.conversion_to_base)) } : i)).filter((i) => i.qty > 0) })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
   clear: () => set({ items: [], customer_id: null, discount_pesos: 0 }),
   setCustomer: (id) => set({ customer_id: id }),
   setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
-  replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos })
+  replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos }),
+  syncStocks: (products) => set((s) => {
+    const stocks = new Map(products.map(p => [p.id, p.stock]))
+    return { items: s.items.map(item => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
+  })
 }))
 
 export function POS(): React.JSX.Element {
@@ -86,6 +95,7 @@ export function POS(): React.JSX.Element {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
+  const cartItems = usePosCart((state) => state.items)
 
   const selectedCategory = catFilter === 'ALL'
     ? 'All categories'
@@ -99,6 +109,7 @@ export function POS(): React.JSX.Element {
       if (categoryId != null) opts.category_id = categoryId
       const res = await window.api.products.search(term, opts)
       setProducts(res.rows)
+      usePosCart.getState().syncStocks(res.rows)
     } catch (e) {
       setError(String((e as Error)?.message || e))
     } finally {
@@ -110,7 +121,12 @@ export function POS(): React.JSX.Element {
     void search('')
     window.api.categories.list().then(setCategories).catch(() => {})
   }, [])
-  useEffect(() => window.api.inventory.onChanged(() => { void search(q, catFilter === 'ALL' ? null : catFilter) }), [q, catFilter])
+  useEffect(() => window.api.inventory.onChanged((event) => {
+    void Promise.all(event.product_ids.map(id => window.api.products.get(id)))
+      .then(changed => usePosCart.getState().syncStocks(changed))
+      .catch(() => {})
+    void search(q, catFilter === 'ALL' ? null : catFilter)
+  }), [q, catFilter])
 
   useEffect(() => {
     if (!categoryMenuOpen) return
@@ -201,19 +217,21 @@ export function POS(): React.JSX.Element {
             <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
           )}
           {!loading && products.map((p) => {
-            const low = p.stock > 0 && p.stock <= p.low_stock_threshold
-            const out = p.stock <= 0
+            const cartItem = cartItems.find(item => item.product_id === p.id)
+            const available = availableBase(p.stock, cartItem)
+            const low = available > 0 && available <= p.low_stock_threshold
+            const out = available <= 0
             return (
               <button
                 key={p.id}
-                onClick={() => usePosCart.getState().add(p)}
-                disabled={out}
-                className="card group p-3 text-left transition hover:border-brand-500/50 disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={() => out ? toastError('Out of stock', cartItem ? `Only ${p.stock} ${p.base_unit} in stock and all are already in the cart.` : undefined) : usePosCart.getState().add(p)}
+                aria-disabled={out}
+                className="card group p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
                 <div className="mb-1.5 flex items-center justify-between gap-1">
                   <span className="truncate text-[10px] font-bold text-brand-400">{p.sku}</span>
                   <span className={`shrink-0 text-[10px] font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
-                    {p.stock} {p.base_unit}
+                    {cartItem ? `Available: ${available} / ${p.stock}` : `Stock: ${p.stock}`} {p.base_unit}
                   </span>
                 </div>
                 <p className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold text-white">{p.name}</p>
@@ -239,6 +257,7 @@ function CartPanel(): React.JSX.Element {
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + i.unit_price_c * i.qty, 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
+  const stockConflict = cartHasStockConflict(items)
 
   const loadHeldSales = async () => {
     try {
@@ -260,7 +279,7 @@ function CartPanel(): React.JSX.Element {
           name: item.name,
           unit_name: item.unit_name,
           qty: item.qty,
-          qty_base: item.qty,
+          qty_base: item.qty * item.conversion_to_base,
           unit_price_c: item.unit_price_c,
           cost_base_c: item.cost_base_c,
           stock_base: item.stock_base,
@@ -296,7 +315,8 @@ function CartPanel(): React.JSX.Element {
         qty: item.qty,
         unit_price_c: item.unit_price_c,
         cost_base_c: item.cost_base_c,
-        stock_base: item.product_id == null ? 0 : catalog.get(item.product_id)?.stock ?? 0
+        stock_base: item.product_id == null ? 0 : catalog.get(item.product_id)?.stock ?? 0,
+        conversion_to_base: item.qty > 0 ? item.qty_base / item.qty : 1
       })), held.discount_c)
       setHeldOpen(false)
       await loadHeldSales()
@@ -365,16 +385,19 @@ function CartPanel(): React.JSX.Element {
                   onChange={(e) => usePosCart.getState().setQty(i.product_id, parseInt(e.target.value || '0', 10))}
                   className="w-11 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-sm font-bold text-white"
                 />
-                <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-7 w-7 rounded-lg"><Plus className="h-3.5 w-3.5" /></button>
+                <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-7 w-7 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-white">{money(i.unit_price_c * i.qty)}</p>
                 <p className="text-[10px] text-slate-500">@{money(i.unit_price_c)} / {i.unit_name}</p>
               </div>
             </div>
+            <p className={`mt-1 text-[10px] ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {availableBase(i.stock_base, i)} base units / {i.stock_base}</p>
           </div>
         ))}
       </div>
+
+      {stockConflict && <div className="mx-4 mb-2 rounded-lg border border-danger-500/30 bg-danger-500/10 p-2 text-xs text-danger-300">Current stock changed. Please adjust the cart to the available quantity before checkout.</div>}
 
       <div className="space-y-1.5 border-t border-ink-line px-4 py-3 text-sm">
         <div className="flex items-center justify-between text-slate-400">
@@ -418,7 +441,7 @@ function CartPanel(): React.JSX.Element {
           Clear
         </button>
         <button
-          disabled={items.length === 0}
+          disabled={items.length === 0 || stockConflict}
           onClick={() => !items.length ? undefined : setCheckoutOpen(true)}
           className="btn-primary col-span-1 py-2 text-sm disabled:opacity-40"
         >
@@ -474,6 +497,10 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   useEffect(() => { void openShift() }, [])
 
   const doCheckout = async () => {
+    if (cartHasStockConflict(items)) {
+      toastError('Stock changed', 'Please adjust the cart to the available quantity before checkout.')
+      return
+    }
     setSubmitting(true)
     try {
       const payments: PaymentInput[] =
@@ -488,7 +515,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
           name: i.name,
           unit_name: i.unit_name,
           qty: i.qty,
-          qty_base: i.qty,
+          qty_base: i.qty * i.conversion_to_base,
           unit_price_c: i.unit_price_c,
           cost_base_c: i.cost_base_c,
           stock_base: i.stock_base,

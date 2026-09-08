@@ -183,10 +183,14 @@ handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'S
 
 // ---- Inventory ----
 handle('inventory:movements', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listMovements(db(), (opts ?? {}) as object))
+handle('inventory:receiving', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listReceiving(db(), (opts ?? {}) as object))
 handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:receive')
   const i = input as { product_id: number; qty_base: number; unit_name: string; cost_c: number; reason?: string }
-  prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'PURCHASE', i.reason ?? 'Stock receiving', user().id, i.cost_c ? `cost ${i.cost_c}` : undefined)
+  prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'PURCHASE', i.reason ?? 'Stock receiving', user().id, undefined, {
+    source: 'MANUAL RECEIVING', received_unit: i.unit_name, received_quantity: i.qty_base,
+    unit_cost_c: i.cost_c || null, notes: i.reason ?? null
+  })
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
   emitInventoryChanged({ reason: 'PURCHASE', product_ids: [i.product_id] })
   return movement
@@ -203,7 +207,10 @@ handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
   if (!Number.isInteger(qtyBase)) throw new Error('Restock must convert to a whole base unit.')
   const supplier = i.supplier_id ? supRepo.getSupplier(db(), i.supplier_id) : null
   const reason = [`Restock: ${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, supplier ? `Supplier: ${supplier.name}` : '', i.cost_c ? `Cost: ${i.cost_c}` : '', i.notes?.trim() || ''].filter(Boolean).join(' | ')
-  db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference))()
+  db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference, {
+    source: 'RESTOCK', supplier_id: i.supplier_id ?? null, received_unit: unit.name,
+    received_quantity: i.quantity, unit_cost_c: i.cost_c || null, notes: i.notes ?? null
+  }))()
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
   emitInventoryChanged({ reason: 'RESTOCK', product_ids: [i.product_id] })
   return movement
@@ -221,8 +228,11 @@ handle('inventory:movement', (_e: IpcMainInvokeEvent, type: string, input: unkno
   const i = input as { product_id: number; qty_base: number; reason?: string }
   const validTypes = ['PURCHASE', 'REFUND', 'RETURN', 'DAMAGE', 'EXPIRATION', 'LOSS', 'ADJUSTMENT']
   if (!validTypes.includes(type)) throw new Error('Invalid movement type.')
-  prodRepo.adjustStock(db(), i.product_id, i.qty_base, type, i.reason ?? '', user().id)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  prodRepo.adjustStock(db(), i.product_id, i.qty_base, type, i.reason ?? '', user().id, undefined,
+    type === 'PURCHASE' && i.qty_base > 0 ? { source: 'MANUAL RECEIVING', received_quantity: i.qty_base, notes: i.reason ?? null } : undefined)
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: type === 'PURCHASE' ? 'PURCHASE' : 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:count')

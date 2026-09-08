@@ -1,10 +1,10 @@
-# TINDA POS v1.0.4 User Manual
+# TINDA POS v1.0.5 User Manual
 
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> TINDA POS v1.0.4 is a local release candidate for testing. The current public Latest version remains v1.0.3.
+> TINDA POS v1.0.5 is a local release candidate for testing. The current public Latest version remains v1.0.4.
 
 ## Quick start and first-time setup
 
@@ -45,6 +45,14 @@ Opening stock is saved with an inventory-history entry. Editing ordinary details
 **EXAMPLE:** Current Stock: 24 sachets. Restock: 2 boxes. If 1 box = 24 sachets, the preview shows `2 × 24 = 48 sachets`; New Stock: 72 sachets.
 
 Quantity must be greater than zero and cost cannot be negative. Restock creates a PURCHASE/receiving movement with user and timestamp; it never silently overwrites stock.
+
+## Stock Receiving (Ano ang mga stock na dumating?)
+
+**WHERE TO GO:** Inventory → **Stock Receiving**.
+
+Kung gusto ninyong makita kung anong stocks ang dumating ngayong araw, pumunta sa **Inventory → Stock Receiving**. Makikita rito ang received product, quantity at unit, previous/new stock, supplier, date/time, cost, reference, notes, source, at kung sino ang nag-receive.
+
+Gamitin ang Search Product, Date From/To, Supplier, at Source filters para mabilis makita ang kailangan. Click ang row para sa complete read-only details. Ang Restock at legitimate Purchase Receiving ay automatic na lalabas agad—hindi kailangan ng manual Refresh. Ang CSV opening stock ay malinaw na naka-label bilang opening/import stock, at hindi delivery. Damage, loss, sale, at ibang negative movements ay hindi ipinapakitang received stock.
 
 ## Stock adjustment and low stock
 
@@ -90,6 +98,14 @@ Open **Reports → Z-Read History** to inspect and print an old saved snapshot. 
 ## Realtime stock
 
 After a successful sale, refund, void, restock, adjustment, CSV import, or purchase receiving, Inventory, POS, and Dashboard stock views refresh automatically. Hindi kailangang paulit-ulit pindutin ang Refresh. TINDA POS uses committed events, not aggressive internet polling; a failed/rolled-back transaction sends no success event.
+
+### Realtime cart stock sa POS
+
+Kapag nag-add ng product sa cart, bababa agad ang **Available Stock** sa POS. Kapag binawasan, tinanggal, o ni-clear ang item sa cart, babalik agad ang available quantity.
+
+Ang permanenteng stock deduction ay mangyayari lamang pagkatapos ng successful checkout. Walang database stock movement habang nag-aayos pa lamang ng cart, kaya walang double deduction at walang nawawalang stock kapag kinansela o nag-fail ang checkout.
+
+Hindi puwedeng lumampas ang cart sa current database stock. Kung nagbago ang stock habang may item sa cart o habang naka-Hold ang sale, magpapakita ang POS ng stock warning at iba-block ang checkout hanggang ma-adjust ang quantity. Ang multi-unit products ay gumagamit ng existing base-unit conversion; halimbawa, ang 1 box na 24 sachets ay nagre-reserve ng 24 base units.
 
 ## Suppliers, purchases, receiving, and expenses
 
