@@ -1,10 +1,10 @@
 # TINDA POS RELEASE STATE
 
 CURRENT STABLE:
-v1.0.4
+v1.0.5
 
 TARGET VERSION:
-v1.0.5
+v1.0.5 (released)
 
 RELEASE TYPE:
 PATCH
@@ -19,7 +19,7 @@ RC COMMIT:
 089a570ed8606840399d94ffa5d5af45ab820021
 
 CURRENT STAGE:
-11 OWNER APPROVAL — waiting for explicit "Publish v1.0.5 Stable"
+13 POST-RELEASE VERIFY — complete (closed)
 
 LAST UPDATED:
 2026-09-09 Asia/Hong_Kong
@@ -58,9 +58,9 @@ STAGE STATUS:
 [x] 08 SOFTWARE UPDATER QA
 [x] 09 OWNER WINDOWS SPOT-CHECK (N/A — updater/installer unchanged)
 [x] 10 FINAL RELEASE REVIEW
-[ ] 11 OWNER APPROVAL
-[ ] 12 GITHUB RELEASE
-[ ] 13 POST-RELEASE VERIFY
+[x] 11 OWNER APPROVAL
+[x] 12 GITHUB RELEASE
+[x] 13 POST-RELEASE VERIFY
 
 AUTOMATED QA:
 - Typecheck: PASS
@@ -137,11 +137,20 @@ FINAL RELEASE REVIEW (Stage 10):
 - Documentation: USER-MANUAL + RELEASE_NOTES_v1.0.5 + User Guide PDF v1.0.5 current
 - Result: PASS
 
+RELEASE OUTCOME (Stage 12-13):
+- Release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.5
+- Title: TINDA POS v1.0.5; Stable, not prerelease; GitHub Latest = v1.0.5 (verified via /releases/latest)
+- Tag: v1.0.5 (annotated, fd07198) at commit 089a570ed8606840399d94ffa5d5af45ab820021; pushed
+- Branch: v1.0.5-dev pushed to origin
+- Assets (all HTTP 200 from release download URL): TindaPOS-Setup-1.0.5.exe, TindaPOS-Portable-1.0.5.exe, TindaPOS-Setup-1.0.5.exe.blockmap, latest.yml, TindaPOS-User-Guide.pdf, SHA256SUMS.txt
+- App-facing API now returns v1.0.5 as newest stable release (detection path live-verified; semver eligibility covered by unit tests)
+- Open item for native Windows (optional): first live installed updater cycle v1.0.4 -> v1.0.5 is now possible; run via Settings > About > Software Update on the owner's Windows PC.
+
 BLOCKERS:
 - None through Stage 08. Note: complete production updater replacement cycle is deferred until v1.0.5 is public (post-approval), exactly as recorded for v1.0.4.
 
 NEXT REQUIRED ACTION:
-- STOP — awaiting owner approval: "Publish v1.0.5 Stable"
+- None. Release v1.0.5 is published, verified, and closed.
 
 HISTORICAL UPDATER EXCEPTION:
 - v1.0.3 detects updates but cannot complete automatic installed updates because of incompatible ESM/CommonJS `electron-updater` interop.
