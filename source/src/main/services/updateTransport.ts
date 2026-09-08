@@ -172,8 +172,8 @@ export class ElectronUpdateTransport implements UpdateTransport {
   private async getUpdater(): Promise<import('electron-updater').AppUpdater | null> {
     if (this.updater) return this.updater
     this.updater = import('electron-updater')
-      .then((mod) => {
-        const updater = mod.autoUpdater
+      .then(() => {
+        const updater = (require('electron-updater') as typeof import('electron-updater')).autoUpdater
         updater.autoDownload = false
         updater.autoInstallOnAppQuit = true
         updater.removeAllListeners('download-progress')
