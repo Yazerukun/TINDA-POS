@@ -77,6 +77,12 @@ export function UpdateNotification(): React.JSX.Element | null {
       </button>,
       <button key="later" onClick={() => void dismiss()} className="btn-ghost px-3 py-1.5 text-xs">Later</button>
     )
+  } else if (s === 'ERROR' && event.available) {
+    actions.push(
+      <button key="retry" onClick={() => { setInstallError(null); setBusy(true); void download().finally(() => setBusy(false)) }} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs" disabled={busy}>
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} Retry Download
+      </button>
+    )
   } else if (s === 'DOWNLOADED') {
     actions.push(
       <button key="folder" onClick={() => { void install() }} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs">

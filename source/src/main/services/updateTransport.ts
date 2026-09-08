@@ -1,15 +1,15 @@
 import { app, net, shell } from 'electron'
 import { createWriteStream } from 'node:fs'
 import { join } from 'node:path'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, unlink } from 'node:fs/promises'
 import type { ReleaseInfo } from '@shared/update'
 import { githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
 import type { UpdateProgressHandler, UpdateTransport } from './updateService'
 import { UpdateCheckError } from './updateService'
 import { getDb } from '../database/connection'
 import { createBackupSync, validateBackupDatabase } from '../repositories/backup'
+import { consumeWithIdleTimeout, UPDATE_REQUEST_START_TIMEOUT_MS } from './updateDownload'
 
-const REQUEST_TIMEOUT_MS = 15000
 const GITHUB_ASSET_HOSTS = new Set([
   'github.com',
   'api.github.com',
@@ -18,8 +18,14 @@ const GITHUB_ASSET_HOSTS = new Set([
   'github-releases.githubusercontent.com'
 ])
 
-async function fetchWithTimeout(url: string, init: RequestInit = {}): Promise<Response> {
-  return net.fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS), redirect: 'follow' })
+async function fetchWithStartTimeout(url: string, init: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), UPDATE_REQUEST_START_TIMEOUT_MS)
+  try {
+    return await net.fetch(url, { ...init, signal: controller.signal, redirect: 'follow' })
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 export class ElectronUpdateTransport implements UpdateTransport {
@@ -49,7 +55,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
   async fetchReleases(): Promise<ReleaseInfo[]> {
     let res: Response
     try {
-      res = await fetchWithTimeout(githubReleasesApiUrl(), {
+      res = await fetchWithStartTimeout(githubReleasesApiUrl(), {
         headers: {
           Accept: 'application/vnd.github+json',
           'User-Agent': 'TINDA-POS'
@@ -103,7 +109,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
 
     let res: Response
     try {
-      res = await fetchWithTimeout(asset.url, { headers: { 'User-Agent': 'TINDA-POS' } })
+      res = await fetchWithStartTimeout(asset.url, { headers: { 'User-Agent': 'TINDA-POS' } })
     } catch (err) {
       throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
     }
@@ -115,36 +121,32 @@ export class ElectronUpdateTransport implements UpdateTransport {
     const filePath = join(dir, asset.name)
     const total = Number(res.headers.get('content-length')) || 0
 
-    await new Promise<void>((resolve, reject) => {
-      const out = createWriteStream(filePath)
-      const reader = res.body?.getReader()
-      let received = 0
-      if (!reader) {
-        out.end()
-        reject(new Error('The server did not provide a downloadable file.'))
-        return
-      }
-      out.on('error', (err) => reject(err))
-      const pump = (): void => {
-        void reader
-          .read()
-          .then(({ done, value }: { done: boolean; value?: Uint8Array }) => {
-            if (done) {
-              out.end(() => resolve())
-              return
-            }
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const out = createWriteStream(filePath)
+        const reader = res.body?.getReader()
+        let received = 0
+        if (!reader) {
+          out.end()
+          reject(new Error('The server did not provide a downloadable file.'))
+          return
+        }
+        out.on('error', (err) => reject(err))
+        void consumeWithIdleTimeout(reader, (value) => {
             received += value?.byteLength ?? 0
-            if (value) out.write(Buffer.from(value))
+            out.write(Buffer.from(value))
             if (total > 0) onProgress(received, total)
-            pump()
           })
+          .then(() => out.end(() => resolve()))
           .catch((err: unknown) => {
             out.destroy()
             reject(err instanceof Error && err.message ? err : new Error('Download failed'))
           })
-      }
-      pump()
-    })
+        })
+    } catch (error) {
+      await unlink(filePath).catch(() => undefined)
+      throw error
+    }
     return { filePath }
   }
 

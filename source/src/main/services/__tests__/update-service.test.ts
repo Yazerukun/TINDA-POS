@@ -313,7 +313,39 @@ describe('update service — download & install', () => {
     await service.check({ manual: true })
     const s = await service.download()
     expect(s.status).toBe('ERROR')
-    expect(s.message).toBe('disk full')
+    expect(s.message).toBe('The update download failed. Please try again.')
+    expect(s.available?.version).toBe('1.0.4')
+  })
+
+  it('shows a friendly interruption error and retries the known release to 100%', async () => {
+    let attempts = 0
+    const progress: number[] = []
+    const fake = makeFakeTransport({
+      downloadSetup: async (_r, onProgress) => {
+        attempts++
+        onProgress(30, 100)
+        if (attempts === 1) throw new Error('net::ERR_CONTENT_LENGTH_MISMATCH')
+        onProgress(100, 100)
+      },
+      safetyBackup: () => {
+        fake.calls.push('safetyBackup')
+        return { path: 'C:\\backups\\before-update.db' }
+      }
+    })
+    fake.releases = [release('1.0.4')]
+    const emitted: UpdateStatusEvent[] = []
+    const service = createUpdateService({ transport: fake, storage: makeStorage(), emit: (event) => emitted.push(event) })
+    await service.check({ manual: true })
+    const failed = await service.download()
+    expect(failed.status).toBe('ERROR')
+    expect(failed.message).toBe('Update download was interrupted. Check your connection and try again.')
+    const retried = await service.download()
+    expect(retried.status).toBe('READY_TO_INSTALL')
+    expect(fake.calls.filter((call) => call === 'safetyBackup')).toHaveLength(1)
+    for (const event of emitted) {
+      if (event.progress) progress.push(event.progress.percent)
+    }
+    expect(progress).toContain(100)
   })
 })
 

@@ -248,6 +248,11 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
             <Download className="h-3.5 w-3.5" /> Download Update
           </button>
         )}
+        {event.status === 'ERROR' && event.available && (
+          <button onClick={() => { setBusy(true); void download().finally(() => setBusy(false)) }} disabled={busy} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Download className="h-3.5 w-3.5" /> Retry Download
+          </button>
+        )}
         {event.status === 'UPDATE_AVAILABLE' && (
           <button onClick={() => void dismiss()} className="btn-ghost px-3 py-1.5 text-xs">Later</button>
         )}
