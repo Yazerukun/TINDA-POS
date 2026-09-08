@@ -19,7 +19,7 @@ RC COMMIT:
 089a570ed8606840399d94ffa5d5af45ab820021
 
 CURRENT STAGE:
-09 OWNER WINDOWS SPOT-CHECK — N/A (updater/installer unchanged)
+11 OWNER APPROVAL — waiting for explicit "Publish v1.0.5 Stable"
 
 LAST UPDATED:
 2026-09-09 Asia/Hong_Kong
@@ -56,8 +56,8 @@ STAGE STATUS:
 [x] 06 WINDOWS RC BUILD
 [x] 07 WINE QA
 [x] 08 SOFTWARE UPDATER QA
-[ ] 09 OWNER WINDOWS SPOT-CHECK
-[ ] 10 FINAL RELEASE REVIEW
+[x] 09 OWNER WINDOWS SPOT-CHECK (N/A — updater/installer unchanged)
+[x] 10 FINAL RELEASE REVIEW
 [ ] 11 OWNER APPROVAL
 [ ] 12 GITHUB RELEASE
 [ ] 13 POST-RELEASE VERIFY
@@ -127,11 +127,21 @@ OWNER WINDOWS SPOT-CHECK:
 - Required: NO under current scope because updater/installer behavior is unchanged; revise to REQUIRED if that changes.
 - Result: N/A unless scope changes or owner requests it.
 
+FINAL RELEASE REVIEW (Stage 10):
+- Source: RC commit 089a570ed8606840399d94ffa5d5af45ab820021 (app code; HEAD docs commits do not touch app source); working tree has only intentionally-uncommitted release artifacts
+- QA: typecheck/lint/tests/build/PDF PASS (134/134, Stage 04); Wine QA PASS (Stage 07)
+- Database: migration v3 additive PASS; previous DB preserved; integrity_check ok
+- Updater: gates PASS (init CJS, metadata, live check, safety backup); full replacement cycle deferred to post-publication (recorded)
+- Artifacts: Setup, Portable, blockmap, latest.yml, PDF present; SHA256SUMS-RC.txt verifies OK (6 files incl. RC-SOURCE-COMMIT.txt)
+- Security: no secrets, QA DB, QA updater URL, temp, or debug files in packaged app (scanned)
+- Documentation: USER-MANUAL + RELEASE_NOTES_v1.0.5 + User Guide PDF v1.0.5 current
+- Result: PASS
+
 BLOCKERS:
 - None through Stage 08. Note: complete production updater replacement cycle is deferred until v1.0.5 is public (post-approval), exactly as recorded for v1.0.4.
 
 NEXT REQUIRED ACTION:
-- Final release review (Stage 10), then STOP for owner approval ("Publish v1.0.5 Stable").
+- STOP — awaiting owner approval: "Publish v1.0.5 Stable"
 
 HISTORICAL UPDATER EXCEPTION:
 - v1.0.3 detects updates but cannot complete automatic installed updates because of incompatible ESM/CommonJS `electron-updater` interop.
