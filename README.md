@@ -20,6 +20,8 @@ TINDA POS is a **free, offline-first point-of-sale app** built for Philippine sa
 
 Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
+**Development & Releases:** See [`docs/RELEASE-WORKFLOW.md`](docs/RELEASE-WORKFLOW.md).
+
 **Current stable release: v1.0.3** — adds the in-app update system.
 
 Released September 6, 2026. This is a stable release, not a prerelease.
