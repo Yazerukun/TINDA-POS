@@ -360,9 +360,11 @@ describe('update service — dismissal', () => {
     service.dismiss()
     expect(service.getState().status).toBe('DISMISSED')
     storage.save({ lastCheckedAt: storage.saved.at(-1)?.lastCheckedAt ?? null, dismissedVersion: '1.0.4' })
-    const s = await service.check({ manual: true })
+    const s = await service.check({ manual: false })
     expect(s.status).toBe('UP_TO_DATE')
-    expect(s.message).toContain('1.0.4')
+    const manual = await service.check({ manual: true })
+    expect(manual.status).toBe('UPDATE_AVAILABLE')
+    expect(manual.available?.version).toBe('1.0.4')
   })
 
   it('stops suppressing updates once a newer version appears', async () => {
@@ -395,5 +397,30 @@ describe('update service — sanitizes ingested release notes end to end', () =>
     fake.releases = [raw!]
     const s = await checkService(fake, { manual: true })
     expect(s.available?.releaseNotes).toBe('Fixed a bug with keys')
+  })
+})
+
+describe('installed update backup at the moment of installation', () => {
+  it('takes a fresh backup after download and blocks installation until backup succeeds', async () => {
+    let backups = 0
+    let backupWorks = true
+    const fake = makeFakeTransport({ safetyBackup: () => {
+      backups++
+      return backupWorks ? { path: `backup-${backups}.db` } : null
+    } })
+    fake.releases = [release('1.0.6')]
+    const { service } = makeService(fake)
+    await service.check({ manual: true })
+    await service.download()
+    expect(backups).toBe(1)
+    backupWorks = false
+    const paused = await service.install()
+    expect(paused.status).toBe('READY_TO_INSTALL')
+    expect(paused.message).toContain('safety backup')
+    expect(fake.calls).not.toContain('restartAndInstall')
+    backupWorks = true
+    await service.install()
+    expect(backups).toBe(3)
+    expect(fake.calls.filter(c => c === 'restartAndInstall')).toHaveLength(1)
   })
 })

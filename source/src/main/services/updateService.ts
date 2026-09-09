@@ -126,7 +126,7 @@ export class UpdateService {
         return this.getState()
       }
 
-      if (saved.dismissedVersion === available.version) {
+      if (!manual && saved.dismissedVersion === available.version) {
         this.set({ status: 'UP_TO_DATE', message: `Update to version ${available.version} is available.`, lastCheckedAt: new Date().toISOString() }, true)
         return this.getState()
       }
@@ -198,6 +198,11 @@ export class UpdateService {
       return this.getState()
     }
     try {
+      // Sales may have changed since the download started or Install Later was chosen.
+      if (!this.deps.transport.safetyBackup()) {
+        this.set({ message: 'Update installation paused because a safety backup could not be created. Try Restart & Install again.' })
+        return this.getState()
+      }
       this.deps.transport.restartAndInstall()
     } catch (err) {
       const message = err instanceof Error && err.message ? err.message : 'The update could not be installed right now.'
@@ -207,6 +212,8 @@ export class UpdateService {
   }
 
   dismiss(): void {
+    // Closing the banner must not discard an in-flight check or download.
+    if (this.busy) return
     this.persistDismissed(this.state.available?.version ?? null)
     this.set({ status: 'DISMISSED', available: null, message: null })
   }

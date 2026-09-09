@@ -2,7 +2,7 @@
 
 This document is the mandatory release policy for TINDA POS. The primary development machine is Omarchy Linux, Windows compatibility QA normally runs under Wine, and the owner may use a separate native Windows laptop for acceptance checks. The production repository is `Yazerukun/TINDA-POS` on GitHub.
 
-The current fixed-updater baseline is **v1.0.4**.
+Incident correction (2026-09-09): v1.0.4 and v1.0.5 are NOT working installed-updater baselines. Their download path omits electron-updater.checkForUpdates(), causing "Please check update first". v1.0.6 is the proposed fix, pending the full QA gates. Existing v1.0.3–v1.0.5 Setup users require a one-time manual upgrade to the approved fixed release. Historical claims below are superseded by this correction.
 
 ## Release standard
 
@@ -84,7 +84,7 @@ The one-time supported path is:
 v1.0.3 -> manual Setup install -> v1.0.4
 ```
 
-Do not rewrite v1.0.3 history or silently replace its old assets. v1.0.4 is the fixed updater baseline. Normal future paths are sequential, for example `v1.0.4 -> v1.0.5 -> v1.0.6 -> v1.1.0`.
+Do not rewrite v1.0.3 history or silently replace its old assets. v1.0.4 fixed the interop issue but still omitted the updater metadata check. Therefore v1.0.4/v1.0.5 -> manual Setup -> approved fixed release is required. Test subsequent automatic upgrade paths from the fixed release; never mark detection-only or mocked transfer evidence as a completed installed update.
 
 ## Versioning
 

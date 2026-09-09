@@ -9,6 +9,7 @@ import { UpdateCheckError } from './updateService'
 import { getDb } from '../database/connection'
 import { createBackupSync, validateBackupDatabase } from '../repositories/backup'
 import { consumeWithIdleTimeout, UPDATE_REQUEST_START_TIMEOUT_MS } from './updateDownload'
+import { downloadInstalledUpdate } from './installedUpdate'
 
 const GITHUB_ASSET_HOSTS = new Set([
   'github.com',
@@ -88,18 +89,19 @@ export class ElectronUpdateTransport implements UpdateTransport {
    * Only usable when actually packaged on Windows; otherwise we reject rather
    * than faking success.
    */
-  async downloadSetup(_release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<void> {
+  async downloadSetup(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<void> {
     if (process.platform !== 'win32' || !app.isPackaged) {
       throw new Error('The installed updater is only available in a packaged Windows build.')
     }
     const updater = await this.getUpdater()
     if (!updater) throw new Error('The installed updater is not available.')
-    updater.autoDownload = true
     updater.forceDevUpdateConfig = false
     this.setDownloadProgress(onProgress)
-    const result = await updater.downloadUpdate()
-    if (!result) throw new Error('The update download failed.')
-    this.setDownloadProgress(null)
+    try {
+      await downloadInstalledUpdate(updater, release)
+    } finally {
+      this.setDownloadProgress(null)
+    }
   }
 
   async downloadPortable(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<{ filePath: string }> {
@@ -171,12 +173,10 @@ export class ElectronUpdateTransport implements UpdateTransport {
 
   private async getUpdater(): Promise<import('electron-updater').AppUpdater | null> {
     if (this.updater) return this.updater
-    this.updater = import('electron-updater')
-      .then(() => {
+    this.updater = Promise.resolve().then(() => {
         const updater = (require('electron-updater') as typeof import('electron-updater')).autoUpdater
         updater.autoDownload = false
-        updater.autoInstallOnAppQuit = true
-        updater.removeAllListeners('download-progress')
+        updater.autoInstallOnAppQuit = false
         updater.on('download-progress', (p) => {
           if (this.progressHandler) {
             this.progressHandler(toBytes(p.transferred), toBytes(p.total))
@@ -184,7 +184,11 @@ export class ElectronUpdateTransport implements UpdateTransport {
         })
         return updater
       })
-      .catch(() => null)
+      .catch((error: unknown) => {
+        console.error('[updater] initialization failed', error)
+        this.updater = null
+        return null
+      })
     return this.updater
   }
 

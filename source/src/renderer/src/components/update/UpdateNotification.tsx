@@ -53,6 +53,7 @@ export function UpdateNotification(): React.JSX.Element | null {
           <p className="mt-1 text-xs text-slate-400">{event.progress.percent}%</p>
         )}
         {installError && <p className="mt-1 text-xs text-amber-300">{installError}</p>}
+        {s === 'READY_TO_INSTALL' && event.message && <p className="mt-1 text-xs text-slate-300">{event.message}</p>}
         {showNotes && event.available && (
           <div className="mt-3 max-h-44 overflow-y-auto rounded-lg bg-ink-900/70 p-3 text-xs leading-relaxed text-slate-300">
             <p className="mb-1 font-semibold text-white">What&apos;s New in v{event.available.version}</p>
