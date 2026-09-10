@@ -17,7 +17,7 @@ Required stages: 01 RELEASE PLAN → 02 IMPLEMENT CASH COUNT → 03 DATABASE QA 
 
 Owner authorizes development and VM control. Publication remains explicitly prohibited until final gates pass and owner says Publish v1.0.6 Stable or equivalent. New scope supersedes prior stage numbering and Wine-primary policy; historical evidence below remains evidence only for unchanged code.
 
-- Source: v1.0.6-dev, `352c90d7961b802c74d4a4383bdffc4e55ee81f3`.
+- Source/RC candidate: v1.0.6-dev, `79b46b3966fcfe3da30cb0353dc939e3bd651325`.
 - Initial tracked working tree clean; three pre-existing untracked build/installer directories preserved. Initial diff check PASS.
 - Stage 01: PASS — scope authorized and recorded. Baseline preparation continues before feature QA.
 - Stage 02: PASS — additive Cash Count migration/repository, Reports UI, IPC, Philippine centavo denomination arithmetic, focused tests, and User Manual update implemented.
