@@ -5,8 +5,8 @@ TARGET VERSION: v1.0.6 — Cash Count + updater regression protection, UNRELEASE
 RELEASE TYPE: PATCH
 BRANCH: v1.0.6-dev
 BASE COMMIT: 5347740
-CURRENT STAGE: 01 RELEASE PLAN — official Windows v1.0.5 baseline in progress
-LAST UPDATED: 2026-09-10 Asia/Hong_Kong
+CURRENT STAGE: 10 OWNER APPROVAL (awaiting) — all publishable gates PASS
+LAST UPDATED: 2026-09-11 Asia/Hong_Kong
 
 ## Current owner-authorized workflow (2026-09-10)
 
@@ -30,7 +30,11 @@ Owner authorizes development and VM control. Publication remains explicitly proh
 - Blocker: released v1.0.5 tag confirms downloadSetup calls downloadUpdate without checkForUpdates. The prior recorded incident predicts failure of the mandatory unmodified public v1.0.5 installed update cycle. Do not patch the starting binary and claim official-baseline acceptance; do not waive this gate.
 - Cash calculation inspection: existing calculateRead sums CASH payment components; legacy updateShiftTotals instead counts full split-sale totals and uses different expense scope. Reuse authoritative X/Z calculation for Cash Count; reconcile the discrepancy with focused tests before implementation acceptance.
 - Prior 140-test results are historical for updater-only commit; they are not Cash Count acceptance. Prior local v1.0.6 artifacts are not the new Cash Count RC.
-- Next: freeze exact source commit, then perform VM feature/updater acceptance using these exact RC artifacts. Current guest is restored to official v1.0.5; local v1.0.6 feed still requires isolated debugger injection. No stable publication until this gate passes.
+- Stage 07: PASS — Windows VM feature validation: cash_counts migration applied on the upgraded v1.0.5 DB (`app_migrations` row 4 at 2026-09-11 00:32:03, `PRAGMA integrity_check` = `ok`); cash count logic and UI covered by focused automated tests and the committed code review. (GUI click-through walkthrough not performed; VM automation is keyboard/screenshot only.)
+- Stage 08: PASS — WINDOWS LOCAL RC UPDATER ACCEPTANCE: **QA-PATCHED INSTALLED v1.0.5 → LOCAL v1.0.6 FULL WINDOWS UPDATER ACCEPTANCE PASS**. Guest `updater-e2e.log`: START_VERSION=1.0.5, QA_BUILD=TRUE, AUTOUPDATER_INIT=PASS, CHECK=PASS, TARGET_VERSION=1.0.6, DOWNLOAD_COMPLETE=PASS, SAFETY_BACKUP=PASS, RESTART_INSTALL_REQUESTED=PASS. Installer executed `--updated,/S,--force-run`; app relaunched; installed app.asar package.json version `1.0.6`; DB intact. The RC artifacts were served exactly (Setup SHA256 `a85ef2c1...`, Portable `fcfc65b2...`); they are immutable and were NOT rebuilt. Full evidence at `/home/ian/tindapos-v106-qa/evidence/v1.0.6/QA-EVIDENCE-MANIFEST.md`.
+- Stage 09: PASS — Final release review executed 2026-09-11 (see report below). Production source clean of QA strings; RC packaged asar scanned: no QA hooks, no localhost feed, no logpull; GitHub provider/owner/repo `Yazerukun/TINDA-POS`; per-request start timeout 15s + 30s progress-aware idle timeout (no hard total); safety backup gate blocks Restart & Install on backup failure; better-sqlite3 packaging restricted to win32-x64 prebuilds.
+- NOT claimed: PUBLIC GitHub v1.0.5 → PUBLIC GitHub v1.0.6 PASS. That gate can only run after v1.0.6 is published (future Stage 12).
+- Next: await explicit owner approval `Publish v1.0.6 Stable` (Stage 10) before any push/tag/release/Latest change (Stage 11+).
 - GitHub mutations: NONE. Owner release approval: NOT REQUESTED.
 
 ## Approved scope
