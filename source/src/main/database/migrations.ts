@@ -398,5 +398,27 @@ ALTER TABLE inventory_movements ADD COLUMN receiving_notes TEXT;
 CREATE INDEX IF NOT EXISTS idx_movements_supplier ON inventory_movements(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_movements_source ON inventory_movements(source);
 `
+  },
+  {
+    version: 4,
+    name: 'cash_counts',
+    sql: `
+CREATE TABLE IF NOT EXISTS cash_counts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER NOT NULL REFERENCES shifts(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  business_date TEXT NOT NULL,
+  starting_cash_c INTEGER NOT NULL,
+  expected_cash_c INTEGER NOT NULL,
+  actual_cash_c INTEGER NOT NULL,
+  difference_c INTEGER NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('BALANCED','OVER','SHORT')),
+  denominations_json TEXT NOT NULL,
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_cash_counts_date ON cash_counts(business_date);
+CREATE INDEX IF NOT EXISTS idx_cash_counts_shift ON cash_counts(shift_id);
+`
   }
 ]

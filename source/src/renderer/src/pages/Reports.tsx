@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3, Printer, LockKeyhole } from 'lucide-react'
+import { FileDown, BarChart3, Printer, LockKeyhole, Coins } from 'lucide-react'
 import type { SalesReportRow, ReportSummary, ReadReport, ZRead } from '@shared/types'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -16,7 +16,7 @@ export function Reports(): React.JSX.Element {
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
   const [groupBy, setGroupBy] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY')
   const [data, setData] = useState<CompState | null>(null)
-  const [tab, setTab] = useState<'SALES' | 'INVENTORY' | 'UTANG' | 'X' | 'Z' | 'ZHISTORY'>('SALES')
+  const [tab, setTab] = useState<'SALES' | 'INVENTORY' | 'UTANG' | 'X' | 'Z' | 'ZHISTORY' | 'CASHCOUNT'>('SALES')
   const [inv, setInv] = useState<{ rows: { name: string; stock: number; base_unit: string; inventory_value_c: number }[]; summary: { total_units: number; inventory_value_c: number; low_stock: number; out_of_stock: number } } | null>(null)
   const [utang, setUtang] = useState<{ rows: { full_name: string; balance_c: number; credit_limit_c: number }[]; total_outstanding_c: number } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,7 +42,7 @@ export function Reports(): React.JSX.Element {
   // Loaders are redefined per render; this effect intentionally keys on tab and
   // (re)loads only when the active report changes, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'X' || tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>toastError('No open shift',String((e as Error).message||e))); else void window.api.reports.zHistory().then(setHistory) }, [tab])
+  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'X' || tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>toastError('No open shift',String((e as Error).message||e))); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
 
   const exportCsv = async () => {
     try {
@@ -66,6 +66,7 @@ export function Reports(): React.JSX.Element {
         <button onClick={() => setTab('X')} className={`btn-ghost ${tab === 'X' ? '!border-brand-500 !text-brand-400' : ''}`}>X-Read</button>
         <button onClick={() => setTab('Z')} className={`btn-ghost ${tab === 'Z' ? '!border-brand-500 !text-brand-400' : ''}`}>Z-Read</button>
         <button onClick={() => setTab('ZHISTORY')} className={`btn-ghost ${tab === 'ZHISTORY' ? '!border-brand-500 !text-brand-400' : ''}`}>Z-Read History</button>
+        <button onClick={() => setTab('CASHCOUNT')} className={`btn-ghost flex items-center gap-1 ${tab === 'CASHCOUNT' ? '!border-brand-500 !text-brand-400' : ''}`}><Coins className="h-4 w-4"/>Cash Count</button>
       </div>
 
       {tab === 'SALES' && (
@@ -155,6 +156,7 @@ export function Reports(): React.JSX.Element {
 
       {(tab === 'X' || tab === 'Z') && read && <ReadPanel report={read} finalize={tab === 'Z'} onFinalized={()=>{setRead(null);setTab('ZHISTORY')}}/>}
       {tab === 'ZHISTORY' && <div className="card overflow-hidden"><table className="table"><thead><tr><th>Report</th><th>Finalized</th><th>Cashier</th><th>Net Sales</th><th></th></tr></thead><tbody>{history.map(z=><tr key={z.id}><td>{z.report_no}</td><td>{shortDate(z.finalized_at)}</td><td>{z.snapshot.cashier_name}</td><td>{money(z.snapshot.net_sales_c)}</td><td><button className="btn-ghost flex gap-1" onClick={()=>void window.api.reports.printZRead(z.id)}><Printer className="h-4 w-4"/>Print</button></td></tr>)}{history.length===0&&<tr><td colSpan={5} className="py-8 text-center text-slate-500">No finalized Z-Reads yet.</td></tr>}</tbody></table></div>}
+      {tab === 'CASHCOUNT' && <CashCountPanel />}
 
       {tab === 'UTANG' && (loading ? <div className="h-40 animate-pulse card" /> : utang ? (
         <>
@@ -181,6 +183,15 @@ export function Reports(): React.JSX.Element {
       ) : null)}
     </div>
   )
+}
+
+function CashCountPanel(): React.JSX.Element {
+  const labels = ['₱1,000 bill','₱500 bill','₱200 bill','₱100 bill','₱50 bill','₱20 bill','₱20 coin','₱10 coin','₱5 coin','₱1 coin','₱0.25 coin']
+  const [q,setQ]=useState<number[]>(()=>Array(11).fill(0)); const [expected,setExpected]=useState(0); const [notes,setNotes]=useState(''); const [saved,setSaved]=useState<{id:number;created_at:string;cashier_name:string;expected_cash_c:number;actual_cash_c:number;status:string}[]>([])
+  const den=[100000,50000,20000,10000,5000,2000,2000,1000,500,100,25]; const actual=q.reduce((s,n,i)=>s+n*(den[i]??0),0); const diff=actual-expected; const status=diff===0?'BALANCED':diff>0?'OVER':'SHORT'
+  useEffect(()=>{void window.api.reports.cashCountExpected().then(r=>setExpected(r.expected_cash_c)).catch(()=>setExpected(0)); void window.api.reports.cashCounts().then(rows=>setSaved(rows as typeof saved))},[])
+  const save=async()=>{try{await window.api.reports.cashCount({quantities:q,notes});toastSuccess('Cash Count saved');setSaved(await window.api.reports.cashCounts() as typeof saved)}catch(e){toastError('Cash Count failed',String((e as Error).message||e))}}
+  return <div><div className="mb-4 grid grid-cols-3 gap-3"><Stat label="Expected Cash" v={money(expected)}/><Stat label="Actual Cash" v={money(actual)}/><Stat label={`Difference · ${status}`} v={money(diff)}/></div><div className="card p-4"><h3 className="mb-3 font-bold">Count bills and coins</h3>{labels.map((l,i)=><div className="mb-2 grid grid-cols-[1fr_100px_120px] items-center gap-2" key={l}><span>{l}</span><input className="input" type="number" min="0" step="1" value={q[i]??0} onChange={e=>{const n=Number(e.target.value);if(Number.isInteger(n)&&n>=0){const a=[...q];a[i]=n;setQ(a)}}}/><span className="text-right">{money((q[i]??0)*(den[i]??0))}</span></div>)}<textarea className="input mt-3 w-full" placeholder="Notes (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/><button className="btn-primary mt-3" onClick={()=>void save()}>Save Cash Count</button></div><div className="card mt-4 overflow-hidden"><h3 className="p-4 font-bold">Cash Count History</h3><table className="table"><thead><tr><th>Date</th><th>Cashier</th><th>Expected</th><th>Actual</th><th>Status</th></tr></thead><tbody>{saved.map((r)=><tr key={r.id}><td>{r.created_at}</td><td>{r.cashier_name}</td><td>{money(r.expected_cash_c)}</td><td>{money(r.actual_cash_c)}</td><td>{r.status}</td></tr>)}</tbody></table></div></div>
 }
 
 function ReadPanel({report,finalize,onFinalized}:{report:ReadReport;finalize:boolean;onFinalized:()=>void}):React.JSX.Element {

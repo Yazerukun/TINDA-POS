@@ -1,12 +1,37 @@
 # TINDA POS RELEASE STATE
 
 CURRENT STABLE: v1.0.5 (public GitHub Latest verified 2026-09-09)
-TARGET VERSION: v1.0.6 — updater incident fix, UNRELEASED
+TARGET VERSION: v1.0.6 — Cash Count + updater regression protection, UNRELEASED
 RELEASE TYPE: PATCH
 BRANCH: v1.0.6-dev
 BASE COMMIT: 5347740
-CURRENT STAGE: 05 local source freeze; build next, full installation acceptance still blocked
-LAST UPDATED: 2026-09-09 Asia/Hong_Kong
+CURRENT STAGE: 01 RELEASE PLAN — official Windows v1.0.5 baseline in progress
+LAST UPDATED: 2026-09-10 Asia/Hong_Kong
+
+## Current owner-authorized workflow (2026-09-10)
+
+Scope: (1) Cash Count, (2) Software updater regression protection, (3) official public v1.0.5 → local v1.0.6 Windows VM acceptance, (4) User Manual update.
+Out of scope: unrelated redesign, inventory changes, online/cloud functionality, payment methods, accounting rewrite, unnecessary updater rewrite, unrelated reports.
+
+Required stages: 01 RELEASE PLAN → 02 IMPLEMENT CASH COUNT → 03 DATABASE QA → 04 AUTOMATED QA → 05 LOCAL RC FREEZE → 06 WINDOWS v1.0.6 RC BUILD → 07 WINDOWS VM FEATURE QA → 08 PRE-RELEASE UPDATER QA → 09 FINAL RELEASE REVIEW → 10 OWNER APPROVAL → 11 PUBLISH → 12 PRODUCTION UPDATER QA → 13 RELEASE COMPLETE.
+
+Owner authorizes development and VM control. Publication remains explicitly prohibited until final gates pass and owner says Publish v1.0.6 Stable or equivalent. New scope supersedes prior stage numbering and Wine-primary policy; historical evidence below remains evidence only for unchanged code.
+
+- Source: v1.0.6-dev, `352c90d7961b802c74d4a4383bdffc4e55ee81f3`.
+- Initial tracked working tree clean; three pre-existing untracked build/installer directories preserved. Initial diff check PASS.
+- Stage 01: PASS — scope authorized and recorded. Baseline preparation continues before feature QA.
+- Stage 02: PASS — additive Cash Count migration/repository, Reports UI, IPC, Philippine centavo denomination arithmetic, focused tests, and User Manual update implemented.
+- Stage 03: PASS — v1.0.5-schema migration fixture preserves users, shifts, products; adds cash_counts; `PRAGMA integrity_check` = `ok`.
+- Stage 04: PASS — typecheck PASS; lint PASS; 21 test files/143 tests PASS; User Guide PDF PASS (16 pages, 110791 bytes); `git diff --check` PASS; Electron production compile PASS.
+- Stage 05: PASS — source and Cash Count implementation committed as the RC candidate; exact commit recorded after amend.
+- Stage 06: PASS for local artifacts — electron-builder completed canonical v1.0.6 Setup/Portable/blockmap/latest.yml. Setup size 109482487 bytes; SHA256 `a85ef2c1d35e5a959021798436eebe06875b1f2f0112b62879dfe0604ff645dc`; Portable SHA256 `fcfc65b259838053be5664b75e361b255ecb4f2b3e9c7524c92b5141dfef6ed9`; blockmap SHA256 `60bb20f60bdf10be80c2361880086c48f2da9163b4b6e9fe8dd774acf97fdbc3`. RC is invalid until source freeze and exact commit record.
+- VM: `tinda-win11`, UUID `8a582662-fe86-4901-b3f2-353361023c99`, running native Windows desktop; no libvirt snapshots. Prior VM notes describe a local v1.0.6 install, so this is NOT an official v1.0.5 clean baseline.
+- Baseline image: `/mnt/D/VMs/TINDA-POS-v1.0.5-CLEAN.qcow2` created after reinstalling the official v1.0.5 Setup; Settings → About visibly confirmed Installed version v1.0.5. Libvirt internal snapshot was unavailable because the VM uses pflash firmware.
+- Blocker: released v1.0.5 tag confirms downloadSetup calls downloadUpdate without checkForUpdates. The prior recorded incident predicts failure of the mandatory unmodified public v1.0.5 installed update cycle. Do not patch the starting binary and claim official-baseline acceptance; do not waive this gate.
+- Cash calculation inspection: existing calculateRead sums CASH payment components; legacy updateShiftTotals instead counts full split-sale totals and uses different expense scope. Reuse authoritative X/Z calculation for Cash Count; reconcile the discrepancy with focused tests before implementation acceptance.
+- Prior 140-test results are historical for updater-only commit; they are not Cash Count acceptance. Prior local v1.0.6 artifacts are not the new Cash Count RC.
+- Next: freeze exact source commit, then perform VM feature/updater acceptance using these exact RC artifacts. Current guest is restored to official v1.0.5; local v1.0.6 feed still requires isolated debugger injection. No stable publication until this gate passes.
+- GitHub mutations: NONE. Owner release approval: NOT REQUESTED.
 
 ## Approved scope
 

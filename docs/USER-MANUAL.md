@@ -411,6 +411,18 @@ Stock is restored based on the refunded quantities, and any related utang/credit
 - **Reports:** review sales, inventory, and utang, then export CSV.
 - **Suppliers:** maintain supplier details and product relationships.
 
+## Cash Count
+
+Use **Reports → Cash Count** to compare the money in the drawer with the cash TINDA POS expects for your open shift. This records a reconciliation only: it never changes a sale, inventory, expense, payment, or closes the shift.
+
+1. Check **Expected Cash**. It uses the same cash calculation as X-Read: starting cash, cash payments only (including only the cash part of split payments), cash refunds, expenses, and cash movements. GCash, Maya, and Utang do not go into drawer cash.
+2. Enter the quantity for every bill and coin. Philippine denominations include ₱1,000, ₱500, ₱200, ₱100, ₱50, ₱20 bills; and ₱20, ₱10, ₱5, ₱1, ₱0.25 coins.
+3. TINDA POS immediately updates each subtotal, **Actual Cash**, **Difference**, and status.
+4. Add an optional note, then choose **Save Cash Count**.
+5. View saved records in **Cash Count History**. Each record keeps its date, cashier, expected amount, actual amount, and status.
+
+**Example:** Expected Cash ₱5,000.00; counted bills and coins total ₱4,900.00. Difference is -₱100.00 and the status is **SHORT**. A zero difference is **BALANCED**; a positive difference is **OVER**.
+
 ## Safety and troubleshooting
 
 - Keep regular backup copies on another drive or in a synced folder.
