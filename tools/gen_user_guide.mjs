@@ -103,7 +103,11 @@ const requiredContent = [
   'first-run wizard', 'ONLINE READY', 'OFFLINE READY', 'remains usable offline',
   'Receipt Generation', 'printer discovery, Test Print, Auto Print', 'manual Print Receipt',
   'Native Windows/thermal-printer validation is still pending',
-  'Software Update', 'Restart & Install', 'Check for Updates'
+  'Software Update', 'Restart & Install', 'Check for Updates',
+  'Add Product', 'Selling Units (Tingi / Multi-unit)', 'Unit name required', 'Please enter a name for the selling unit',
+  'Selling units are preserved', 'Adjust Stock', 'Stock History',
+  'Print Preview', 'Print Cash Count', 'History Reprint', 'Reprint from History',
+  'No receipt printer is configured', 'Cash Count History'
 ]
 
 const stalePrinterClaims = [

@@ -1,10 +1,10 @@
-# TINDA POS v1.0.6 User Manual
+# TINDA POS v1.0.7 User Manual
 
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> TINDA POS v1.0.6 is an unreleased updater fix under validation. Current public stable: v1.0.5. Installed v1.0.3–v1.0.5 require a manual Setup upgrade when the fixed release is approved.
+> TINDA POS v1.0.7 is the current validation release. Public stable is v1.0.5. Installed v1.0.3–v1.0.5 require a manual Setup upgrade to the approved v1.0.7 fixed release.
 
 ## Quick start and first-time setup
 
@@ -27,7 +27,23 @@ Enter your username/password or assigned PIN on Login. The Dashboard shows today
 
 Enter a product name, optional unique SKU/barcode, category, base unit, cost, selling price, low-stock level, and opening stock. Click **Save**. Use the pencil button to edit a product. SKU is your own product code; barcode is the code scanned at POS. Duplicate SKU or barcode values are rejected. Use **Inventory → Categories** to add or organize categories.
 
-Opening stock is saved with an inventory-history entry. Editing ordinary details does not silently rewrite stock.
+### Add Product and the empty Inventory workflow
+
+A new store starts with an empty Inventory. The **Add Product** flow is the fastest way to create the first item. If you need speed or bulk lists, use **CSV Product Import** (see its own section). An empty Inventory does not block checkouts, X-Read, or reports — the Dashboard simply shows zero products until you add some. Opening stock is saved with an inventory-history entry. Editing ordinary details does not silently rewrite stock.
+
+### Edit Product (multi-unit editor)
+
+**WHERE TO GO:** Inventory → open a product card → pencil → Edit Product.
+
+The Edit Product modal is a full multi-unit editor with a **Selling Units (Tingi / Multi-unit)** area. In v1.0.7:
+
+- **"Unit name required" issue fixed** — editing a product no longer falsely demands a selling-unit name. Saving a product keep its existing selling units intact without unexpected prompts.
+- **Selling units are preserved** — units you added earlier (for example `can`, `sachet`, `box`) stay exactly as saved when you edit any other product detail, add a new unit, or remove a unit.
+- **Add a selling unit** — enter a unit name, the conversion to the base unit, and an optional per-unit barcode, then add it. The product card and POS immediately use the new unit at its conversion.
+- **Remove a selling unit** — delete an unwanted unit; the rest of the unit list and the product itself are unaffected.
+- **Friendly validation** — if you leave the unit name blank and save, TINDA POS shows a friendly message: **"Please enter a name for the selling unit."** The product is not lost, nothing is corrupted, and you can correct the name and save again.
+
+Each product keeps one base unit plus any number of selling units; stock is always protected and recorded in whole base units.
 
 ## Restock (Paano mag restock?)
 
@@ -56,7 +72,13 @@ Gamitin ang Search Product, Date From/To, Supplier, at Source filters para mabil
 
 ## Stock adjustment and low stock
 
-Use the authorized inventory adjustment/count workflow for damage, loss, expiration, return, or a physical-count correction. Enter the real reason. Low Stock means the quantity reached its configured alert; Out of Stock means zero. Restock is for deliveries, while Adjustment is for corrections.
+Use the authorized **Adjust Stock** workflow (also called inventory adjustment/count) for damage, loss, expiration, return, or a physical-count correction. Enter the real reason. Adjust Stock never silently overwrites quantity — it creates an AUDIT-visible stock history entry with the reason, user, timestamp, and previous/new stock. Low Stock means the quantity reached its configured alert; Out of Stock means zero. Restock is for deliveries, while Adjustment is for corrections.
+
+## Stock History
+
+**WHERE TO GO:** Inventory → product card → Stock History.
+
+Every stock movement is recorded and visible per product: opening/import, Restock (purchase/receiving), Adjust Stock, sale, refund, and expense-related movement. Each history entry shows the previous stock, new stock, unit, quantity change, user, date/time, and reference/notes. Use Stock History to confirm why a quantity changed and who changed it. Like Restock and Stock Receiving, history appears immediately — no manual refresh needed.
 
 ## CSV Product Import
 
@@ -217,7 +239,7 @@ Held sales survive app restart. Holding, resuming, or deleting a held sale does 
 
 ## Inventory and Tingi Units
 
-Inventory supports products, categories, suppliers, SKU/barcode values, low-stock alerts, and stock adjustments. A product can have multiple selling units for tingi handling, such as a stick, piece, sachet, pack, tray, or other conversion to its base unit.
+Inventory supports products, categories, suppliers, SKU/barcode values, low-stock alerts, and stock adjustments. A product can have multiple selling units for tingi handling, such as a stick, piece, sachet, pack, tray, or other conversion to its base unit. Adding and editing products is covered in the **Products** section above; keeping stock accurate is covered by **Stock History**, **Adjust Stock**, and realtime POS stock (below).
 
 ## Customers and Utang
 
@@ -423,6 +445,22 @@ Use **Reports → Cash Count** to compare the money in the drawer with the cash 
 
 **Example:** Expected Cash ₱5,000.00; counted bills and coins total ₱4,900.00. Difference is -₱100.00 and the status is **SHORT**. A zero difference is **BALANCED**; a positive difference is **OVER**.
 
+### Save Cash Count
+
+**Save Cash Count** stores the reconciliation as a permanent record in Cash Count History. Saving never changes sales, inventory, expenses, payments, or the open shift, and it does not require a printer.
+
+### Print Preview
+
+**Print Preview** shows exactly the receipt the printer will receive — nothing more, nothing less. It renders the store header, date, business date, shift, cashier, the denomination breakdown (each bill/coin count × value), Expected 500.00 / Actual / Difference, and Status. Use it to check the layout before printing.
+
+### Print Cash Count
+
+**Print** prints the last saved Cash Count using the configured receipt printer. If no receipt printer is configured, TINDA POS still keeps your record safe and shows a friendly message: **"Unable to print Cash Count. The Cash Count was saved successfully. You can try printing it again from Cash Count History."** and **"No receipt printer is configured."** — the saved record is never lost or changed by a failed print.
+
+### Reprint from History
+
+Open **Cash Count History**, select the saved record, and use **Print** (or History Reprint) to print that saved record again at any time. Reprinting reads the authoritative saved record — it shows the amounts that were actually saved when you counted, so a later reprint always matches the original reconciliation.
+
 ## Safety and troubleshooting
 
 - Keep regular backup copies on another drive or in a synced folder.
@@ -433,9 +471,9 @@ Use **Reports → Cash Count** to compare the money in the drawer with the cash 
 
 ## Software Update
 
-The fixed updater is accessed through Settings → About → **Software Update**.
+The Software Update workflow is accessed through Settings → About → **Software Update**.
 
-**Existing v1.0.3–v1.0.5 Setup installations:** detection can work while Download Update fails. A new GitHub release cannot repair the old updater inside your installed app. When the fixed Setup release is approved, first use Backup → Back Up Now, close TINDA POS, and install the new Setup over the existing installation using the same Windows account and data location. Do not uninstall, reset the store, or delete AppData. Reopen and confirm the version, products, sales, and balances. v1.0.6 remains under validation; do not deploy this development build to a live till yet.
+**Existing v1.0.3–v1.0.5 Setup installations:** detection can work while Download Update fails. A new GitHub release cannot repair the old updater inside your installed app. When the fixed Setup release is approved, first use Backup → Back Up Now, close TINDA POS, and install the new Setup over the existing installation using the same Windows account and data location. Do not uninstall, reset the store, or delete AppData. Reopen and confirm the version, products, sales, and balances.
 
 - **Installed version** — the version you are running is always shown here.
 - **Check for Updates** — checks the official GitHub release page now. Use this any time, including after choosing Later; the automatic check runs at most once per day.
@@ -466,13 +504,13 @@ v1.0.2 Hotfix 1 predates the update system, so that first step to v1.0.3 is a no
 
 ## Download
 
-**Current Stable Release: TINDA POS v1.0.5** — <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.5>
+**TINDA POS v1.0.7** — published to the GitHub release page when approved: <https://github.com/Yazerukun/TINDA-POS/releases>
 
-Files for the current stable release:
+Files for this release:
 
-- `TindaPOS-Setup-1.0.5.exe` — Windows installer
-- `TindaPOS-Portable-1.0.5.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.7.exe` — Windows installer
+- `TindaPOS-Portable-1.0.7.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
-- `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
+- `SHA256SUMS-RC.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS-RC.txt`)
 
 The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.

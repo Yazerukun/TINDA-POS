@@ -119,4 +119,12 @@ WORKING TREE: clean; no push, tag, release, or GitHub mutation
 
 ## Next action
 
+- 2026-09-12: Documentation gate PASS — v1.0.7 User Guide regenerated via `npm run docs:pdf`
+  (17 pages, 116787 bytes, SHA256 `6fb0736e2177140fccb85434fb01bb94ece8b46416185246906c04647fc9a307`,
+  Title "TINDA POS v1.0.7 User Guide"); required-content list extended with the v1.0.7 items and validated on
+  Markdown source + rendered guide; manual header/Software Update/Download section versioned to v1.0.7 (0 stale v1.0.6 refs).
+  `installers/SHA256SUMS-RC.txt` records the new PDF hash; Setup/Portable/latest.yml/blockmap re-verified **UNCHANGED**
+  (`713c52...`, `88b234...`, `5d7ab7...`, `4395c1...`). Stage 10 documentation gate = PASS; RC FREEZE = PASS.
+- **TINDA POS v1.0.7 is FROZEN and READY FOR OWNER APPROVAL.**
+
 Await owner review and approval. No push, tag, or publish until explicitly authorized.
