@@ -444,6 +444,22 @@ export interface ZRead {
   finalized_at: string
 }
 
+export interface CashCountRecord {
+  id: number
+  shift_id: number
+  user_id: number
+  cashier_name: string
+  business_date: string
+  starting_cash_c: number
+  expected_cash_c: number
+  actual_cash_c: number
+  difference_c: number
+  status: 'BALANCED' | 'OVER' | 'SHORT'
+  denominations: number[]
+  notes: string | null
+  created_at: string
+}
+
 export interface BackupInfo {
   filename: string
   path: string

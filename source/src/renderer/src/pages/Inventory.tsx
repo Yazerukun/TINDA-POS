@@ -6,21 +6,15 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
-
-const BLANK_UNIT = { name: '', conversion_to_base: 1, barcode: null, selling_price_c: 0, is_default: true }
-
-interface ProductForm {
-  id: number | null
-  name: string
-  sku: string
-  barcode: string
-  category_id: number | null
-  base_unit: string
-  purchase_cost_c: number
-  default_price_c: number
-  low_stock_threshold: number
-  initial_stock_base: number
-}
+import {
+  createProductInput,
+  editProductForm,
+  firstUnitError,
+  newProductForm,
+  updateProductInput,
+  type ProductFormData,
+  type ProductUnitInput
+} from '../lib/productForm'
 
 export function Inventory(): React.JSX.Element {
   const [products, setProducts] = useState<Product[]>([])
@@ -29,7 +23,7 @@ export function Inventory(): React.JSX.Element {
   const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT'>('ALL')
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState<ProductForm | null>(null)
+  const [editing, setEditing] = useState<ProductFormData | null>(null)
   const [managingCategories, setManagingCategories] = useState(false)
   const [importing, setImporting] = useState(false)
   const [restocking, setRestocking] = useState<Product | true | null>(null)
@@ -104,23 +98,18 @@ export function Inventory(): React.JSX.Element {
     } catch (e) { toastError('Archive failed', String((e as Error)?.message || e)) }
   }
 
-  const saveProduct = async (f: ProductForm) => {
+  const saveProduct = async (f: ProductFormData) => {
+    const unitError = firstUnitError(f.units)
+    if (unitError) {
+      toastError('Save failed', unitError)
+      return
+    }
     try {
       if (f.id) {
-        await window.api.products.update(f.id, {
-          name: f.name, sku: f.sku, barcode: f.barcode || null, category_id: f.category_id,
-          base_unit: f.base_unit, purchase_cost_c: f.purchase_cost_c, default_price_c: f.default_price_c,
-          low_stock_threshold: f.low_stock_threshold, units: [BLANK_UNIT]
-        })
+        await window.api.products.update(f.id, updateProductInput(f))
         toastSuccess('Product updated')
       } else {
-        await window.api.products.create({
-          name: f.name, sku: f.sku, barcode: f.barcode || null, category_id: f.category_id,
-          base_unit: f.base_unit, purchase_cost_c: f.purchase_cost_c, default_price_c: f.default_price_c,
-          low_stock_threshold: f.low_stock_threshold, units: [{ ...BLANK_UNIT, name: f.base_unit }],
-          initial_stock_base: f.initial_stock_base,
-          description: null, supplier_id: null, has_expiration: false, notes: null
-        })
+        await window.api.products.create(createProductInput(f))
         toastSuccess('Product created')
       }
       setEditing(null)
@@ -137,7 +126,7 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
-          <button onClick={() => setEditing(blankForm())} className="btn-primary flex items-center gap-2">
+          <button onClick={() => setEditing(newProductForm())} className="btn-primary flex items-center gap-2">
             <Plus className="h-4 w-4" /> New Product
           </button>
         </div>}
@@ -191,7 +180,7 @@ export function Inventory(): React.JSX.Element {
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(blankForm())} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
+        <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(newProductForm())} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
@@ -210,7 +199,7 @@ export function Inventory(): React.JSX.Element {
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
-                  <button onClick={() => setEditing({ id: p.id, name: p.name, sku: p.sku, barcode: p.barcode ?? '', category_id: p.category_id, base_unit: p.base_unit, purchase_cost_c: p.purchase_cost_c, default_price_c: p.default_price_c, low_stock_threshold: p.low_stock_threshold, initial_stock_base: 0 })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                  <button onClick={() => setEditing(editProductForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
@@ -354,10 +343,6 @@ function CategoryModal({ categories, onChanged, onClose }: { categories: Categor
   )
 }
 
-function blankForm(): ProductForm {
-  return { id: null, name: '', sku: '', barcode: '', category_id: null, base_unit: 'pc', purchase_cost_c: 0, default_price_c: 0, low_stock_threshold: 5, initial_stock_base: 0 }
-}
-
 function StockBadge({ status }: { status: string }): React.JSX.Element {
   const map: Record<string, string> = {
     IN_STOCK: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
@@ -367,17 +352,26 @@ function StockBadge({ status }: { status: string }): React.JSX.Element {
   return <span className={`badge shrink-0 border ${map[status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{status.replace(/_/g, ' ')}</span>
 }
 
-function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm; categories: Category[]; onSave: (f: ProductForm) => void; onClose: () => void }): React.JSX.Element {
-  const [f, setF] = useState<ProductForm>(form)
-  const set = (patch: Partial<ProductForm>) => setF((prev) => ({ ...prev, ...patch }))
+function ProductModal({ form, categories, onSave, onClose }: { form: ProductFormData; categories: Category[]; onSave: (f: ProductFormData) => void; onClose: () => void }): React.JSX.Element {
+  const [f, setF] = useState<ProductFormData>(form)
+  const [rows, setRows] = useState<ProductUnitInput[]>(() => form.units.length > 0
+    ? form.units
+    : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: form.default_price_c, is_default: true }])
+  const set = (patch: Partial<ProductFormData>) => setF((prev) => ({ ...prev, ...patch }))
+  const setRow = (index: number, patch: Partial<ProductUnitInput>) => {
+    setRows((prev) => prev.map((r, i) => i === index ? { ...r, ...patch } : r))
+  }
+  const addUnit = () => setRows((prev) => [...prev, { name: '', conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: prev.length === 0 }])
+  const removeUnit = (index: number) => setRows((prev) => prev.filter((_, i) => i !== index))
+  const submit = () => onSave({ ...f, units: rows })
   return (
     <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button onClick={() => onSave(f)} className="btn-primary">Save</button>
+        <button onClick={submit} className="btn-primary">Save</button>
       </>
     }>
-      <form onSubmit={(e) => { e.preventDefault(); onSave(f) }} className="grid grid-cols-2 gap-3">
+      <form onSubmit={(e) => { e.preventDefault(); submit() }} className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
           <label className="label">Name *</label>
           <input required value={f.name} onChange={(e) => set({ name: e.target.value })} className="input w-full" />
@@ -419,6 +413,22 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
             <input type="number" min={0} value={f.initial_stock_base} onChange={(e) => set({ initial_stock_base: parseInt(e.target.value || '0', 10) })} className="input w-full" />
           </div>
         )}
+        <div className="col-span-2">
+          <label className="label">Selling Units (Tingi / Multi-unit)</label>
+          <div className="space-y-2">
+            {rows.map((r, i) => (
+              <div key={i} className="grid grid-cols-[1fr_76px_110px_28px] items-center gap-2">
+                <input placeholder={i === 0 ? 'Unit name (e.g. piece)' : 'Selling unit name'} value={r.name} onChange={(e) => setRow(i, { name: e.target.value })} className="input w-full" />
+                <input type="number" min={1} step={1} title={`1 ${f.base_unit || 'base unit'} × ${r.conversion_to_base}`} value={r.conversion_to_base} onChange={(e) => setRow(i, { conversion_to_base: Math.max(1, parseInt(e.target.value || '1', 10)) })} className="input w-full" />
+                <input placeholder="Barcode" value={r.barcode ?? ''} onChange={(e) => setRow(i, { barcode: e.target.value || null })} className="input w-full" />
+                <button type="button" onClick={() => removeUnit(i)} disabled={rows.length <= 1} className="btn-ghost-2 rounded-lg p-2 text-danger-400 disabled:opacity-30" title="Remove selling unit"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            ))}
+            {rows.some((r) => !r.name || !r.name.trim()) && <p className="text-xs text-danger-400">Please enter a name for the selling unit.</p>}
+          </div>
+          <button type="button" onClick={addUnit} className="btn-ghost mt-2 flex items-center gap-1"><Plus className="h-4 w-4" /> Add selling unit</button>
+          <p className="mt-1 text-xs text-slate-500">Conversion is how many base units one selling unit equals. Example: 1 box = 24 sachets.</p>
+        </div>
       </form>
     </Modal>
   )

@@ -292,9 +292,10 @@ export interface TindaApi {
   }
 
   reports: {
-    cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<unknown>
-    cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<unknown[]>
+    cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<import('./types').CashCountRecord>
+    cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<import('./types').CashCountRecord[]>
     cashCountExpected: () => Promise<import('./types').ReadReport>
+    cashCountPrint: (id: number) => Promise<PrintResult>
     sales: (opts: { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) => Promise<{
       rows: SalesReportRow[]
       summary: ReportSummary

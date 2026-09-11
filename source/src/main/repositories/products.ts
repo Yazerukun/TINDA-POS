@@ -144,12 +144,13 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (!input.units || input.units.length === 0) throw new Error('At least one selling unit is required.')
   let foundBase = false
   for (const u of input.units) {
-    if (!u.name?.trim()) throw new Error('Unit name is required.')
+    if (!u.name?.trim()) throw new Error('Please enter a name for the selling unit.')
     if (!Number.isInteger(u.conversion_to_base) || u.conversion_to_base < 1) throw new Error('Invalid unit conversion.')
     if (u.selling_price_c < 0) throw new Error('Unit price cannot be negative.')
     if (u.conversion_to_base === 1) foundBase = true
     if (u.barcode?.trim()) {
-      const dup = db.prepare(`SELECT id FROM product_units WHERE barcode = ?`).get(u.barcode.trim())
+      const unitEx = excludeId ? 'AND product_id != ?' : ''
+      const dup = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(u.barcode.trim(), ...(excludeId ? [excludeId] : []))
       if (dup) throw new Error(`Barcode ${u.barcode} already in use.`)
     }
   }

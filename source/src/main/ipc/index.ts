@@ -26,6 +26,7 @@ import * as printingSvc from '../services/printing'
 import * as importSvc from '../services/productImport'
 import * as readSvc from '../services/readReports'
 import * as cashCountRepo from '../repositories/cashCounts'
+import { cashCountLines } from '@shared/cashCount'
 import { emitInventoryChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
@@ -490,6 +491,14 @@ handle('reports:xRead', () => {
 handle('reports:cashCountExpected', () => { sessionSvc.requirePermission('reports:view'); const s=shiftRepo.currentShiftFor(db(),user().id); if(!s) throw new Error('No open shift.'); return cashCountRepo.getExpected(db(),s.id) })
 handle('reports:cashCount', (_e: IpcMainInvokeEvent, input: cashCountRepo.CashCountInput) => { const u=user(); sessionSvc.requirePermission('reports:view'); return cashCountRepo.save(db(),u.id,input) })
 handle('reports:cashCounts', (_e: IpcMainInvokeEvent, opts?: unknown) => { sessionSvc.requirePermission('reports:view'); const u=user(); const o=(opts??{}) as {business_date?:string;user_id?:number;status?:string}; if(!u.roles.some(r=>r==='ADMIN'||r==='MANAGER')) o.user_id=u.id; return cashCountRepo.list(db(),o) })
+handle('reports:cashCountPrint', async (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view')
+  const record = cashCountRepo.get(db(), id)
+  const settings = settingRepo.getSettings(db())
+  // Printing is read-only: it only formats the authoritative saved Cash Count.
+  // A printer failure must never alter expected/actual/difference/status.
+  return printingSvc.printLines(settings, cashCountLines({ ...record, store_name: settings.store_name }))
+})
 handle('reports:printXRead', async () => {
   sessionSvc.requirePermission('reports:view')
   const shift = shiftRepo.currentShiftFor(db(), user().id)
