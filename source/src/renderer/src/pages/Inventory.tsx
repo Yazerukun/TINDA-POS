@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X } from 'lucide-react'
-import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource } from '@shared/types'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, Scale, History } from 'lucide-react'
+import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement } from '@shared/types'
 import { money } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
-
-const BLANK_UNIT = { name: '', conversion_to_base: 1, barcode: null, selling_price_c: 0, is_default: true }
 
 interface ProductForm {
   id: number | null
@@ -20,11 +18,15 @@ interface ProductForm {
   default_price_c: number
   low_stock_threshold: number
   initial_stock_base: number
+  supplier_id: number | null
+  notes: string
+  units: Product['units']
 }
 
 export function Inventory(): React.JSX.Element {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [q, setQ] = useState('')
   const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT'>('ALL')
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
@@ -33,6 +35,8 @@ export function Inventory(): React.JSX.Element {
   const [managingCategories, setManagingCategories] = useState(false)
   const [importing, setImporting] = useState(false)
   const [restocking, setRestocking] = useState<Product | true | null>(null)
+  const [adjusting, setAdjusting] = useState<Product | null>(null)
+  const [viewingHistory, setViewingHistory] = useState<Product | null>(null)
   const [viewingReceiving, setViewingReceiving] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
 
@@ -53,6 +57,7 @@ export function Inventory(): React.JSX.Element {
   }, [])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => { void window.api.suppliers.list({ status: 'ACTIVE' }).then(setSuppliers).catch(() => {}) }, [])
   useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
 
   useEffect(() => {
@@ -107,19 +112,25 @@ export function Inventory(): React.JSX.Element {
   const saveProduct = async (f: ProductForm) => {
     try {
       if (f.id) {
+        const current = products.find((p) => p.id === f.id)
+        const units = f.units.length > 0
+          ? f.units.map((u) => ({ name: u.name, conversion_to_base: u.conversion_to_base, barcode: u.barcode, selling_price_c: u.selling_price_c, is_default: u.is_default }))
+          : [{ name: f.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: true }]
         await window.api.products.update(f.id, {
           name: f.name, sku: f.sku, barcode: f.barcode || null, category_id: f.category_id,
           base_unit: f.base_unit, purchase_cost_c: f.purchase_cost_c, default_price_c: f.default_price_c,
-          low_stock_threshold: f.low_stock_threshold, units: [BLANK_UNIT]
+          low_stock_threshold: f.low_stock_threshold, supplier_id: f.supplier_id, notes: f.notes || null,
+          description: null, has_expiration: false, units
         })
         toastSuccess('Product updated')
       } else {
         await window.api.products.create({
           name: f.name, sku: f.sku, barcode: f.barcode || null, category_id: f.category_id,
           base_unit: f.base_unit, purchase_cost_c: f.purchase_cost_c, default_price_c: f.default_price_c,
-          low_stock_threshold: f.low_stock_threshold, units: [{ ...BLANK_UNIT, name: f.base_unit }],
-          initial_stock_base: f.initial_stock_base,
-          description: null, supplier_id: null, has_expiration: false, notes: null
+          low_stock_threshold: f.low_stock_threshold, supplier_id: f.supplier_id, notes: f.notes || null,
+          description: null, has_expiration: false,
+          units: [{ name: f.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: true }],
+          initial_stock_base: f.initial_stock_base
         })
         toastSuccess('Product created')
       }
@@ -136,9 +147,9 @@ export function Inventory(): React.JSX.Element {
         actions={<div className="flex flex-wrap gap-2">
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
-          <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
+          <button onClick={() => setRestocking(true)} className="btn-ghost flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
           <button onClick={() => setEditing(blankForm())} className="btn-primary flex items-center gap-2">
-            <Plus className="h-4 w-4" /> New Product
+            <Plus className="h-4 w-4" /> Add Product
           </button>
         </div>}
       />
@@ -191,7 +202,7 @@ export function Inventory(): React.JSX.Element {
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(blankForm())} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
+        <EmptyState title="No products yet" message="Add your first product to start selling. It will appear in the POS right away." action={<button onClick={() => setEditing(blankForm())} className="btn-primary">Add Product</button>} icon={<Boxes className="h-7 w-7" />} />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
@@ -210,7 +221,9 @@ export function Inventory(): React.JSX.Element {
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
-                  <button onClick={() => setEditing({ id: p.id, name: p.name, sku: p.sku, barcode: p.barcode ?? '', category_id: p.category_id, base_unit: p.base_unit, purchase_cost_c: p.purchase_cost_c, default_price_c: p.default_price_c, low_stock_threshold: p.low_stock_threshold, initial_stock_base: 0 })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                  <button onClick={() => setAdjusting(p)} className="btn-ghost-2 rounded-lg p-2 text-amber-400" title="Adjust Stock"><Scale className="h-4 w-4" /></button>
+                  <button onClick={() => setViewingHistory(p)} className="btn-ghost-2 rounded-lg p-2" title="Stock History"><History className="h-4 w-4" /></button>
+                  <button onClick={() => setEditing(productForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
@@ -219,10 +232,12 @@ export function Inventory(): React.JSX.Element {
         </div>
       )}
 
-      {editing && <ProductModal form={editing} categories={categories} onSave={saveProduct} onClose={() => setEditing(null)} />}
+      {editing && <ProductModal form={editing} categories={categories} suppliers={suppliers} onSave={saveProduct} onClose={() => setEditing(null)} />}
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
+      {adjusting && <AdjustStockModal product={adjusting} onDone={() => { setAdjusting(null); void load() }} onClose={() => setAdjusting(null)} />}
+      {viewingHistory && <StockHistoryModal product={viewingHistory} onClose={() => setViewingHistory(null)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
     </div>
   )
@@ -355,7 +370,16 @@ function CategoryModal({ categories, onChanged, onClose }: { categories: Categor
 }
 
 function blankForm(): ProductForm {
-  return { id: null, name: '', sku: '', barcode: '', category_id: null, base_unit: 'pc', purchase_cost_c: 0, default_price_c: 0, low_stock_threshold: 5, initial_stock_base: 0 }
+  return { id: null, name: '', sku: '', barcode: '', category_id: null, base_unit: 'pc', purchase_cost_c: 0, default_price_c: 0, low_stock_threshold: 5, initial_stock_base: 0, supplier_id: null, notes: '', units: [] }
+}
+
+function productForm(p: Product): ProductForm {
+  return {
+    id: p.id, name: p.name, sku: p.sku, barcode: p.barcode ?? '', category_id: p.category_id,
+    base_unit: p.base_unit, purchase_cost_c: p.purchase_cost_c, default_price_c: p.default_price_c,
+    low_stock_threshold: p.low_stock_threshold, initial_stock_base: 0, supplier_id: p.supplier_id,
+    notes: p.notes ?? '', units: p.units
+  }
 }
 
 function StockBadge({ status }: { status: string }): React.JSX.Element {
@@ -367,11 +391,11 @@ function StockBadge({ status }: { status: string }): React.JSX.Element {
   return <span className={`badge shrink-0 border ${map[status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{status.replace(/_/g, ' ')}</span>
 }
 
-function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm; categories: Category[]; onSave: (f: ProductForm) => void; onClose: () => void }): React.JSX.Element {
+function ProductModal({ form, categories, suppliers, onSave, onClose }: { form: ProductForm; categories: Category[]; suppliers: Supplier[]; onSave: (f: ProductForm) => void; onClose: () => void }): React.JSX.Element {
   const [f, setF] = useState<ProductForm>(form)
   const set = (patch: Partial<ProductForm>) => setF((prev) => ({ ...prev, ...patch }))
   return (
-    <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-lg" footer={
+    <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'Add Product'} maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
         <button onClick={() => onSave(f)} className="btn-primary">Save</button>
@@ -398,6 +422,13 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           </select>
         </div>
         <div>
+          <label className="label">Supplier</label>
+          <select value={String(f.supplier_id ?? '')} onChange={(e) => set({ supplier_id: e.target.value ? Number(e.target.value) : null })} className="input w-full">
+            <option value="">None</option>
+            {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </div>
+        <div>
           <label className="label">Base Unit</label>
           <input value={f.base_unit} onChange={(e) => set({ base_unit: e.target.value })} className="input w-full" placeholder="pc, sachet, bottle" />
         </div>
@@ -419,7 +450,118 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
             <input type="number" min={0} value={f.initial_stock_base} onChange={(e) => set({ initial_stock_base: parseInt(e.target.value || '0', 10) })} className="input w-full" />
           </div>
         )}
+        <div className="col-span-2">
+          <label className="label">Notes</label>
+          <textarea value={f.notes} onChange={(e) => set({ notes: e.target.value })} className="input w-full" rows={2} />
+        </div>
+        {form.id && f.units.length > 0 && (
+          <div className="col-span-2 rounded-lg border border-ink-line p-3 text-xs text-slate-400">
+            Selling units (tingi/official) will be kept: {f.units.map((u) => `${u.name}${u.conversion_to_base !== 1 ? ` (${u.conversion_to_base} × base)` : ''}`).join(', ')}
+          </div>
+        )}
       </form>
+    </Modal>
+  )
+}
+
+function AdjustStockModal({ product, onDone, onClose }: { product: Product; onDone: () => void; onClose: () => void }): React.JSX.Element {
+  const [mode, setMode] = useState<'ADD' | 'DEDUCT' | 'COUNT'>('ADD')
+  const [qty, setQty] = useState('')
+  const [notes, setNotes] = useState('')
+  const [reference, setReference] = useState('')
+  const [busy, setBusy] = useState(false)
+  const current = product.stock
+  const value = Math.max(0, Math.trunc(Number(qty) || 0))
+  const change = mode === 'ADD' ? value : mode === 'DEDUCT' ? -value : value - current
+  const newStock = mode === 'COUNT' ? value : current + change
+  const valid = value > 0 && Number.isInteger(value) && newStock >= 0
+
+  const save = async () => {
+    if (!valid) return
+    setBusy(true)
+    try {
+      if (mode === 'COUNT') {
+        await window.api.inventory.count({ product_id: product.id, actual_base: value, notes: notes.trim() || `Inventory count: actual ${value}${reference ? ` | Ref: ${reference}` : ''}` })
+      } else {
+        await window.api.inventory.adjust({
+          product_id: product.id,
+          qty_base: change,
+          reason: [`${mode === 'ADD' ? 'Stock added' : 'Stock deducted'}: ${value} ${product.base_unit}`, notes.trim(), reference ? `Ref: ${reference.trim()}` : ''].filter(Boolean).join(' | ')
+        })
+      }
+      toastSuccess('Stock adjusted', `New stock: ${newStock} ${product.base_unit}`)
+      onDone()
+    } catch (e) { toastError('Adjustment failed', String((e as Error)?.message || e)) } finally { setBusy(false) }
+  }
+
+  return (
+    <Modal open onClose={onClose} title={`Adjust Stock — ${product.name}`} maxWidth="max-w-lg" footer={
+      <>
+        <button className="btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn-primary" disabled={busy || !valid} onClick={() => void save()}>Save Adjustment</button>
+      </>
+    }>
+      <div className="space-y-3">
+        <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{current} {product.base_unit}</b></div>
+        <div className="grid grid-cols-3 gap-2">
+          {(['ADD', 'DEDUCT', 'COUNT'] as const).map((m) => (
+            <button key={m} type="button" onClick={() => setMode(m)} className={`btn-ghost ${mode === m ? '!border-brand-500 !text-brand-400' : ''}`}>
+              {m === 'ADD' ? 'Add' : m === 'DEDUCT' ? 'Deduct' : 'Count'}
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="label">{mode === 'COUNT' ? 'Physical Count (base units)' : `Quantity to ${mode === 'ADD' ? 'Add' : 'Deduct'} (base units)`}</label>
+          <input className="input w-full" type="number" min="0" step="1" value={qty} onChange={(e) => setQty(e.target.value)} />
+        </div>
+        <div className="rounded-lg bg-brand-500/10 p-3 text-sm">
+          {mode === 'COUNT' ? <>Counted {value || 0} vs system {current}: change <b>{value - current}</b></> : <>Change: {change > 0 ? '+' : ''}{change} {product.base_unit}</>}<br />
+          <b>New Stock: {newStock} {product.base_unit}</b>
+        </div>
+        <div>
+          <label className="label">Reason / Notes</label>
+          <textarea className="input w-full" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={mode === 'COUNT' ? 'e.g. Damaged units, expired goods…' : 'e.g. Damaged, promo use, returned to supplier…'} rows={2} />
+        </div>
+        <div>
+          <label className="label">Reference (optional)</label>
+          <input className="input w-full" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. DR no., memo no." />
+        </div>
+        {!valid && value > 0 && <p className="text-xs text-danger-400">Adjustment cannot make stock negative.</p>}
+      </div>
+    </Modal>
+  )
+}
+
+function StockHistoryModal({ product, onClose }: { product: Product; onClose: () => void }): React.JSX.Element {
+  const [rows, setRows] = useState<InventoryMovement[]>([])
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    void window.api.inventory.movements({ product_id: product.id, limit: 200 }).then((r) => setRows(r.rows)).catch(() => { }).finally(() => setLoading(false))
+  }, [product.id])
+  return (
+    <Modal open onClose={onClose} title={`Stock History — ${product.name}`} maxWidth="max-w-5xl" footer={<button className="btn-ghost" onClick={onClose}>Close</button>}>
+      <div className="max-h-[60vh] overflow-auto rounded-lg border border-ink-line">
+        <table className="table min-w-[820px]">
+          <thead><tr><th>Date / Time</th><th>Product</th><th>Type</th><th className="text-right">Before</th><th className="text-right">Change</th><th className="text-right">After</th><th>User</th><th>Reason</th><th>Reference</th></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td>{new Date(r.created_at.replace(' ', 'T')).toLocaleString()}</td>
+                <td className="font-medium text-white">{r.product_name ?? product.name}</td>
+                <td><span className="badge">{r.movement_type.replace(/_/g, ' ')}</span></td>
+                <td className="text-right text-slate-400">{r.quantity_before}</td>
+                <td className={`text-right font-bold ${r.quantity_change >= 0 ? 'text-emerald-400' : 'text-danger-400'}`}>{r.quantity_change >= 0 ? '+' : ''}{r.quantity_change}</td>
+                <td className="text-right text-slate-200">{r.quantity_after}</td>
+                <td className="text-slate-400">{(r as InventoryMovement & { user_name?: string }).user_name ?? '—'}</td>
+                <td className="max-w-56 truncate text-slate-400" title={r.reason ?? ''}>{r.reason || '—'}</td>
+                <td className="text-slate-400">{r.reference || '—'}</td>
+              </tr>
+            ))}
+            {!loading && rows.length === 0 && <tr><td colSpan={9} className="py-10 text-center text-slate-500">No stock movements yet.</td></tr>}
+            {loading && <tr><td colSpan={9} className="py-10 text-center text-slate-500">Loading history…</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </Modal>
   )
 }

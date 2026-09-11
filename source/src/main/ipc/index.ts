@@ -26,6 +26,7 @@ import * as printingSvc from '../services/printing'
 import * as importSvc from '../services/productImport'
 import * as readSvc from '../services/readReports'
 import * as cashCountRepo from '../repositories/cashCounts'
+import * as cashCountPrintSvc from '../services/cashCountPrint'
 import { emitInventoryChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
@@ -158,11 +159,15 @@ handle('products:search', (_e: IpcMainInvokeEvent, q: string, opts?: unknown) =>
 handle('products:get', (_e: IpcMainInvokeEvent, id: number) => prodRepo.getProduct(db(), id))
 handle('products:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
-  return prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  const product = prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  emitInventoryChanged({ reason: 'PRODUCT_CREATE', product_ids: [product.id] })
+  return product
 })
 handle('products:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
   user()
-  return prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  const product = prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  emitInventoryChanged({ reason: 'PRODUCT_UPDATE', product_ids: [product.id] })
+  return product
 })
 handle('products:archive', (_e: IpcMainInvokeEvent, id: number) => {
   sessionSvc.requirePermission('products:archive')
@@ -489,6 +494,17 @@ handle('reports:xRead', () => {
 })
 handle('reports:cashCountExpected', () => { sessionSvc.requirePermission('reports:view'); const s=shiftRepo.currentShiftFor(db(),user().id); if(!s) throw new Error('No open shift.'); return cashCountRepo.getExpected(db(),s.id) })
 handle('reports:cashCount', (_e: IpcMainInvokeEvent, input: cashCountRepo.CashCountInput) => { const u=user(); sessionSvc.requirePermission('reports:view'); return cashCountRepo.save(db(),u.id,input) })
+handle('reports:cashCountGet', (_e: IpcMainInvokeEvent, id: number) => { sessionSvc.requirePermission('reports:view'); return cashCountRepo.get(db(), id) })
+handle('reports:cashCountLines', (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view')
+  const record = cashCountRepo.get(db(), id)
+  return cashCountPrintSvc.cashCountLines(settingRepo.getSettings(db()), record as unknown as cashCountPrintSvc.CashCountPrintData)
+})
+handle('reports:printCashCount', async (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view')
+  const record = cashCountRepo.get(db(), id)
+  return printingSvc.printLines(settingRepo.getSettings(db()), cashCountPrintSvc.cashCountLines(settingRepo.getSettings(db()), record as unknown as cashCountPrintSvc.CashCountPrintData))
+})
 handle('reports:cashCounts', (_e: IpcMainInvokeEvent, opts?: unknown) => { sessionSvc.requirePermission('reports:view'); const u=user(); const o=(opts??{}) as {business_date?:string;user_id?:number;status?:string}; if(!u.roles.some(r=>r==='ADMIN'||r==='MANAGER')) o.user_id=u.id; return cashCountRepo.list(db(),o) })
 handle('reports:printXRead', async () => {
   sessionSvc.requirePermission('reports:view')

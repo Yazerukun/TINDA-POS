@@ -113,6 +113,7 @@ export type InventoryMovementType =
 export interface InventoryMovement {
   id: number
   product_id: number
+  product_name: string | null
   quantity_before: number
   quantity_change: number
   quantity_after: number
@@ -403,7 +404,7 @@ export interface StoreSettings {
 }
 
 export interface InventoryChangedEvent {
-  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE'
+  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE' | 'PRODUCT_CREATE' | 'PRODUCT_UPDATE'
   product_ids: number[]
 }
 

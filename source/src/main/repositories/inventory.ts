@@ -36,8 +36,10 @@ export function listMovements(
   const offset = opts.offset ?? 0
   const rows = db
     .prepare(
-      `SELECT im.*, COALESCE(u.full_name, u.username, '') AS user_name
-       FROM inventory_movements im LEFT JOIN users u ON u.id = im.user_id
+      `SELECT im.*, COALESCE(p.name, im.product_name) AS product_name, COALESCE(u.full_name, u.username, '') AS user_name
+       FROM inventory_movements im
+       LEFT JOIN products p ON p.id = im.product_id
+       LEFT JOIN users u ON u.id = im.user_id
        ${whereSql} ORDER BY im.id DESC LIMIT ? OFFSET ?`
     )
     .all(...params, limit, offset) as (InventoryMovement & { user_name: string })[]
@@ -46,7 +48,11 @@ export function listMovements(
 
 export function movementsForProduct(db: Database.Database, productId: number, limit = 100): InventoryMovement[] {
   return db
-    .prepare('SELECT * FROM inventory_movements WHERE product_id = ? ORDER BY id DESC LIMIT ?')
+    .prepare(
+      `SELECT im.*, COALESCE(p.name, im.product_name) AS product_name
+       FROM inventory_movements im LEFT JOIN products p ON p.id = im.product_id
+       WHERE im.product_id = ? ORDER BY im.id DESC LIMIT ?`
+    )
     .all(productId, limit) as InventoryMovement[]
 }
 

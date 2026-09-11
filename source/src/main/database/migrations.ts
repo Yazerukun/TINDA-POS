@@ -420,5 +420,16 @@ CREATE TABLE IF NOT EXISTS cash_counts (
 CREATE INDEX IF NOT EXISTS idx_cash_counts_date ON cash_counts(business_date);
 CREATE INDEX IF NOT EXISTS idx_cash_counts_shift ON cash_counts(shift_id);
 `
+  },
+  {
+    version: 5,
+    name: 'product_name_snapshot',
+    sql: `
+ALTER TABLE inventory_movements ADD COLUMN product_name TEXT;
+UPDATE inventory_movements
+   SET product_name = (SELECT p.name FROM products p WHERE p.id = inventory_movements.product_id)
+ WHERE EXISTS (SELECT 1 FROM products p WHERE p.id = inventory_movements.product_id);
+CREATE INDEX IF NOT EXISTS idx_movements_product_name ON inventory_movements(product_name);
+`
   }
 ]

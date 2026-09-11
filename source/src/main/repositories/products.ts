@@ -268,8 +268,8 @@ export function adjustStock(
     notes?: string | null
   }
 ): void {
-  const p = db.prepare('SELECT id, stock, base_unit FROM products WHERE id = ?').get(productId) as
-    | { id: number; stock: number; base_unit: string }
+  const p = db.prepare('SELECT id, stock, base_unit, name FROM products WHERE id = ?').get(productId) as
+    | { id: number; stock: number; base_unit: string; name: string }
     | undefined
   if (!p) throw new Error('Product not found.')
   if (!Number.isInteger(change)) throw new Error('Quantity must be a whole base unit.')
@@ -279,10 +279,10 @@ export function adjustStock(
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
   db.prepare(
     `INSERT INTO inventory_movements
-     (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
+     (product_id, product_name, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
       source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(productId, p.name, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
     receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
     receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
 }

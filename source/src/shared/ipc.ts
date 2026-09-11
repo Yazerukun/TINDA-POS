@@ -76,6 +76,22 @@ export interface PrintResult {
 
 export interface PrinterChoice { name: string; displayName: string; isDefault: boolean }
 
+export interface CashCountRecord {
+  id: number
+  shift_id: number
+  user_id: number
+  cashier_name: string
+  business_date: string
+  starting_cash_c: number
+  expected_cash_c: number
+  actual_cash_c: number
+  difference_c: number
+  status: 'BALANCED' | 'OVER' | 'SHORT'
+  denominations: number[]
+  notes: string | null
+  created_at: string
+}
+
 export interface DataLocationStatus {
   mode: 'SHARED' | 'PORTABLE'
   label: 'Shared AppData' | 'Portable Data'
@@ -292,8 +308,11 @@ export interface TindaApi {
   }
 
   reports: {
-    cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<unknown>
-    cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<unknown[]>
+    cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<CashCountRecord>
+    cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<CashCountRecord[]>
+    cashCountGet: (id: number) => Promise<CashCountRecord>
+    cashCountLines: (id: number) => Promise<string[]>
+    printCashCount: (id: number) => Promise<PrintResult>
     cashCountExpected: () => Promise<import('./types').ReadReport>
     sales: (opts: { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) => Promise<{
       rows: SalesReportRow[]
