@@ -84,3 +84,39 @@ Finish slow retry and install-path diagnosis; freeze a local candidate, build it
 ## GitHub this session
 
 Read-only metadata and download checks only. Pushed: NO. Tagged: NO. Released: NO.
+
+---
+
+# TINDA POS v1.0.7 RELEASE STATE (user-feedback patch)
+
+TARGET VERSION: v1.0.7
+BASELINE: v1.0.6 released (commit `84f8855`)
+BRANCH: `v1.0.7-dev`
+RC COMMIT: `eeccf30`
+WORKING TREE: clean; no push, tag, release, or GitHub mutation
+
+## Scope (user-requested bug fixes)
+
+1. **Inventory Edit "Unit name required" fix** — Edit Product now preserves existing selling units, adds a multi-unit editor in ProductModal, validates empty-unit names with a friendly message, and the unit-barcode duplicate check now correctly excludes the same product on edit.
+2. **Cash Count printing** — Reports → Cash Count now supports Save / Print / Print Preview and history reprint. Printing uses `printingSvc.printLines(cashCountLines(...))` via the new `reports:cashCountPrint` IPC call; print failure never mutates the saved record.
+
+## Gates passed
+
+- Typecheck: PASS
+- Lint: PASS
+- Full automated tests: 25 files / 180 tests PASS
+- Migration test: v1.0.5→v1.0.6 → v1.0.7 upgrade fixture: `PRAGMA integrity_check` = ok, data preserved
+- Production build (`electron-vite build`): PASS
+- v1.0.7 Windows RC built via Wine: `TindaPOS-Setup-1.0.7.exe` (109,484,366 bytes), `TindaPOS-Portable-1.0.7.exe` (109,253,899 bytes)
+- Wine upgrade boot test: v1.0.7 binary opened a real v1.0.6-seeded DB, integrity ok, products=1/cash_counts=1/product_units=2 preserved, no app errors
+- `git diff --check`: PASS
+
+## Artifacts
+
+- Setup: `source/builds/TindaPOS-Setup-1.0.7.exe` — SHA256 `713c52839826229055a708fc222bd52a1b2ab3288ca04ce374cd15e81d819356`
+- Portable: `source/builds/TindaPOS-Portable-1.0.7.exe` — SHA256 `88b2346bbdfe6823cdbc5f708e25cb503df2471e478ddb2a515d15b0b83b23f0`
+- `latest.yml` version `1.0.7`, releaseDate 2026-09-11
+
+## Next action
+
+Await owner review and approval. No push, tag, or publish until explicitly authorized.
