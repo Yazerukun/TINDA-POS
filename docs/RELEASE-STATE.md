@@ -13,6 +13,16 @@ total after change, so a 48500 sale with 66200 tender reports 48500 Cash;
 starting cash of 17700 produces 66200 Expected Cash. Regression coverage is
 green; the full suite is now 197 tests.
 
+## v1.0.10 publication complete - 2026-09-12
+
+Commit `a147413`; tag `v1.0.10` pushed. GitHub Stable/Latest:
+https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.10
+Public assets verified: Setup, Portable, blockmap, latest.yml, User Guide and
+canonical SHA256SUMS.txt. Public latest.yml reports version 1.0.10 and Setup
+size 109486647 with matching SHA512. Existing v1.0.9 release remains intact.
+Printing code was unchanged; automated print tests remain covered, while a
+physical native thermal-printer test is still not claimed.
+
 ## v1.0.9 expanded hotfix checkpoint - 2026-09-12
 
 This supersedes the earlier reminder-only artifact hashes below.
