@@ -1,8 +1,8 @@
-# TINDA POS v1.0.9 User Manual
+# TINDA POS v1.0.10 User Manual
 
 ## Bago magsara: Cash Count muna, saka Z-Read
 
-### Mas madaling basahin ang POS sa v1.0.9
+### Mas madaling basahin ang POS sa v1.0.10
 
 Mas malaki na ang pangalan at presyo ng produkto, quantity sa cart, at total.
 Gamitin ang **+** at **-** sa cart para baguhin ang dami, o pindutin ang quantity
@@ -21,18 +21,22 @@ Kung wala pang naka-save na Cash Count sa shift na iyon, may lalabas na paalala:
 **Wala pang naka-save na Cash Count para sa shift na ito. I-save muna ang Cash Count bago mag-Z-Read at isara ang shift.**
 
 - **Pumunta sa Cash Count**: bumalik sa pagbibilang at mag-save muna. Bukas pa rin ang shift.
-- **Magpatuloy**: tumuloy sa huling kumpirmasyon ng Z-Read kahit walang Cash Count. Piliin lamang kung talagang kailangang magpatuloy.
+- Hindi maaaring magpatuloy sa Z-Read hangga't walang naka-save na Cash Count para sa kasalukuyang shift.
 - **X** o **Escape**: isara ang paalala. Hindi nito isinasara ang shift.
 
 Kung may naka-save nang Cash Count para sa kasalukuyang shift, hindi na lalabas ang paalala.
 Ang **No open shift** ay nangangahulugang walang bukas na shift sa account na ginagamit.
 Hindi na maaaring mag-save ng Cash Count para sa shift na naisara na. Kaya **Cash Count muna, saka Z-Read**.
 
+Sa Z-Read, ang **Cash** ay perang dapat naiwan sa drawer pagkatapos ibalik ang sukli.
+Ang **Expected Cash** ay kasama ang starting cash, cash sales, Cash In, Cash Out,
+refunds, at expenses. Ang GCash, Maya, at Utang ay hiwalay sa cash drawer.
+
 TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory, customer, utang, expense, and reporting workflows remain usable offline.
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> TINDA POS v1.0.9 is the current validation release. Public stable is v1.0.8. Installed v1.0.3–v1.0.5 require a manual Setup upgrade to the approved stable release.
+> TINDA POS v1.0.10 is the current stable release. Installed v1.0.3–v1.0.5 require a manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -155,7 +159,7 @@ X-Read shows the current open shift: sales, discounts, refunds, voids, net sales
 
 1. Review the final summary.
 2. Enter actual cash for reconciliation.
-3. Save **Reports → Cash Count** first, while the shift is still open. **Finalize Z-Read** shows the reminder only if this shift has no saved Cash Count. **Pumunta sa Cash Count** returns to the tally without closing the shift; **Magpatuloy** opens the existing final confirmation. Closing the reminder leaves the shift open.
+3. Save **Reports → Cash Count** first, while the shift is still open. **Finalize Z-Read** is blocked until this shift has a saved Cash Count. **Pumunta sa Cash Count** returns to the tally without closing the shift. Closing the reminder leaves the shift open.
 4. Confirm only when the reporting period is finished.
 
 Z-Read closes/finalizes that shift and saves an immutable snapshot. It never deletes transactions, payments, expenses, inventory history, or customer ledger entries. The same shift cannot be finalized twice. Only Admin/Manager may finalize.
@@ -549,7 +553,7 @@ v1.0.2 Hotfix 1 predates the update system, so that first step to v1.0.3 is a no
 
 ## Download
 
-**TINDA POS v1.0.9** — to be published to the GitHub release page when approved: <https://github.com/Yazerukun/TINDA-POS/releases>
+**TINDA POS v1.0.10** — to be published to the GitHub release page when approved: <https://github.com/Yazerukun/TINDA-POS/releases>
 
 Files for this release:
 

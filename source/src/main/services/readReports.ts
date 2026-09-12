@@ -13,13 +13,26 @@ export function calculateRead(db: Database.Database, shiftId: number, type: 'X' 
     SUM(CASE WHEN status!='VOIDED' THEN 1 ELSE 0 END) transactions,
     SUM(CASE WHEN status='VOIDED' THEN 1 ELSE 0 END) void_count
     FROM sales WHERE shift_id=?`).get(shiftId) as Record<string, number>
-  const payments = db.prepare(`SELECT p.method, COALESCE(SUM(p.amount_c),0) total FROM payments p JOIN sales s ON s.id=p.sale_id WHERE s.shift_id=? AND s.status!='VOIDED' GROUP BY p.method`).all(shiftId) as {method:string,total:number}[]
-  const pay = Object.fromEntries(payments.map(p => [p.method, p.total])) as Record<string,number>
+  const paymentRows = db.prepare(`SELECT p.sale_id, p.method, COALESCE(p.amount_c,0) amount_c, s.total_c FROM payments p JOIN sales s ON s.id=p.sale_id WHERE s.shift_id=? AND s.status!='VOIDED'`).all(shiftId) as {sale_id:number;method:string;amount_c:number;total_c:number}[]
+  const pay = paymentRows.reduce<Record<string, number>>((totals, row) => {
+    totals[row.method] = (totals[row.method] ?? 0) + row.amount_c
+    return totals
+  }, {})
+  // Cash payments store the tendered amount so checkout can calculate change.
+  // For reports, count only the amount retained in the drawer, allocating the
+  // sale total after non-cash payment portions have been accounted for.
+  const cashBySale = new Map<number, { tendered: number; nonCash: number; total: number }>()
+  for (const row of paymentRows) {
+    const entry = cashBySale.get(row.sale_id) ?? { tendered: 0, nonCash: 0, total: row.total_c }
+    if (row.method === 'CASH') entry.tendered += row.amount_c
+    else entry.nonCash += row.amount_c
+    cashBySale.set(row.sale_id, entry)
+  }
+  const cash = [...cashBySale.values()].reduce((sum, sale) => sum + Math.min(sale.tendered, Math.max(0, sale.total - sale.nonCash)), 0)
   const refunds = (db.prepare(`SELECT COALESCE(SUM(r.total_c),0) total FROM refunds r JOIN sales s ON s.id=r.sale_id WHERE s.shift_id=? AND s.status!='VOIDED'`).get(shiftId) as {total:number}).total
   const expenses = (db.prepare(`SELECT COALESCE(SUM(amount_c),0) total FROM expenses WHERE user_id=? AND created_at>=? AND created_at<=COALESCE(?,datetime('now','localtime'))`).get(shift.user_id, shift.opened_at, shift.closed_at) as {total:number}).total
   const moves = db.prepare(`SELECT COALESCE(SUM(CASE WHEN type='CASH_IN' THEN amount_c ELSE 0 END),0) cash_in, COALESCE(SUM(CASE WHEN type='CASH_OUT' THEN amount_c ELSE 0 END),0) cash_out FROM cash_movements WHERE shift_id=?`).get(shiftId) as {cash_in:number,cash_out:number}
   const split = (db.prepare(`SELECT COUNT(*) count FROM (SELECT p.sale_id FROM payments p JOIN sales s ON s.id=p.sale_id WHERE s.shift_id=? AND s.status!='VOIDED' GROUP BY p.sale_id HAVING COUNT(*)>1)`).get(shiftId) as {count:number}).count
-  const cash = pay.CASH || 0
   const gross = sales.gross || 0, discount = sales.discount || 0, voids = sales.voids || 0
   return { shift_id: shiftId, shift_no: shift.shift_no ?? null, report_type: type, report_at: nowSql(), cashier_id: shift.user_id, cashier_name: shift.cashier_name, opened_at: shift.opened_at, closed_at: shift.closed_at, starting_cash_c: shift.starting_cash_c, gross_sales_c: gross, discount_c: discount, refunds_c: refunds, voids_c: voids, net_sales_c: gross - discount - refunds, cash_c: cash, gcash_c: pay.GCASH || 0, maya_c: pay.MAYA || 0, utang_c: pay.UTANG || 0, expenses_c: expenses, cash_in_c: moves.cash_in, cash_out_c: moves.cash_out, expected_cash_c: shift.starting_cash_c + cash - refunds - expenses + moves.cash_in - moves.cash_out, transaction_count: sales.transactions || 0, void_count: sales.void_count || 0, split_count: split }
 }

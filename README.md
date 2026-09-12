@@ -22,13 +22,14 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 **Development & Releases:** See [`docs/RELEASE-WORKFLOW.md`](docs/RELEASE-WORKFLOW.md).
 
-**Current stable release: v1.0.9.** This hotfix adds the Cash Count reminder and improves POS readability.
+**Current stable release: v1.0.10.** This hotfix requires Cash Count before Z-Read and improves POS readability.
 
 ### Cash Count muna, saka Z-Read
 
-Kasama sa v1.0.9 hotfix ang mas malaking product names/prices at cart quantities,
+Kasama sa v1.0.10 hotfix ang required Cash Count bago Z-Read, mas malaking product names/prices at cart quantities,
 mas madaling pinduting quantity buttons, at mas malapad na CHECKOUT.
 Hindi na lumalaki ang taas ng product boxes kapag kaunti lang ang laman ng category.
+Sa Z-Read, ang Cash amount ay perang naiwan pagkatapos ibalik ang sukli; hiwalay ang GCash, Maya, ug Utang.
 
 Sa pagtatapos ng shift:
 
@@ -37,11 +38,11 @@ Sa pagtatapos ng shift:
 3. Pindutin ang **Save Cash Count** at hintayin ang **Cash Count saved**.
 4. Saka pumunta sa **Reports → Z-Read** para suriin at isara ang shift.
 
-Sa v1.0.9, kapag walang naka-save na Cash Count para sa kasalukuyang shift,
+Sa v1.0.10, kapag walang naka-save na Cash Count para sa kasalukuyang shift,
 may Tagalog na paalala bago mag-finalize:
 
 - **Pumunta sa Cash Count**: mag-save muna; mananatiling bukas ang shift.
-- **Magpatuloy**: tumuloy sa huling kumpirmasyon ng Z-Read kahit walang Cash Count.
+- **Pumunta sa Cash Count**: mag-save muna; hindi maaaring magpatuloy sa Z-Read hanggang hindi ito naka-save.
 - **X / Escape**: isara ang paalala; hindi isasara ang shift.
 
 Hindi na lalabas ang paalala kung may saved Cash Count sa shift na iyon.

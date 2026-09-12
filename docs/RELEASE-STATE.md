@@ -1,5 +1,13 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.10 required Cash Count gate - active 2026-09-12
+
+User feedback confirmed Z-Read could be finalized before Cash Count because the
+v1.0.9 reminder still offered Continue. v1.0.10 removes that action: when the
+current shift has no saved Cash Count, Finalize Z-Read is blocked and the only
+action is Pumunta sa Cash Count. v1.0.9 remains immutable; updater/provider
+source is unchanged. Tests 196/196, typecheck, lint, build and PDF pass.
+
 ## v1.0.9 expanded hotfix checkpoint - 2026-09-12
 
 This supersedes the earlier reminder-only artifact hashes below.

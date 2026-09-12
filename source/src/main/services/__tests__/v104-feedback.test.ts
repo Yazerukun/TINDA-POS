@@ -63,6 +63,17 @@ describe('v1.0.4 X/Z read',()=>{
     expect((db.prepare('SELECT COUNT(*) c FROM sales').get() as {c:number}).c).toBe(1)
     expect((db.prepare('SELECT COUNT(*) c FROM payments').get() as {c:number}).c).toBe(2)
   })
+
+  it('reports cash retained after change instead of the tendered amount', () => {
+    const shift = shifts.openShift(db, 1, 17700)
+    db.prepare("INSERT INTO sales(transaction_no,user_id,subtotal_c,discount_c,total_c,shift_id) VALUES ('CHANGE-1',1,48500,0,48500,?)").run(shift.id)
+    const saleId = Number((db.prepare("SELECT id FROM sales WHERE transaction_no='CHANGE-1'").get() as { id: number }).id)
+    db.prepare("INSERT INTO payments(sale_id,method,amount_c) VALUES (?,'CASH',66200)").run(saleId)
+    const report = calculateRead(db, shift.id)
+    expect(report.gross_sales_c).toBe(48500)
+    expect(report.cash_c).toBe(48500)
+    expect(report.expected_cash_c).toBe(66200)
+  })
 })
 
 describe('v1.0.4 restock rules',()=>{
