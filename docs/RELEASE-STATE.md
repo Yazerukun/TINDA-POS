@@ -136,8 +136,8 @@ Await owner review and approval. No push, tag, or publish until explicitly autho
 CURRENT STABLE: v1.0.7 (public GitHub Latest, verified 2026-09-12, tag `v1.0.7`)
 TARGET VERSION: v1.0.8
 RELEASE TYPE: PATCH
-BRANCH: `v1.0.8-dev` (commit `13c1ceb` plan/state; feature commit `…` pending this session)
-CURRENT STAGE: 02 DEVELOPMENT — all three features implemented; QA gates GREEN; doc/progress update in progress
+BRANCH: `v1.0.8-dev` (feature `b1f4383`, upgrade-chain tests `7584156`, version bump `8df8910`)
+CURRENT STAGE: 08 PRE-RELEASE UPDATER QA — accepted on native Windows VM; docs gate done; RC freeze pending commit
 
 ## Scope (owner-specified, see `docs/RELEASE-PLAN-v1.0.8.md`)
 
@@ -193,6 +193,37 @@ QA gates (all GREEN):
   order and new shifts continue the per-cashier sequence.
 
 Pending: Windows update E2E acceptance on VM `tinda-win11`, USER-MANUAL update, RC freeze for owner review. No push/tag/release until owner approval.
+
+## Stage 08 progress (this session) — Windows native updater acceptance PASS
+
+On VM `tinda-win11` (`192.168.122.248`, native Windows 11), remote-control/tooling repaired via dedicated temp QA account `tindaqa` (SMB/WMI admin, `LocalAccountTokenFilterPolicy=1`, winmgmt + LanmanServer running, WMI + File and Printer Sharing firewall rules enabled). Guest `updater-e2e.log` completed run:
+
+```text
+START_VERSION=1.0.7
+QA_BUILD=TRUE
+FEED=http://127.0.0.1:18766
+AUTOUPDATER_INIT=PASS
+CHECK=PASS
+TARGET_VERSION=1.0.8
+DOWNLOAD_COMPLETE=PASS
+SAFETY_BACKUP=PASS
+RESTART_INSTALL_REQUESTED=PASS
+```
+
+- **Installed QA v1.0.7 (patched, not public) → local v1.0.8 RC feed → silent NSIS install → relaunch → v1.0.8.** The locally served feed served the exact frozen RC artifacts: `TindaPOS-Setup-1.0.8.exe` (109,485,904 bytes; sha512 `0vyLkS…`), `.blockmap`, `latest.yml` version 1.0.8 — identical to the RC artifacts in `rc-source/source/builds/` and `rc-source/installers/SHA256SUMS-RC.txt`.
+- **Installed app verification PASS** — after install, pulled `resources/app.asar` (37,145,398 bytes); `package.json` `version` = `1.0.8`. The installed tree includes the NSIS uninstaller, confirming a real per-user install (not a raw copy). Relaunched `TindaPOS.exe` running interactively (Console session 1) with the TINDA POS window rendered.
+- **Data preservation PASS** — live DB `%APPDATA%\TINDA POS\database\tindapos.db` at `app_migrations` max version **5** (shift_numbering migration applied), 1 OPENED shift, 2 cash_counts, 1 user preserved; upgraded backup snapshot written to guest `C:\TINDA-QA\evidence\upgraded\tindapos.db`.
+- Feed payload and app are transported over SMB (byte-exact long filenames). A CD-ROM xcopy install path is NOT used: Windows CDFS reads this Rock Ridge ISO via ISO9660 8.3 names only (e.g. `V8_CONTE.BIN`), which is a VM media limitation, not a product defect.
+
+## Documentation gate (this session) — PASS
+
+`docs/USER-MANUAL.md` updated to v1.0.8: new **Withdraw Stock** section (Taken/Damaged/Expired/Forward, Stock History, zero financial impact), **Low Stock Alert default** section (store-wide `Default Low Stock Alert` is the single source of truth for new/CSV products; blank CSV never overwrites an existing threshold), **Shift #** numbering in X-Read/Cash Count/Shift sections, updated headers/download section/build references. User Guide PDF regenerated via `npm run docs:pdf` — **18 pages, 121794 bytes**, SHA256 `89e0656c28f7b98dced11c997f94c81d6dd757fa30182f7ce5a5349068c22cbc`, version `1.0.8`. `installers/SHA256SUMS-RC.txt` updated with the v1.0.8 artifact hashes (RC artifacts themselves unchanged).
+
+## RC freeze check
+
+- RC artifacts (`Setup` `ab1f1535…`, `Portable` `de3caea2…`, `blockmap` `0bebf905…`, `latest.yml` `2d88b38b…`) verified present and matching the hashes recorded in `SHA256SUMS-RC.txt`; they are byte-identical to what the VM updated from.
+- `git diff --check`, typecheck, lint, tests, build all recorded GREEN earlier this session chain (Stage 02/03/04 evidence above).
+- Next: one local RC commit documenting the completed updater acceptance + docs gate on `v1.0.8-dev`, clean tree, record exact `RC_COMMIT`, then present the frozen v1.0.8 RC to the owner for approval. No push/tag/release until explicit owner approval.
 
 ## Next required action
 
