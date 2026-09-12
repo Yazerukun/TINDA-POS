@@ -53,7 +53,7 @@ pindutin ang **Check for Updates**, at sundin ang kasalukuyang update flow.
 Walang binago sa updater o sa opisyal na GitHub update provider.
 Tingnan ang [User Manual](docs/USER-MANUAL.md) para sa buong gabay.
 
-Released September 6, 2026. This is a stable release, not a prerelease.
+Released September 12, 2026. This is a stable release, not a prerelease.
 
 ## Features
 
@@ -124,7 +124,14 @@ Released September 6, 2026. This is a stable release, not a prerelease.
 - Fast PIN login for daily use
 - Only admins can void sales
 
-## What's New in v1.0.3
+## What's New in v1.0.9
+
+- **POS readability:** larger product names, prices, cart quantities, totals, and checkout controls.
+- **Stable category cards:** product boxes keep a consistent height when a category contains only a few products.
+- **Cash Count reminder:** before Z-Read, TINDA POS checks whether Cash Count was saved for the current shift and shows a clear Tagalog reminder when it was not.
+- **Cash Count navigation:** **Pumunta sa Cash Count** returns to the count screen without closing the shift; **Magpatuloy** keeps the existing Z-Read confirmation flow.
+
+## Software Update
 
 - **Settings → About → Software Update** — check for updates, see What's New, download, and install without visiting a website.
 - **Automatic check** — once per day on startup, checking the official GitHub release page for **stable versions only** (drafts/prereleases/invalid versions ignored).
@@ -138,11 +145,11 @@ Released September 6, 2026. This is a stable release, not a prerelease.
 ## Release QA & Verification
 
 - Source gates: lint, strict typecheck, production build, PDF generation, and `git diff --check` all pass.
-- Automated tests: **119/119 passing**, including updater, backup protection, data-location, printing, holds, restore rollback, and end-to-end workflows.
-- Native Windows CI run `34034394935`: PASS for Setup and Portable packaging, renderer startup, SQLite database creation, `better-sqlite3` win32-x64 loading, and both launch smokes.
-- FINAL WINE SMOKE (Wine 11.16): PASS for fresh Portable and `win-unpacked` builds; first-run setup renderer and SQLite database creation verified.
-- Public release verification: all six release assets download successfully, published SHA-256 checksums match, and `/releases/latest` resolves to v1.0.3.
-- Accepted limitations: the first complete production updater replacement cycle will be validated when a newer stable release exists; physical thermal-printer QA remains pending.
+- Automated tests: **196/196 passing**, including updater, backup protection, data-location, printing, holds, restore rollback, database upgrade, Cash Count, withdrawal, and end-to-end workflows.
+- POS UI checks: PASS at 1024, 1280, and 1920 pixel desktop widths; no horizontal overflow and stable two-product category cards.
+- v1.0.9 Windows artifacts: Setup, Portable, blockmap, latest.yml, User Guide, and SHA256SUMS.txt published together.
+- Public release verification: v1.0.9 is GitHub Stable/Latest and all six release assets are available.
+- The updater/provider remains GitHub `Yazerukun/TINDA-POS`; existing v1.0.8 users update through the in-app Software Update flow.
 
 ## Updating Older Versions
 
