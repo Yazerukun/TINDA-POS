@@ -39,6 +39,20 @@ Publication is now authorized; final local artifacts above are the release
 source. The public release must use tag v1.0.9 at the resulting commit and
 the six canonical assets only.
 
+## v1.0.9 publication complete - 2026-09-12
+
+RC commit `1b42990`; branch `v1.0.9-dev` pushed; tag `v1.0.9` pushed.
+GitHub Release is public Stable and Latest:
+https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.9
+Assets verified: Setup, Portable, blockmap, latest.yml, User Guide PDF and
+canonical SHA256SUMS.txt. Public latest.yml reports v1.0.9, Setup size
+109486317 and the matching SHA512. Public checksum file matches downloaded
+Setup, Portable, blockmap, latest.yml and PDF. No v1.0.8 asset was replaced.
+Post-release provider remains GitHub/Yazerukun/TINDA-POS. Public previous
+stable -> v1.0.9 Windows updater cycle is not claimed here because native VM
+login remained unavailable; users can update from v1.0.8 through the existing
+in-app flow. Release publication is complete.
+
 ## v1.0.9 Cash Count reminder hotfix - active 2026-09-12
 
 Branch v1.0.9-dev; baseline 13d9c80 / published v1.0.8 code 7c1ec2b.
