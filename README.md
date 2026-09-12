@@ -24,35 +24,32 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 **Current stable release: v1.0.10.** This hotfix requires Cash Count before Z-Read and improves POS readability.
 
-### Cash Count muna, saka Z-Read
+### Cash Count First, Then Z-Read
 
-Kasama sa v1.0.10 hotfix ang required Cash Count bago Z-Read, mas malaking product names/prices at cart quantities,
-mas madaling pinduting quantity buttons, at mas malapad na CHECKOUT.
-Hindi na lumalaki ang taas ng product boxes kapag kaunti lang ang laman ng category.
-Sa Z-Read, ang Cash amount ay perang naiwan pagkatapos ibalik ang sukli; hiwalay ang GCash, Maya, ug Utang.
+The v1.0.10 hotfix requires a Cash Count before Z-Read. It also improves product names and prices,
+cart quantities, quantity buttons, checkout width, and category card sizing.
+In Z-Read, the Cash amount is the money retained after change is returned; GCash, Maya, and credit are shown separately.
 
-Sa pagtatapos ng shift:
+At the end of a shift:
 
-1. Buksan ang **Reports → Cash Count** gamit ang account na may bukas na shift.
-2. Bilangin ang pera sa kaha at ilagay ang dami ng bawat bill at coin.
-3. Pindutin ang **Save Cash Count** at hintayin ang **Cash Count saved**.
-4. Saka pumunta sa **Reports → Z-Read** para suriin at isara ang shift.
+1. Open **Reports → Cash Count** using an account with an open shift.
+2. Count the bills and coins in the cash drawer and enter each quantity.
+3. Click **Save Cash Count** and wait for the **Cash Count saved** confirmation.
+4. Then open **Reports → Z-Read** to review and close the shift.
 
-Sa v1.0.10, kapag walang naka-save na Cash Count para sa kasalukuyang shift,
-may Tagalog na paalala bago mag-finalize:
+In v1.0.10, if no Cash Count has been saved for the current shift, a reminder appears before finalization:
 
-- **Pumunta sa Cash Count**: mag-save muna; mananatiling bukas ang shift.
-- **Pumunta sa Cash Count**: mag-save muna; hindi maaaring magpatuloy sa Z-Read hanggang hindi ito naka-save.
-- **X / Escape**: isara ang paalala; hindi isasara ang shift.
+- **Go to Cash Count**: save the count first; Z-Read cannot continue until it is saved.
+- **X / Escape**: close the reminder; the shift stays open.
 
-Hindi na lalabas ang paalala kung may saved Cash Count sa shift na iyon.
-Kapag **No open shift** ang error, walang bukas na shift sa account na ginagamit.
-I-save ang Cash Count bago isara ang shift, hindi pagkatapos.
+The reminder does not appear when a Cash Count is already saved for that shift.
+If the **No open shift** error appears, the account being used has no active shift.
+Save the Cash Count before closing the shift, not afterward.
 
-Kapag published na ang hotfix, buksan ang **Settings → About → Software Update**,
-pindutin ang **Check for Updates**, at sundin ang kasalukuyang update flow.
-Walang binago sa updater o sa opisyal na GitHub update provider.
-Tingnan ang [User Manual](docs/USER-MANUAL.md) para sa buong gabay.
+To update after the hotfix is published, open **Settings → About → Software Update**,
+click **Check for Updates**, and follow the existing update flow.
+The updater and official GitHub update provider were not changed.
+See the [User Manual](docs/USER-MANUAL.md) for the full guide.
 
 Released September 6, 2026. This is a stable release, not a prerelease.
 
@@ -62,33 +59,33 @@ Released September 6, 2026. This is a stable release, not a prerelease.
 - Fast checkout with product grid + search (name, SKU, or barcode)
 - Working category dropdown for quickly filtering the POS product grid
 - Persistent Hold/Resume queue with reference codes and safe held-sale deletion
-- **Cash** with automatic sukli/change calculation
+- **Cash** with automatic change calculation
 - **GCash & Maya** with reference number tracking
-- **Utang (credit)** with customer picker
+- **Credit** with customer picker
 - **Split payment** — combine Cash + GCash/Maya in one sale
 - Hold, resume, or delete pending carts while serving multiple customers; holds survive restart and remain cashier-specific
 
 ### 📦 Inventory
-- Products with **tingi units** (sachet, can, stick, piraso)
+- Products with **small retail units** (sachet, can, stick, piece)
 - Add/delete category manager, suppliers, and SKU/barcode support
 - Low-stock & out-of-stock alerts with color-coded badges
 - Stock automatically updated on every sale, refund, and void
 
 ### 👥 Customers & Utang
 - Customer directory with credit limits
-- Full utang ledger — track every sale-on-credit and payment
+- Full credit ledger — track every sale-on-credit transaction and payment
 - Payments and manual deductions refresh balances immediately
-- Over-limit protection blocks new utang when limit is reached
+- Over-limit protection blocks new credit sales when the limit is reached
 
 ### 📊 Dashboard & Reports
-- Today's sales, profit, utang, and expenses at a glance
+- Today's sales, profit, credit balance, and expenses at a glance
 - Daily, weekly, and monthly report views
 - Export any report to CSV (for Excel)
 
 ### 🔄 Transactions
 - View full receipt for any sale
 - Refund items (stock automatically restored)
-- Void mistaken sales (stock restored, utang removed)
+- Void mistaken sales (stock restored, credit removed)
 - Reconstruct receipt details anytime; Windows receipt-printer support is implemented — printer discovery, Test Print, Auto Print, and manual Print Receipt (native Windows application/packaging QA passed; physical thermal-printer validation remains pending)
 
 ### ⏱️ Shifts
@@ -258,20 +255,20 @@ TINDA-POS/
 
 ## Frequently Asked Questions
 
-**Offline ba talaga?**
-Oo. Walang internet na kailangan para magbenta. Optional lang ang cloud-synced backup at owner ang pipili kung ie-enable ito.
+**Does it work offline?**
+Yes. Internet is not required for sales. Cloud-synced backup is optional and can be enabled by the owner.
 
-**Direktang kumokonekta ba ang GCash/Maya sa provider?**
-Hindi. Recording methods ang GCash at Maya; sine-save ng TINDA POS ang payment method, amount, at reference number pero walang direct wallet API integration.
+**Does it connect directly to GCash or Maya?**
+No. GCash and Maya are recorded payment methods; TINDA POS stores the payment method, amount, and reference number but has no direct wallet API integration.
 
-**Saan naka-save ang data?**
-Windows: `%APPDATA%\TINDA POS` — Hindi nabubura kapag in-uninstall. The active database is `%APPDATA%\TINDA POS\database\tindapos.db`.
+**Where is data stored?**
+Windows: `%APPDATA%\TINDA POS` — it is not deleted when the app is uninstalled. The active database is `%APPDATA%\TINDA POS\database\tindapos.db`.
 
-**Safe ba ang backup?**
-Oo — may local backup at optional automatic copy sa OneDrive, Google Drive for desktop, o Dropbox folder.
+**Are backups safe?**
+Yes. TINDA POS creates local backups and can optionally copy them to a OneDrive, Google Drive for desktop, or Dropbox folder.
 
-**Pwede ba mag-add ng barcode scanner?**
-Oo — any USB barcode scanner works. No special drivers needed.
+**Can I add a barcode scanner?**
+Yes. Any USB barcode scanner works; no special drivers are needed.
 
 ## Contributing
 
