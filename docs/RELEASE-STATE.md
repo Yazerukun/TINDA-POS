@@ -179,15 +179,20 @@ Implementations on branch `v1.0.8-dev`:
    **Withdraw** modal and a **Stock History** viewer (filterable).
 
 QA gates (all GREEN):
-- `npm test` — 27 files, 194 tests PASS (incl. 14 new + updated migration baseline)
+- `npm test` — 28 files, 196 tests PASS (incl. 14 new feature tests + 2 upgrade-chain tests)
 - `npm run typecheck` — PASS (node + web)
 - `npm run lint` — PASS
 - `npm run build` — PASS
 - `git diff --check` — clean
+- DB upgrade chain `v1.0.6/v1.0.7 (schema v4) -> v1.0.8`: verified in
+  `src/main/database/__tests__/v108-upgrade-chain.test.ts` — migration engine
+  applies exactly migration 5, re-boot is a safe no-op, `PRAGMA integrity_check`
+  ok, and products, units, stock movements, customers + utang ledger, shifts,
+  sales + items + payments, cash counts, expenses, and settings all preserved
+  with identical counts and spot-checked values; legacy shifts numbered in open
+  order and new shifts continue the per-cashier sequence.
 
-Pending: DB upgrade chain test v1.0.6→v1.0.7→v1.0.8 + v1.0.7→v1.0.8 (PRAGMA
-integrity_check ok), Windows update E2E acceptance on VM `tinda-win11`, USER-MANUAL
-update, RC freeze for owner review. No push/tag/release until owner approval.
+Pending: Windows update E2E acceptance on VM `tinda-win11`, USER-MANUAL update, RC freeze for owner review. No push/tag/release until owner approval.
 
 ## Next required action
 
