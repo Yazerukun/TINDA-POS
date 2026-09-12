@@ -8,6 +8,11 @@ current shift has no saved Cash Count, Finalize Z-Read is blocked and the only
 action is Pumunta sa Cash Count. v1.0.9 remains immutable; updater/provider
 source is unchanged. Tests 196/196, typecheck, lint, build and PDF pass.
 
+Cash reporting correction is included: cash tender is allocated to the sale
+total after change, so a 48500 sale with 66200 tender reports 48500 Cash;
+starting cash of 17700 produces 66200 Expected Cash. Regression coverage is
+green; the full suite is now 197 tests.
+
 ## v1.0.9 expanded hotfix checkpoint - 2026-09-12
 
 This supersedes the earlier reminder-only artifact hashes below.
