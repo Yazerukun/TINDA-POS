@@ -22,7 +22,36 @@ Built with Electron, React, TypeScript, and SQLite for reliability and speed.
 
 **Development & Releases:** See [`docs/RELEASE-WORKFLOW.md`](docs/RELEASE-WORKFLOW.md).
 
-**Current stable release: v1.0.3** — adds the in-app update system.
+**Current stable release: v1.0.9.** This hotfix adds the Cash Count reminder and improves POS readability.
+
+### Cash Count muna, saka Z-Read
+
+Kasama sa v1.0.9 hotfix ang mas malaking product names/prices at cart quantities,
+mas madaling pinduting quantity buttons, at mas malapad na CHECKOUT.
+Hindi na lumalaki ang taas ng product boxes kapag kaunti lang ang laman ng category.
+
+Sa pagtatapos ng shift:
+
+1. Buksan ang **Reports → Cash Count** gamit ang account na may bukas na shift.
+2. Bilangin ang pera sa kaha at ilagay ang dami ng bawat bill at coin.
+3. Pindutin ang **Save Cash Count** at hintayin ang **Cash Count saved**.
+4. Saka pumunta sa **Reports → Z-Read** para suriin at isara ang shift.
+
+Sa v1.0.9, kapag walang naka-save na Cash Count para sa kasalukuyang shift,
+may Tagalog na paalala bago mag-finalize:
+
+- **Pumunta sa Cash Count**: mag-save muna; mananatiling bukas ang shift.
+- **Magpatuloy**: tumuloy sa huling kumpirmasyon ng Z-Read kahit walang Cash Count.
+- **X / Escape**: isara ang paalala; hindi isasara ang shift.
+
+Hindi na lalabas ang paalala kung may saved Cash Count sa shift na iyon.
+Kapag **No open shift** ang error, walang bukas na shift sa account na ginagamit.
+I-save ang Cash Count bago isara ang shift, hindi pagkatapos.
+
+Kapag published na ang hotfix, buksan ang **Settings → About → Software Update**,
+pindutin ang **Check for Updates**, at sundin ang kasalukuyang update flow.
+Walang binago sa updater o sa opisyal na GitHub update provider.
+Tingnan ang [User Manual](docs/USER-MANUAL.md) para sa buong gabay.
 
 Released September 6, 2026. This is a stable release, not a prerelease.
 
@@ -115,21 +144,21 @@ Released September 6, 2026. This is a stable release, not a prerelease.
 - Public release verification: all six release assets download successfully, published SHA-256 checksums match, and `/releases/latest` resolves to v1.0.3.
 - Accepted limitations: the first complete production updater replacement cycle will be validated when a newer stable release exists; physical thermal-printer QA remains pending.
 
-## Updating from v1.0.2 Hotfix 1
+## Updating Older Versions
 
-**This is a ONE-TIME MANUAL UPDATE.** v1.0.2 Hotfix 1 predates the in-app update system, so it cannot update itself.
+**v1.0.2 Hotfix 1 and v1.0.3–v1.0.5 need a ONE-TIME MANUAL UPDATE.** Download the approved stable Setup from the official release page. Do not uninstall or delete your store data.
 
 **Installer users:**
 1. Back up your store (`Settings → Data → Create Backup`, or verify at `%APPDATA%\TINDA POS\backups`).
-2. Download `TindaPOS-Setup-1.0.3.exe`.
+2. Download the latest stable `TindaPOS-Setup-<version>.exe`.
 3. Run the installer and install **over the existing TINDA POS installation**.
 4. Existing store data in Shared AppData remains preserved.
 
-**Portable users:** download the new Portable v1.0.3 EXE.
+**Portable users:** download the latest stable Portable EXE.
 - If using **Shared AppData**: existing store data remains available — just run the new EXE.
 - If using **Portable Data Mode**: keep the existing `TindaPOS-Data` folder safe and use it with the new Portable version.
 
-From v1.0.3 onward, TINDA POS can notify users about future stable updates from inside the app.
+Users on v1.0.6 and newer can use **Settings → About → Software Update → Check for Updates**. Installed builds use **Download Update**, then **Restart & Install**. Portable builds download a separate EXE; open that file to use the newer version.
 
 ## What's New in v1.0.2 Hotfix 1
 
@@ -138,25 +167,25 @@ From v1.0.3 onward, TINDA POS can notify users about future stable updates from 
 - **Start New Store** and clearer **Settings → Data** (Shared AppData vs Portable Data Mode + Copy Current Store)
 - Cash/SUKLI input fix (pesos, not raw cents), full-refund status fix, restore temp-file cleanup
 
-> v1.0.2 Hotfix 1 was superseded by v1.0.3. See **Updating from v1.0.2 Hotfix 1** above.
+> Historical release notes. See **Updating Older Versions** above for the current upgrade path.
 
 ## Download
 
-**Latest Stable Release: TINDA POS v1.0.3** — <https://github.com/Yazerukun/TINDA-POS/releases/latest>
+Open the [latest stable release](https://github.com/Yazerukun/TINDA-POS/releases/latest) and expand **Assets**:
 
-- [TindaPOS-Setup-1.0.3.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-Setup-1.0.3.exe) — Windows installer
-- [TindaPOS-Portable-1.0.3.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-Portable-1.0.3.exe) — no-install portable edition
-- [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/TindaPOS-User-Guide.pdf) — full user manual (PDF)
-- [SHA256SUMS.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.3/SHA256SUMS.txt) — checksums (verify with `sha256sum -c SHA256SUMS.txt`)
+- `TindaPOS-Setup-<version>.exe` — Windows installer
+- `TindaPOS-Portable-<version>.exe` — no-install portable edition
+- `TindaPOS-User-Guide.pdf` — full user manual (PDF)
+- `SHA256SUMS.txt` (or `SHA256SUMS-RC.txt` on older releases) — file verification checksums
 
-> **v1.0.2 Hotfix 1 users:** this is a one-time **manual** update — download and install/run the v1.0.3 package directly. See **Updating from v1.0.2 Hotfix 1**.
+> For v1.0.2 Hotfix 1 and v1.0.3–v1.0.5, follow **Updating Older Versions** above.
 
 The supported target is Windows 10/11 64-bit.
 
 ## Quick Start
 
 ### Windows
-1. After packaging, download the v1.0.3 Setup or Portable package from the official release page.
+1. Download the latest stable Setup or Portable package from the official release page.
 2. Run the package (click **More info → Run anyway** if SmartScreen appears on the unsigned build).
 3. Follow the 3-step setup wizard: Store details → Admin account → Receipt settings
 4. Start selling!

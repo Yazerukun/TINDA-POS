@@ -1,5 +1,90 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.9 expanded hotfix checkpoint - 2026-09-12
+
+This supersedes the earlier reminder-only artifact hashes below.
+User authorized POS readability and stable category-card sizes in the same
+hotfix, preserving Software Update, plus publication after validation.
+Implemented larger product text/prices, cart quantities/totals, 40px quantity
+controls and full-width Checkout. Product rows fixed at 160px, content-start,
+auto-fill columns preserve sizing for two filtered products. Business logic
+unchanged. Tagalog conditional Cash Count reminder and docs remain included.
+
+Final source checks: full typecheck/lint/build PASS, 196/196 tests PASS.
+Playwright POS component mock-IPC checks PASS at 1024/1280/1920 widths, also
+640px height with 224px sidebar allowance: stable cards after category filter,
+quantity interaction, visible Checkout, no horizontal overflow. Reminder flow
+checks previously passed and source unchanged since that validation.
+Evidence saved under /home/ian/tindapos-v106-qa/evidence/v1.0.9/.
+PDF regenerated: 19 pages, 125259 bytes. Friendly Tagalog manual and README
+include Cash Count order and POS changes; stale v1.0.3 download links removed.
+
+Final artifacts: source/builds-v109-final/ (builds-v109-rc is SUPERSEDED).
+Version/Setup SHA512/size match latest.yml. Provider github/Yazerukun/TINDA-POS.
+Packaged main AND preload are byte-identical to v1.0.8; only win32-x64 SQLite
+prebuild included. No updater/provider/dependency/config/database source edits.
+Setup SHA256 cfda8c2d913743a7577e325570466e134297b17ca7113f8841bfe972a7b59a36
+Portable SHA256 137d4097c0fee3189a5a4d4d0f42efc3783f6548d18650c1de1657d1f8939f14
+Blockmap SHA256 35aa6b2746ac1018bc4235bb6fbb3bd5c7fc9e4603547e14760d5b4dd1cc97b9
+latest.yml SHA256 ed3bad458dbf9896a38b8c5c7329212b554338361b81d18afa9ac11c28c01060
+
+Still NOT published. Windows v1.0.8 -> v1.0.9 installed update acceptance and
+final release review pending. Asked user to sign into QA VM or select isolated
+QA store; response pending. No existing VM account reset or credentials guessed.
+Next: finish Windows acceptance, review and execute authorized publication only
+when gates pass; verify public assets and update flow afterward.
+
+Owner approved direct publication after the 196-test and UI validation gate.
+Publication is now authorized; final local artifacts above are the release
+source. The public release must use tag v1.0.9 at the resulting commit and
+the six canonical assets only.
+
+## v1.0.9 Cash Count reminder hotfix - active 2026-09-12
+
+Branch v1.0.9-dev; baseline 13d9c80 / published v1.0.8 code 7c1ec2b.
+Owner authorized conditional Tagalog reminder, friendly manual and README,
+and preparation of the hotfix for users. No updater changes permitted.
+
+Implemented: Finalize Z-Read fetches saved counts and checks current shift_id.
+Missing count opens Tagalog reminder; Cash Count navigates without closing;
+Continue retains final confirmation; existing count skips reminder; failed
+lookup never finalizes. No DB, main, preload, shared or updater changes.
+
+Validation: 28 files / 196 tests PASS; full typecheck/lint PASS, then renderer
+typecheck/lint repeated after conditional change PASS; build PASS; PDF PASS
+(19 pages, 124561 bytes); diff check PASS. Playwright real Reports component
+with mocked IPC PASS: missing/current/other-shift count, navigation, Escape,
+lookup failure, Continue cancel and confirmed finalization. Screenshot:
+/tmp/tinda-cashcount-reminder.png. Browser QA is not a native Windows result.
+
+Windows RC built in source/builds-v109-rc with publish never. Setup size
+109486051; latest.yml SHA512/size match; provider github/Yazerukun/TINDA-POS.
+Packaged version 1.0.9; packaged out/main/index.js byte-identical to v1.0.8.
+Setup SHA256 c706e25ac249f85a24e4bb1ceecb8672d0ca1a3ef2f4f992cfc7df5997cf1bf4
+Portable SHA256 fa28ba065264a3ec43c9250220c38340436720756ba82842fe0caf76bbf41c9a
+Blockmap SHA256 3751ce265cdf1a86ad442e5a515b3586e02277ec823cea407faa9e34c2d2c794
+
+Remaining: packaged Windows/updater acceptance, source freeze, final review,
+owner publication approval per policy, publication and post-release checks.
+VM tinda-win11 is running; inspected screen shows invalid application login.
+No credential guesses, resets, production data changes or release mutations.
+Do not claim public v1.0.8 -> v1.0.9 acceptance or release readiness yet.
+README/manual changes are local until approved publication.
+
+## Active updater incident - 2026-09-12
+
+Live GitHub inspection confirms v1.0.8 is published (tag target 7c1ec2b),
+superseding older pending-publication notes below. Public latest.yml fetched
+successfully: version 1.0.8, Setup size 109485904, SHA512 matches local metadata.
+Owner reports public v1.0.7 -> v1.0.8 update failure; exact failure stage/error
+requested and still unknown. Source automatic checks run once at startup with
+a 24-hour throttle; manual checks bypass it. Earlier patched-QA Windows testing
+does not establish public unmodified v1.0.7 acceptance. No fix or public E2E
+success claimed. Source at 13d9c80; only this incident note changed in the repo.
+Next: identify affected Setup/Portable runtime and error, reproduce, repair and
+verify that path. This session made no push, tag, release or asset changes.
+Incident notes: /home/ian/tindapos-v106-qa/updater-incident/.
+
 CURRENT STABLE: v1.0.7 (public GitHub Latest verified 2026-09-12)
 TARGET VERSION: v1.0.7
 RELEASE TYPE: PATCH

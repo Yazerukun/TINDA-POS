@@ -151,16 +151,16 @@ export function POS(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-full">
-      <div className="flex min-w-0 flex-1 flex-col p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <div className="relative flex-1">
+    <div className="flex h-full min-h-0 flex-col md:flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col p-4">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[160px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
               value={q}
               onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
               placeholder="Search product by name or barcode…"
-              className="input w-full pl-9"
+              className="input h-11 w-full pl-9 !text-base"
               autoFocus
             />
           </div>
@@ -168,7 +168,7 @@ export function POS(): React.JSX.Element {
             <button
               type="button"
               onClick={() => setCategoryMenuOpen((open) => !open)}
-              className="input flex w-full items-center justify-between gap-2 text-left"
+              className="input flex min-h-11 w-full items-center justify-between gap-2 text-left !text-base"
               aria-haspopup="listbox"
               aria-expanded={categoryMenuOpen}
             >
@@ -211,7 +211,7 @@ export function POS(): React.JSX.Element {
           </div>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
-        <div className="grid flex-1 grid-cols-3 gap-3 overflow-y-auto pb-2 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid min-h-0 flex-1 auto-rows-[160px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
           {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
           {!loading && products.length === 0 && (
             <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
@@ -226,16 +226,16 @@ export function POS(): React.JSX.Element {
                 key={p.id}
                 onClick={() => out ? toastError('Out of stock', cartItem ? `Only ${p.stock} ${p.base_unit} in stock and all are already in the cart.` : undefined) : usePosCart.getState().add(p)}
                 aria-disabled={out}
-                className="card group p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+                className="card group flex h-40 min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
-                <div className="mb-1.5 flex items-center justify-between gap-1">
-                  <span className="truncate text-[10px] font-bold text-brand-400">{p.sku}</span>
-                  <span className={`shrink-0 text-[10px] font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                  <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
+                  <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
                     {cartItem ? `Available: ${available} / ${p.stock}` : `Stock: ${p.stock}`} {p.base_unit}
                   </span>
                 </div>
-                <p className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold text-white">{p.name}</p>
-                <p className="mt-1 text-base font-black text-brand-400">{money(p.default_price_c)}</p>
+                <p className="line-clamp-2 min-h-12 break-words text-base font-semibold leading-6 text-white">{p.name}</p>
+                <p className="mt-auto text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
               </button>
             )
           })}
@@ -343,9 +343,9 @@ function CartPanel(): React.JSX.Element {
   }
 
   return (
-    <aside className="flex w-[22rem] shrink-0 flex-col border-l border-ink-line bg-ink-900">
+    <aside className="flex min-h-0 w-full shrink-0 flex-col border-t border-ink-line bg-ink-900 md:w-[23rem] md:border-l md:border-t-0 xl:w-[26rem]">
       <div className="flex items-center justify-between border-b border-ink-line px-4 py-3">
-        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-300">
+        <h2 className="flex items-center gap-2 text-lg font-bold text-slate-200">
           <ShoppingCart className="h-4 w-4" /> Cart
           {items.length > 0 && <span className="badge bg-brand-600/20 text-brand-300">{items.length}</span>}
         </h2>
@@ -361,7 +361,7 @@ function CartPanel(): React.JSX.Element {
         </div>
       </div>
 
-      <div className="flex-1 space-y-2 overflow-y-auto px-4 py-3">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
         {items.length === 0 && (
           <p className="py-10 text-center text-sm leading-6 text-slate-500">
             Cart is empty.
@@ -372,34 +372,34 @@ function CartPanel(): React.JSX.Element {
         {items.map((i) => (
           <div key={i.product_id} className="rounded-lg border border-ink-line bg-ink-800/50 p-2.5">
             <div className="flex items-start justify-between gap-2">
-              <p className="min-w-0 truncate text-sm font-medium text-slate-200">{i.name}</p>
+              <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
               <button onClick={() => usePosCart.getState().remove(i.product_id)} className="shrink-0 text-slate-600 hover:text-danger-400" title="Remove">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="mt-2 flex items-center justify-between">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty - 1)} className="btn-ghost-2 h-7 w-7 rounded-lg"><Minus className="h-3.5 w-3.5" /></button>
+                <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty - 1)} className="btn-ghost-2 h-10 w-10 rounded-lg" title="Decrease quantity"><Minus className="h-3.5 w-3.5" /></button>
                 <input
                   value={i.qty}
                   onChange={(e) => usePosCart.getState().setQty(i.product_id, parseInt(e.target.value || '0', 10))}
-                  className="w-11 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-sm font-bold text-white"
+                  aria-label={`Quantity for ${i.name}`} className="h-10 w-14 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-base font-bold text-white"
                 />
-                <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-7 w-7 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
+                <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-10 w-10 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-white">{money(i.unit_price_c * i.qty)}</p>
-                <p className="text-[10px] text-slate-500">@{money(i.unit_price_c)} / {i.unit_name}</p>
+                <p className="text-lg font-bold text-white">{money(i.unit_price_c * i.qty)}</p>
+                <p className="text-sm text-slate-400">@{money(i.unit_price_c)} / {i.unit_name}</p>
               </div>
             </div>
-            <p className={`mt-1 text-[10px] ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {availableBase(i.stock_base, i)} base units / {i.stock_base}</p>
+            <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {availableBase(i.stock_base, i)} base units / {i.stock_base}</p>
           </div>
         ))}
       </div>
 
       {stockConflict && <div className="mx-4 mb-2 rounded-lg border border-danger-500/30 bg-danger-500/10 p-2 text-xs text-danger-300">Current stock changed. Please adjust the cart to the available quantity before checkout.</div>}
 
-      <div className="space-y-1.5 border-t border-ink-line px-4 py-3 text-sm">
+      <div className="space-y-2 border-t border-ink-line px-4 py-3 text-base">
         <div className="flex items-center justify-between text-slate-400">
           <span>Customer</span>
           <button onClick={() => setCustomerOpen(true)} className="flex items-center gap-1 text-brand-400 hover:text-brand-300">
@@ -421,11 +421,11 @@ function CartPanel(): React.JSX.Element {
         </div>
         <div className="flex justify-between border-t border-ink-line pt-1.5">
           <span className="font-bold text-white">TOTAL</span>
-          <span className="text-xl font-black text-brand-400">{money(total)}</span>
+          <span className="text-2xl font-bold text-brand-400">{money(total)}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 px-4 pb-4 pt-1">
+      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-1">
         <button
           disabled={items.length === 0}
           onClick={() => void holdCurrentSale()}
@@ -443,7 +443,7 @@ function CartPanel(): React.JSX.Element {
         <button
           disabled={items.length === 0 || stockConflict}
           onClick={() => !items.length ? undefined : setCheckoutOpen(true)}
-          className="btn-primary col-span-1 py-2 text-sm disabled:opacity-40"
+          className="btn-primary col-span-2 min-h-12 py-3 !text-base disabled:opacity-40"
         >
           CHECKOUT
         </button>
