@@ -12,11 +12,14 @@ beforeEach(() => {
 })
 
 describe('v1.0.6 to v1.0.7 upgrade preserves data (user feedback release)', () => {
-  it('adds no new migrations between v1.0.6 and v1.0.7', () => {
-    // v1.0.7 is a bug-fix / feature release on the v1.0.6 schema. Any new
-    // migration here would invalidate this contract and must ship with its own
-    // upgrade test.
-    expect(migrations.filter((m) => m.version > 4)).toEqual([])
+  it('keeps the v1.0.7 baseline schema; v1.0.8 adds only the documented migration 5', () => {
+    // v1.0.7 is a bug-fix / feature release on the v1.0.6 schema (no new DB
+    // migration). The v1.0.8 plan intentionally adds exactly one migration:
+    // version 5 (shift_numbering). Any migration beyond that must ship with
+    // its own upgrade test.
+    expect(migrations.filter((m) => m.version !== 5 && m.version > 4)).toEqual([])
+    const shiftNumbering = migrations.find((m) => m.version === 5)
+    expect(shiftNumbering?.name).toBe('shift_numbering')
   })
 
   it('re-running the migration engine on a real v1.0.6 database keeps all data and integrity ok', () => {

@@ -91,7 +91,7 @@ export interface ProductInput {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
-  low_stock_threshold: number
+  low_stock_threshold?: number
   supplier_id: number | null
   has_expiration: boolean
   notes: string | null
@@ -109,6 +109,9 @@ export type InventoryMovementType =
   | 'LOSS'
   | 'ADJUSTMENT'
   | 'INITIAL_STOCK'
+  | 'WITHDRAWAL'
+
+export type WithdrawalReason = 'TAKEN' | 'DAMAGED' | 'EXPIRED' | 'FORWARD'
 
 export interface InventoryMovement {
   id: number
@@ -308,6 +311,7 @@ export type ShiftStatus = 'OPENED' | 'CLOSED'
 export interface Shift {
   id: number
   user_id: number
+  shift_no: number | null
   cashier_name: string
   opened_at: string
   closed_at: string | null
@@ -409,6 +413,7 @@ export interface InventoryChangedEvent {
 
 export interface ReadReport {
   shift_id: number
+  shift_no: number | null
   report_type: 'X' | 'Z'
   report_at: string
   cashier_id: number

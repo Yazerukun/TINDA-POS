@@ -41,9 +41,10 @@ export function openShift(db: Database.Database, userId: number, startingCashC: 
   if (startingCashC < 0) throw new Error('Starting cash cannot be negative.')
   const existing = currentShiftFor(db, userId)
   if (existing) throw new Error('You already have an open shift.')
+  const nextNo = (db.prepare('SELECT COALESCE(MAX(shift_no), 0) + 1 AS n FROM shifts WHERE user_id = ?').get(userId) as { n: number }).n
   const info = db
-    .prepare(`INSERT INTO shifts (user_id, starting_cash_c, expected_cash_c) VALUES (?, ?, ?)`)
-    .run(userId, startingCashC, startingCashC)
+    .prepare(`INSERT INTO shifts (user_id, shift_no, starting_cash_c, expected_cash_c) VALUES (?, ?, ?, ?)`)
+    .run(userId, nextNo, startingCashC, startingCashC)
   return getShift(db, Number(info.lastInsertRowid))
 }
 

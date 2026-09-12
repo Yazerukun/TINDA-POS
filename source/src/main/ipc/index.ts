@@ -246,6 +246,23 @@ handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
   return movement
 })
+handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
+  sessionSvc.requirePermission('inventory:adjust')
+  const i = input as { product_id: number; quantity: number; unit_name: string; reason: string; notes?: string }
+  const validReasons = ['TAKEN', 'DAMAGED', 'EXPIRED', 'FORWARD']
+  if (!validReasons.includes(i.reason)) throw new Error('Invalid withdrawal reason.')
+  if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to withdraw must be greater than zero.')
+  const product = prodRepo.getProduct(db(), i.product_id)
+  const unit = product.units.find((u) => u.name === i.unit_name)
+  if (!unit) throw new Error('Select a valid product unit.')
+  const qtyBase = i.quantity * unit.conversion_to_base
+  if (!Number.isInteger(qtyBase)) throw new Error('Withdrawal must convert to a whole base unit.')
+  const reason = [`Withdrawal: ${i.reason}`, `${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, i.notes?.trim() || ''].filter(Boolean).join(' | ')
+  prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'WITHDRAWAL', reason, user().id)
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
+})
 
 // ---- Suppliers ----
 handle('suppliers:list', (_e: IpcMainInvokeEvent, opts?: unknown) => supRepo.listSuppliers(db(), (opts ?? {}) as object))

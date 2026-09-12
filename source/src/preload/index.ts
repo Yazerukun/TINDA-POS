@@ -78,7 +78,8 @@ const api: TindaApi = {
     adjust: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:adjust', input),
     movement: (type, input) => invoke<import('@shared/types').InventoryMovement>('inventory:movement', type, input),
     count: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:count', input),
-    restock: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:restock', input)
+    restock: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:restock', input),
+    withdraw: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:withdraw', input)
   },
   suppliers: {
     list: (opts) => invoke<import('@shared/types').Supplier[]>('suppliers:list', opts),

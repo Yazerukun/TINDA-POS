@@ -1,5 +1,13 @@
 import type Database from 'better-sqlite3'
 import type { Product, ProductInput, ProductStatus, ProductUnit } from '@shared/types'
+import { getSettings } from './settings'
+
+// The low-stock alert default a NEW product gets when the form/import does not
+// specify one. v1.0.8 fix: the store setting (Settings → Default Low Stock
+// Alert) is the single source of truth instead of a hard-coded 5.
+export function defaultLowStock(db: Database.Database): number {
+  return getSettings(db).default_low_stock
+}
 
 function listUnits(db: Database.Database, productId: number): ProductUnit[] {
   return db
@@ -124,7 +132,7 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (!input.base_unit || !input.base_unit.trim()) throw new Error('Base unit is required.')
   if (input.default_price_c < 0) throw new Error('Selling price cannot be negative.')
   if (input.purchase_cost_c < 0) throw new Error('Purchase cost cannot be negative.')
-  if (input.low_stock_threshold < 0) throw new Error('Low stock threshold cannot be negative.')
+  if ((input.low_stock_threshold ?? 0) < 0) throw new Error('Low stock threshold cannot be negative.')
   const ex = excludeId ? 'AND id != ?' : ''
   const args = excludeId ? [input.sku.trim(), excludeId] : [input.sku.trim()]
   if (input.sku?.trim()) {
@@ -159,6 +167,7 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
 
 export function createProduct(db: Database.Database, input: ProductInput, userId: number): Product {
   validateProductInput(db, input)
+  const threshold = input.low_stock_threshold ?? defaultLowStock(db)
   const txn = db.transaction(() => {
     const info = db
       .prepare(
@@ -176,7 +185,7 @@ export function createProduct(db: Database.Database, input: ProductInput, userId
         input.base_unit.trim(),
         input.purchase_cost_c,
         input.default_price_c,
-        input.low_stock_threshold,
+        threshold,
         input.supplier_id,
         input.has_expiration ? 1 : 0,
         input.notes?.trim() || null

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X } from 'lucide-react'
-import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource } from '@shared/types'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp } from 'lucide-react'
+import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason } from '@shared/types'
 import { money } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -28,17 +28,22 @@ export function Inventory(): React.JSX.Element {
   const [importing, setImporting] = useState(false)
   const [restocking, setRestocking] = useState<Product | true | null>(null)
   const [viewingReceiving, setViewingReceiving] = useState(false)
+  const [withdrawing, setWithdrawing] = useState<Product | true | null>(null)
+  const [viewingMovements, setViewingMovements] = useState(false)
+  const [defaultThreshold, setDefaultThreshold] = useState(5)
   const filterMenuRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [p, c] = await Promise.all([
+      const [p, c, settings] = await Promise.all([
         window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
-        window.api.categories.list()
+        window.api.categories.list(),
+        window.api.settings.get()
       ])
       setProducts(p.rows)
       setCategories(c)
+      setDefaultThreshold(settings.default_low_stock)
     } catch (e) {
       toastError('Failed to load inventory', String((e as Error)?.message || e))
     } finally {
@@ -125,8 +130,10 @@ export function Inventory(): React.JSX.Element {
         actions={<div className="flex flex-wrap gap-2">
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
+          <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
-          <button onClick={() => setEditing(newProductForm())} className="btn-primary flex items-center gap-2">
+          <button onClick={() => setWithdrawing(true)} className="btn-primary flex items-center gap-2"><PackageMinus className="h-4 w-4" /> Withdraw</button>
+          <button onClick={() => setEditing(newProductForm(defaultThreshold))} className="btn-primary flex items-center gap-2">
             <Plus className="h-4 w-4" /> New Product
           </button>
         </div>}
@@ -180,7 +187,7 @@ export function Inventory(): React.JSX.Element {
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(newProductForm())} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
+        <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(newProductForm(defaultThreshold))} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
@@ -212,6 +219,8 @@ export function Inventory(): React.JSX.Element {
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
+      {withdrawing && <WithdrawModal products={products} initial={withdrawing === true ? null : withdrawing} onDone={() => { setWithdrawing(null); void load() }} onClose={() => setWithdrawing(null)} />}
+      {viewingMovements && <StockHistoryView products={products} onClose={() => setViewingMovements(false)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
     </div>
   )
@@ -296,6 +305,83 @@ function RestockModal({ products, initial, onDone, onClose }: { products: Produc
     <div className="rounded-lg bg-brand-500/10 p-3 text-sm">Conversion: {quantity||0} × {selectedUnit?.conversion_to_base??1} = {addBase||0} {product?.base_unit}<br/><b>New Stock: {newStock||product?.stock||0} {product?.base_unit}</b></div>
     <div><label className="label">Supplier (optional)</label><select className="input w-full" value={supplierId??''} onChange={e=>setSupplierId(e.target.value?Number(e.target.value):null)}><option value="">None</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><div><label className="label">Unit Cost (₱)</label><input className="input w-full" type="number" min="0" value={cost} onChange={e=>setCost(e.target.value)}/></div><div><label className="label">Reference (optional)</label><input className="input w-full" value={reference} onChange={e=>setReference(e.target.value)}/></div><div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
   </div></Modal>
+}
+
+function WithdrawModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
+  const [productId, setProductId] = useState(initial?.id ?? products[0]?.id ?? 0)
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState(initial?.units[0]?.name ?? initial?.base_unit ?? '')
+  const [reason, setReason] = useState<WithdrawalReason>('TAKEN')
+  const [notes, setNotes] = useState('')
+  const [busy, setBusy] = useState(false)
+  const product = products.find((p) => p.id === productId)
+  const selectedUnit = product?.units.find((u) => u.name === unit) ?? product?.units[0]
+  const qty = Number(quantity)
+  const subBase = Number.isFinite(qty) ? qty * (selectedUnit?.conversion_to_base ?? 1) : 0
+  const newStock = (product?.stock ?? 0) - subBase
+  const reasonLabels: Record<WithdrawalReason, string> = { TAKEN: 'Taken', DAMAGED: 'Damaged', EXPIRED: 'Expired', FORWARD: 'Forward' }
+  const save = async () => {
+    setBusy(true)
+    try {
+      await window.api.inventory.withdraw({ product_id: productId, quantity: qty, unit_name: selectedUnit?.name ?? '', reason, notes })
+      toastSuccess('Withdrawal saved')
+      onDone()
+    } catch (e) { toastError('Withdrawal failed', String((e as Error).message || e)) } finally { setBusy(false) }
+  }
+  return <Modal open onClose={onClose} title="Withdraw Stock" maxWidth="max-w-lg" footer={<><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" disabled={busy || !product || !(qty > 0) || newStock < 0} onClick={() => void save()}>Save Withdrawal</button></>}>
+    <div className="space-y-3">
+      <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={(e) => { const id = Number(e.target.value); setProductId(id); const p = products.find((x) => x.id === id); setUnit(p?.units[0]?.name ?? p?.base_unit ?? '') }}>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+      <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div>
+      <div className="grid grid-cols-2 gap-3">
+        <div><label className="label">Quantity to Withdraw</label><input className="input w-full" type="number" min="0.01" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
+        <div><label className="label">Unit</label><select className="input w-full" value={selectedUnit?.name ?? ''} onChange={(e) => setUnit(e.target.value)}>{product?.units.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}</select></div>
+      </div>
+      <div><label className="label">Reason</label><select className="input w-full" value={reason} onChange={(e) => setReason(e.target.value as WithdrawalReason)}>{Object.entries(reasonLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+      <div className="rounded-lg bg-danger-500/10 p-3 text-sm">Conversion: {quantity || 0} × {selectedUnit?.conversion_to_base ?? 1} = {subBase || 0} {product?.base_unit} removed<br /><b>New Stock: {newStock < 0 ? 0 : newStock} {product?.base_unit}</b></div>
+      {newStock < 0 && <p className="text-xs text-danger-400">Cannot withdraw more than current stock.</p>}
+      <div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+    </div>
+  </Modal>
+}
+
+function StockHistoryView({ products, onClose }: { products: Product[]; onClose: () => void }): React.JSX.Element {
+  const [rows, setRows] = useState<InventoryMovement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [type, setType] = useState<'' | InventoryMovement['movement_type']>('')
+  const [productId, setProductId] = useState<number | ''>('')
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const result = await window.api.inventory.movements({ product_id: productId === '' ? undefined : productId, movement_type: type, limit: 300 })
+      setRows(result.rows)
+    } catch (e) { toastError('Stock History failed', String((e as Error).message || e)) } finally { setLoading(false) }
+  }, [type, productId])
+  useEffect(() => { void load() }, [load])
+  useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
+  const productName = (id: number) => products.find((p) => p.id === id)?.name ?? `#${id}`
+  const typeLabels: Partial<Record<InventoryMovement['movement_type'], string>> = { PURCHASE: 'Purchase', SALE: 'Sale', REFUND: 'Refund', RETURN: 'Return', DAMAGE: 'Damage', EXPIRATION: 'Expiration', LOSS: 'Loss', ADJUSTMENT: 'Adjustment', INITIAL_STOCK: 'Initial Stock', WITHDRAWAL: 'Withdrawal' }
+  return <Modal open onClose={onClose} title="Stock History" maxWidth="max-w-6xl" footer={<button className="btn-ghost" onClick={onClose}>Close</button>}>
+    <div className="space-y-4">
+      <div className="grid gap-2 md:grid-cols-2">
+        <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={(e) => setProductId(e.target.value === '' ? '' : Number(e.target.value))}><option value="">All products</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+        <div><label className="label">Movement Type</label><select className="input w-full" value={type} onChange={(e) => setType(e.target.value as '' | InventoryMovement['movement_type'])}><option value="">All types</option>{Object.entries(typeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+      </div>
+      <div className="max-h-[55vh] overflow-auto rounded-lg border border-ink-line">
+        <table className="table"><thead><tr><th>Date / Time</th><th>Product</th><th>Type</th><th>Change</th><th>After</th><th>Reason</th><th>By</th></tr></thead>
+          <tbody>{rows.map((row) => <tr key={row.id}>
+            <td>{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
+            <td className="font-medium text-white">{productName(row.product_id)}</td>
+            <td><span className={`badge border ${row.movement_type === 'WITHDRAWAL' ? 'border-danger-500/30 bg-danger-500/10 text-danger-300' : 'border-slate-500/30 bg-slate-500/10 text-slate-300'}`}>{typeLabels[row.movement_type] ?? row.movement_type}</span></td>
+            <td className={row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'}>{row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}</td>
+            <td>{row.quantity_after} {row.unit}</td>
+            <td className="max-w-[280px] truncate" title={row.reason ?? ''}>{row.reason || '—'}</td>
+            <td>{(row as InventoryMovement & { user_name?: string }).user_name || '—'}</td>
+          </tr>)}</tbody></table>
+        {!loading && rows.length === 0 && <p className="py-10 text-center text-sm text-slate-500">No stock movements match these filters.</p>}
+        {loading && <p className="py-10 text-center text-sm text-slate-500">Loading stock movements…</p>}
+      </div>
+    </div>
+  </Modal>
 }
 
 function CategoryModal({ categories, onChanged, onClose }: { categories: Category[]; onChanged: () => Promise<void>; onClose: () => void }): React.JSX.Element {

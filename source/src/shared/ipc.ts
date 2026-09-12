@@ -215,6 +215,7 @@ export interface TindaApi {
     movement: (type: InventoryMovementType, input: { product_id: number; qty_base: number; reason?: string; notes?: string }) => Promise<InventoryMovement>
     count: (input: { product_id: number; actual_base: number; notes?: string }) => Promise<InventoryMovement>
     restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string }) => Promise<InventoryMovement>
+    withdraw: (input: { product_id: number; quantity: number; unit_name: string; reason: import('./types').WithdrawalReason; notes?: string }) => Promise<InventoryMovement>
   }
 
   suppliers: {

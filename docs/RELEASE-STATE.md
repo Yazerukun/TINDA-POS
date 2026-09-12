@@ -136,8 +136,8 @@ Await owner review and approval. No push, tag, or publish until explicitly autho
 CURRENT STABLE: v1.0.7 (public GitHub Latest, verified 2026-09-12, tag `v1.0.7`)
 TARGET VERSION: v1.0.8
 RELEASE TYPE: PATCH
-BRANCH: `v1.0.8-dev` (to create after plan approval)
-CURRENT STAGE: 01 RELEASE PLAN — plan written, AWAITING OWNER APPROVAL
+BRANCH: `v1.0.8-dev` (commit `13c1ceb` plan/state; feature commit `…` pending this session)
+CURRENT STAGE: 02 DEVELOPMENT — all three features implemented; QA gates GREEN; doc/progress update in progress
 
 ## Scope (owner-specified, see `docs/RELEASE-PLAN-v1.0.8.md`)
 
@@ -158,10 +158,41 @@ feature may disappear, break, reset, or silently change. Production publication
   after that auto-update works).
 - v1.0.8 Stage 01 plan: `docs/RELEASE-PLAN-v1.0.8.md`.
 
+## Stage 02 progress (this session)
+
+Implementations on branch `v1.0.8-dev`:
+
+1. **Low Stock threshold fix** — `default_low_stock` setting is now the single
+   source of truth. `createProduct` resolves the threshold from Settings when the
+   form/CSV omits it (was hard-coded `5`); CSV import leaves the field empty to
+   inherit the store default and never overwrites an existing threshold on UPDATE.
+   The New Product form prefills the field from the store setting.
+2. **Shift numbering** — new additive migration `version 5 shift_numbering`
+   (`shifts.shift_no`, backfilled per-cashier in shift-open order, unique index).
+   `openShift` assigns the next per-user number; X-Read / Z-Read / Cash Count
+   print and Reports header show `Shift #<no>` while falling back to the old
+   shift id for historical snapshots.
+3. **Withdrawal / Transfer** — new `WITHDRAWAL` movement type (no schema change;
+   table has no CHECK). New IPC `inventory:withdraw` validates reasons
+   TAKEN/DAMAGED/EXPIRED/FORWARD, converts units, guards against negative stock,
+   records a movement only (zero financial impact). Inventory page adds a
+   **Withdraw** modal and a **Stock History** viewer (filterable).
+
+QA gates (all GREEN):
+- `npm test` — 27 files, 194 tests PASS (incl. 14 new + updated migration baseline)
+- `npm run typecheck` — PASS (node + web)
+- `npm run lint` — PASS
+- `npm run build` — PASS
+- `git diff --check` — clean
+
+Pending: DB upgrade chain test v1.0.6→v1.0.7→v1.0.8 + v1.0.7→v1.0.8 (PRAGMA
+integrity_check ok), Windows update E2E acceptance on VM `tinda-win11`, USER-MANUAL
+update, RC freeze for owner review. No push/tag/release until owner approval.
+
 ## Next required action
 
-Owner approval of the v1.0.8 RELEASE PLAN. On approval: create `v1.0.8-dev`,
-run Stage 02 development for the three scoped items with zero-regression tests.
+Complete remaining QA (DB upgrade chain integrity + final review), then present
+the v1.0.8 RC to the owner for approval before any publication.
 
 ## GitHub this session
 

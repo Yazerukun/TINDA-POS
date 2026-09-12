@@ -44,7 +44,9 @@ export function unitInputFrom(unit: Product['units'][number]): ProductUnitInput 
 
 // A fresh "New Product" form. Replaces the old per-page BLANK_UNIT so the
 // create payload is also built from the form instead of a hard-coded blank.
-export function newProductForm(): ProductFormData {
+// low_stock_threshold comes from the store's Default Low Stock Alert setting
+// so the form reflects what the backend will actually save (v1.0.8 bug fix).
+export function newProductForm(defaultLowStock = 5): ProductFormData {
   return {
     id: null,
     name: '',
@@ -54,7 +56,7 @@ export function newProductForm(): ProductFormData {
     base_unit: 'pc',
     purchase_cost_c: 0,
     default_price_c: 0,
-    low_stock_threshold: 5,
+    low_stock_threshold: defaultLowStock,
     initial_stock_base: 0,
     description: null,
     supplier_id: null,

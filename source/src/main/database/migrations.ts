@@ -420,5 +420,17 @@ CREATE TABLE IF NOT EXISTS cash_counts (
 CREATE INDEX IF NOT EXISTS idx_cash_counts_date ON cash_counts(business_date);
 CREATE INDEX IF NOT EXISTS idx_cash_counts_shift ON cash_counts(shift_id);
 `
+  },
+  {
+    version: 5,
+    name: 'shift_numbering',
+    sql: `
+ALTER TABLE shifts ADD COLUMN shift_no INTEGER;
+WITH numbered AS (
+  SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id) AS rn FROM shifts
+)
+UPDATE shifts SET shift_no = (SELECT rn FROM numbered WHERE numbered.id = shifts.id);
+CREATE INDEX IF NOT EXISTS idx_shifts_user_shift_no ON shifts(user_id, shift_no);
+`
   }
 ]
