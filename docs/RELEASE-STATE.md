@@ -1,12 +1,12 @@
 # TINDA POS RELEASE STATE
 
-CURRENT STABLE: v1.0.5 (public GitHub Latest verified 2026-09-09)
-TARGET VERSION: v1.0.6 — Cash Count + updater regression protection, UNRELEASED
+CURRENT STABLE: v1.0.7 (public GitHub Latest verified 2026-09-12)
+TARGET VERSION: v1.0.7
 RELEASE TYPE: PATCH
-BRANCH: v1.0.6-dev
-BASE COMMIT: 5347740
-CURRENT STAGE: 10 OWNER APPROVAL (awaiting) — all publishable gates PASS
-LAST UPDATED: 2026-09-11 Asia/Hong_Kong
+BRANCH: v1.0.7-dev
+BASE COMMIT: bfaf716
+CURRENT STAGE: 13 POST-RELEASE VERIFICATION — all publishable gates PASS; release published to GitHub Latest
+LAST UPDATED: 2026-09-12 Asia/Hong_Kong
 
 ## Current owner-authorized workflow (2026-09-10)
 
@@ -128,3 +128,41 @@ WORKING TREE: clean; no push, tag, release, or GitHub mutation
 - **TINDA POS v1.0.7 is FROZEN and READY FOR OWNER APPROVAL.**
 
 Await owner review and approval. No push, tag, or publish until explicitly authorized.
+
+---
+
+# TINDA POS v1.0.8 RELEASE STATE (zero-regression user-feedback patch)
+
+CURRENT STABLE: v1.0.7 (public GitHub Latest, verified 2026-09-12, tag `v1.0.7`)
+TARGET VERSION: v1.0.8
+RELEASE TYPE: PATCH
+BRANCH: `v1.0.8-dev` (to create after plan approval)
+CURRENT STAGE: 01 RELEASE PLAN — plan written, AWAITING OWNER APPROVAL
+
+## Scope (owner-specified, see `docs/RELEASE-PLAN-v1.0.8.md`)
+
+1. Low Stock threshold fix
+2. Shift numbering
+3. Withdrawal / Transfer workflow
+
+Zero-regression rule: v1.0.8 = v1.0.6 + v1.0.7 + new feedback + bug fixes. No existing
+feature may disappear, break, reset, or silently change. Production publication
+(push/tag/release/Latest) remains PROHIBITED until owner approval after final review.
+
+## Evidence of current baseline (this session)
+
+- v1.0.7 released as GitHub Latest 2026-09-11T23:35:48Z; assets: latest.yml,
+  SHA256SUMS-RC.txt, Setup/Portable 1.0.7, blockmap, User Guide PDF. Stable, not prerelease.
+- Manual-update path documented for legacy v1.0.3–v1.0.5 stores:
+  `docs/MANUAL-UPDATE-INSTRUCTIONS.md` (one-time Setup over-install to v1.0.7;
+  after that auto-update works).
+- v1.0.8 Stage 01 plan: `docs/RELEASE-PLAN-v1.0.8.md`.
+
+## Next required action
+
+Owner approval of the v1.0.8 RELEASE PLAN. On approval: create `v1.0.8-dev`,
+run Stage 02 development for the three scoped items with zero-regression tests.
+
+## GitHub this session
+
+Read-only metadata/verification only. Pushed: NO. Tagged: NO. Released: NO.
