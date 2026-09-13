@@ -1,14 +1,16 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.11 RC FREEZE - 2026-09-13
+## v1.0.11 publication complete - 2026-09-13
 
-- Current public stable verified: v1.0.10. Target: v1.0.11 patch. Branch: v1.0.11-dev.
+- Target: v1.0.11 patch over public stable v1.0.10. Branch: v1.0.11-dev.
 - Owner explicitly required zero feature regressions and that Software Update stays unchanged.
-- RC source commit: `d903495` (recorded in `installers/RC-SOURCE-COMMIT.txt`).
+- RC source commit: `d903495` (recorded in `installers/RC-SOURCE-COMMIT.txt`). Release tag
+  `v1.0.11` = commit `92cd665` (freeze record incl. canonical hashes).
 - Scope locked: dashboard net-sales minus refunds + live refresh, 58/80mm receipt and
   X/Z/Cash Count layouts, Z-Read prints actual cash/closing/over-short. No DB migration.
 - Full QA gates PASS: 29 files / 202 tests, full typecheck, full lint, production build,
-  `git diff --check` clean.
+  `git diff --check` clean. Runtime double-check helper `tools/qa_runtime_check.mjs`
+  GREEN 35/35 (boot, preload API, IPC health, FirstRun setup, 26 feature modules).
 - Updater regression gates PASS: all updater source files (`installedUpdate`,
   `updateDownload`, `updateRuntime`, `updateService`, `updateStore`, `updateTransport`,
   `shared/update`, renderer update store/notification) byte-identical to tag v1.0.10;
@@ -19,9 +21,13 @@
   Setup `b3afe149…` (109487267 B, sha512 matches latest.yml), Portable `e5608c0f…`,
   blockmap `73dd2e2f…`, latest.yml `e0a10344…`, User Guide PDF `32e4a4ca…`.
   Canonical list in `installers/SHA256SUMS-v1.0.11.txt`.
-- Next required (before publication): native Windows updater acceptance on VM tinda-win11
-  (v1.0.10 -> v1.0.11), final release review, then explicit owner approval to publish.
-- Public mutation: none. Physical thermal-printer validation is not claimed.
+- Published by explicit owner approval ("GO PUBLISH LANG") on 2026-09-13:
+  branch `v1.0.11-dev` and tag `v1.0.11` pushed; GitHub release `TINDA POS v1.0.11`
+  Stable + Latest with 6 canonical assets (Setup, Portable, blockmap, latest.yml,
+  TindaPOS-User-Guide.pdf, SHA256SUMS.txt).
+- Post-release verification PASS: `/releases/latest` = v1.0.11; every published asset
+  re-downloaded and `sha256sum -c` against the canonical list = all OK.
+- Physical thermal-printer validation is not claimed.
 
 ## v1.0.10 required Cash Count gate - active 2026-09-12
 
