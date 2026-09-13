@@ -62,7 +62,23 @@ export function getZ(db: Database.Database, id: number): ZRead {
 }
 export function listZ(db: Database.Database): ZRead[] { return (db.prepare('SELECT z.*, COALESCE(u.full_name,u.username) finalized_by_name FROM z_reads z JOIN users u ON u.id=z.finalized_by ORDER BY z.id DESC').all() as Record<string,unknown>[]).map(rowToZ) }
 
-export function readReportLines(r: ReadReport, reportNo?: string): string[] {
+export function readReportLines(r: ReadReport, reportNo?: string, closing?: { actual_cash_c: number; finalized_at: string }, storeName = 'TINDA POS'): string[] {
   const m = (n:number) => (n/100).toFixed(2)
-  return [reportNo || 'X-READ', `${r.report_type}-READ`, `Date: ${r.report_at}`, `Cashier: ${r.cashier_name}`, `Shift: ${r.shift_no ?? r.shift_id}`, '--------------------------------', `Gross Sales    ${m(r.gross_sales_c)}`, `Discounts      ${m(r.discount_c)}`, `Refunds        ${m(r.refunds_c)}`, `Voids          ${m(r.voids_c)}`, `NET SALES      ${m(r.net_sales_c)}`, '--------------------------------', `Cash           ${m(r.cash_c)}`, `GCash          ${m(r.gcash_c)}`, `Maya           ${m(r.maya_c)}`, `Utang          ${m(r.utang_c)}`, `Expenses       ${m(r.expenses_c)}`, `Expected Cash  ${m(r.expected_cash_c)}`, `Transactions   ${r.transaction_count}`]
+  return [storeName || 'TINDA POS', `${r.report_type}-READ`,
+    r.report_type === 'Z' ? 'FINAL SHIFT REPORT' : 'CURRENT SHIFT - NOT FINAL',
+    '--------------------------------',
+    ...(reportNo ? [`Report: ${reportNo}`] : []),
+    `Date: ${r.report_at}`, `Cashier: ${r.cashier_name}`, `Shift: ${r.shift_no ?? r.shift_id}`,
+    `Opened: ${r.opened_at}`, ...(closing ? [`Closed: ${closing.finalized_at}`] : []),
+    '--------------------------------', 'SALES SUMMARY',
+    `Gross Sales    ${m(r.gross_sales_c)}`, `Discounts      ${m(r.discount_c)}`,
+    `Refunds        ${m(r.refunds_c)}`, `Voids          ${m(r.voids_c)}`, `NET SALES      ${m(r.net_sales_c)}`,
+    '--------------------------------', 'PAYMENT BREAKDOWN',
+    `Cash           ${m(r.cash_c)}`, `GCash          ${m(r.gcash_c)}`, `Maya           ${m(r.maya_c)}`, `Utang          ${m(r.utang_c)}`,
+    '--------------------------------', 'CASH RECONCILIATION',
+    `Starting Cash  ${m(r.starting_cash_c)}`, `Cash In        ${m(r.cash_in_c)}`, `Cash Out       ${m(r.cash_out_c)}`,
+    `Expenses       ${m(r.expenses_c)}`, `Expected Cash  ${m(r.expected_cash_c)}`,
+    ...(closing ? [`Actual Cash    ${m(closing.actual_cash_c)}`, `Difference     ${m(closing.actual_cash_c - r.expected_cash_c)}`,
+      `Status: ${closing.actual_cash_c === r.expected_cash_c ? 'BALANCED' : closing.actual_cash_c > r.expected_cash_c ? 'OVER' : 'SHORT'}`] : []),
+    '--------------------------------', `Transactions   ${r.transaction_count}`]
 }

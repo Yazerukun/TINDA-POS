@@ -1,5 +1,16 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.11 active release - 2026-09-13
+
+- Current public stable verified: v1.0.10. Target: v1.0.11 patch.
+- Owner authorized publishing the dashboard/refund/live-refresh and receipt/report layout changes.
+- Branch: v1.0.11-dev. Database migrations: N/A. Updater/provider/installer code unchanged.
+- Development checks: 29 files / 202 tests PASS, full typecheck PASS, scoped lint PASS,
+  production build PASS. Chromium 58mm/80mm layout screenshots reviewed.
+- Next: release docs/PDF, full lint, versioned build, freeze, Windows packaging,
+  canonical metadata and runtime/updater verification before publication.
+- Public mutation: none. Physical thermal-printer validation is not claimed.
+
 ## v1.0.10 required Cash Count gate - active 2026-09-12
 
 User feedback confirmed Z-Read could be finalized before Cash Count because the

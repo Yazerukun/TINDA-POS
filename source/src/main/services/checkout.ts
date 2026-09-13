@@ -76,6 +76,7 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
     if (p.reference) lines.push(`Reference: ${p.reference}`)
   }
   lines.push('--------------------------------')
+  lines.push(`Total Items: ${sale.items.reduce((total, item) => total + item.qty, 0)}`)
   lines.push(store.footer || 'Salamat po!')
   return lines
 }

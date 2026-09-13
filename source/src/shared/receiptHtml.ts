@@ -30,7 +30,7 @@ function isSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discount|TOTAL|Cash|SUKLI)\s+(\d+(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|Cash|SUKLI|Gross Sales|Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   return { label: m[1]!.replace(/^./, (c) => c.toUpperCase()), amount: m[2]! }
 }
@@ -43,7 +43,7 @@ function isItemDetail(raw: string): { qty: string; unitPrice: string; amount: st
   return { qty: m[1]!, unitPrice: m[2]!, amount: m[3]! }
 }
 
-const fmt = (raw: string) => (parseFloat(raw) || 0).toFixed(2)
+const fmt = (raw: string) => (Number(raw.replaceAll(',', '')) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: raw.includes(',') })
 
 function rowsToHtml(lines: string[], currency: string): string {
   const symbol = currencySymbol(currency)
@@ -55,6 +55,12 @@ function rowsToHtml(lines: string[], currency: string): string {
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i] ?? ''
     const trimmed = raw.trim()
+
+    const denomination = trimmed.match(/^(₱[\d,.]+)\s+(\d+)\s+x\s+([\d,.]+)\s+=\s+([\d,.]+)$/)
+    if (denomination) {
+      pushRow(`<div class="tp-sum"><span class="tp-lbl">${escapeHtml(denomination[1]!)} x ${denomination[2]}</span><span class="tp-amt">${symbol}${fmt(denomination[4]!)}</span></div>`)
+      continue
+    }
 
     if (isSeparator(raw)) {
       seenSeparator = true
@@ -78,9 +84,10 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     const money = isMoneyLine(raw)
     if (money) {
-      const cls = money.label === 'SUKLI' ? 'tp-sukli' : money.label === 'TOTAL' ? 'tp-total' : 'tp-sum'
+      const cls = money.label === 'SUKLI' ? 'tp-sukli' : /^(TOTAL|NET SALES|Actual Cash)$/i.test(money.label) ? 'tp-total' : 'tp-sum'
+      const label = money.label === 'SUKLI' ? 'Change / SUKLI' : money.label === 'Cash' ? 'Cash' : money.label
       pushRow(
-        `<div class="${cls}"><span class="tp-lbl">${escapeHtml(money.label)}</span><span class="tp-amt">${symbol}${fmt(money.amount)}</span></div>`
+        `<div class="${cls}"><span class="tp-lbl">${escapeHtml(label)}</span><span class="tp-amt">${symbol}${fmt(money.amount)}</span></div>`
       )
       continue
     }
@@ -92,7 +99,7 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     // Brand/header block (before the first separator) is centered; transaction
     // info, cashier, customer, payment method lines, footer stay left-aligned.
-    const cls = seenSeparator ? 'tp-row' : 'tp-row tp-center'
+    const cls = seenSeparator ? 'tp-row' : `tp-row tp-center${i === 0 ? ' tp-heading' : ''}`
     pushRow(`<div class="${cls}">${escapeHtml(raw)}</div>`)
   }
   return out.join('\n')
@@ -104,6 +111,8 @@ const baseCss = `
   .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.38; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
   .tp-row { font-size: 1em; }
   .tp-center { text-align: center; }
+  .tp-heading { font-size: 1.3em; font-weight: 800; }
+  .tp-item, .tp-sum, .tp-total, .tp-sukli { break-inside: avoid; }
   .tp-gap { height: 0.5em; }
   .tp-sep { border-top: 1px dashed black; margin: 0.35em 0; }
   .tp-item .tp-name { font-size: 1em; font-weight: 700; }
@@ -111,11 +120,12 @@ const baseCss = `
   .tp-qty { font-size: 0.95em; }
   .tp-amt { font-variant-numeric: tabular-nums; }
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 700; }
-  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; }
+  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6em; }
+  .tp-lbl { min-width: 0; }
   .tp-sum { font-size: 1em; }
-  .tp-total { font-size: 1.12em; font-weight: 800; border-top: 1px dashed black; margin-top: 0.15em; padding-top: 0.2em; }
+  .tp-total { font-size: 1.2em; font-weight: 800; border-top: 3px double black; border-bottom: 3px double black; margin-top: 0.3em; padding: 0.3em 0; }
   .tp-total .tp-amt { font-weight: 800; }
-  .tp-sukli { font-size: 1.45em; font-weight: 900; margin-top: 0.12em; padding: 0.1em 0; }
+  .tp-sukli { font-size: 1.1em; font-weight: 900; margin-top: 0.12em; padding: 0.1em 0; }
   .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 900; }
   .tp-amt { white-space: nowrap; }
 `

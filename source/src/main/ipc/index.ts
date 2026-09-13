@@ -520,7 +520,8 @@ handle('reports:printXRead', async () => {
   sessionSvc.requirePermission('reports:view')
   const shift = shiftRepo.currentShiftFor(db(), user().id)
   if (!shift) throw new Error('No open shift for X-Read.')
-  return printingSvc.printLines(settingRepo.getSettings(db()), readSvc.readReportLines(readSvc.calculateRead(db(), shift.id, 'X')))
+  const settings = settingRepo.getSettings(db())
+  return printingSvc.printLines(settings, readSvc.readReportLines(readSvc.calculateRead(db(), shift.id, 'X'), undefined, undefined, settings.store_name))
 })
 handle('reports:finalizeZ', (_e: IpcMainInvokeEvent, input: { actual_cash_c: number; note?: string }) => {
   const u = user()
@@ -534,7 +535,10 @@ handle('reports:finalizeZ', (_e: IpcMainInvokeEvent, input: { actual_cash_c: num
 handle('reports:zHistory', () => { sessionSvc.requirePermission('reports:view'); return readSvc.listZ(db()) })
 handle('reports:printZRead', async (_e: IpcMainInvokeEvent, id: number) => {
   sessionSvc.requirePermission('reports:view'); const z = readSvc.getZ(db(), id)
-  return printingSvc.printLines(settingRepo.getSettings(db()), readSvc.readReportLines(z.snapshot, z.report_no))
+  const settings = settingRepo.getSettings(db())
+  const shift = shiftRepo.getShift(db(), z.shift_id)
+  const closing = shift.actual_cash_c == null ? undefined : { actual_cash_c: shift.actual_cash_c, finalized_at: z.finalized_at }
+  return printingSvc.printLines(settings, readSvc.readReportLines(z.snapshot, z.report_no, closing, settings.store_name))
 })
 
 // ---- Backup ----

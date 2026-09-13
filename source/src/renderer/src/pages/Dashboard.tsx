@@ -29,31 +29,41 @@ export function Dashboard(): React.JSX.Element | null {
 
   useEffect(() => {
     let alive = true
+    let generation = 0
     const load = async () => {
+      const request = ++generation
       try {
-        const today = new Date().toISOString().slice(0, 10)
+        const now = new Date()
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
         const [sales, prods, u, tx] = await Promise.all([
           window.api.reports.sales({ from: today, to: today }),
           window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
           window.api.reports.utang(),
           window.api.transactions.list({ from: `${today} 00:00:00`, to: `${today} 23:59:59`, limit: 8 })
         ])
-        if (!alive) return
+        if (!alive || request !== generation) return
+        setError(null)
         setSummary(sales.summary)
         setRecent(tx.rows)
         const alerts = prods.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)
         setAlertProducts(alerts)
         setUtang(u.total_outstanding_c)
       } catch (e) {
-        if (alive) setError(String((e as Error)?.message || e))
+        if (alive && request === generation) setError(String((e as Error)?.message || e))
       }
     }
-    load()
-    return () => { alive = false }
+    const refresh = () => { void load() }
+    refresh()
+    const unsubscribe = window.api.inventory.onChanged(refresh)
+    window.addEventListener('focus', refresh)
+    const timer = window.setInterval(refresh, 15000)
+    return () => {
+      alive = false
+      unsubscribe()
+      window.removeEventListener('focus', refresh)
+      window.clearInterval(timer)
+    }
   }, [])
-  useEffect(() => window.api.inventory.onChanged(() => {
-    void window.api.products.search('', { status: 'ACTIVE', limit: 1000 }).then((result) => setAlertProducts(result.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)))
-  }), [])
 
   if (error) {
     return (
@@ -86,7 +96,7 @@ export function Dashboard(): React.JSX.Element | null {
     <div className="p-6">
       <PageHeader title="Dashboard" subtitle="Sales Overview" />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Today's Sales" value={money(summary.sales_total_c)} sub={`${summary.transactions} transactions`} icon={<TrendingUp className="h-5 w-5" />} />
+        <StatCard label="Today's Net Sales" value={money(summary.sales_total_c - summary.refunds_c)} sub={`${summary.transactions} transactions · Refunds: ${money(summary.refunds_c)}`} icon={<TrendingUp className="h-5 w-5" />} />
         <StatCard label="Estimated Profit" value={money(summary.profit_c)} sub={`${summary.items_sold} items sold`} icon={<Banknote className="h-5 w-5" />} />
         <StatCard label="Outstanding Utang" value={money(utang)} sub="customer credit" icon={<Wallet className="h-5 w-5" />} />
         <StatCard label="Expenses" value={money(summary.expenses_c)} sub="this period" icon={<Receipt className="h-5 w-5" />} />

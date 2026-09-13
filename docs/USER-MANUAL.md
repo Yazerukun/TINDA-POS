@@ -1,8 +1,53 @@
-# TINDA POS v1.0.10 User Manual
+# TINDA POS v1.0.11 User Manual
+
+**TINDA POS v1.0.11** - Gabay para sa may-ari at cashier.
+
+Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
+shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Mabilis na gabay sa araw-araw
+
+1. **Bago magbenta:** mag-login sa tamang account, tingnan ang petsa ng computer,
+   at tiyaking tama ang starting cash at stock.
+2. **Habang nagbebenta:** sa POS, suriin ang item, quantity, total, at payment bago Checkout.
+3. **Kapag may ibinalik:** buksan ang original sale sa Transactions at gamitin ang Refund.
+4. **Bago magsara:** Cash Count, Save Cash Count, saka Z-Read. Huwag baligtarin.
+5. **Pagkatapos ng trabaho:** gumawa ng backup at magtabi ng kopya sa ibang drive.
+
+## Hanapin ang kailangan mo
+
+- [Unang setup](#quick-start-and-first-time-setup)
+- [Dashboard](#login-and-dashboard)
+- [Pagbebenta at bayad](#pos-and-checkout)
+- [Products at categories](#products-sku-barcode-and-categories)
+- [Cash Count](#cash-count)
+- [Z-Read](#z-read-and-z-read-history)
+- [Printer setup](#receipt-printer-setup)
+- [Backup and Restore](#backup-and-restore)
+- [Software Update](#software-update)
+
+Ang guide ay para sa Windows desktop release. Hindi kailangan ng internet para
+sa normal na pagbebenta. Panatilihing tama ang petsa at oras ng computer.
+
+### Dashboard at mga resibo sa v1.0.11
+
+Ang **Today's Net Sales** ay benta pagkatapos ibawas ang refund. Halimbawa,
+PHP 500 na benta at PHP 100 na refund = PHP 400 na net sales. Kapag na-refund
+ang buong benta, magiging zero ang net sales para sa bentang iyon.
+
+Kusang nagre-refresh ang dashboard pagkatapos ng sale, refund, o void.
+Nagre-refresh din kapag bumalik ka sa window at bawat 15 segundo bilang fallback.
+Kabuuan ito ng araw ayon sa petsa ng computer, kaya hindi ito bumabalik sa zero
+sa bawat Z-Read. Mananatili ang transaction history.
+
+Mas malinaw na ang resibo, X-Read, Z-Read, at Cash Count sa 58mm at 80mm paper.
+Ang X-Read ay kasalukuyang shift na hindi pa final. Ang Z-Read ay final report
+na may actual cash, sobra/kulang, at oras ng pagsara. Sa Cash Count, naka-align
+ang bilang ng bills/coins at mga halaga para madaling suriin.
 
 ## Bago magsara: Cash Count muna, saka Z-Read
 
-### Mas madaling basahin ang POS sa v1.0.10
+### Mas madaling basahin ang POS
 
 Mas malaki na ang pangalan at presyo ng produkto, quantity sa cart, at total.
 Gamitin ang **+** at **-** sa cart para baguhin ang dami, o pindutin ang quantity
@@ -36,7 +81,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> TINDA POS v1.0.10 is the current stable release. Installed v1.0.3–v1.0.5 require a manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.11. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -51,7 +96,24 @@ Roles are simple: **Admin** controls users, settings, data, and all workflows; *
 
 ## Login and Dashboard
 
-Enter your username/password or assigned PIN on Login. The Dashboard shows today's sales, transactions, expenses, utang, recent sales, and low/out-of-stock products. Stock alerts update automatically after a successful stock transaction.
+Mag-login gamit ang username/password o assigned PIN. Suriin ang pangalan ng
+cashier bago magsimula. Makikita sa Dashboard ang Today's Net Sales, transactions,
+estimated profit, expenses, outstanding utang, recent sales, at low/out-of-stock items.
+
+**Paano basahin ang Today's Net Sales:**
+
+- PHP 500 sales, walang refund: PHP 500 net sales.
+- PHP 500 sales, PHP 100 refund: PHP 400 net sales.
+- PHP 500 sales, buong PHP 500 na-refund: PHP 0 net sales.
+
+Kusang nagre-refresh pagkatapos ng sale, refund, o void. Nagre-refresh din kapag
+bumalik sa app window at bawat 15 segundo bilang fallback. Ang daily figure ay
+para sa petsa ng original sales; gamitin ang original transaction at shift reports
+kapag sinusuri ang refund ng benta mula sa ibang araw.
+
+**Hindi reset button ang Z-Read.** Daily total ang dashboard, kaya magpapatuloy
+ang total kapag may panibagong shift sa parehong araw. Naka-save pa rin ang lahat
+ng transaction at historical report.
 
 ## Products, SKU, barcode, and categories
 
@@ -234,7 +296,7 @@ A: Settings → Data shows the exact active database. Shared Windows mode normal
 
 A: Settings → Data → Backup Now. Keep another copy on a separate drive or synced folder.
 
-## What's New in v1.0.3
+## Software Update overview
 
 - **In-app Software Update** — check for updates, see What's New, download, and update directly from Settings → About → Software Update, without visiting a website.
 - **Automatic update check** — on startup, TINDA POS quietly checks the official GitHub release page (at most once per day). If an update is available, a non-intrusive notification appears.
@@ -547,18 +609,22 @@ Your store data is never in the program folder — it stays in your data locatio
 
 If TINDA POS cannot reach the internet, the automatic check fails quietly. A manual **Check for Updates** reports "No internet connection. TINDA POS will continue working offline." — the store keeps working normally.
 
-### Updating from v1.0.2 Hotfix 1 to v1.0.3
+### Manual upgrade para sa lumang versions
 
-v1.0.2 Hotfix 1 predates the update system, so that first step to v1.0.3 is a normal manual upgrade: download the v1.0.3 Setup or Portable package from the GitHub release page and install/run it as usual. Installed v1.0.3–v1.0.5 have updater defects and require a manual Setup upgrade to the fixed release once available.
+Ang versions bago v1.0.3 ay walang in-app update. May updater defects naman ang
+installed v1.0.3-v1.0.5. Para sa mga ito: gumawa ng backup, isara ang app, at
+i-install ang approved current Setup sa existing installation gamit ang parehong
+Windows account. Huwag mag-uninstall, mag-Reset Database, o mag-delete ng AppData.
+Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.10** — to be published to the GitHub release page when approved: <https://github.com/Yazerukun/TINDA-POS/releases>
+**TINDA POS v1.0.11** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.11>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.9.exe` — Windows installer
-- `TindaPOS-Portable-1.0.9.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.11.exe` — Windows installer
+- `TindaPOS-Portable-1.0.11.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 

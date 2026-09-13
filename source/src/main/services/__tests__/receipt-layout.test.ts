@@ -37,6 +37,14 @@ const utangSale = {
 } as Sale
 
 describe('thermal receipt HTML layout', () => {
+  it('aligns report amounts, negative differences and denomination subtotals', () => {
+    const html = receiptBodyHtml(['CASH COUNT REPORT', '---', 'NET SALES 450.00', 'Expected Cash 1,200.00', 'Actual Cash 1,180.00', 'Difference -20.00', '  ₱500 2 x 500.00 = 1,000.00'], '58mm', 'PHP')
+    expect(html).toContain('₱1,200.00')
+    expect(html).toContain('₱-20.00')
+    expect(html).toContain('₱500 x 2')
+    expect(html).toContain('₱1,000.00')
+    expect(html).toContain('tp-heading')
+  })
   it('is pure black-on-white with safe zero page margins and no backgrounds', () => {
     const css = receiptCss('80mm')
     expect(css).toContain('background: white')
