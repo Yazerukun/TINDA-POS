@@ -1,14 +1,26 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.11 active release - 2026-09-13
+## v1.0.11 RC FREEZE - 2026-09-13
 
-- Current public stable verified: v1.0.10. Target: v1.0.11 patch.
-- Owner authorized publishing the dashboard/refund/live-refresh and receipt/report layout changes.
-- Branch: v1.0.11-dev. Database migrations: N/A. Updater/provider/installer code unchanged.
-- Development checks: 29 files / 202 tests PASS, full typecheck PASS, scoped lint PASS,
-  production build PASS. Chromium 58mm/80mm layout screenshots reviewed.
-- Next: release docs/PDF, full lint, versioned build, freeze, Windows packaging,
-  canonical metadata and runtime/updater verification before publication.
+- Current public stable verified: v1.0.10. Target: v1.0.11 patch. Branch: v1.0.11-dev.
+- Owner explicitly required zero feature regressions and that Software Update stays unchanged.
+- RC source commit: `d903495` (recorded in `installers/RC-SOURCE-COMMIT.txt`).
+- Scope locked: dashboard net-sales minus refunds + live refresh, 58/80mm receipt and
+  X/Z/Cash Count layouts, Z-Read prints actual cash/closing/over-short. No DB migration.
+- Full QA gates PASS: 29 files / 202 tests, full typecheck, full lint, production build,
+  `git diff --check` clean.
+- Updater regression gates PASS: all updater source files (`installedUpdate`,
+  `updateDownload`, `updateRuntime`, `updateService`, `updateStore`, `updateTransport`,
+  `shared/update`, renderer update store/notification) byte-identical to tag v1.0.10;
+  `electron-builder.yml` byte-identical; `package.json` diff is the version bump only;
+  packaged `app-update.yml` provider github/Yazerukun/TINDA-POS; packaged preload
+  byte-identical to v1.0.10 (`8895de21…`); no QA strings / no localhost feed in asar.
+- Artifacts (source/builds-v111-final, latest.yml releaseDate 2026-09-13T03:28Z):
+  Setup `b3afe149…` (109487267 B, sha512 matches latest.yml), Portable `e5608c0f…`,
+  blockmap `73dd2e2f…`, latest.yml `e0a10344…`, User Guide PDF `32e4a4ca…`.
+  Canonical list in `installers/SHA256SUMS-v1.0.11.txt`.
+- Next required (before publication): native Windows updater acceptance on VM tinda-win11
+  (v1.0.10 -> v1.0.11), final release review, then explicit owner approval to publish.
 - Public mutation: none. Physical thermal-printer validation is not claimed.
 
 ## v1.0.10 required Cash Count gate - active 2026-09-12
