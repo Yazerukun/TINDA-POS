@@ -1,5 +1,50 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.14 Utang checkout reachability fix - 2026-09-14
+
+Owner feedback: selecting the borrower for an Utang checkout was confusing; the
+missing-customer error left the operator stuck in the checkout modal with no way
+to pick a customer. Authorized scope: make the EXISTING Utang customer selection
+understandable. No duplicate selector, no new customer system, no database or
+updater changes. Owners' 8-point UX spec applied: "Piliin ang Nangutang" label,
+"I-click ang customer sa listahan para ma-select." helper, selected-row highlight
++ checkmark, inline "Selected: <Name>", "Select Customer" text, "Search customer
+name or phone..." placeholder, and "Please select the customer for this Utang."
+guard message. v1.0.13 already carried the picker-side visibility; this release
+adds the missing reachability: the CheckoutModal UTANG section now embeds an
+inline Select Customer action and the charge guard reopens the picker instead of
+dead-ending.
+
+CURRENT STAGE: Source implementation, automated QA, browser QA and Windows RC
+build complete; final release review and owner publication approval pending.
+CURRENT COMMIT: 65aa6cc42b882d7231a54e2bf9a221a2db593835 (branch v1.0.14-dev).
+
+- Source change set is additive and narrow: `POS.tsx` (CheckoutModal UTANG
+  section + guard) and `utang-selection.test.ts`. No main/preload/database/
+  updater/builder/dependency source edits.
+- Updater gate PASS: packaged `out/main/index.js` and `out/preload/index.js`
+  in `builds-v114-rc/win-unpacked` are byte-identical to the v1.0.13 build
+  (`builds-v113-rc`); packaged `app-update.yml` remains github/Yazerukun/
+  TINDA-POS. Only the renderer bundle changed.
+- Automated QA PASS: typecheck, full lint, production build, and 33 test files /
+  242 tests PASS (guard test added).
+- Browser QA PASS (real POS component + mocked IPC, evidences/v1.0.14):
+  Utang checkout with no customer shows the prompt and an inline Select
+  Customer button; picking a customer from the modal-selection sets it directly
+  ("Selected: Maria Santos"), then Charge submits the correct customer_id=12 and
+  UTANG payment; Walk-in reset clears it; a guarded Charge with no borrower
+  submits nothing and reopens the picker; a second valid charge uses customer
+  id=19; zero JS errors; screenshot visually inspected.
+- Windows RC built via the proven bubblewrap/disk-backed-TMP workflow into
+  `source/builds-v114-rc`: TindaPOS-Setup-1.0.14.exe (109657013 B, sha256
+  c958941f…), TindaPOS-Portable-1.0.14.exe (109426609 B, sha256 2266f76a…),
+  .blockmap (sha256 a27bbb0d…), latest.yml (sha256 a5594e6e…, version 1.0.14,
+  Setup sha512+size match). exiftool product TINDA POS, file/product 1.0.14.0.
+- Packaged renderer contains the new strings; packaged out/ has no QA strings
+  or localhost feed.
+- NOT started: push, tag, release, asset upload, Latest change. Await owner
+  approval after final release review.
+
 ## v1.0.13 build result - 2026-09-14
 
 Windows RC build completed in `source/builds-v113-rc` from commit
