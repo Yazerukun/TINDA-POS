@@ -9,6 +9,10 @@ describe('Existing Utang customer selection', () => {
     usePosCart.getState().setCustomer(19, 'Juan Cruz')
     expect(usePosCart.getState()).toMatchObject({ customer_id: 19, customer_name: 'Juan Cruz' })
   })
+  it('guards against an utang checkout without a chosen customer', () => {
+    usePosCart.getState().clear()
+    expect(usePosCart.getState()).toMatchObject({ customer_id: null, customer_name: null })
+  })
   it('clears the name and ID for Walk-in', () => {
     usePosCart.getState().setCustomer(12, 'Maria')
     usePosCart.getState().setCustomer(null)

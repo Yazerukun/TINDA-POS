@@ -13,7 +13,8 @@ import {
   Wallet,
   Pause,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  AlertTriangle
 } from 'lucide-react'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
@@ -510,6 +511,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [done, setDone] = useState<{ sale: Sale; receipt: string[]; print: PrintResult } | null>(null)
   const [printing, setPrinting] = useState(false)
   const setPage = useNav((state) => state.setPage)
@@ -528,6 +530,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
 
   const doCheckout = async () => {
     if (method === 'UTANG' && customer_id === null) {
+      setPickerOpen(true)
       toastError('Customer required', 'Please select the customer for this Utang.')
       return
     }
@@ -664,9 +667,30 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
         )}
 
         {method === 'UTANG' && (
-          <p className="break-words text-sm text-amber-400">{customer_id === null ? 'Please select the customer for this Utang.' : `Selected: ${customer_name ?? `Customer #${customer_id}`} ✓`}</p>
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+            {customer_id === null ? (
+              <>
+                <p className="flex items-start gap-2 text-sm text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Please select the customer for this Utang bago mag-checkout.</span>
+                </p>
+                <button onClick={() => setPickerOpen(true)} className="btn-primary mt-2 flex w-full items-center justify-center gap-2 py-2">
+                  <User className="h-4 w-4" /> Select Customer
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center justify-between gap-2">
+                <p className="break-words text-sm text-emerald-300">
+                  <Check aria-label="Selected" className="mr-1 inline h-4 w-4" />
+                  Selected: {customer_name ?? `Customer #${customer_id}`}
+                </p>
+                <button onClick={() => setPickerOpen(true)} className="shrink-0 text-xs text-brand-400 hover:text-brand-300">Change</button>
+              </div>
+            )}
+          </div>
         )}
       </div>
+      {pickerOpen && <CustomerPicker onClose={() => setPickerOpen(false)} />}
     </Modal>
   )
 }
