@@ -1,5 +1,22 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.12 published Stable - 2026-09-14
+
+Stage 12 complete after explicit owner GO ("publish v1.0.12"). Branch
+v1.0.12-dev pushed (HEAD fcbccf1); annotated tag v1.0.12 pushed; GitHub Release
+"TINDA POS v1.0.12" published as Stable/Latest. Uploaded the six canonical
+assets from builds-v112-chart: TindaPOS-Setup-1.0.12.exe (109656056 B, sha256
+b9ef35de…), TindaPOS-Portable-1.0.12.exe (a9cef9e7…), .blockmap (dbcbed24…),
+latest.yml (164a1b85…), TindaPOS-User-Guide.pdf (53f7d6c9…), SHA256SUMS.txt
+(matches chart canonical; a first upload carried the superseded final-build
+hashes and was corrected before this record).
+
+Stage 13 post-release verification PASS: /releases/latest -> v1.0.12; all six
+assets downloaded from the live release; sha256sum -c SHA256SUMS.txt PASS for
+all payloads; latest.yml Setup sha512 + size match the published Setup. RC
+source commit recorded in installers/RC-SOURCE-COMMIT.txt =
+8c006605e5e963fd9cdbc1c4a8b00a2da8e10c11.
+
 ## Final release review PASS (chart build) - 2026-09-14
 
 All Stage 10 gates re-verified on builds-v112-chart (source 8c006605, docs HEAD
