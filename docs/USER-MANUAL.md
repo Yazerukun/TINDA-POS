@@ -1,6 +1,9 @@
-# TINDA POS v1.0.11 User Manual
+# TINDA POS v1.0.12 User Manual
 
-**TINDA POS v1.0.11** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.12** - Gabay para sa may-ari at cashier.
+
+Ang guide na ito ay para sa kasalukuyang stable release (v1.0.12), na may
+inventory expiration tracking at mas malinaw na X-Read/Z-Read reports.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
@@ -20,6 +23,7 @@ shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 - [Dashboard](#login-and-dashboard)
 - [Pagbebenta at bayad](#pos-and-checkout)
 - [Products at categories](#products-sku-barcode-and-categories)
+- [Expiration dates](#expiration-per-item-o-per-batch)
 - [Cash Count](#cash-count)
 - [Z-Read](#z-read-and-z-read-history)
 - [Printer setup](#receipt-printer-setup)
@@ -81,7 +85,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.11. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.12. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -208,6 +212,14 @@ Nothing is saved during Preview. The final import is all-or-nothing: if a fatal 
 ## Tingi and multi-unit products
 
 The base unit is the smallest stock unit, such as sachet, piece, or bottle. A larger selling/restock unit uses the existing conversion—for example, 1 box = 24 sachets. Stock is always protected and recorded in whole base units.
+
+## Sales chart
+
+Sa **Reports > Sales**, piliin ang From/To at Daily, Weekly, o Monthly, saka
+pindutin ang **Run**. Makikita sa **Sales by Period** ang sales amount sa bawat
+period. Itapat ang mouse sa bar para makita ang eksaktong halaga. Automatic
+ang pagitan ng date labels para hindi magsapawan sa maliit na screen.
+Chart display lang ito; hindi nito binabago ang transactions o report totals.
 
 ## X-Read
 
@@ -347,6 +359,84 @@ Inventory changes only after successful checkout or another completed inventory 
 4. Choose **Delete** and confirm to delete a held sale the customer no longer needs.
 
 Held sales survive app restart. Holding, resuming, or deleting a held sale does not deduct stock; stock is deducted only after successful checkout. Each cashier can see and manage only their own held sales.
+
+## Expiration: Per Item o Per Batch
+
+### Piliin ang tracking para sa produkto
+
+Sa **Inventory**, pindutin ang **New Product** o pencil ng existing product.
+Sa **Expiration Tracking**, pumili:
+
+- **None:** walang expiration tracking. Ito ang default ng existing products pagkatapos ng update.
+- **Per Item:** iisang expiration date para sa lahat ng stock ng produktong iyon.
+- **Per Batch:** magkakahiwalay na expiration date at quantity sa bawat delivery.
+
+Sa **Per Item**, ilagay ang **Expiration Date**, saka **Save**. Kung magkaiba ang
+expiry ng mga delivery, piliin ang Per Batch bago maglagay ng stock. Huwag
+palitan ang petsa para lang maibenta ang expired na produkto.
+
+Kung may stock na at ngayon lang ie-enable ang **Per Batch**, ilagay muna ang
+expiration ng existing stock. Kung halo-halo ang petsa, huwag hulaan o ituring
+na pare-pareho: suriin ang physical stock bago mag-enable. Kapag may tracked
+stock pa, hindi puwedeng magpalit ng mode; kailangan munang maubos o ma-withdraw
+nang tama ang stock upang hindi mawala ang batch records.
+
+### Kapag may bagong delivery
+
+1. Pumunta sa **Inventory > Restock** at piliin ang produkto.
+2. Ilagay ang quantity at tamang unit. Halimbawa, 2 boxes na may 24 pieces bawat box = 48 pieces.
+3. Sa batch-tracked item, ilagay ang **Batch expiration**. Optional ang **Batch label**, tulad ng delivery reference.
+4. Suriin ang **New Stock**, saka **Save Restock**.
+
+May sariling batch number ang bawat delivery, kahit pareho ang expiry.
+Sa Per Item, ang bagong stock ay sakop ng expiration date na nasa product.
+Hindi ini-import ang batch dates mula sa CSV; gamitin ang Restock para sa
+bagong batch at Withdraw para sa batch-specific na bawas.
+
+### Mga kulay at paalala
+
+- **Pula / Expired:** lumampas na sa expiration date. Blocked sa POS ang apektadong stock.
+- **Orange / Expiring within 7 days:** kasama ang mismong expiration day.
+- **Yellow / Expiring within 30 days:** 8 hanggang 30 araw na lang.
+- **Date review required:** walang verified date. Blocked muna sa POS ang undated batch.
+
+Ang petsa ay ayon sa local date ng computer. Sa kasalukuyang rule, puwedeng
+ibenta hanggang sa expiration date; magiging expired sa susunod na araw.
+Sundin pa rin ang label at aktuwal na kondisyon ng produkto.
+
+May Tagalog reminder sa pag-login kapag may kailangang tingnan. Pindutin ang
+**Tingnan ang Items**, o buksan ang **Expiration Dates** sa itaas ng app.
+Makikita ang product, batch, expiry, at quantity. Puwedeng mag-search o
+mag-filter ng expired, near-expiry, undated, o lahat ng tracked stock.
+Automatic ang refresh pagkatapos ng stock changes, sa pagbalik sa app window,
+at bawat 15 segundo bilang fallback.
+
+### Pagbebenta, returns, at expired stock
+
+Unang ibinabawas ng system ang valid batch na pinakamalapit ma-expire.
+**Iyon din ang dapat kunin sa shelf.** Ang expired na batch ay hindi kasama sa
+sellable quantity, pero puwede pa rin ang valid na batch ng parehong produkto.
+
+Sa Refund o Void, ibinabalik ang quantity sa original batch at nananatili ang
+expiry nito. Kung luma ang sale at walang batch record, mapupunta ang return sa
+**Date review required**. Suriin muna ang item; ang manager/admin ay maaaring
+gumamit ng pencil sa Expiration Dates para ilagay o itama ang verified date.
+Naka-record sa audit log ang date correction.
+
+Hindi kusang nawawala sa inventory ang expired stock. Para alisin:
+
+1. **Inventory > Withdraw**, piliin ang produkto.
+2. Kung Per Batch, piliin ang tamang **Batch**, gamit ang batch number/date/quantity.
+3. Ilagay ang quantity, piliin ang reason na **Expired**, saka **Save Withdrawal**.
+
+Nananatili ang stock history. Huwag gumawa ng pekeng sale para lang ibawas ang expired stock.
+
+### Manual na category
+
+Sa New/Edit Product, pindutin ang **Add Category**, ilagay ang pangalan, at
+pindutin ang check icon. Awtomatikong mapipili ang category sa product form.
+Kung mayroon nang kaparehong pangalan, gagamitin ang existing category.
+Puwede pa rin ang **Inventory > Categories** para sa hiwalay na category list.
 
 ## Inventory and Tingi Units
 
@@ -619,12 +709,12 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.11** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.11>
+**TINDA POS v1.0.12** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.11.exe` — Windows installer
-- `TindaPOS-Portable-1.0.11.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.12.exe` — Windows installer
+- `TindaPOS-Portable-1.0.12.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 
