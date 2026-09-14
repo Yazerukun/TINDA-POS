@@ -18,8 +18,27 @@ Source checks: full suite 31 files / 228 tests PASS; renderer typecheck and scop
 lint PASS; production build PASS. Browser chart checks PASS: proportional visible
 bars, tooltip amounts, 1280/768/390px resizing, 120 non-overlapping period labels,
 zero/large/empty datasets, no JavaScript errors. Screenshots visually inspected.
-PDF regeneration and a new RC freeze/build follow. This source change invalidates
-the previous renderer/artifact QA, not the unchanged main/database/updater evidence.
+PDF regenerated (22 pages, 139201 bytes). Source frozen at
+8c006605e5e963fd9cdbc1c4a8b00a2da8e10c11. Windows x64 Setup and Portable
+built successfully with --publish never in source/builds-v112-chart.
+The initial NSIS attempts failed in host temporary storage. Retrying in a private
+bubblewrap mount namespace with disk-backed /tmp succeeded; no host temporary
+files, dependency files, installer configuration or updater settings were changed.
+
+Artifact checks PASS: SHA256SUMS.txt verifies all five payloads; latest.yml Setup
+SHA512 and size match; both executable product/file versions are 1.0.12, product
+TINDA POS. Packaged app.asar is version 1.0.12 and contains the new chart;
+main/preload are byte-identical to builds-v112-final. Packaged update provider
+remains github/Yazerukun/TINDA-POS; only win32-x64 native prebuild is included.
+Setup: 109656056 bytes, SHA256 b9ef35de21a857f377bc2d81ef0b7a0e1d8e6fe1f1f3f219816df1a4e21968ec.
+Portable: 109425615 bytes, SHA256 a9cef9e7660efbaa80f7c707d1bba566e20d5fcd6ba8cd8898cd3bafa36583ce.
+Full evidence: ../evidence/v1.0.12/chart-build-verification.json.
+
+CURRENT STAGE: New Windows candidate built and statically verified. New installer
+runtime smoke, native updater acceptance and final release review remain pending;
+previous Wine runtime results below describe the superseded build, not this one.
+This source change invalidates previous renderer/artifact QA, not unchanged
+main/database/updater evidence. Building is not stable-release acceptance.
 No push/tag/publication authorized by this build-only request.
 
 ## v1.0.12 RC freeze + Windows build + Wine QA complete - 2026-09-14
