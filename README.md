@@ -4,9 +4,9 @@
 
 **Free, offline point-of-sale for Philippine sari-sari stores and small businesses.**
 
-### v1.0.13
+### v1.0.14
 
-[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.13) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.14) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
@@ -29,29 +29,29 @@ client (such as OneDrive or Google Drive for desktop).
 - **Secured by roles** — control who can void sales, view reports, or reset the database.
 - **Free** — no subscription, no licensing fee, no data lock-in.
 
-## What's New in v1.0.13
+## What's New in v1.0.14
 
 | Change | What it means at the counter |
 | --- | --- |
-| Clearer utang customer picker | Tagalog heading and hint, selected-row highlight and checkmark, persistent customer name, and easier search. |
-| Missing-customer reminder | A reminder appears if a utang checkout is about to be submitted without a chosen customer. |
-| Optional Windows sign-in startup | Installed (Setup) users can start TINDA POS automatically when Windows opens — not enabled by default, and POS login is still required. |
+| Easier utang checkout | The customer picker is now reachable directly from the checkout screen, so you do not have to cancel to choose the borrower. The selected borrower is shown right in the Utang section with a **Change** action. Submitting an Utang sale without a borrower is still blocked and now returns you to the picker. |
+| Same customer search, same data | Customer IDs, the Utang ledger, credit limits, and all POS features are unchanged — a normal Software Update gets you v1.0.14. |
 
 ### Recent highlights
 
+- **v1.0.13: Clearer utang customer picker.** Tagalog heading and hint, selected-row highlight and checkmark, persistent customer name, easier search, a missing-customer reminder before an Utang checkout is submitted, plus an optional (off by default) Windows sign-in startup under Settings > Store.
 - **v1.0.12: Inventory expiration tracking.** Track expiry per product — None, Per Item, or Per Batch. Expired or undated tracked stock is blocked at checkout; batches are used earliest-expiry first. Includes a searchable expiration list with colored warnings and a Tagalog login reminder.
 - **v1.0.11: Clearer cash reports.** Refund-aware dashboard, live totals, and cleaner X-Read / Z-Read / Cash Count receipts in 58mm and 80mm formats.
 
-See the full [release notes](docs/RELEASE-NOTES-v1.0.13.md) and the [user manual](docs/USER-MANUAL.md).
+See the full [release notes](docs/RELEASE-NOTES-v1.0.14.md) and the [user manual](docs/USER-MANUAL.md).
 
 ## Download
 
-Choose an asset from the [v1.0.13 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.13):
+Choose an asset from the [v1.0.14 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.14):
 
 | File | Purpose |
 | --- | --- |
-| `TindaPOS-Setup-1.0.13.exe` | Recommended — installs TINDA POS on Windows. |
-| `TindaPOS-Portable-1.0.13.exe` | Run without installing; keep your existing `TindaPOS-Data` folder when upgrading. |
+| `TindaPOS-Setup-1.0.14.exe` | Recommended — installs TINDA POS on Windows. |
+| `TindaPOS-Portable-1.0.14.exe` | Run without installing; keep your existing `TindaPOS-Data` folder when upgrading. |
 | `TindaPOS-User-Guide.pdf` | Printable, step-by-step user guide. |
 | `SHA256SUMS.txt` | SHA-256 checksums for verifying the files above. |
 
