@@ -6,6 +6,7 @@ import { readReportLines } from '@shared/readReport'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { ReceiptPaper } from '../components/ReceiptPaper'
+import { SalesChart } from '../components/SalesChart'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useAuth } from '../stores/auth'
@@ -148,20 +149,7 @@ export function Reports(): React.JSX.Element {
                   </tbody>
                 </table>
               </div>
-              {data.chart.length > 0 && (
-                <div className="card p-4">
-                  <h3 className="mb-3 text-sm font-bold uppercase text-slate-300">Chart</h3>
-                  <div className="flex h-40 items-end gap-1">
-                    {data.chart.map((c, i) => (
-                      <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                        <div className="flex w-full items-end justify-center bg-brand-600/30" style={{ height: `${Math.max(2, (c.total_c / Math.max(1, Math.max(...data.chart.map((x) => x.total_c)))) * 100)}%` }} title={c.label}>
-                        </div>
-                        <span className="text-[9px] text-slate-500">{c.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <SalesChart data={data.chart} />
             </>
           ) : null}
         </>

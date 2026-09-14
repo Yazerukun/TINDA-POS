@@ -8,6 +8,7 @@
 - Searchable expiration list with red/orange/yellow statuses, global live alert counts, and a once-per-login Tagalog reminder.
 - Inline Add Category on New/Edit Product; duplicate names reuse the existing category.
 - Refined X-Read/Z-Read report layout.
+- Fixed the Sales chart's collapsed bars, with responsive axes, readable period labels and exact-value tooltips. Report calculations are unchanged.
 
 Migration 6 adds product tracking fields and batch tables. Existing product
 records, quantities, transactions, reports, and backups are not rewritten;

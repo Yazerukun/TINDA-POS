@@ -1,5 +1,27 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.12 chart-only rebuild - 2026-09-14
+
+Owner requested the Reports chart fix and a new Windows build, retaining 1.0.12
+and leaving Software Update unchanged. Starting source: c4c1281, tracked clean.
+GitHub release lookup for v1.0.12 returned not found at task start; no public
+assets will be replaced. Previous builds-v112-final is preserved as superseded
+for the chart fix. New output: source/builds-v112-chart.
+
+Chart defect: percentage-height bars lived in auto-height parents and collapsed.
+Replaced that view with the existing Recharts dependency, a fixed-height responsive
+plot, automatically spaced period labels, exact-value tooltips and accessible
+table values. Sales data/calculations, main/preload, database, dependencies and
+Software Update code/config are unchanged from c4c1281.
+
+Source checks: full suite 31 files / 228 tests PASS; renderer typecheck and scoped
+lint PASS; production build PASS. Browser chart checks PASS: proportional visible
+bars, tooltip amounts, 1280/768/390px resizing, 120 non-overlapping period labels,
+zero/large/empty datasets, no JavaScript errors. Screenshots visually inspected.
+PDF regeneration and a new RC freeze/build follow. This source change invalidates
+the previous renderer/artifact QA, not the unchanged main/database/updater evidence.
+No push/tag/publication authorized by this build-only request.
+
 ## v1.0.12 RC freeze + Windows build + Wine QA complete - 2026-09-14
 
 CURRENT STAGE: Source frozen and Windows RC built; updater acceptance and

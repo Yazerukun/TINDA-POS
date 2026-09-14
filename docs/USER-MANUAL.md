@@ -213,6 +213,14 @@ Nothing is saved during Preview. The final import is all-or-nothing: if a fatal 
 
 The base unit is the smallest stock unit, such as sachet, piece, or bottle. A larger selling/restock unit uses the existing conversion—for example, 1 box = 24 sachets. Stock is always protected and recorded in whole base units.
 
+## Sales chart
+
+Sa **Reports > Sales**, piliin ang From/To at Daily, Weekly, o Monthly, saka
+pindutin ang **Run**. Makikita sa **Sales by Period** ang sales amount sa bawat
+period. Itapat ang mouse sa bar para makita ang eksaktong halaga. Automatic
+ang pagitan ng date labels para hindi magsapawan sa maliit na screen.
+Chart display lang ito; hindi nito binabago ang transactions o report totals.
+
 ## X-Read
 
 **WHERE TO GO:** Reports → X-Read.
