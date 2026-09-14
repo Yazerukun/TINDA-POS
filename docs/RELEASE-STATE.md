@@ -1,11 +1,14 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.12 expiration implementation complete - 2026-09-14
+## v1.0.12 RC freeze complete - 2026-09-14
 
-CURRENT STAGE: Source implementation and automated/browser QA complete;
-RC freeze, Windows packaging, updater acceptance and final release review pending.
-CURRENT COMMIT: 1db8d04 (existing base); branch v1.0.12-dev has uncommitted changes.
-PACKAGE VERSION: 1.0.12. PUBLIC LATEST: v1.0.11. No publication in this session.
+CURRENT STAGE: Source frozen as local RC commit; Windows packaging, updater
+acceptance and final release review pending.
+RC COMMIT: bfdf02984180ca1397fcc27554e523cd8fd79dbb (branch v1.0.12-dev).
+Source commit created 2026-09-14; installers/RC-SOURCE-COMMIT.txt updated.
+PACKAGE VERSION: 1.0.12. PUBLIC LATEST: v1.0.11. No push/tag/release yet.
+Working tree: only untracked QA evidence, stale build dirs and QA helper
+(excluded from RC, consistent with v1.0.11 tag) remain.
 
 COMPLETED: None/Per Item/Per Batch modes; migration 6; dated restocking;
 earliest-expiry eligible stock allocation; expired/undated sale blocks; exact
