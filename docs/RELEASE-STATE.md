@@ -1,5 +1,14 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.13 build result - 2026-09-14
+
+Windows RC build completed in `source/builds-v113-rc` from commit
+`54638ed8ed3f428b97c8be4c4c84e1cbb2725516`. Setup and Portable are version
+1.0.13, product TINDA POS, and checksums/`latest.yml`/blockmap/PDF verified.
+The packaged updater provider remains GitHub `Yazerukun/TINDA-POS`; updater source
+and configuration were unchanged. Native Windows sign-in startup acceptance and
+final release review remain pending; no GitHub mutation performed.
+
 ## v1.0.13 development - 2026-09-14
 
 Owner reports v1.0.12 Stable published and requests v1.0.13 with only existing
