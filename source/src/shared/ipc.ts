@@ -123,6 +123,7 @@ export interface CompleteSetupPayload {
  */
 export interface TindaApi {
   app: {
+    startup: (enabled?: boolean) => Promise<{ supported: boolean; enabled: boolean }>
     info: () => Promise<{ name: string; version: string; offline: boolean }>
     dataDir: () => Promise<string>
     databaseFile: () => Promise<string>

@@ -34,6 +34,7 @@ import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { appDirs } from '../database/connection'
 import { beginCriticalOperation } from '../services/operationGuard'
 import { getUpdateService } from '../services/updateRuntime'
+import { startupSetting } from '../services/startup'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -56,6 +57,10 @@ const user = () => sessionSvc.requireUser()
 
 // ---- App ----
 handle('app:info', () => ({ name: 'TINDA POS', version: app.getVersion() ?? '1.0.0', offline: true }))
+handle('app:startup', (_e, enabled?: boolean) => {
+  sessionSvc.requirePermission('settings:manage')
+  return startupSetting(enabled)
+})
 handle('app:dataDir', () => appDirs().root)
 handle('app:databaseFile', () => getDbFile())
 handle('app:openDataDir', () => { sessionSvc.requirePermission('settings:manage'); return shell.openPath(appDirs().root) })

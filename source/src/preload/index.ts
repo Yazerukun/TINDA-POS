@@ -7,6 +7,7 @@ import type { UpdateStatusEvent } from '@shared/update'
 const invoke = <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => ipcRenderer.invoke(channel, ...args)
 const api: TindaApi = {
   app: {
+    startup: (enabled?: boolean) => invoke<{ supported: boolean; enabled: boolean }>('app:startup', enabled),
     info: () => invoke<{ name: string; version: string; offline: boolean }>('app:info'),
     dataDir: () => invoke<string>('app:dataDir'),
     databaseFile: () => invoke<string>('app:databaseFile'),

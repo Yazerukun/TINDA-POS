@@ -4,7 +4,7 @@
 
 **Free, offline point-of-sale for Philippine sari-sari stores and small businesses.**
 
-### v1.0.12
+### v1.0.13 Candidate
 
 [Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
@@ -16,9 +16,20 @@ Record sales, manage stock, track customer credit, and reconcile your cash drawe
 
 The free desktop edition supports Windows 10/11, 64-bit. Internet is needed for software downloads and optional third-party cloud-folder syncing, not everyday checkout.
 
-## What's New in v1.0.12
+## Preparing v1.0.13
 
-### Published v1.0.12
+- Clearer existing Utang customer selection: **Piliin ang Nangutang**, a visible
+  selected customer name and checkmark, and a reminder before charging without
+  a customer. Customer IDs, ledger, credit limits and checkout calculations stay unchanged.
+- Optional **Start TINDA POS when I sign in to Windows** checkbox in Settings > Store.
+  Available for installed Windows Setup, off unless enabled. Normal POS login
+  still applies. Portable installations do not register a temporary startup path.
+- Software Update implementation and provider are unchanged.
+
+Windows startup acceptance is pending. The download above remains the published
+v1.0.12 release until v1.0.13 passes release checks and is published.
+
+## What's New in v1.0.12
 
 The v1.0.12 stable release adds **None / Per Item / Per Batch** expiration
 tracking, dated restocking, an expiration list, colored warnings, and a Tagalog

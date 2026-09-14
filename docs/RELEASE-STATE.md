@@ -1,5 +1,22 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.13 development - 2026-09-14
+
+Owner reports v1.0.12 Stable published and requests v1.0.13 with only existing
+Utang selection clarity, optional Windows startup, README/manual and release.
+Branch v1.0.13-dev. No duplicate selector or customer system. No database or
+updater changes. Startup is opt-in, Settings permission-gated, installed Windows
+only, and uses the current executable without inherited command-line arguments.
+Windows OS startup acceptance is required for this new behavior before release.
+Source QA PASS: 33 files / 241 tests, typecheck, full lint, production build.
+User guide regenerated: 22 pages, 139929 bytes, version 1.0.13.
+Actual POS browser fixture PASS: phone search, select/change customer, selected
+highlight, Walk-in reset, missing-customer guard without checkout submission,
+correct ID/payment payload, no JS errors; screenshot visually inspected.
+Updater service/store/shared code, installer configuration and lockfile unchanged.
+GitHub v1.0.12 verified public Stable. New v1.0.13 Windows build follows;
+Windows startup acceptance and release review remain pending. No publication.
+
 ## v1.0.12 published Stable - 2026-09-14
 
 Stage 12 complete after explicit owner GO ("publish v1.0.12"). Branch

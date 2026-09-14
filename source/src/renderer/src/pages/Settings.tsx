@@ -28,13 +28,34 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('DATA')} className={`btn-ghost flex items-center gap-2 ${tab === 'DATA' ? '!border-brand-500 !text-brand-400' : ''}`}><DatabaseZap className="h-4 w-4" /> Data</button>
         <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
-      {tab === 'HOME' && <StoreSettingsTab />}
+      {tab === 'HOME' && <><StartupSetting /><StoreSettingsTab /></>}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
       {tab === 'DATA' && <DataTab />}
       {tab === 'ABOUT' && <AboutTab />}
     </div>
   )
+}
+
+function StartupSetting(): React.JSX.Element {
+  const [state, setState] = useState<{ supported: boolean; enabled: boolean } | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    void window.api.app.startup().then(setState).catch((e) => toastError('Could not load startup setting', String(e)))
+  }, [])
+  const change = async (enabled: boolean) => {
+    setBusy(true)
+    try { setState(await window.api.app.startup(enabled)) }
+    catch (e) { toastError('Could not change startup setting', String(e)) }
+    finally { setBusy(false) }
+  }
+  return <div className="mb-6 border-b border-ink-line pb-4">
+    <label className="flex items-center gap-3 text-sm text-slate-200">
+      <input type="checkbox" checked={state?.enabled ?? false} disabled={!state?.supported || busy} onChange={(e) => void change(e.target.checked)} />
+      Start TINDA POS when I sign in to Windows
+    </label>
+    {state && !state.supported && <p className="mt-2 text-xs text-slate-400">Available with the Windows Setup installation.</p>}
+  </div>
 }
 
 function DataTab(): React.JSX.Element {

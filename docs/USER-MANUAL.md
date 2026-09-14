@@ -1,14 +1,38 @@
-# TINDA POS v1.0.12 User Manual
+# TINDA POS v1.0.13 User Manual
 
-**TINDA POS v1.0.12** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.13** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa kasalukuyang stable release (v1.0.12), na may
+Ang guide na ito ay para sa v1.0.13 candidate, na may
 inventory expiration tracking at mas malinaw na X-Read/Z-Read reports.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 
 ## Mabilis na gabay sa araw-araw
+
+### Pagpili ng nangutang
+
+1. Sa POS, sa **Piliin ang Nangutang**, pindutin ang **Select Customer**.
+2. Hanapin ang pangalan o phone number. I-click ang customer sa listahan para ma-select.
+3. Tingnan ang **Selected: pangalan** at checkmark sa cart. Para magpalit, buksan
+   ulit ang parehong listahan; may highlight at checkmark ang kasalukuyang napili.
+4. Sa Checkout, piliin ang **Utang** at suriin muli ang pangalan bago **Charge**.
+5. Kapag may **Please select the customer for this Utang.**, i-Cancel ang Checkout,
+   pumili ng customer sa cart, saka mag-Checkout ulit. Hindi pa na-charge ang sale.
+
+Gamitin ang **Walk-in (no utang)** para alisin ang napiling customer. Ang bagong
+sale ay hindi awtomatikong gagamit ng nangutang sa naunang sale. Hindi nagbago
+ang credit limit: kapag kulang ito, sundin ang kasalukuyang approval process.
+
+### Awtomatikong pagbukas sa Windows
+
+Sa installed Windows Setup, mag-login gamit ang account na may Settings access.
+Sa **Settings > Store**, i-check ang **Start TINDA POS when I sign in to Windows**.
+Sa susunod na Windows sign-in, bubukas ang app; kailangan pa rin ang normal POS
+login. Alisin ang check para i-OFF. Hindi ito kusang naka-ON at hindi ito
+available sa Portable edition. Hindi ito pagbukas bago mag-sign in sa Windows.
+
+### Araw-araw na checklist
 
 1. **Bago magbenta:** mag-login sa tamang account, tingnan ang petsa ng computer,
    at tiyaking tama ang starting cash at stock.
@@ -85,7 +109,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.12. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.13. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 

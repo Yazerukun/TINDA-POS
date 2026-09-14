@@ -45,12 +45,13 @@ interface CartItem {
 interface CartState {
   items: CartItem[]
   customer_id: number | null
+  customer_name: string | null
   discount_pesos: number
   add: (p: Product) => void
   setQty: (product_id: number, qty: number) => void
   remove: (product_id: number) => void
   clear: () => void
-  setCustomer: (id: number | null) => void
+  setCustomer: (id: number | null, name?: string) => void
   setDiscountPesos: (v: number) => void
   replace: (items: CartItem[], discount_pesos: number) => void
   syncStocks: (products: Product[]) => void
@@ -59,6 +60,7 @@ interface CartState {
 export const usePosCart = create<CartState>((set) => ({
   items: [],
   customer_id: null,
+  customer_name: null,
   discount_pesos: 0,
   add: (p) =>
     set((s) => {
@@ -82,10 +84,10 @@ export const usePosCart = create<CartState>((set) => ({
   setQty: (product_id, qty) =>
     set((s) => ({ items: s.items.map((i) => (i.product_id === product_id ? { ...i, qty: Math.min(Math.max(0, Number.isFinite(qty) ? qty : 0), maxQuantity(i.stock_base, i.conversion_to_base)) } : i)).filter((i) => i.qty > 0) })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
-  clear: () => set({ items: [], customer_id: null, discount_pesos: 0 }),
-  setCustomer: (id) => set({ customer_id: id }),
+  clear: () => set({ items: [], customer_id: null, customer_name: null, discount_pesos: 0 }),
+  setCustomer: (id, name) => set({ customer_id: id, customer_name: id === null ? null : name ?? null }),
   setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
-  replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos }),
+  replace: (items, discount_pesos) => set({ items, customer_id: null, customer_name: null, discount_pesos }),
   syncStocks: (products) => set((s) => {
     const stocks = new Map(products.map(p => [p.id, saleStock(p)]))
     return { items: s.items.map(item => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
@@ -275,7 +277,7 @@ export function POS(): React.JSX.Element {
 }
 
 function CartPanel(): React.JSX.Element {
-  const { items, discount_pesos } = usePosCart()
+  const { items, discount_pesos, customer_name } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [customerOpen, setCustomerOpen] = useState(false)
   const [heldOpen, setHeldOpen] = useState(false)
@@ -428,11 +430,12 @@ function CartPanel(): React.JSX.Element {
 
       <div className="space-y-2 border-t border-ink-line px-4 py-3 text-base">
         <div className="flex items-center justify-between text-slate-400">
-          <span>Customer</span>
-          <button onClick={() => setCustomerOpen(true)} className="flex items-center gap-1 text-brand-400 hover:text-brand-300">
-            <User className="h-3.5 w-3.5" /> Select (utang)
+          <span className="min-w-0">Piliin ang Nangutang</span>
+          <button onClick={() => setCustomerOpen(true)} className="flex shrink-0 items-center gap-1 text-brand-400 hover:text-brand-300">
+            <User className="h-3.5 w-3.5" /> Select Customer
           </button>
         </div>
+        {customer_name && <p role="status" className="flex items-center gap-2 break-words text-brand-400"><span>Selected: {customer_name}</span><Check aria-label="Selected" className="h-4 w-4 shrink-0" /></p>}
         <div className="flex items-center justify-between text-slate-400">
           <span>Subtotal</span><span className="text-slate-200">{money(subtotal)}</span>
         </div>
@@ -502,7 +505,7 @@ function CartPanel(): React.JSX.Element {
 }
 
 function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: number; onClose: () => void }): React.JSX.Element {
-  const { items, customer_id, discount_pesos } = usePosCart()
+  const { items, customer_id, customer_name, discount_pesos } = usePosCart()
   const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
@@ -524,6 +527,10 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   useEffect(() => { void openShift() }, [])
 
   const doCheckout = async () => {
+    if (method === 'UTANG' && customer_id === null) {
+      toastError('Customer required', 'Please select the customer for this Utang.')
+      return
+    }
     if (cartHasStockConflict(items)) {
       toastError('Stock changed', 'Please adjust the cart to the available quantity before checkout.')
       return
@@ -657,7 +664,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
         )}
 
         {method === 'UTANG' && (
-          <p className="text-xs text-amber-400">This sale will be charged to the selected customer&apos;s utang account.</p>
+          <p className="break-words text-sm text-amber-400">{customer_id === null ? 'Please select the customer for this Utang.' : `Selected: ${customer_name ?? `Customer #${customer_id}`} ✓`}</p>
         )}
       </div>
     </Modal>
@@ -665,6 +672,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
 }
 
 function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element {
+  const selectedId = usePosCart((state) => state.customer_id)
   const [q, setQ] = useState('')
   const [rows, setRows] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
@@ -684,13 +692,14 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
   useEffect(() => { void load('') }, [])
 
   return (
-    <Modal open onClose={onClose} title="Select Customer (Utang)" maxWidth="max-w-md" footer={
+    <Modal open onClose={onClose} title="Piliin ang Nangutang" maxWidth="max-w-md" footer={
       <button onClick={() => { usePosCart.getState().setCustomer(null); onClose() }} className="btn-ghost">Walk-in (no utang)</button>
     }>
+      <p className="mb-3 text-sm text-slate-400">I-click ang customer sa listahan para ma-select.</p>
       <input
         value={q}
         onChange={(e) => { setQ(e.target.value); void load(e.target.value) }}
-        placeholder="Search customer…"
+        placeholder="Search customer name or phone..."
         className="input mb-3 w-full"
         autoFocus
       />
@@ -699,13 +708,15 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
         {!loading && rows.map((c) => (
           <button
             key={c.id}
-            onClick={() => { usePosCart.getState().setCustomer(c.id); onClose() }}
-            className="flex w-full items-center justify-between rounded-lg border border-ink-line px-3 py-2 text-left hover:border-brand-500/50"
+            onClick={() => { usePosCart.getState().setCustomer(c.id, c.full_name); onClose() }}
+            aria-pressed={selectedId === c.id}
+            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left hover:border-brand-500/50 ${selectedId === c.id ? 'border-brand-500 bg-brand-500/10' : 'border-ink-line'}`}
           >
             <div>
-              <p className="text-sm font-medium text-slate-200">{c.full_name}</p>
+              <p className="break-words text-sm font-medium text-slate-200">{c.full_name}</p>
               <p className="text-xs text-slate-500">Limit {money(c.credit_limit_c)}</p>
             </div>
+            {selectedId === c.id && <Check aria-label="Selected" className="h-4 w-4 shrink-0 text-brand-400" />}
             <span className={`text-xs font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</span>
           </button>
         ))}
