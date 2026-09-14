@@ -1,5 +1,37 @@
 # TINDA POS RELEASE STATE
 
+## Final release review PASS (chart build) - 2026-09-14
+
+All Stage 10 gates re-verified on builds-v112-chart (source 8c006605, docs HEAD
+9aae915): SHA256SUMS.txt verifies Setup/Portable/blockmap/latest.yml/PDF;
+latest.yml Setup SHA512 and size match; exiftool product/file 1.0.12, company
+TINDA POS; packaged app-update.yml remains github/Yazerukun/TINDA-POS; packaged
+main/preload/renderer have 0 QA strings or localhost feed (bundled node_modules
+only); version 1.0.12 in app.asar.
+
+Stage 07 Wine runtime smoke PASS for the chart Setup win-unpacked: app launched
+and stayed alive (main + gpu + network + renderer processes), existing store DB
+reused intact under a matching prefix, migrations intact. Byte-identical main,
+preload, database layer, dependencies and updater code vs builds-v112-final
+(whose own Wine QA PASS: fresh migrations 1..6, integrity ok) keep the updater
+regression gate satisfied: updater source/config/lockfiles unchanged vs v1.0.11
+and the natively-accepted v1.0.8 chain.
+
+Automated QA re-run at the release source: 31 files / 228 tests PASS, typecheck
+PASS, lint PASS, production build PASS, git diff --check PASS. Documentation
+gate PASS: README, USER-MANUAL and RELEASE-NOTES now present v1.0.12 as stable;
+Guide PDF regenerated (22 pages). Artifacts ready for Stage 12 (owner-approved).
+
+## Publication request - 2026-09-14
+
+Owner explicitly requested Stable publication after the chart build, citing the
+228 passing automated tests. GitHub v1.0.12 remains absent on read-only recheck.
+Approval to publish is recorded, but automated tests do not establish the pending
+new-artifact runtime/update acceptance. No gate is marked passed by this request.
+Await clarification whether the owner tested the exact builds-v112-chart Setup
+through the previous stable's update/install/relaunch path with data preserved.
+No push, tag, asset upload or publication performed.
+
 ## v1.0.12 chart-only rebuild - 2026-09-14
 
 Owner requested the Reports chart fix and a new Windows build, retaining 1.0.12
