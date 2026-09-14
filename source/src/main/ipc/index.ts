@@ -18,6 +18,7 @@ import * as backupRepo from '../repositories/backup'
 import * as userRepo from '../repositories/users'
 import { getSale, listSales } from '../repositories/sales'
 import * as checkoutSvc from '../services/checkout'
+import * as expirationRepo from '../repositories/expiration'
 import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
@@ -159,11 +160,15 @@ handle('products:search', (_e: IpcMainInvokeEvent, q: string, opts?: unknown) =>
 handle('products:get', (_e: IpcMainInvokeEvent, id: number) => prodRepo.getProduct(db(), id))
 handle('products:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
-  return prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  const product = prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [product.id] })
+  return product
 })
 handle('products:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
   user()
-  return prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  const product = prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [id] })
+  return product
 })
 handle('products:archive', (_e: IpcMainInvokeEvent, id: number) => {
   sessionSvc.requirePermission('products:archive')
@@ -184,6 +189,12 @@ handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'S
 })
 
 // ---- Inventory ----
+handle('inventory:expiration', () => { user(); return expirationRepo.listExpiration(db()) })
+handle('inventory:batchDate', (_e: IpcMainInvokeEvent, id: number, date: string) => {
+  sessionSvc.requirePermission('products:manage')
+  const productId = db().transaction(() => expirationRepo.updateBatchDate(db(), id, date, user().id))()
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [productId] })
+})
 handle('inventory:movements', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listMovements(db(), (opts ?? {}) as object))
 handle('inventory:receiving', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listReceiving(db(), (opts ?? {}) as object))
 handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
@@ -199,7 +210,7 @@ handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
 })
 handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:receive')
-  const i = input as { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string }
+  const i = input as { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }
   if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to add must be greater than zero.')
   if (!Number.isFinite(i.cost_c) || i.cost_c < 0) throw new Error('Cost cannot be negative.')
   const product = prodRepo.getProduct(db(), i.product_id)
@@ -211,7 +222,8 @@ handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
   const reason = [`Restock: ${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, supplier ? `Supplier: ${supplier.name}` : '', i.cost_c ? `Cost: ${i.cost_c}` : '', i.notes?.trim() || ''].filter(Boolean).join(' | ')
   db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference, {
     source: 'RESTOCK', supplier_id: i.supplier_id ?? null, received_unit: unit.name,
-    received_quantity: i.quantity, unit_cost_c: i.cost_c || null, notes: i.notes ?? null
+    received_quantity: i.quantity, unit_cost_c: i.cost_c || null, notes: i.notes ?? null,
+    expiration_date: i.expiration_date, batch_label: i.batch_label
   }))()
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
   emitInventoryChanged({ reason: 'RESTOCK', product_ids: [i.product_id] })
@@ -248,7 +260,7 @@ handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
 })
 handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
-  const i = input as { product_id: number; quantity: number; unit_name: string; reason: string; notes?: string }
+  const i = input as { product_id: number; quantity: number; unit_name: string; reason: string; notes?: string; batch_id?: number }
   const validReasons = ['TAKEN', 'DAMAGED', 'EXPIRED', 'FORWARD']
   if (!validReasons.includes(i.reason)) throw new Error('Invalid withdrawal reason.')
   if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to withdraw must be greater than zero.')
@@ -258,7 +270,7 @@ handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
   const qtyBase = i.quantity * unit.conversion_to_base
   if (!Number.isInteger(qtyBase)) throw new Error('Withdrawal must convert to a whole base unit.')
   const reason = [`Withdrawal: ${i.reason}`, `${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, i.notes?.trim() || ''].filter(Boolean).join(' | ')
-  prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'WITHDRAWAL', reason, user().id)
+  prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'WITHDRAWAL', reason, user().id, undefined, { batch_id: i.batch_id })
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
   return movement
@@ -521,7 +533,9 @@ handle('reports:printXRead', async () => {
   const shift = shiftRepo.currentShiftFor(db(), user().id)
   if (!shift) throw new Error('No open shift for X-Read.')
   const settings = settingRepo.getSettings(db())
-  return printingSvc.printLines(settings, readSvc.readReportLines(readSvc.calculateRead(db(), shift.id, 'X'), undefined, undefined, settings.store_name))
+  const report = readSvc.calculateRead(db(), shift.id, 'X')
+  const result = await printingSvc.printLines(settings, readSvc.readReportLines(report, undefined, undefined, settings.store_name))
+  return { ...result, report }
 })
 handle('reports:finalizeZ', (_e: IpcMainInvokeEvent, input: { actual_cash_c: number; note?: string }) => {
   const u = user()

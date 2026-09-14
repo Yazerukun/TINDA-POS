@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye } from 'lucide-react'
+import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw } from 'lucide-react'
 import type { SalesReportRow, ReportSummary, ReadReport, ZRead, CashCountRecord } from '@shared/types'
 import { cashCountLines, CASH_COUNT_DENOMINATION_CENTS } from '@shared/cashCount'
+import { readReportLines } from '@shared/readReport'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { ReceiptPaper } from '../components/ReceiptPaper'
@@ -27,6 +28,39 @@ export function Reports(): React.JSX.Element {
   const [loading, setLoading] = useState(false)
   const [read, setRead] = useState<ReadReport | null>(null)
   const [history, setHistory] = useState<ZRead[]>([])
+  const [readError, setReadError] = useState<string | null>(null)
+  const [readRevision, setReadRevision] = useState(0)
+
+  useEffect(() => {
+    if (tab !== 'X') return
+    let alive = true
+    let sequence = 0
+    const refresh = async () => {
+      const request = ++sequence
+      try {
+        const result = await window.api.reports.xRead()
+        if (!alive || request !== sequence) return
+        setRead(result)
+        setReadError(null)
+      } catch (error) {
+        if (!alive || request !== sequence) return
+        setRead(null)
+        setReadError(String((error as Error)?.message || error))
+      }
+    }
+    setRead(null)
+    const reload = () => { void refresh() }
+    reload()
+    const unsubscribe = window.api.inventory.onChanged(reload)
+    window.addEventListener('focus', reload)
+    const timer = window.setInterval(reload, 15000)
+    return () => {
+      alive = false
+      unsubscribe()
+      window.removeEventListener('focus', reload)
+      window.clearInterval(timer)
+    }
+  }, [tab, readRevision])
 
   const loadSales = async () => {
     setLoading(true)
@@ -47,7 +81,7 @@ export function Reports(): React.JSX.Element {
   // Loaders are redefined per render; this effect intentionally keys on tab and
   // (re)loads only when the active report changes, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'X' || tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>toastError('No open shift',String((e as Error).message||e))); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
+  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>{setRead(null);toastError('No open shift',String((e as Error).message||e))}); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
 
   const exportCsv = async () => {
     try {
@@ -159,7 +193,8 @@ export function Reports(): React.JSX.Element {
         </>
       ) : null)}
 
-      {(tab === 'X' || tab === 'Z') && read && <ReadPanel report={read} finalize={tab === 'Z'} onFinalized={()=>{setRead(null);setTab('ZHISTORY')}} onCashCount={()=>setTab('CASHCOUNT')}/>}
+      {tab === 'X' && !read && <div role="status"><p>{readError ? 'Hindi ma-load ang X-Read. Tiyaking may bukas na shift sa account na ito.' : 'Loading X-Read...'}</p>{readError && <><p className="mt-2 text-sm text-slate-400">{readError}</p><button className="btn-ghost mt-3" title="Refresh X-Read" onClick={()=>setReadRevision(n=>n+1)}><RefreshCw className="h-4 w-4"/></button></>}</div>}
+      {(tab === 'X' || tab === 'Z') && read && <ReadPanel key={`${tab}-${read.shift_id}`} report={read} finalize={tab === 'Z'} onUpdate={setRead} onRefresh={()=>setReadRevision(n=>n+1)} onFinalized={()=>{setRead(null);setTab('ZHISTORY')}} onCashCount={()=>setTab('CASHCOUNT')}/>}
       {tab === 'ZHISTORY' && <div className="card overflow-hidden"><table className="table"><thead><tr><th>Report</th><th>Finalized</th><th>Cashier</th><th>Net Sales</th><th></th></tr></thead><tbody>{history.map(z=><tr key={z.id}><td>{z.report_no}</td><td>{shortDate(z.finalized_at)}</td><td>{z.snapshot.cashier_name}</td><td>{money(z.snapshot.net_sales_c)}</td><td><button className="btn-ghost flex gap-1" onClick={()=>void window.api.reports.printZRead(z.id)}><Printer className="h-4 w-4"/>Print</button></td></tr>)}{history.length===0&&<tr><td colSpan={5} className="py-8 text-center text-slate-500">No finalized Z-Reads yet.</td></tr>}</tbody></table></div>}
       {tab === 'CASHCOUNT' && <CashCountPanel />}
 
@@ -203,9 +238,33 @@ function CashCountPanel(): React.JSX.Element {
   return <div><div className="mb-4 grid grid-cols-3 gap-3"><Stat label="Expected Cash" v={money(expected)}/><Stat label="Actual Cash" v={money(actual)}/><Stat label={`Difference · ${status}`} v={money(diff)}/></div><div className="card p-4"><h3 className="mb-3 font-bold">Count bills and coins</h3>{labels.map((l,i)=><div className="mb-2 grid grid-cols-[1fr_100px_120px] items-center gap-2" key={l}><span>{l}</span><input className="input" type="number" min="0" step="1" value={q[i]??0} onChange={e=>{const n=Number(e.target.value);if(Number.isInteger(n)&&n>=0){const a=[...q];a[i]=n;setQ(a)}}}/><span className="text-right">{money((q[i]??0)*(den[i]??0))}</span></div>)}<textarea className="input mt-3 w-full" placeholder="Notes (optional)" value={notes} onChange={e=>setNotes(e.target.value)}/><div className="mt-3 flex flex-wrap gap-2"><button className="btn-primary" onClick={()=>void save()}>Save Cash Count</button><button className="btn-primary flex items-center gap-1" disabled={busy} onClick={()=>lastSaved?void printRecord(lastSaved):null} title={lastSaved?'Print the last saved Cash Count':'Save a cash count first to print it'}><Printer className="h-4 w-4"/>Print</button><button className="btn-ghost flex items-center gap-1" onClick={()=>setPreview(tallyPreview())}><Eye className="h-4 w-4"/>Print Preview</button></div><p className="mt-2 text-xs text-slate-500">Print prints the last saved Cash Count using the configured receipt printer. Preview shows exactly what the printer receives.</p></div><div className="card mt-4 overflow-hidden"><h3 className="p-4 font-bold">Cash Count History</h3><table className="table"><thead><tr><th>Date</th><th>Cashier</th><th>Expected</th><th>Actual</th><th>Status</th><th></th></tr></thead><tbody>{saved.map((r)=><tr key={r.id}><td>{shortDate(r.created_at)}</td><td>{r.cashier_name}</td><td>{money(r.expected_cash_c)}</td><td>{money(r.actual_cash_c)}</td><td><span className={`badge border ${r.status==='BALANCED'?'border-emerald-500/30 text-emerald-400':r.status==='OVER'?'border-brand-500/30 text-brand-300':'border-amber-500/30 text-amber-400'}`}>{r.status}</span></td><td><div className="flex gap-1"><button className="btn-ghost flex items-center gap-1" onClick={()=>setPreview(r)}><Eye className="h-4 w-4"/>View</button><button className="btn-ghost flex items-center gap-1" disabled={busy} onClick={()=>void printRecord(r)}><Printer className="h-4 w-4"/>Print</button></div></td></tr>)}<tr>{saved.length===0&&<td colSpan={6} className="py-8 text-center text-slate-500">No cash counts saved yet.</td>}</tr></tbody></table></div>{preview&&<Modal open onClose={()=>setPreview(null)} title="Cash Count Print Preview" maxWidth="max-w-md" footer={<button className="btn-primary" onClick={()=>setPreview(null)}>Close</button>}><ReceiptPaper lines={cashCountLines({...preview,store_name:storeName})}/></Modal>}</div>
 }
 
-function ReadPanel({report,finalize,onFinalized,onCashCount}:{report:ReadReport;finalize:boolean;onFinalized:()=>void;onCashCount:()=>void}):React.JSX.Element {
+function ReadPanel({report,finalize,onFinalized,onCashCount,onUpdate,onRefresh}:{report:ReadReport;finalize:boolean;onFinalized:()=>void;onCashCount:()=>void;onUpdate:(report:ReadReport)=>void;onRefresh:()=>void}):React.JSX.Element {
   const [actual,setActual]=useState(String(report.expected_cash_c/100)); const [busy,setBusy]=useState(false)
   const [reminder,setReminder]=useState(false)
+  const [preview, setPreview] = useState<ReadReport | null>(null)
+  const { settings } = useSettings()
+  const showPreview = async () => {
+    setBusy(true)
+    try {
+      const latest = await window.api.reports.xRead()
+      onUpdate(latest)
+      setPreview(latest)
+    } catch (error) {
+      toastError('Unable to preview X-Read', String((error as Error)?.message || error))
+    } finally { setBusy(false) }
+  }
+  const print = async () => {
+    setBusy(true)
+    try {
+      const result = await window.api.reports.printXRead()
+      onUpdate(result.report)
+      if (preview) setPreview(result.report)
+      if (result.ok) toastSuccess('X-Read sent to printer')
+      else toastError('Unable to print X-Read', result.message)
+    } catch (error) {
+      toastError('Unable to print X-Read', String((error as Error)?.message || error))
+    } finally { setBusy(false) }
+  }
   const requestFinalize = async (): Promise<void> => {
     if (busy) return
     setBusy(true)
@@ -223,8 +282,46 @@ function ReadPanel({report,finalize,onFinalized,onCashCount}:{report:ReadReport;
     }
   }
   const finish=async()=>{if(!confirm('Finalize Z-Read? This will finalize the current reporting period. Transactions and history will remain saved.'))return;setBusy(true);try{await window.api.reports.finalizeZ({actual_cash_c:Math.round(Number(actual)*100)});toastSuccess('Z-Read finalized');onFinalized()}catch(e){toastError('Z-Read failed',String((e as Error).message||e))}finally{setBusy(false)}}
-  const stats:[string,number|string][]=[['Gross Sales',report.gross_sales_c],['Discounts',report.discount_c],['Refunds',report.refunds_c],['Voids',report.voids_c],['Net Sales',report.net_sales_c],['Cash',report.cash_c],['GCash',report.gcash_c],['Maya',report.maya_c],['Utang',report.utang_c],['Expenses',report.expenses_c],['Expected Cash',report.expected_cash_c],['Transactions',String(report.transaction_count)]]
-  return <div><div className="mb-4 rounded-lg border border-ink-line p-4"><p className="font-bold">{finalize?'Z-Read Final Summary':'Current Shift — Read Only'}</p><p className="text-sm text-slate-400">Cashier: {report.cashier_name} · Shift #{report.shift_no ?? report.shift_id} · Generated {new Date(report.report_at).toLocaleString()}</p></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{stats.map(([l,v])=><Stat key={l} label={l} v={typeof v==='number'?money(v):v}/>)}</div><div className="mt-4 flex gap-2">{finalize?<><div><label className="label">Actual Cash (₱)</label><input className="input" type="number" min="0" value={actual} onChange={e=>setActual(e.target.value)}/></div><button className="btn-primary self-end flex gap-2" disabled={busy} onClick={()=>void requestFinalize()}><LockKeyhole className="h-4 w-4"/>Finalize Z-Read</button></>:<button className="btn-primary flex gap-2" onClick={()=>void window.api.reports.printXRead()}><Printer className="h-4 w-4"/>Print X-Read</button>}</div>{finalize&&<p className="mt-3 text-sm text-amber-300">Finalization closes this shift. Transactions, payments, stock history, expenses, and customer ledgers remain saved.</p>}{reminder&&<Modal open onClose={()=>setReminder(false)} title="Cash Count Required" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" onClick={()=>{setReminder(false);onCashCount()}}><Coins className="h-4 w-4"/>Pumunta sa Cash Count</button>}><p>Wala pang naka-save na Cash Count para sa shift na ito. I-save muna ang Cash Count bago mag-Z-Read at isara ang shift. Hindi pa maaaring magpatuloy sa Z-Read.</p></Modal>}</div>
+  const groups: { title: string; stats: [string, number | string][] }[] = [
+    { title: 'Sales Summary', stats: [['Gross Sales', report.gross_sales_c], ['Discounts', report.discount_c], ['Refunds', report.refunds_c], ['Voids', report.voids_c], ['Net Sales', report.net_sales_c]] },
+    { title: 'Payment Breakdown', stats: [['Cash', report.cash_c], ['GCash', report.gcash_c], ['Maya', report.maya_c], ['Utang', report.utang_c]] },
+    { title: 'Cash Reconciliation', stats: [['Starting Cash', report.starting_cash_c], ['Cash In', report.cash_in_c], ['Cash Out', report.cash_out_c], ['Cash Refunds', report.cash_refunds_c ?? report.refunds_c], ['Expenses', report.expenses_c], ['Expected Cash', report.expected_cash_c]] },
+    { title: 'Transactions', stats: [['Transactions', String(report.transaction_count)], ['Voided Transactions', String(report.void_count)], ['Split Payments', String(report.split_count)]] }
+  ]
+  return <div>
+    <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-ink-line pb-4">
+      <div><h3 className="font-bold">{finalize ? 'Z-Read Final Summary' : 'X-Read - Current Shift - Not Final'}</h3>
+        <p className="text-sm text-slate-400">Cashier: {report.cashier_name} · Shift #{report.shift_no ?? report.shift_id}</p>
+        <p className="text-sm text-slate-400">Opened: {new Date(report.opened_at.replace(' ', 'T')).toLocaleString('en-PH')}</p>
+        <p className="text-sm text-slate-400">Updated: {new Date(report.report_at).toLocaleString('en-PH')}</p>
+      </div>
+      {!finalize && <div className="flex flex-wrap gap-2">
+        <button className="btn-ghost" disabled={busy} title="Refresh X-Read" onClick={onRefresh}><RefreshCw className="h-4 w-4"/></button>
+        <button className="btn-ghost flex items-center gap-2" disabled={busy} onClick={()=>void showPreview()}><Eye className="h-4 w-4"/>Print Preview</button>
+        <button className="btn-primary flex items-center gap-2" disabled={busy} onClick={()=>void print()}><Printer className="h-4 w-4"/>Print X-Read</button>
+      </div>}
+    </div>
+    {groups.map(group=><section key={group.title} className="mb-5">
+      <h4 className="mb-2 text-sm font-bold">{group.title}</h4>
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-4">
+        {group.stats.map(([label,value])=><div key={label} className="min-w-0 border-b border-ink-line py-2">
+          <dt className="text-xs text-slate-400">{label}</dt>
+          <dd className={`mt-1 break-words font-bold ${label==='Net Sales'||label==='Expected Cash'?'text-xl text-emerald-300':'text-base'}`}>{typeof value==='number'?money(value):value}</dd>
+        </div>)}
+      </dl>
+    </section>)}
+    {finalize && <div className="mt-4 flex flex-wrap gap-2">
+      <div><label className="label">Actual Cash (₱)</label><input className="input" type="number" min="0" value={actual} onChange={e=>setActual(e.target.value)}/></div>
+      <button className="btn-primary flex gap-2 self-end" disabled={busy} onClick={()=>void requestFinalize()}><LockKeyhole className="h-4 w-4"/>Finalize Z-Read</button>
+    </div>}
+    {finalize && <p className="mt-3 text-sm text-amber-300">Finalization closes this shift. Transactions, payments, stock history, expenses, and customer ledgers remain saved.</p>}
+    {reminder && <Modal open onClose={()=>setReminder(false)} title="Cash Count Required" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" onClick={()=>{setReminder(false);onCashCount()}}><Coins className="h-4 w-4"/>Pumunta sa Cash Count</button>}>
+      <p>Wala pang naka-save na Cash Count para sa shift na ito. I-save muna ang Cash Count bago mag-Z-Read at isara ang shift. Hindi pa maaaring magpatuloy sa Z-Read.</p>
+    </Modal>}
+    {preview && <Modal open onClose={()=>setPreview(null)} title="X-Read Print Preview" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" disabled={busy} onClick={()=>void print()}><Printer className="h-4 w-4"/>Print Latest X-Read</button>}>
+      <ReceiptPaper lines={readReportLines(preview, undefined, undefined, settings?.store_name)}/>
+    </Modal>}
+  </div>
 }
 
 function Stat({ label, v }: { label: string; v: string }): React.JSX.Element {

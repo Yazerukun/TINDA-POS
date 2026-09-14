@@ -18,6 +18,27 @@ The free desktop edition supports Windows 10/11, 64-bit. Internet is needed for 
 
 ## What's New in v1.0.11
 
+### In Development: v1.0.12
+
+The local v1.0.12 candidate adds **None / Per Item / Per Batch** expiration
+tracking, dated restocking, an expiration list, colored warnings, and a Tagalog
+login reminder. Expired and undated tracked stock is blocked at checkout;
+eligible batches are deducted earliest-expiry first. Refunds and voids restore
+the original batch allocation, while legacy returns without a known batch need
+date review. Categories can also be created directly from the product form.
+
+Existing products keep their current stock and start with tracking disabled.
+An additive database migration stores batch records without rewriting historical
+sales. CSV stock changes for batch-tracked products require the dated Restock
+or batch-specific Withdraw workflow instead. Software Update code and provider
+configuration are unchanged.
+
+This candidate is **not published**. The Windows download below remains v1.0.11.
+See the [v1.0.12 notes](docs/RELEASE-NOTES-v1.0.12.md) and
+[expiration guide](docs/USER-MANUAL.md#expiration-per-item-o-per-batch).
+
+### Published v1.0.11
+
 | Change | What it means at the counter |
 | --- | --- |
 | Refund-aware dashboard | Today's Net Sales deducts refunds: PHP 500 sales minus PHP 100 refunds shows PHP 400. |

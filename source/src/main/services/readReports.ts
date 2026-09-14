@@ -30,11 +30,19 @@ export function calculateRead(db: Database.Database, shiftId: number, type: 'X' 
   }
   const cash = [...cashBySale.values()].reduce((sum, sale) => sum + Math.min(sale.tendered, Math.max(0, sale.total - sale.nonCash)), 0)
   const refunds = (db.prepare(`SELECT COALESCE(SUM(r.total_c),0) total FROM refunds r JOIN sales s ON s.id=r.sale_id WHERE s.shift_id=? AND s.status!='VOIDED'`).get(shiftId) as {total:number}).total
+  // Credit reversals reduce the customer ledger, not physical drawer cash.
+  // Legacy refunds do not store a payout method; non-credit refunds retain
+  // the existing cash-payout behavior instead of guessing a wallet transfer.
+  const cashRefunds = (db.prepare(`SELECT COALESCE(SUM(MAX(0, r.total_c - COALESCE((
+    SELECT SUM(cl.amount_c) FROM credit_ledger cl
+    WHERE cl.entry_type='REFUND' AND cl.reference_type='REFUND' AND cl.reference_id=r.id
+  ),0))),0) total FROM refunds r JOIN sales s ON s.id=r.sale_id
+  WHERE s.shift_id=? AND s.status!='VOIDED'`).get(shiftId) as {total:number}).total
   const expenses = (db.prepare(`SELECT COALESCE(SUM(amount_c),0) total FROM expenses WHERE user_id=? AND created_at>=? AND created_at<=COALESCE(?,datetime('now','localtime'))`).get(shift.user_id, shift.opened_at, shift.closed_at) as {total:number}).total
   const moves = db.prepare(`SELECT COALESCE(SUM(CASE WHEN type='CASH_IN' THEN amount_c ELSE 0 END),0) cash_in, COALESCE(SUM(CASE WHEN type='CASH_OUT' THEN amount_c ELSE 0 END),0) cash_out FROM cash_movements WHERE shift_id=?`).get(shiftId) as {cash_in:number,cash_out:number}
   const split = (db.prepare(`SELECT COUNT(*) count FROM (SELECT p.sale_id FROM payments p JOIN sales s ON s.id=p.sale_id WHERE s.shift_id=? AND s.status!='VOIDED' GROUP BY p.sale_id HAVING COUNT(*)>1)`).get(shiftId) as {count:number}).count
   const gross = sales.gross || 0, discount = sales.discount || 0, voids = sales.voids || 0
-  return { shift_id: shiftId, shift_no: shift.shift_no ?? null, report_type: type, report_at: nowSql(), cashier_id: shift.user_id, cashier_name: shift.cashier_name, opened_at: shift.opened_at, closed_at: shift.closed_at, starting_cash_c: shift.starting_cash_c, gross_sales_c: gross, discount_c: discount, refunds_c: refunds, voids_c: voids, net_sales_c: gross - discount - refunds, cash_c: cash, gcash_c: pay.GCASH || 0, maya_c: pay.MAYA || 0, utang_c: pay.UTANG || 0, expenses_c: expenses, cash_in_c: moves.cash_in, cash_out_c: moves.cash_out, expected_cash_c: shift.starting_cash_c + cash - refunds - expenses + moves.cash_in - moves.cash_out, transaction_count: sales.transactions || 0, void_count: sales.void_count || 0, split_count: split }
+  return { shift_id: shiftId, shift_no: shift.shift_no ?? null, report_type: type, report_at: nowSql(), cashier_id: shift.user_id, cashier_name: shift.cashier_name, opened_at: shift.opened_at, closed_at: shift.closed_at, starting_cash_c: shift.starting_cash_c, gross_sales_c: gross, discount_c: discount, refunds_c: refunds, cash_refunds_c: cashRefunds, voids_c: voids, net_sales_c: gross - discount - refunds, cash_c: cash, gcash_c: pay.GCASH || 0, maya_c: pay.MAYA || 0, utang_c: pay.UTANG || 0, expenses_c: expenses, cash_in_c: moves.cash_in, cash_out_c: moves.cash_out, expected_cash_c: shift.starting_cash_c + cash - cashRefunds - expenses + moves.cash_in - moves.cash_out, transaction_count: sales.transactions || 0, void_count: sales.void_count || 0, split_count: split }
 }
 
 function rowToZ(row: Record<string, unknown>): ZRead {
@@ -62,23 +70,4 @@ export function getZ(db: Database.Database, id: number): ZRead {
 }
 export function listZ(db: Database.Database): ZRead[] { return (db.prepare('SELECT z.*, COALESCE(u.full_name,u.username) finalized_by_name FROM z_reads z JOIN users u ON u.id=z.finalized_by ORDER BY z.id DESC').all() as Record<string,unknown>[]).map(rowToZ) }
 
-export function readReportLines(r: ReadReport, reportNo?: string, closing?: { actual_cash_c: number; finalized_at: string }, storeName = 'TINDA POS'): string[] {
-  const m = (n:number) => (n/100).toFixed(2)
-  return [storeName || 'TINDA POS', `${r.report_type}-READ`,
-    r.report_type === 'Z' ? 'FINAL SHIFT REPORT' : 'CURRENT SHIFT - NOT FINAL',
-    '--------------------------------',
-    ...(reportNo ? [`Report: ${reportNo}`] : []),
-    `Date: ${r.report_at}`, `Cashier: ${r.cashier_name}`, `Shift: ${r.shift_no ?? r.shift_id}`,
-    `Opened: ${r.opened_at}`, ...(closing ? [`Closed: ${closing.finalized_at}`] : []),
-    '--------------------------------', 'SALES SUMMARY',
-    `Gross Sales    ${m(r.gross_sales_c)}`, `Discounts      ${m(r.discount_c)}`,
-    `Refunds        ${m(r.refunds_c)}`, `Voids          ${m(r.voids_c)}`, `NET SALES      ${m(r.net_sales_c)}`,
-    '--------------------------------', 'PAYMENT BREAKDOWN',
-    `Cash           ${m(r.cash_c)}`, `GCash          ${m(r.gcash_c)}`, `Maya           ${m(r.maya_c)}`, `Utang          ${m(r.utang_c)}`,
-    '--------------------------------', 'CASH RECONCILIATION',
-    `Starting Cash  ${m(r.starting_cash_c)}`, `Cash In        ${m(r.cash_in_c)}`, `Cash Out       ${m(r.cash_out_c)}`,
-    `Expenses       ${m(r.expenses_c)}`, `Expected Cash  ${m(r.expected_cash_c)}`,
-    ...(closing ? [`Actual Cash    ${m(closing.actual_cash_c)}`, `Difference     ${m(closing.actual_cash_c - r.expected_cash_c)}`,
-      `Status: ${closing.actual_cash_c === r.expected_cash_c ? 'BALANCED' : closing.actual_cash_c > r.expected_cash_c ? 'OVER' : 'SHORT'}`] : []),
-    '--------------------------------', `Transactions   ${r.transaction_count}`]
-}
+export { readReportLines } from '@shared/readReport'

@@ -1,5 +1,68 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.12 expiration implementation complete - 2026-09-14
+
+CURRENT STAGE: Source implementation and automated/browser QA complete;
+RC freeze, Windows packaging, updater acceptance and final release review pending.
+CURRENT COMMIT: 1db8d04 (existing base); branch v1.0.12-dev has uncommitted changes.
+PACKAGE VERSION: 1.0.12. PUBLIC LATEST: v1.0.11. No publication in this session.
+
+COMPLETED: None/Per Item/Per Batch modes; migration 6; dated restocking;
+earliest-expiry eligible stock allocation; expired/undated sale blocks; exact
+sale-item batch restoration on refunds and voids; selected-batch withdrawals;
+audited date corrections; inline category creation; live expiration list/counts
+and a Tagalog login reminder. Inventory/POS refresh also handles date rollover.
+Existing X-Read changes and unrelated local files were preserved.
+
+VALIDATION:
+- Full suite: 31 files, 228 tests passed, 0 failed.
+- Full typecheck/lint passed; final changed scopes rechecked with no warnings.
+- Production build passed with package version 1.0.12.
+- Guide PDF passed: 22 pages, 138923 bytes, local installers/TindaPOS-User-Guide.pdf.
+- Migration preservation/idempotence, integrity_check=ok and foreign_key_check=[]
+  covered, along with actual checkout/refund/void service execution.
+- Real Inventory/POS/expiration components with mocked IPC passed browser checks:
+  inline category, per-item date, batch receiving/withdrawal, alerts, correction,
+  POS eligible stock, error/recovery and 1280/768/390px overflow checks.
+  Screenshots visually inspected. Evidence: ../evidence/v1.0.12 (outside rc-source).
+- Updater source, shared update code, update UI/store, electron-builder.yml and
+  dependency lockfile have zero diff against v1.0.11. Package change is version only.
+- git diff --check passed. No production database opened or modified.
+
+LIMITS: Expiry day is sellable; past local dates are blocked. Existing products
+default to None, because expiry cannot be inferred. Per-item date applies to
+all its stock. Tracked modes cannot change while stock remains. Batch stock
+changes use dated Restock or selected-batch Withdraw, not CSV stock replacement.
+Shelf handling must follow earliest-expiry allocation. Undated legacy returns
+need date review. Physical printer and installed Windows update cycle not claimed.
+
+GITHUB: Pushed no; tagged no; released no. No existing release asset changed.
+NEXT REQUIRED ACTION: Review the uncommitted candidate, freeze an exact RC,
+package Windows artifacts and complete updater acceptance/final review before
+asking for owner publication approval. See PLAN/IMPLEMENT-v1.0.12.md.
+
+## v1.0.12 scope confirmation - 2026-09-14
+
+GitHub Latest verified as v1.0.11; owner confirmed the next version is
+v1.0.12, not v1.0.13. Owner authorized expiration tracking (none, per item,
+per batch), inventory/dashboard alerts, and checking manual category entry.
+Manual category management already exists. Expiration currently has only a
+has_expiration flag; dates, batches, and alerts are NOT implemented yet.
+Baseline full test run: 30 files / 209 tests PASS. Updater source and builder
+configuration have no diff against v1.0.11. Existing local X-Read changes are
+preserved. No push, tag, release, or package version change in this check.
+Next: implement expiration with stock consistency and migration coverage,
+then run feature and regression QA. This is not a release-ready claim.
+
+## v1.0.12 X-Read hotfix development - 2026-09-13
+
+Owner authorized all five X-Read improvements and double-checking errors, with
+the Software Update implementation unchanged. Branch: v1.0.12-dev.
+Scope, refund-policy compatibility, and verification: docs/X-READ-HOTFIX.md.
+209 tests pass; full typecheck/lint/build pass; mocked-IPC browser interactions pass.
+No database migration. No publication or updater changes. Version/package still
+1.0.11 until release preparation; this is an unshipped candidate on the next branch.
+
 ## v1.0.11 publication complete - 2026-09-13
 
 - Target: v1.0.11 patch over public stable v1.0.10. Branch: v1.0.11-dev.

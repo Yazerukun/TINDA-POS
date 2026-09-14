@@ -17,7 +17,9 @@ describe('v1.0.6 to v1.0.7 upgrade preserves data (user feedback release)', () =
     // migration). The v1.0.8 plan intentionally adds exactly one migration:
     // version 5 (shift_numbering). Any migration beyond that must ship with
     // its own upgrade test.
-    expect(migrations.filter((m) => m.version !== 5 && m.version > 4)).toEqual([])
+    // v1.0.12 adds migration 6, covered by expiration.test.ts upgrade preservation.
+    expect(migrations.filter((m) => m.version > 5).map((m) => ({ version: m.version, name: m.name })))
+      .toEqual([{ version: 6, name: 'product_expiration_tracking' }])
     const shiftNumbering = migrations.find((m) => m.version === 5)
     expect(shiftNumbering?.name).toBe('shift_numbering')
   })

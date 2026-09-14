@@ -432,5 +432,31 @@ WITH numbered AS (
 UPDATE shifts SET shift_no = (SELECT rn FROM numbered WHERE numbered.id = shifts.id);
 CREATE INDEX IF NOT EXISTS idx_shifts_user_shift_no ON shifts(user_id, shift_no);
 `
+  },
+  {
+    version: 6,
+    name: 'product_expiration_tracking',
+    sql: `
+ALTER TABLE products ADD COLUMN expiration_mode TEXT NOT NULL DEFAULT 'NONE' CHECK(expiration_mode IN ('NONE','ITEM','BATCH'));
+ALTER TABLE products ADD COLUMN expiration_date TEXT;
+CREATE TABLE stock_batches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  label TEXT NOT NULL,
+  expiration_date TEXT,
+  quantity INTEGER NOT NULL CHECK(quantity >= 0),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX idx_stock_batches_product ON stock_batches(product_id, expiration_date);
+CREATE TABLE batch_movements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  batch_id INTEGER NOT NULL REFERENCES stock_batches(id),
+  movement_id INTEGER NOT NULL REFERENCES inventory_movements(id),
+  sale_item_id INTEGER REFERENCES sale_items(id),
+  quantity_change INTEGER NOT NULL,
+  restored_quantity INTEGER NOT NULL DEFAULT 0 CHECK(restored_quantity >= 0)
+);
+CREATE INDEX idx_batch_movements_movement ON batch_movements(movement_id);
+`
   }
 ]

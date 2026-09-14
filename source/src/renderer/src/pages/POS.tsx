@@ -25,6 +25,11 @@ import type { PrintResult } from '@shared/ipc'
 import { useNav } from '../stores/nav'
 import { cashInputFromCents } from '../lib/payment'
 import { availableBase, cartHasStockConflict, maxQuantity, reservedBase } from '../lib/cartStock'
+import { localDate } from '@shared/expiration'
+
+const saleStock = (p: Product): number => p.expiration_mode === 'ITEM' && (!p.expiration_date || p.expiration_date < localDate()) ? 0
+  : p.expiration_mode === 'BATCH' ? (p.batches ?? []).reduce((n, b) => n + (b.expiration_date && b.expiration_date >= localDate() ? b.quantity : 0), 0)
+    : p.sellable_stock ?? p.stock
 
 interface CartItem {
   product_id: number
@@ -57,9 +62,10 @@ export const usePosCart = create<CartState>((set) => ({
   discount_pesos: 0,
   add: (p) =>
     set((s) => {
+      const stock = saleStock(p)
       const ex = s.items.find((i) => i.product_id === p.id)
-      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: p.stock, qty: Math.min(i.qty + 1, maxQuantity(p.stock, i.conversion_to_base)) } : i)) }
-      if (p.stock < 1) return s
+      if (stock < 1) return s
+      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: stock, qty: Math.min(i.qty + 1, maxQuantity(stock, i.conversion_to_base)) } : i)) }
       return {
         items: [...s.items, {
           product_id: p.id,
@@ -68,7 +74,7 @@ export const usePosCart = create<CartState>((set) => ({
           qty: 1,
           unit_price_c: p.default_price_c,
           cost_base_c: p.purchase_cost_c,
-          stock_base: p.stock,
+          stock_base: stock,
           conversion_to_base: 1
         }]
       }
@@ -81,7 +87,7 @@ export const usePosCart = create<CartState>((set) => ({
   setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
   replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos }),
   syncStocks: (products) => set((s) => {
-    const stocks = new Map(products.map(p => [p.id, p.stock]))
+    const stocks = new Map(products.map(p => [p.id, saleStock(p)]))
     return { items: s.items.map(item => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
   })
 }))
@@ -96,6 +102,24 @@ export function POS(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const cartItems = usePosCart((state) => state.items)
+
+  useEffect(() => {
+    let alive = true
+    const refresh = async () => {
+      const ids = [...new Set([...products.map((p) => p.id), ...usePosCart.getState().items.map((i) => i.product_id)])]
+      try {
+        const updated = await Promise.all(ids.map((id) => window.api.products.get(id)))
+        if (!alive) return
+        usePosCart.getState().syncStocks(updated)
+        const byId = new Map(updated.map((p) => [p.id, p]))
+        setProducts((current) => current.map((p) => byId.get(p.id) ?? p))
+      } catch { /* Checkout revalidates stock if the refresh is unavailable. */ }
+    }
+    const onFocus = () => { void refresh() }
+    window.addEventListener('focus', onFocus)
+    const timer = window.setInterval(onFocus, 15000)
+    return () => { alive = false; window.removeEventListener('focus', onFocus); window.clearInterval(timer) }
+  }, [products])
 
   const selectedCategory = catFilter === 'ALL'
     ? 'All categories'
@@ -218,23 +242,26 @@ export function POS(): React.JSX.Element {
           )}
           {!loading && products.map((p) => {
             const cartItem = cartItems.find(item => item.product_id === p.id)
-            const available = availableBase(p.stock, cartItem)
+            const stock = saleStock(p)
+            const available = availableBase(stock, cartItem)
+            const blocked = p.stock - stock
             const low = available > 0 && available <= p.low_stock_threshold
             const out = available <= 0
             return (
               <button
                 key={p.id}
-                onClick={() => out ? toastError('Out of stock', cartItem ? `Only ${p.stock} ${p.base_unit} in stock and all are already in the cart.` : undefined) : usePosCart.getState().add(p)}
+                onClick={() => out ? toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`) : usePosCart.getState().add(p)}
                 aria-disabled={out}
                 className="card group flex h-40 min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
                   <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
-                    {cartItem ? `Available: ${available} / ${p.stock}` : `Stock: ${p.stock}`} {p.base_unit}
+                    {blocked > 0 ? `Sellable: ${stock}` : cartItem ? `Available: ${available} / ${stock}` : `Stock: ${stock}`} {p.base_unit}
                   </span>
                 </div>
                 <p className="line-clamp-2 min-h-12 break-words text-base font-semibold leading-6 text-white">{p.name}</p>
+                {blocked > 0 && <p className="truncate text-xs text-red-400">{blocked} expired / undated</p>}
                 <p className="mt-auto text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
               </button>
             )
@@ -315,7 +342,7 @@ function CartPanel(): React.JSX.Element {
         qty: item.qty,
         unit_price_c: item.unit_price_c,
         cost_base_c: item.cost_base_c,
-        stock_base: item.product_id == null ? 0 : catalog.get(item.product_id)?.stock ?? 0,
+        stock_base: item.product_id == null ? 0 : catalog.has(item.product_id) ? saleStock(catalog.get(item.product_id)!) : 0,
         conversion_to_base: item.qty > 0 ? item.qty_base / item.qty : 1
       })), held.discount_c)
       setHeldOpen(false)

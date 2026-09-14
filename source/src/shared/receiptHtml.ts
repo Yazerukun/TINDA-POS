@@ -30,7 +30,7 @@ function isSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|Cash|SUKLI|Gross Sales|Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|Cash|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   return { label: m[1]!.replace(/^./, (c) => c.toUpperCase()), amount: m[2]! }
 }

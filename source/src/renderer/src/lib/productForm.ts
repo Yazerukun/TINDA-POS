@@ -30,6 +30,9 @@ export interface ProductFormData {
   supplier_id: number | null
   notes: string | null
   units: ProductUnitInput[]
+  expiration_mode?: ProductInput['expiration_mode']
+  expiration_date?: string | null
+  current_stock?: number
 }
 
 export function unitInputFrom(unit: Product['units'][number]): ProductUnitInput {
@@ -61,7 +64,8 @@ export function newProductForm(defaultLowStock = 5): ProductFormData {
     description: null,
     supplier_id: null,
     notes: null,
-    units: []
+    units: [],
+    expiration_mode: 'NONE', expiration_date: null
   }
 }
 
@@ -83,6 +87,9 @@ export function editProductForm(product: Product): ProductFormData {
     description: product.description,
     supplier_id: product.supplier_id,
     notes: product.notes,
+    expiration_mode: product.expiration_mode,
+    expiration_date: product.expiration_date,
+    current_stock: product.stock,
     units: (product.units && product.units.length > 0 ? product.units : []).map(unitInputFrom)
   }
 }
@@ -119,6 +126,7 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
     description: form.description,
     supplier_id: form.supplier_id,
     notes: form.notes,
+    ...(form.expiration_mode !== undefined ? { expiration_mode: form.expiration_mode, expiration_date: form.expiration_date || null } : {}),
     units: form.units
   }
 }
@@ -142,6 +150,8 @@ export function createProductInput(form: ProductFormData): ProductInput {
     description: form.description,
     supplier_id: form.supplier_id,
     has_expiration: false,
+    expiration_mode: form.expiration_mode ?? 'NONE',
+    expiration_date: form.expiration_date || null,
     notes: form.notes,
     units
   }

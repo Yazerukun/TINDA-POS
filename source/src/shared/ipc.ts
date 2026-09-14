@@ -200,6 +200,8 @@ export interface TindaApi {
   }
 
   inventory: {
+    expiration: () => Promise<import('./types').ExpirationEntry[]>
+    batchDate: (id: number, date: string) => Promise<void>
     onChanged: (cb: (event: import('./types').InventoryChangedEvent) => void) => () => void
     movements: (opts: { product_id?: number; movement_type?: InventoryMovementType | ''; limit?: number; offset?: number; from?: string; to?: string }) => Promise<{
       rows: InventoryMovement[]
@@ -214,8 +216,8 @@ export interface TindaApi {
     adjust: (input: { product_id: number; qty_base: number; reason: string }) => Promise<InventoryMovement>
     movement: (type: InventoryMovementType, input: { product_id: number; qty_base: number; reason?: string; notes?: string }) => Promise<InventoryMovement>
     count: (input: { product_id: number; actual_base: number; notes?: string }) => Promise<InventoryMovement>
-    restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string }) => Promise<InventoryMovement>
-    withdraw: (input: { product_id: number; quantity: number; unit_name: string; reason: import('./types').WithdrawalReason; notes?: string }) => Promise<InventoryMovement>
+    restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }) => Promise<InventoryMovement>
+    withdraw: (input: { product_id: number; quantity: number; unit_name: string; reason: import('./types').WithdrawalReason; notes?: string; batch_id?: number }) => Promise<InventoryMovement>
   }
 
   suppliers: {
@@ -314,7 +316,7 @@ export interface TindaApi {
     shifts: (opts?: { from?: string; to?: string }) => Promise<{ rows: Shift[]; summary: ReportSummary }>
     exportCsv: (kind: 'SALES' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS', opts?: { from?: string; to?: string }) => Promise<ExportResult>
     xRead: () => Promise<import('./types').ReadReport>
-    printXRead: () => Promise<PrintResult>
+    printXRead: () => Promise<PrintResult & { report: import('./types').ReadReport }>
     finalizeZ: (input: { actual_cash_c: number; note?: string }) => Promise<import('./types').ZRead>
     zHistory: () => Promise<import('./types').ZRead[]>
     printZRead: (id: number) => Promise<PrintResult>

@@ -1,6 +1,8 @@
 import type Database from 'better-sqlite3'
 import type { Product, ProductInput, ProductStatus, ProductUnit } from '@shared/types'
 import { getSettings } from './settings'
+import { applyExpirationStock, batchesFor, configureExpiration, validateExpiration, type ExpirationStockOptions } from './expiration'
+import { localDate } from '@shared/expiration'
 
 // The low-stock alert default a NEW product gets when the form/import does not
 // specify one. v1.0.8 fix: the store setting (Settings → Default Low Stock
@@ -30,6 +32,10 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
   const units = listUnits(db, row.id as number)
   const stock = row.stock as number
   const threshold = row.low_stock_threshold as number
+  const mode = (row.expiration_mode ?? 'NONE') as NonNullable<Product['expiration_mode']>
+  const batches = mode === 'BATCH' ? batchesFor(db, row.id as number) : []
+  const date = (row.expiration_date ?? null) as string | null
+  const today = localDate()
   return {
     id: row.id as number,
     category_id: (row.category_id as number | null) ?? null,
@@ -45,6 +51,11 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     low_stock_threshold: row.low_stock_threshold as number,
     supplier_id: (row.supplier_id as number | null) ?? null,
     has_expiration: !!row.has_expiration,
+    expiration_mode: mode,
+    expiration_date: date,
+    batches,
+    sellable_stock: mode === 'BATCH' ? batches.reduce((n, b) => n + (b.expiration_date && b.expiration_date >= today ? b.quantity : 0), 0)
+      : mode === 'ITEM' && (!date || date < today) ? 0 : stock,
     image_path: (row.image_path as string | null) ?? null,
     status: row.status as ProductStatus,
     notes: (row.notes as string | null) ?? null,
@@ -128,6 +139,7 @@ export function findBySku(db: Database.Database, sku: string): Product | undefin
 }
 
 export function validateProductInput(db: Database.Database, input: ProductInput, excludeId?: number): void {
+  if (input.expiration_mode !== undefined) validateExpiration(input.expiration_mode, input.expiration_date)
   if (!input.name || !input.name.trim()) throw new Error('Product name is required.')
   if (!input.base_unit || !input.base_unit.trim()) throw new Error('Base unit is required.')
   if (input.default_price_c < 0) throw new Error('Selling price cannot be negative.')
@@ -192,12 +204,14 @@ export function createProduct(db: Database.Database, input: ProductInput, userId
       )
     const productId = Number(info.lastInsertRowid)
     insertUnits(db, productId, input.units)
+    if (input.expiration_mode !== undefined) configureExpiration(db, productId, input.expiration_mode, input.expiration_date ?? null, userId)
+    if (input.initial_stock_base) {
+      if (input.initial_stock_base < 0) throw new Error('Opening stock cannot be negative.')
+      adjustStock(db, productId, input.initial_stock_base, 'INITIAL_STOCK', 'Initial stock', userId, undefined, { expiration_date: input.expiration_date })
+    }
     return productId
   })
   const id = txn()
-  if (input.initial_stock_base && input.initial_stock_base !== 0) {
-    adjustStock(db, id, input.initial_stock_base, 'INITIAL_STOCK', 'Initial stock', userId)
-  }
   return getProduct(db, id)
 }
 
@@ -224,11 +238,14 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
     low_stock_threshold: input.low_stock_threshold ?? cur.low_stock_threshold,
     supplier_id: input.supplier_id !== undefined ? input.supplier_id : cur.supplier_id,
     has_expiration: input.has_expiration !== undefined ? input.has_expiration : cur.has_expiration,
+    expiration_mode: input.expiration_mode ?? cur.expiration_mode ?? 'NONE',
+    expiration_date: input.expiration_date !== undefined ? input.expiration_date : cur.expiration_date,
     notes: input.notes !== undefined ? input.notes : cur.notes,
     units: input.units ?? cur.units
   }
   validateProductInput(db, merged, id)
   const txn = db.transaction(() => {
+    if (input.expiration_mode !== undefined || input.expiration_date !== undefined) configureExpiration(db, id, merged.expiration_mode ?? 'NONE', merged.expiration_date ?? null, userId)
     db.prepare(
       `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
        purchase_cost_c = ?, default_price_c = ?, low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,
@@ -244,7 +261,7 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
       merged.default_price_c,
       merged.low_stock_threshold,
       merged.supplier_id,
-      merged.has_expiration ? 1 : 0,
+      merged.expiration_mode !== 'NONE' ? 1 : input.expiration_mode !== undefined ? 0 : (merged.has_expiration ? 1 : 0),
       merged.notes?.trim() || null,
       id
     )
@@ -269,7 +286,7 @@ export function adjustStock(
   reason: string | null,
   userId: number,
   reference?: string,
-  receiving?: {
+  receiving?: ExpirationStockOptions & {
     source?: string
     supplier_id?: number | null
     received_unit?: string
@@ -278,6 +295,7 @@ export function adjustStock(
     notes?: string | null
   }
 ): void {
+  db.transaction(() => {
   const p = db.prepare('SELECT id, stock, base_unit FROM products WHERE id = ?').get(productId) as
     | { id: number; stock: number; base_unit: string }
     | undefined
@@ -287,7 +305,7 @@ export function adjustStock(
   const after = before + change
   if (after < 0) throw new Error('Insufficient stock — cannot go negative.')
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
-  db.prepare(
+  const movement = db.prepare(
     `INSERT INTO inventory_movements
      (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
       source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
@@ -295,6 +313,8 @@ export function adjustStock(
   ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
     receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
     receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
+  applyExpirationStock(db, productId, change, movementType, Number(movement.lastInsertRowid), receiving)
+  })()
 }
 
 export function listProductsBySupplier(db: Database.Database, supplierId: number): Product[] {

@@ -22,11 +22,15 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
     if (!payload.items?.length) throw new Error('Select at least one item to refund.')
 
     let totalC = 0
+    const seen = new Set<number>()
     const refundItems = payload.items.map((it) => {
+      if (seen.has(it.sale_item_id)) throw new Error('A sale item may only appear once in a refund.')
+      seen.add(it.sale_item_id)
       const saleItem = sale.items.find((si) => si.id === it.sale_item_id)
       if (!saleItem) throw new Error('Invalid sale item.')
+      if (it.product_id !== saleItem.product_id) throw new Error('Refund product does not match the sale item.')
       const available = saleItem.qty_base - saleItem.refunded_qty_base
-      if (it.qty_base <= 0 || it.qty_base > available)
+      if (!Number.isInteger(it.qty_base) || it.qty_base <= 0 || it.qty_base > available)
         throw new Error(`Cannot refund ${it.qty_base}. Only ${available} available.`)
       const qty = Math.ceil(it.qty_base / (saleItem.unit_price_c === 0 ? 1 : 1)) // qty units derived if needed
       const amountC = Math.round((it.qty_base / saleItem.qty_base) * saleItem.subtotal_c)
@@ -52,7 +56,7 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
     for (const it of refundItems) {
       addRefundedQty(db, it.sale_item_id, it.qty_base)
       if (it.product_id) {
-        adjustStock(db, it.product_id, it.qty_base, 'REFUND', `Refund ${refund.refund_no}: ${payload.reason}`, user.id, refund.refund_no)
+        adjustStock(db, it.product_id, it.qty_base, 'REFUND', `Refund ${refund.refund_no}: ${payload.reason}`, user.id, refund.refund_no, { return_reference: sale.transaction_no, sale_item_id: it.sale_item_id })
       }
     }
 
@@ -106,7 +110,8 @@ export function processVoid(payload: VoidPayload): import('@shared/types').Sale 
           'RETURN',
           `Void ${sale.transaction_no}: ${payload.reason}`,
           user.id,
-          sale.transaction_no
+          sale.transaction_no,
+          { return_reference: sale.transaction_no, sale_item_id: it.id }
         )
       }
     }

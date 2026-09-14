@@ -29,6 +29,9 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
       const p = prodRepo.getProduct(db, it.product_id)
       costC = p.purchase_cost_c
       stockBase = p.stock
+      if (p.expiration_mode && p.expiration_mode !== 'NONE' && it.qty_base > (p.sellable_stock ?? 0)) {
+        throw new Error(`${p.name}: only ${p.sellable_stock ?? 0} ${p.base_unit} available for sale. Expired or undated stock is blocked.`)
+      }
       if (!settings.allow_negative_inventory && it.qty_base > p.stock) {
         throw new Error(`Insufficient stock for "${p.name}". Available: ${p.stock} ${p.base_unit}.`)
       }
@@ -119,10 +122,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
 
     for (const l of lines) {
       const it = l.cart
-      if (it.product_id) {
-        prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo)
-      }
-      salesRepo.insertSaleItem(db, {
+      const saleItemId = salesRepo.insertSaleItem(db, {
         sale_id: saleId,
         product_id: it.product_id,
         product_name: it.name,
@@ -133,6 +133,9 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
         subtotal_c: it.subtotal_c,
         cost_base_c: it.cost_base_c ?? 0
       })
+      if (it.product_id) {
+        prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
+      }
     }
 
     for (const p of payload.payments) {

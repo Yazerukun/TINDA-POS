@@ -6,6 +6,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import {
   createProductInput,
   editProductForm,
@@ -31,28 +32,39 @@ export function Inventory(): React.JSX.Element {
   const [withdrawing, setWithdrawing] = useState<Product | true | null>(null)
   const [viewingMovements, setViewingMovements] = useState(false)
   const [defaultThreshold, setDefaultThreshold] = useState(5)
+  const [expirationOpen, setExpirationOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
+  const loadState = useRef({ sequence: 0 })
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const load = useCallback(async (showLoading = true) => {
+    const request = ++loadState.current.sequence
+    if (showLoading) setLoading(true)
     try {
       const [p, c, settings] = await Promise.all([
         window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
         window.api.categories.list(),
         window.api.settings.get()
       ])
+      if (request !== loadState.current.sequence) return
       setProducts(p.rows)
       setCategories(c)
       setDefaultThreshold(settings.default_low_stock)
     } catch (e) {
-      toastError('Failed to load inventory', String((e as Error)?.message || e))
+      if (request === loadState.current.sequence && showLoading) toastError('Failed to load inventory', String((e as Error)?.message || e))
     } finally {
-      setLoading(false)
+      if (request === loadState.current.sequence) setLoading(false)
     }
   }, [])
 
-  useEffect(() => { void load() }, [load])
-  useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
+  useEffect(() => {
+    const state = loadState.current
+    void load()
+    const refresh = () => { void load(false) }
+    const unsubscribe = window.api.inventory.onChanged(refresh)
+    window.addEventListener('focus', refresh)
+    const timer = window.setInterval(refresh, 15000)
+    return () => { ++state.sequence; unsubscribe(); window.removeEventListener('focus', refresh); window.clearInterval(timer) }
+  }, [load])
 
   useEffect(() => {
     if (!filterMenuOpen) return
@@ -128,6 +140,7 @@ export function Inventory(): React.JSX.Element {
         title="Inventory"
         subtitle={`${products.length} active products · stock value ${money(totalValue)}`}
         actions={<div className="flex flex-wrap gap-2">
+          <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
@@ -210,12 +223,14 @@ export function Inventory(): React.JSX.Element {
                   <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
+              <ProductExpiry product={p} />
             </div>
           ))}
         </div>
       )}
 
       {editing && <ProductModal form={editing} categories={categories} onSave={saveProduct} onClose={() => setEditing(null)} />}
+      {expirationOpen && <ExpirationList onClose={() => setExpirationOpen(false)} />}
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
@@ -295,12 +310,16 @@ function CsvImportModal({ onDone, onClose }: { onDone: () => void; onClose: () =
 }
 
 function RestockModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
+  const [expiry, setExpiry] = useState('')
+  const [batchLabel, setBatchLabel] = useState('')
   const [productId,setProductId]=useState(initial?.id ?? products[0]?.id ?? 0); const [quantity,setQuantity]=useState(''); const [unit,setUnit]=useState(initial?.units[0]?.name ?? initial?.base_unit ?? ''); const [supplierId,setSupplierId]=useState<number|null>(initial?.supplier_id ?? null); const [suppliers,setSuppliers]=useState<Supplier[]>([]); const [cost,setCost]=useState('0'); const [reference,setReference]=useState(''); const [notes,setNotes]=useState(''); const [busy,setBusy]=useState(false)
   useEffect(()=>{ void window.api.suppliers.list({status:'ACTIVE'}).then(setSuppliers) },[])
   const product=products.find(p=>p.id===productId); const selectedUnit=product?.units.find(u=>u.name===unit) ?? product?.units[0]; const qty=Number(quantity); const addBase=Number.isFinite(qty) ? qty*(selectedUnit?.conversion_to_base ?? 1):0; const newStock=(product?.stock??0)+addBase
-  const save=async()=>{setBusy(true);try{await window.api.inventory.restock({product_id:productId,quantity:qty,unit_name:selectedUnit?.name??'',supplier_id:supplierId,cost_c:Math.round(Number(cost)*100),reference,notes});toastSuccess('Restock saved');onDone()}catch(e){toastError('Restock failed',String((e as Error).message||e))}finally{setBusy(false)}}
+  const save=async()=>{setBusy(true);try{await window.api.inventory.restock({product_id:productId,quantity:qty,unit_name:selectedUnit?.name??'',supplier_id:supplierId,cost_c:Math.round(Number(cost)*100),reference,notes,expiration_date:product?.expiration_mode==='BATCH'?expiry:undefined,batch_label:batchLabel});toastSuccess('Restock saved');onDone()}catch(e){toastError('Restock failed',String((e as Error).message||e))}finally{setBusy(false)}}
   return <Modal open onClose={onClose} title="Restock Inventory" maxWidth="max-w-lg" footer={<><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" disabled={busy || !product || !(qty>0)} onClick={()=>void save()}>Save Restock</button></>}><div className="space-y-3">
     <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={e=>{const id=Number(e.target.value);setProductId(id);const p=products.find(x=>x.id===id);setUnit(p?.units[0]?.name??p?.base_unit??'')}}>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+    {product?.expiration_mode === 'BATCH' && <div className="grid grid-cols-2 gap-3"><div><label className="label">Batch label (optional)</label><input aria-label="Batch label" className="input w-full" value={batchLabel} onChange={(e) => setBatchLabel(e.target.value)} /></div><div><label className="label">Batch expiration *</label><input aria-label="Batch expiration" type="date" className="input w-full" value={expiry} onChange={(e) => setExpiry(e.target.value)} /></div></div>}
+    {product?.expiration_mode === 'ITEM' && <p className="text-sm text-amber-300">Per-item expiration: {product.expiration_date}</p>}
     <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div><div className="grid grid-cols-2 gap-3"><div><label className="label">Quantity to Add</label><input className="input w-full" type="number" min="0.01" step="any" value={quantity} onChange={e=>setQuantity(e.target.value)}/></div><div><label className="label">Unit</label><select className="input w-full" value={selectedUnit?.name??''} onChange={e=>setUnit(e.target.value)}>{product?.units.map(u=><option key={u.id} value={u.name}>{u.name}</option>)}</select></div></div>
     <div className="rounded-lg bg-brand-500/10 p-3 text-sm">Conversion: {quantity||0} × {selectedUnit?.conversion_to_base??1} = {addBase||0} {product?.base_unit}<br/><b>New Stock: {newStock||product?.stock||0} {product?.base_unit}</b></div>
     <div><label className="label">Supplier (optional)</label><select className="input w-full" value={supplierId??''} onChange={e=>setSupplierId(e.target.value?Number(e.target.value):null)}><option value="">None</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><div><label className="label">Unit Cost (₱)</label><input className="input w-full" type="number" min="0" value={cost} onChange={e=>setCost(e.target.value)}/></div><div><label className="label">Reference (optional)</label><input className="input w-full" value={reference} onChange={e=>setReference(e.target.value)}/></div><div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
@@ -308,6 +327,7 @@ function RestockModal({ products, initial, onDone, onClose }: { products: Produc
 }
 
 function WithdrawModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
+  const [batchId, setBatchId] = useState<number | undefined>()
   const [productId, setProductId] = useState(initial?.id ?? products[0]?.id ?? 0)
   const [quantity, setQuantity] = useState('')
   const [unit, setUnit] = useState(initial?.units[0]?.name ?? initial?.base_unit ?? '')
@@ -323,7 +343,7 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
   const save = async () => {
     setBusy(true)
     try {
-      await window.api.inventory.withdraw({ product_id: productId, quantity: qty, unit_name: selectedUnit?.name ?? '', reason, notes })
+      await window.api.inventory.withdraw({ product_id: productId, quantity: qty, unit_name: selectedUnit?.name ?? '', reason, notes, batch_id: batchId })
       toastSuccess('Withdrawal saved')
       onDone()
     } catch (e) { toastError('Withdrawal failed', String((e as Error).message || e)) } finally { setBusy(false) }
@@ -332,6 +352,7 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
     <div className="space-y-3">
       <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={(e) => { const id = Number(e.target.value); setProductId(id); const p = products.find((x) => x.id === id); setUnit(p?.units[0]?.name ?? p?.base_unit ?? '') }}>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
       <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div>
+      {product?.expiration_mode === 'BATCH' && <div><label className="label">Batch *</label><select aria-label="Withdrawal batch" className="input w-full" value={batchId ?? ''} onChange={(e) => setBatchId(e.target.value ? Number(e.target.value) : undefined)}><option value="">Select batch</option>{product.batches?.map((b) => <option key={b.id} value={b.id}>#{b.id} {b.label} / {b.expiration_date ?? 'Undated'} / {b.quantity} {product.base_unit}</option>)}</select></div>}
       <div className="grid grid-cols-2 gap-3">
         <div><label className="label">Quantity to Withdraw</label><input className="input w-full" type="number" min="0.01" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
         <div><label className="label">Unit</label><select className="input w-full" value={selectedUnit?.name ?? ''} onChange={(e) => setUnit(e.target.value)}>{product?.units.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}</select></div>
@@ -438,7 +459,12 @@ function StockBadge({ status }: { status: string }): React.JSX.Element {
   return <span className={`badge shrink-0 border ${map[status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{status.replace(/_/g, ' ')}</span>
 }
 
-function ProductModal({ form, categories, onSave, onClose }: { form: ProductFormData; categories: Category[]; onSave: (f: ProductFormData) => void; onClose: () => void }): React.JSX.Element {
+function ProductModal({ form, categories, onSave, onClose }: { form: ProductFormData; categories: Category[]; onSave: (f: ProductFormData) => Promise<void>; onClose: () => void }): React.JSX.Element {
+  const [saving, setSaving] = useState(false)
+  const [localCategories, setLocalCategories] = useState(categories)
+  const [categoryName, setCategoryName] = useState('')
+  const [addingCategory, setAddingCategory] = useState(false)
+  const [categoryBusy, setCategoryBusy] = useState(false)
   const [f, setF] = useState<ProductFormData>(form)
   const [rows, setRows] = useState<ProductUnitInput[]>(() => form.units.length > 0
     ? form.units
@@ -449,15 +475,28 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
   }
   const addUnit = () => setRows((prev) => [...prev, { name: '', conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: prev.length === 0 }])
   const removeUnit = (index: number) => setRows((prev) => prev.filter((_, i) => i !== index))
-  const submit = () => onSave({ ...f, units: rows })
+  const submit = async () => {
+    if (saving) return
+    setSaving(true)
+    try { await onSave({ ...f, units: rows }) } finally { setSaving(false) }
+  }
+  const addCategory = async () => {
+    setCategoryBusy(true)
+    try {
+      const category = await window.api.categories.create(categoryName)
+      setLocalCategories((prev) => prev.some((c) => c.id === category.id) ? prev : [...prev, category])
+      set({ category_id: category.id }); setCategoryName(''); setAddingCategory(false)
+    } catch (e) { toastError('Add category failed', String((e as Error).message || e)) }
+    finally { setCategoryBusy(false) }
+  }
   return (
     <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button onClick={submit} className="btn-primary">Save</button>
+        <button disabled={saving || categoryBusy} onClick={() => void submit()} className="btn-primary">Save</button>
       </>
     }>
-      <form onSubmit={(e) => { e.preventDefault(); submit() }} className="grid grid-cols-2 gap-3">
+      <form onSubmit={(e) => { e.preventDefault(); void submit() }} className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
           <label className="label">Name *</label>
           <input required value={f.name} onChange={(e) => set({ name: e.target.value })} className="input w-full" />
@@ -474,8 +513,10 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           <label className="label">Category</label>
           <select value={String(f.category_id ?? '')} onChange={(e) => set({ category_id: e.target.value ? Number(e.target.value) : null })} className="input w-full">
             <option value="">Uncategorized</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {localCategories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+          <button type="button" className="btn-ghost mt-1 flex items-center gap-1" onClick={() => setAddingCategory((v) => !v)}><Plus className="h-4 w-4" /> Add Category</button>
+          {addingCategory && <div className="mt-2 flex gap-1"><input aria-label="New category name" className="input min-w-0 flex-1" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} /><button type="button" title="Save category" className="btn-ghost" disabled={categoryBusy || !categoryName.trim()} onClick={() => void addCategory()}><Check className="h-4 w-4" /></button></div>}
         </div>
         <div>
           <label className="label">Base Unit</label>
@@ -499,6 +540,16 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
             <input type="number" min={0} value={f.initial_stock_base} onChange={(e) => set({ initial_stock_base: parseInt(e.target.value || '0', 10) })} className="input w-full" />
           </div>
         )}
+        <div className="col-span-2">
+          <label className="label" htmlFor="expiration-mode">Expiration Tracking</label>
+          <select id="expiration-mode" className="input w-full" value={f.expiration_mode ?? 'NONE'} onChange={(e) => set({ expiration_mode: e.target.value as Product['expiration_mode'], expiration_date: null })}>
+            <option value="NONE">None</option><option value="ITEM">Per Item</option><option value="BATCH">Per Batch</option>
+          </select>
+        </div>
+        {(f.expiration_mode === 'ITEM' || (f.expiration_mode === 'BATCH' && (f.initial_stock_base > 0 || (form.expiration_mode !== 'BATCH' && (f.current_stock ?? 0) > 0)))) && <div className="col-span-2">
+          <label className="label" htmlFor="product-expiration">{f.expiration_mode === 'ITEM' ? 'Expiration Date *' : 'Existing / opening stock expiration *'}</label>
+          <input id="product-expiration" className="input w-full" type="date" value={f.expiration_date ?? ''} onChange={(e) => set({ expiration_date: e.target.value })} />
+        </div>}
         <div className="col-span-2">
           <label className="label">Selling Units (Tingi / Multi-unit)</label>
           <div className="space-y-2">

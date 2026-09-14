@@ -67,6 +67,8 @@ const api: TindaApi = {
     importCsv: (text, strategy) => invoke('products:importCsv', text, strategy)
   },
   inventory: {
+    expiration: () => invoke<import('@shared/types').ExpirationEntry[]>('inventory:expiration'),
+    batchDate: (id, date) => invoke<void>('inventory:batchDate', id, date),
     onChanged: (cb) => {
       const listener = (_e: IpcRendererEvent, event: import('@shared/types').InventoryChangedEvent): void => cb(event)
       ipcRenderer.on('inventory:changed', listener)
@@ -148,7 +150,7 @@ const api: TindaApi = {
     shifts: (opts) => invoke<{ rows: import('@shared/types').Shift[]; summary: import('@shared/types').ReportSummary }>('reports:shifts', opts),
     exportCsv: (kind, opts) => invoke<import('@shared/types').ExportResult>('reports:exportCsv', kind, opts),
     xRead: () => invoke<import('@shared/types').ReadReport>('reports:xRead'),
-    printXRead: () => invoke<import('@shared/ipc').PrintResult>('reports:printXRead'),
+    printXRead: () => invoke<import('@shared/ipc').PrintResult & { report: import('@shared/types').ReadReport }>('reports:printXRead'),
     finalizeZ: (input) => invoke<import('@shared/types').ZRead>('reports:finalizeZ', input),
     zHistory: () => invoke<import('@shared/types').ZRead[]>('reports:zHistory'),
     printZRead: (id) => invoke<import('@shared/ipc').PrintResult>('reports:printZRead', id)

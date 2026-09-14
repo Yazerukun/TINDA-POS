@@ -58,6 +58,25 @@ export interface ProductUnit {
   is_default: boolean
 }
 
+export type ExpirationMode = 'NONE' | 'ITEM' | 'BATCH'
+export interface StockBatch {
+  id: number
+  product_id: number
+  label: string
+  expiration_date: string | null
+  quantity: number
+  created_at: string
+}
+export interface ExpirationEntry {
+  product_id: number
+  product_name: string
+  base_unit: string
+  batch_id: number | null
+  label: string
+  expiration_date: string | null
+  quantity: number
+}
+
 export interface Product {
   id: number
   category_id: number | null
@@ -73,6 +92,10 @@ export interface Product {
   low_stock_threshold: number
   supplier_id: number | null
   has_expiration: boolean
+  expiration_mode?: ExpirationMode
+  expiration_date?: string | null
+  batches?: StockBatch[]
+  sellable_stock?: number
   image_path: string | null
   status: ProductStatus
   notes: string | null
@@ -94,6 +117,8 @@ export interface ProductInput {
   low_stock_threshold?: number
   supplier_id: number | null
   has_expiration: boolean
+  expiration_mode?: ExpirationMode
+  expiration_date?: string | null
   notes: string | null
   units: { name: string; conversion_to_base: number; barcode: string | null; selling_price_c: number; is_default: boolean }[]
   initial_stock_base?: number
@@ -424,6 +449,7 @@ export interface ReadReport {
   gross_sales_c: number
   discount_c: number
   refunds_c: number
+  cash_refunds_c?: number
   voids_c: number
   net_sales_c: number
   cash_c: number
