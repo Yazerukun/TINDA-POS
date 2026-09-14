@@ -4,88 +4,92 @@
 
 **Free, offline point-of-sale for Philippine sari-sari stores and small businesses.**
 
-### v1.0.12
+### v1.0.13
 
-[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.13) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## Your Store, Ready to Sell
+---
 
-Record sales, manage stock, track customer credit, and reconcile your cash drawer on one computer. Core selling works without an internet connection. Your store database stays on your device.
+## What is TINDA POS?
 
-The free desktop edition supports Windows 10/11, 64-bit. Internet is needed for software downloads and optional third-party cloud-folder syncing, not everyday checkout.
+TINDA POS is a free, offline point-of-sale (POS) made for Philippine sari-sari
+stores and small businesses. It runs on a single Windows 10/11 (64-bit) computer
+— no internet connection is required for everyday selling.
 
-## What's New in v1.0.12
+Your store's data stays on your device. An internet connection is only needed to
+**download the software**, or to optionally save backups to a cloud-folder sync
+client (such as OneDrive or Google Drive for desktop).
 
-### Published v1.0.12
+## Why use TINDA POS?
 
-The v1.0.12 stable release adds **None / Per Item / Per Batch** expiration
-tracking, dated restocking, an expiration list, colored warnings, and a Tagalog
-login reminder. Expired and undated tracked stock is blocked at checkout;
-eligible batches are deducted earliest-expiry first. Refunds and voids restore
-the original batch allocation, while legacy returns without a known batch need
-date review. Categories can also be created directly from the product form.
+- **Works offline** — selling, inventory, utang, expenses, and reports keep working with no internet.
+- **Simple to learn** — designed for owners, managers, and cashiers, with a step-by-step user guide.
+- **Secured by roles** — control who can void sales, view reports, or reset the database.
+- **Free** — no subscription, no licensing fee, no data lock-in.
 
-Existing products keep their current stock and start with tracking disabled.
-An additive database migration stores batch records without rewriting historical
-sales. CSV stock changes for batch-tracked products require the dated Restock
-or batch-specific Withdraw workflow instead. Software Update code and provider
-configuration are unchanged.
-
-See the [v1.0.12 notes](docs/RELEASE-NOTES-v1.0.12.md) and
-[expiration guide](docs/USER-MANUAL.md#expiration-per-item-o-per-batch).
-
-### v1.0.11
+## What's New in v1.0.13
 
 | Change | What it means at the counter |
 | --- | --- |
-| Refund-aware dashboard | Today's Net Sales deducts refunds: PHP 500 sales minus PHP 100 refunds shows PHP 400. |
-| Live dashboard refresh | Sales, refunds, and voids refresh totals automatically. Window focus and a 15-second fallback keep other figures current. |
-| Local business date | Today's dashboard follows the computer's local calendar date. Daily totals remain visible after Z-Read. |
-| Clearer receipts | Aligned amounts and prominent totals on sales receipts, X-Read, Z-Read, and Cash Count in 58mm and 80mm formats. |
-| Final report details | Z-Read printing includes saved actual cash, over/short status, and closing time. |
+| Clearer utang customer picker | Tagalog heading and hint, selected-row highlight and checkmark, persistent customer name, and easier search. |
+| Missing-customer reminder | A reminder appears if a utang checkout is about to be submitted without a chosen customer. |
+| Optional Windows sign-in startup | Installed (Setup) users can start TINDA POS automatically when Windows opens — not enabled by default, and POS login is still required. |
 
-Software Update uses the same GitHub provider and installer settings. No database schema change is included.
+### Recent highlights
+
+- **v1.0.12: Inventory expiration tracking.** Track expiry per product — None, Per Item, or Per Batch. Expired or undated tracked stock is blocked at checkout; batches are used earliest-expiry first. Includes a searchable expiration list with colored warnings and a Tagalog login reminder.
+- **v1.0.11: Clearer cash reports.** Refund-aware dashboard, live totals, and cleaner X-Read / Z-Read / Cash Count receipts in 58mm and 80mm formats.
+
+See the full [release notes](docs/RELEASE-NOTES-v1.0.13.md) and the [user manual](docs/USER-MANUAL.md).
 
 ## Download
 
-Choose an asset from the [v1.0.12 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12):
+Choose an asset from the [v1.0.13 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.13):
 
 | File | Purpose |
 | --- | --- |
-| `TindaPOS-Setup-1.0.12.exe` | Recommended for a regular Windows installation. |
-| `TindaPOS-Portable-1.0.12.exe` | Run without installing; retain your existing data location when upgrading. |
+| `TindaPOS-Setup-1.0.13.exe` | Recommended — installs TINDA POS on Windows. |
+| `TindaPOS-Portable-1.0.13.exe` | Run without installing; keep your existing `TindaPOS-Data` folder when upgrading. |
 | `TindaPOS-User-Guide.pdf` | Printable, step-by-step user guide. |
-| `SHA256SUMS.txt` | SHA-256 checksums for verifying downloads. |
+| `SHA256SUMS.txt` | SHA-256 checksums for verifying the files above. |
 
-The `.blockmap` and `latest.yml` assets support Software Update. Users do not need to open them.
+> The `.blockmap` and `latest.yml` files support in-app Software Update — you do not need to open them.
+
+### Verify your download (optional)
+
+After downloading, confirm the files are intact in the same folder where `SHA256SUMS.txt` is saved:
+
+```bash
+sha256sum -c SHA256SUMS.txt
+```
 
 ## First Day Setup
 
-1. Install TINDA POS or open the Portable edition.
+1. Install TINDA POS (or open the Portable edition).
 2. Complete the wizard with your store details and admin account.
 3. Add products, prices, selling units, and opening stock in Inventory.
-4. Select your receipt printer and paper width, then run Test Print.
+4. Select your receipt printer and paper width, then run **Test Print**.
 5. Open POS, add items, select payment, and complete a sale.
 6. Make a backup of your store.
 
 ## Everyday Tools
 
-| Area | Included features |
+| Area | Features |
 | --- | --- |
-| Checkout | Search, barcode input, categories, quantity controls, split payments, saved Hold/Resume carts. |
-| Payments | Cash and change; GCash, Maya, and customer credit records. |
-| Inventory | Multi-unit products, CSV import, restock, receiving, low-stock alerts, withdrawals, and history. |
-| Customers | Credit limits, payments, adjustments, and credit ledger. |
-| Transactions | Sale history, receipt reprint, refunds, and permission-controlled voids. |
-| Shift reports | X-Read, saved Cash Count before Z-Read, final report history, and reconciliation. |
-| Management | Suppliers, purchases, expenses, users, roles, and settings. |
-| Data | Local backups, validated restore, optional backup copies to a synced folder. |
+| **Checkout** | Search, barcode input, categories, quantity controls, split payments, and saved Hold/Resume carts. |
+| **Payments** | Cash and change; GCash, Maya, and customer credit (utang) records. |
+| **Inventory** | Multi-unit products, CSV import, restock, receiving, low-stock alerts, withdrawals, and history. |
+| **Customers** | Credit limits, payments, adjustments, and credit ledger. |
+| **Transactions** | Sale history, receipt reprint, refunds, and permission-controlled voids. |
+| **Shift reports** | X-Read, saved Cash Count before Z-Read, report history, and reconciliation. |
+| **Management** | Suppliers, purchases, expenses, users, roles, and settings. |
+| **Data** | Local backups, validated restore, and optional backup copies to a cloud-folder. |
 
-GCash and Maya are recorded payment methods, not direct wallet integrations. Confirm the actual wallet payment before recording it.
+> GCash and Maya are **recorded payment methods**, not direct wallet integrations. Always confirm the actual wallet payment before recording it.
 
-## Cash Count First, Then Z-Read
+## Managing Daily Reports
 
 1. Finish sales and check refunds or expenses.
 2. Open **Reports > Cash Count** while your shift is still open.
@@ -93,15 +97,14 @@ GCash and Maya are recorded payment methods, not direct wallet integrations. Con
 4. Click **Save Cash Count** and wait for confirmation.
 5. Open **Reports > Z-Read**, review the final figures, and finalize.
 
-If the shift has no saved count, the reminder sends you to Cash Count. Closing that reminder leaves the shift open.
+**Important:** *Today's Net Sales is a daily total.* It does not reset after each Z-Read on the same day. Z-Read closes a shift and preserves its report; it does not delete transactions.
 
-**Today's Net Sales is a daily total.** It does not reset after each Z-Read on the same day. Z-Read closes a shift and preserves its report; it does not delete transactions.
+### Understanding the cash figures
 
-## Understand the Cash Figures
-
-**Cash in X/Z reports** is cash retained after giving change. **Expected Cash** also reflects the opening float, cash refunds, expenses, and cash movements. **Actual Cash** is the money counted. **Difference** is actual minus expected: positive is OVER, negative is SHORT, zero is BALANCED.
-
-Example: a cash-only PHP 485 sale paid with PHP 662 has PHP 177 change. Cash retained is PHP 485. With a PHP 177 opening float and no other movements, expected drawer cash is PHP 662.
+- **Cash (in X/Z reports)** — cash retained after giving change.
+- **Expected Cash** — reflects the opening float, cash refunds, expenses, and cash movements.
+- **Actual Cash** — the money you counted.
+- **Difference** — actual minus expected: positive is **OVER**, negative is **SHORT**, zero is **BALANCED**.
 
 ## Receipts and Printing
 
@@ -109,28 +112,28 @@ Under **Settings > Receipt / Printer**, select an installed Windows printer, cho
 
 X-Read is marked **CURRENT SHIFT - NOT FINAL**; Z-Read is marked **FINAL SHIFT REPORT**. Cash Count prints saved denomination counts and reconciliation amounts.
 
-A failed print does not undo a saved sale or Cash Count. Check the printer and reprint the record instead of entering it again. Physical thermal-printer validation remains pending; no printer model is certified by this release.
+> A failed print does not undo a saved sale or Cash Count. Check the printer and reprint the record instead of entering it again.
 
-## Update an Existing Store
+## Updating an Existing Store
 
-For v1.0.6 and newer, open **Settings > About > Software Update > Check for Updates**.
+For **v1.0.6 and newer**, open **Settings > About > Software Update > Check for Updates**.
 
-1. Read What's New and select **Download Update**.
+1. Read the What's New information and select **Download Update**.
 2. Let the download finish; retry if the connection is interrupted.
 3. Finish active transactions, then select **Restart & Install** in the installed edition.
-4. After reopening, verify the version and store records.
+4. After reopening, verify the version and your store records.
 
-The installed edition validates a fresh safety backup before installation. Portable downloads a separate EXE; keep your existing `TindaPOS-Data` folder with the new version when using Portable Data Mode.
+The installed edition validates a fresh safety backup before installation. The Portable edition downloads a separate EXE — keep your existing `TindaPOS-Data` folder with the new version when using Portable Data Mode.
 
-**Legacy v1.0.3-v1.0.5 users need a one-time manual Setup upgrade.** Back up, close the app, and install the approved current Setup over the existing installation using the same Windows account. Do not reset or delete data. Earlier versions without Software Update also need a manual upgrade.
+> **Legacy v1.0.3–v1.0.5 users need a one-time manual update.** Back up, close the app, and install the approved current Setup over the existing installation using the same Windows account. Do not reset or delete data.
 
 ## Your Data and Backups
 
-Default Windows database: `%APPDATA%\TINDA POS\database\tindapos.db`. Installer and Portable share this location by default. Moving an EXE does not create a new store.
+Default Windows database: `%APPDATA%\TINDA POS\database\tindapos.db`. The Installer and Portable editions share this location by default — moving an EXE does not create a new store.
 
 **Settings > Data** shows the active locations. Portable Data Mode can keep data in `TindaPOS-Data` beside the Portable app. Back up before changing modes, restoring, or updating; keep another copy on a separate drive.
 
-Optional cloud-folder backup uses a separately installed sync client such as OneDrive, Google Drive for desktop, or Dropbox. It is not live multi-device database synchronization.
+Optional cloud-folder backup uses a separately installed sync client such as OneDrive, Google Drive for desktop, or Dropbox. It is **not** live multi-device database synchronization.
 
 ## Help and Troubleshooting
 
@@ -142,7 +145,7 @@ Optional cloud-folder backup uses a separately installed sync client such as One
 | Receipt did not print | Check power/paper, Windows driver, selected printer, width, and Test Print. |
 | Update interrupted | Restore the internet connection and retry the download. |
 
-For support, include the version, Setup/Portable edition, exact error, and steps to reproduce in [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues). Remove customer details from screenshots.
+For support, include the version, Setup/Portable edition, the exact error, and steps to reproduce in [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues). Remove customer details from screenshots.
 
 ## Development
 
