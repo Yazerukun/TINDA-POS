@@ -1,9 +1,9 @@
-# TINDA POS v1.0.12 User Manual (Local Candidate)
+# TINDA POS v1.0.12 User Manual
 
 **TINDA POS v1.0.12** - Gabay para sa may-ari at cashier.
 
-Hindi pa published ang v1.0.12. Ang expiration features sa guide na ito ay para
-sa bagong candidate; v1.0.11 pa ang kasalukuyang public download.
+Ang guide na ito ay para sa kasalukuyang stable release (v1.0.12), na may
+inventory expiration tracking at mas malinaw na X-Read/Z-Read reports.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
@@ -85,7 +85,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.11. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.12. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -701,12 +701,12 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.11** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.11>
+**TINDA POS v1.0.12** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.11.exe` — Windows installer
-- `TindaPOS-Portable-1.0.11.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.12.exe` — Windows installer
+- `TindaPOS-Portable-1.0.12.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 
