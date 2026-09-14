@@ -1,5 +1,32 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.14 published - 2026-09-14
+
+Stage 12 complete after explicit owner GO ("oo publish na maka software update man
+gihapon sila noh"). v1.0.14 published as Stable/Latest on 2026-09-14T13:33Z.
+Annotated tag v1.0.14 pushed pointing at 20553dc (release HEAD on v1.0.14-dev;
+gh's auto tag initially pointed at master and was deleted/re-pointed). Uploaded
+six canonical assets: TindaPOS-Setup-1.0.14.exe (109657013 B, sha256 c958941f…),
+TindaPOS-Portable-1.0.14.exe (109426609 B, sha256 2266f76a…), .blockmap (sha256
+a27bbb0d…), latest.yml (sha256 a5594e6e…), TindaPOS-User-Guide.pdf (sha256
+eb32b023…), SHA256SUMS.txt.
+
+Updater regression gate PASS (Stage 13): packaged out/main/index.js,
+out/preload/index.js and app-update.yml in builds-v114-rc are byte-identical to
+v1.0.13 (builds-v113-rc) — verified from the packaged asars before publish. Only
+the renderer bundle changed; software update 1.0.13 -> 1.0.14 resolves normally.
+
+Stage 13 post-release verification PASS: /releases/latest -> v1.0.14 (draft=false,
+prerelease=false); all six assets re-downloaded from the live release and sha256
+verified against AES SHAs; published latest.yml Setup sha512+size match the
+published Setup EXE exactly (update channel source of truth). Wine runtime smoke
+PASS before publish (migrations 1..6, integrity ok, 32 tables).
+
+PR #3 merged to master 2026-09-14T13:36Z ("docs: refresh README + user guide for
+v1.0.14", HEAD d889d65): landing README now shows v1.0.14, What's New table,
+download links/assets, RELEASE-NOTES-v1.0.14.md and v1.0.14 User Manual added.
+No source changes on master.
+
 ## v1.0.14 Utang checkout reachability fix - 2026-09-14
 
 Owner feedback: selecting the borrower for an Utang checkout was confusing; the
