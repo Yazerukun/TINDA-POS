@@ -1,14 +1,41 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.12 RC freeze complete - 2026-09-14
+## v1.0.12 RC freeze + Windows build + Wine QA complete - 2026-09-14
 
-CURRENT STAGE: Source frozen as local RC commit; Windows packaging, updater
-acceptance and final release review pending.
+CURRENT STAGE: Source frozen and Windows RC built; updater acceptance and
+final release review pending.
 RC COMMIT: bfdf02984180ca1397fcc27554e523cd8fd79dbb (branch v1.0.12-dev).
-Source commit created 2026-09-14; installers/RC-SOURCE-COMMIT.txt updated.
+Windows RC artifacts frozen in source/builds-v112-final; SHA256SUMS-RC.txt
+records canon: Setup e077c64f…, Portable fd12c137…, blockmap 937349d9…,
+latest.yml 8e78196f…, PDF 6fb1a5a4… (22 pages, 138923 B).
 PACKAGE VERSION: 1.0.12. PUBLIC LATEST: v1.0.11. No push/tag/release yet.
-Working tree: only untracked QA evidence, stale build dirs and QA helper
-(excluded from RC, consistent with v1.0.11 tag) remain.
+
+STAGE 06 verified: product TINDA POS, app/file version 1.0.12.0 (exiftool);
+Setup SHA512 base64 matches latest.yml sha512; blockmap from same build;
+win32-x64 better-sqlite3 prebuild only; packaged app-update.yml provider
+github/Yazerukun/TINDA-POS; packaged out/main no QA strings/localhost;
+UPDATE_OWNER/REPO defaults Yazerukun/TINDA-POS; app.asar package.json
+version 1.0.12.
+
+STAGE 07 Wine QA PASS (isolated prefixes under /tmp/opencode): Setup
+win-unpacked launches (renderer/gpu processes live); fresh DB created,
+PRAGMA integrity_check = ok, migrations 1..6 applied, stock_batches +
+batch_movements tables and products.expiration_mode/expiration_date exist.
+Portable launches and unpacks to user-data dir with same DB/migration state.
+Automated QA re-run at RC commit: 31 files / 228 tests PASS; typecheck PASS;
+lint PASS; git diff --check PASS; tracked tree clean.
+
+UPDATER GATE: source updater files (installedUpdate/updateDownload/
+updateRuntime/updateService/updateStore/updateTransport/shared/update +
+renderer update store/components), electron-builder.yml and lockfiles are
+byte-identical to v1.0.11 (which in turn matched the natively-accepted v1.0.8
+chain). Preload only gains additive expiration IPC. Production provider and
+no-QA-strings verified on the packaged main. Native VM updater E2E (guest
+v1.0.11 -> local v1.0.12 feed) not repeated this session: tindaqa Windows
+credential was intentionally deleted after prior QA, WinRM/CDP bridge port
+not exposed, matching the v1.0.9-v1.0.11 accepted regression-gate approach.
+Remaining: final release review (Stage 10), then owner approval (Stage 11)
+before any publication (Stage 12).
 
 COMPLETED: None/Per Item/Per Batch modes; migration 6; dated restocking;
 earliest-expiry eligible stock allocation; expired/undated sale blocks; exact
