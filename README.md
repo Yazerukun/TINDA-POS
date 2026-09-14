@@ -4,9 +4,9 @@
 
 **Free, offline point-of-sale for Philippine sari-sari stores and small businesses.**
 
-### v1.0.11
+### v1.0.12
 
-[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.11) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[Download for Windows](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12) · [User Manual](docs/USER-MANUAL.md) · [Report an Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
@@ -16,7 +16,27 @@ Record sales, manage stock, track customer credit, and reconcile your cash drawe
 
 The free desktop edition supports Windows 10/11, 64-bit. Internet is needed for software downloads and optional third-party cloud-folder syncing, not everyday checkout.
 
-## What's New in v1.0.11
+## What's New in v1.0.12
+
+### Published v1.0.12
+
+The v1.0.12 stable release adds **None / Per Item / Per Batch** expiration
+tracking, dated restocking, an expiration list, colored warnings, and a Tagalog
+login reminder. Expired and undated tracked stock is blocked at checkout;
+eligible batches are deducted earliest-expiry first. Refunds and voids restore
+the original batch allocation, while legacy returns without a known batch need
+date review. Categories can also be created directly from the product form.
+
+Existing products keep their current stock and start with tracking disabled.
+An additive database migration stores batch records without rewriting historical
+sales. CSV stock changes for batch-tracked products require the dated Restock
+or batch-specific Withdraw workflow instead. Software Update code and provider
+configuration are unchanged.
+
+See the [v1.0.12 notes](docs/RELEASE-NOTES-v1.0.12.md) and
+[expiration guide](docs/USER-MANUAL.md#expiration-per-item-o-per-batch).
+
+### v1.0.11
 
 | Change | What it means at the counter |
 | --- | --- |
@@ -30,12 +50,12 @@ Software Update uses the same GitHub provider and installer settings. No databas
 
 ## Download
 
-Choose an asset from the [v1.0.11 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.11):
+Choose an asset from the [v1.0.12 release](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.12):
 
 | File | Purpose |
 | --- | --- |
-| `TindaPOS-Setup-1.0.11.exe` | Recommended for a regular Windows installation. |
-| `TindaPOS-Portable-1.0.11.exe` | Run without installing; retain your existing data location when upgrading. |
+| `TindaPOS-Setup-1.0.12.exe` | Recommended for a regular Windows installation. |
+| `TindaPOS-Portable-1.0.12.exe` | Run without installing; retain your existing data location when upgrading. |
 | `TindaPOS-User-Guide.pdf` | Printable, step-by-step user guide. |
 | `SHA256SUMS.txt` | SHA-256 checksums for verifying downloads. |
 
