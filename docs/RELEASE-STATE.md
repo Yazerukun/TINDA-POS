@@ -707,3 +707,24 @@ the v1.0.8 RC to the owner for approval before any publication.
 ## GitHub this session
 
 Read-only metadata/verification only. Pushed: NO. Tagged: NO. Released: NO.
+
+## v1.0.15 STABLE PUBLISHED & LIVE - 2026-09-15 (Ian GO)
+
+- URL: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.15
+- Status: **Stable** | Latest | non-prerelease | non-draft | publicly visible.
+- Tag `v1.0.15` (annotated) peels exactly to frozen RC source commit
+  `61902bf` (61902bfbd9e8775508e698bd8bcab52342726504) - verified via
+  `git rev-parse` before push and `gh api .tag_name == v1.0.15, prerelease=false, draft=false`.
+- Branch `v1.0.15-dev` pushed (tracks origin/v1.0.15-dev).
+- 6 release assets (GitHub CDN, sizes after upload):
+  * TindaPOS-Setup-1.0.15.exe    - 109657128 B (SHA256 cfacb0e7...)
+  * TindaPOS-Portable-1.0.15.exe - 109426752 B (SHA256 828481d4...)
+  * TindaPOS-Setup-1.0.15.exe.blockmap - 117040 B
+  * latest.yml                    - 348 B (sha512 UqEM1gcT..., sha512+size==Setup)
+  * TindaPOS-User-Guide.pdf       - 139941 B (v1.0.15, 22pp)
+  * SHA256SUMS-RC.txt             - release checksum manifest
+- Post-publish verify: `git ls-remote` shows tag object 89ddf3a peeling to
+  61902bf; `gh api` asset_count=6 matches canonical set; no build/updater/PDF
+  bytes changed post-freeze (all byte-identical to double-tested RC).
+- Updater gate intact: app-update.yml + electron-builder + lockfile
+  byte-identical to v1.0.14; provider github/Yazerukun/TINDA-POS (NO QA strings).
