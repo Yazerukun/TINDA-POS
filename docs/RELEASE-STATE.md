@@ -1,25 +1,34 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.16 RC development & freeze - 2026-09-15
+## v1.0.16 RC build & freeze complete - 2026-09-15
 
-Owner requested v1.0.16 with:
-1. Windows Auto-Start reliability on boot/power-on without manual shortcut clicking.
-2. Estimated profit .10 / centavo discrepancy fix.
-3. Payment breakdown alignment in live print (Cash + GCash order before Sukli, Total Payments).
-4. Zero changes to Software Update mechanism so v1.0.15 users can auto-update seamlessly.
-5. Strict local RC freeze only; DO NOT publish without explicit approval.
+Windows RC built in source/builds-v116-rc from commit de8052b on branch
+v1.0.16-dev via the bubblewrap/disk-backed-TMP workflow.
 
-Branch: `v1.0.16-dev` (created from tag `v1.0.15` = `61902bf`).
-Worktree: `/home/ian/tindapos-v106-qa/v116-worktree`.
+Artifacts (statically verified):
+- TindaPOS-Setup-1.0.16.exe — 109657417 B, SHA256 d3aa1319…; SHA512
+  base64 YHSm+49P… matches latest.yml.
+- TindaPOS-Portable-1.0.16.exe — 109427031 B, SHA256 b9a2222a….
+- TindaPOS-Setup-1.0.16.exe.blockmap — 117030 B, SHA256 ece2918f….
+- latest.yml — version 1.0.16, sha512 + size match Setup; releaseDate
+  2026-09-15T14:51:20.807Z.
+- TindaPOS-User-Guide.pdf — 22 pages, 140117 bytes, version 1.0.16.
+- SHA256SUMS-RC.txt — all 5 payloads verified OK.
+- RC-SOURCE-COMMIT.txt = de8052be6b97bdde5245fba78e80e4e680c83084.
+- exiftool: TINDA POS, file/product 1.0.16.0.
+- Packaged app-update.yml: provider github, owner Yazerukun, repo TINDA-POS.
+- Packaged out/main/index.js: 0 QA strings, 0 localhost/QA URLs.
 
-Implemented:
-- Dual-layer Windows auto-start: Electron login item + Windows Startup folder shortcut (`shell.writeShortcutLink` to `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TINDA POS.lnk`) in `startup.ts`.
-- Removed duplicate discount deduction from `reporting.ts` and `dashboard.ts`; rounded cost and profit calculations.
-- Fixed POS discount input to display in Pesos and correctly parse centavos.
-- Reordered receipt print lines in `checkout.ts` to output all payment tenders before `SUKLI`.
-- Added `TOTAL PAYMENTS` row in `readReport.ts` and styled in `receiptHtml.ts`.
-- Automated QA: 35 test files / 248 tests PASS, typecheck PASS, lint PASS.
-- Updater Gate: byte-identical update services, configs, and lockfile.
+QA Gates:
+- Full automated test suite: 35 test files / 248 tests PASS.
+- Full typecheck (node + web): PASS.
+- Full lint: PASS.
+- Updater Gate: All updater source files, electron-builder.yml, and pnpm-lock.yaml
+  are byte-identical to v1.0.15. Only feature & bugfix files touched.
+
+CURRENT STAGE: RC built and statically verified; LOCAL FREEZE COMPLETE.
+STRICT RULE: NO push, tag, release, or publication performed without explicit
+approval from Ian.
 
 ## v1.0.15 development - 2026-09-15
 
