@@ -1,5 +1,33 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.15 RC build complete - 2026-09-15
+
+Windows RC built in source/builds-v115-rc from commit 61902bf on branch
+v1.0.15-dev via the proven bubblewrap/disk-backed-TMP workflow.
+
+Artifacts (statically verified):
+- TindaPOS-Setup-1.0.15.exe — 109657128 B, SHA256 cfacb0e7…; SHA512
+  base64 UqEM1gcT… matches latest.yml.
+- TindaPOS-Portable-1.0.15.exe — 109426752 B, SHA256 828481d4….
+- TindaPOS-Setup-1.0.15.exe.blockmap — 117040 B, SHA256 3344bdde….
+- latest.yml — version 1.0.15, sha512 + size match Setup; releaseDate
+  2026-09-15T06:57:52Z.
+- TindaPOS-User-Guide.pdf — 22 pages, 139941 bytes, version 1.0.15.
+- SHA256SUMS-RC.txt — all 5 payloads verified.
+- RC-SOURCE-COMMIT.txt = 61902bfbd9e8775508e698bd8bcab52342726504.
+- exiftool: TINDA POS, file/product 1.0.15.0.
+- Packaged app-update.yml: provider github, owner Yazerukun, repo TINDA-POS.
+- Packaged out/main/index.js: 0 QA strings, 0 localhost/QA URLs.
+
+Wine QA (Stage 07): binary launched and stayed alive (exit 124 = timeout-
+killed); DB creation blocked by Nvidia GPU / Wine rendering limitation on
+this Omarchy laptop — same known behavior across all prior releases.
+Native Windows spot-check recommended before publication.
+
+CURRENT STAGE: RC built and statically verified; Wine QA limited by GPU;
+no push/tag/release/publish yet. Owner review + Windows spot-check
+recommended before publication.
+
 ## v1.0.15 development - 2026-09-15
 
 Owner authorized moving to v1.0.15 with the Software Update mechanism left
