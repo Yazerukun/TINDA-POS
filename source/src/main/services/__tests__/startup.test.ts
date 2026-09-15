@@ -1,20 +1,36 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mkdtempSync, existsSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { app } from 'electron'
-import { startupSetting } from '../startup'
+import { startupSetting, applyDefaultStartup } from '../startup'
 
+const { setLoginItemSettings, getLoginItemSettings } = vi.hoisted(() => ({
+  setLoginItemSettings: vi.fn(),
+  getLoginItemSettings: vi.fn()
+}))
 vi.mock('electron', () => ({ app: {
   isPackaged: true,
-  getLoginItemSettings: vi.fn(),
-  setLoginItemSettings: vi.fn()
+  getPath: vi.fn(() => process.env.__TD_USER_DATA),
+  getLoginItemSettings,
+  setLoginItemSettings
 } }))
 
+let userData: string
+
 beforeEach(() => {
+  userData = mkdtempSync(join(tmpdir(), 'tinda-ss-'))
+  process.env.__TD_USER_DATA = userData
   vi.spyOn(process, 'platform', 'get').mockReturnValue('win32')
   vi.stubEnv('PORTABLE_EXECUTABLE_FILE', '')
   vi.stubEnv('PORTABLE_EXECUTABLE_DIR', '')
   vi.mocked(app.getLoginItemSettings).mockReturnValue({ openAtLogin: false, executableWillLaunchAtLogin: false } as ReturnType<typeof app.getLoginItemSettings>)
 })
-afterEach(() => { vi.restoreAllMocks(); vi.clearAllMocks(); vi.unstubAllEnvs() })
+afterEach(() => {
+  vi.clearAllMocks()
+  try { rmSync(userData, { recursive: true, force: true }) } catch { /* ignore */ }
+  delete process.env.__TD_USER_DATA
+})
 
 describe('Windows startup preference', () => {
   it('reads the OS setting without enabling startup by default', () => {
@@ -48,5 +64,27 @@ describe('Windows startup preference', () => {
   it('rejects malformed IPC values', () => {
     expect(() => startupSetting('true' as unknown as boolean)).toThrow('Invalid startup')
     expect(app.setLoginItemSettings).not.toHaveBeenCalled()
+  })
+})
+
+describe('applyDefaultStartup (default ON for Setup installs)', () => {
+  it('enables start-at-sign-in and drops a marker on first launch', () => {
+    vi.mocked(app.getLoginItemSettings).mockReturnValue({ openAtLogin: true, executableWillLaunchAtLogin: true } as ReturnType<typeof app.getLoginItemSettings>)
+    expect(applyDefaultStartup()).toBe(true)
+    expect(app.setLoginItemSettings).toHaveBeenCalledWith({ path: process.execPath, args: [], openAtLogin: true, enabled: true })
+    expect(existsSync(join(userData, 'startup-default-on-applied.txt'))).toBe(true)
+  })
+  it('does not re-enable over a marker left by a later manual opt-out', () => {
+    const { writeFileSync } = require('node:fs') as typeof import('node:fs')
+    writeFileSync(join(userData, 'startup-default-on-applied.txt'), '1')
+    vi.mocked(app.getLoginItemSettings).mockReturnValue({ openAtLogin: false, executableWillLaunchAtLogin: false } as ReturnType<typeof app.getLoginItemSettings>)
+    expect(applyDefaultStartup()).toBe(false)
+    expect(app.setLoginItemSettings).not.toHaveBeenCalled()
+  })
+  it('is a no-op on unsupported (portable) installs', () => {
+    vi.stubEnv('PORTABLE_EXECUTABLE_FILE', 'C:\\Portable')
+    expect(applyDefaultStartup()).toBe(false)
+    expect(app.setLoginItemSettings).not.toHaveBeenCalled()
+    expect(existsSync(join(userData, 'startup-default-on-applied.txt'))).toBe(false)
   })
 })

@@ -4,6 +4,7 @@ import { registerIpcHandlers } from './ipc'
 import { getDb, closeDb, appDirs } from './database/connection'
 import { getSettings } from './repositories/settings'
 import { startAutoUpdateCheck } from './services/updateRuntime'
+import { applyDefaultStartup } from './services/startup'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -71,6 +72,9 @@ app.whenReady().then(() => {
     console.error('Database init failed:', e)
   }
   registerIpcHandlers()
+  // First launch of an installed Setup registers start-at-sign-in so a fresh
+  // install boots straight into TINDA POS; owners can switch it off in Settings.
+  applyDefaultStartup()
   // Production menu: standard Edit items only (keeps copy/paste working),
   // no developer entries (no reload/devtools/view-source controls for cashiers).
   Menu.setApplicationMenu(

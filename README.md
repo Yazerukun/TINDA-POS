@@ -48,7 +48,7 @@ Internet is needed for downloading updates and optional synced-folder backups, n
 
 The existing Utang customer flow is designed to prevent mistakes:
 
-1. In POS, click **Select Customer** under **Piliin ang Nangutang**.
+1. In POS, click **Select Customer** under **Select the borrower**.
 2. Search using the customer name or phone number.
 3. Click the customer row. The selected row is highlighted and shows a checkmark.
 4. Confirm **Selected: Customer Name ✓** before opening Checkout.
@@ -85,7 +85,7 @@ The default database is stored at `%APPDATA%\TINDA POS\database\tindapos.db`. Ch
 
 | Problem | First check |
 | --- | --- |
-| Utang customer is unclear | Use **Piliin ang Nangutang**, select the highlighted customer, and confirm the name with ✓. |
+| Utang customer is unclear | Use **Select the borrower**, select the highlighted customer, and confirm the name with ✓. |
 | No open shift | Open a shift, and save Cash Count before Z-Read next time. |
 | Cash does not match | Check starting float, cash payments, refunds, expenses, and cash movements. |
 | Receipt did not print | Check paper, power, Windows driver, selected printer, width, and Test Print. |

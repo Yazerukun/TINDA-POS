@@ -2,7 +2,7 @@ import { getDb } from '../database/connection'
 import { getSale, markVoided, updateSaleStatus, addRefundedQty } from '../repositories/sales'
 import { adjustStock } from '../repositories/products'
 import { createRefund } from '../repositories/refunds'
-import { applyCreditEntry } from '../repositories/customers'
+import { applyCreditEntry, getCustomer } from '../repositories/customers'
 import { currentShiftFor } from '../repositories/shifts'
 import { audit } from '../repositories/audit'
 import { requirePermission, requireUser } from './session'
@@ -66,15 +66,22 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
     else updateSaleStatus(db, sale.id, 'PARTIALLY_REFUNDED')
 
     if (sale.customer_id && sale.payments.some((p) => p.method === 'UTANG')) {
-      applyCreditEntry(db, {
-        customer_id: sale.customer_id,
-        entry_type: 'REFUND',
-        amount_c: totalC,
-        reference_type: 'REFUND',
-        reference_id: refund.id,
-        notes: `Refund ${refund.refund_no}`,
-        user_id: user.id
-      })
+      // Only reduce the customer's outstanding balance by the portion they
+      // still owe. If the utang was already paid off, the excess is returned
+      // from the drawer instead of pushing the ledger below zero.
+      const customer = getCustomer(db, sale.customer_id)
+      const ledgerAmount = Math.min(totalC, customer.balance_c)
+      if (ledgerAmount > 0) {
+        applyCreditEntry(db, {
+          customer_id: sale.customer_id,
+          entry_type: 'REFUND',
+          amount_c: ledgerAmount,
+          reference_type: 'REFUND',
+          reference_id: refund.id,
+          notes: `Refund ${refund.refund_no}`,
+          user_id: user.id
+        })
+      }
     }
 
     if (sale.shift_id) updateShiftTotals(db, sale.shift_id)
@@ -119,15 +126,21 @@ export function processVoid(payload: VoidPayload): import('@shared/types').Sale 
     if (sale.customer_id && sale.payments.some((p) => p.method === 'UTANG')) {
       const utangAmt = sale.payments.filter((p) => p.method === 'UTANG').reduce((s, p) => s + p.amount_c, 0)
       if (utangAmt > 0) {
-        applyCreditEntry(db, {
-          customer_id: sale.customer_id,
-          entry_type: 'REVERSAL',
-          amount_c: utangAmt,
-          reference_type: 'SALE',
-          reference_id: sale.id,
-          notes: `Voided ${sale.transaction_no}: ${payload.reason}`,
-          user_id: user.id
-        })
+        // Only reverse the portion of the utang the customer still owes; any
+        // already-settled excess must not push the ledger below zero.
+        const customer = getCustomer(db, sale.customer_id)
+        const ledgerAmount = Math.min(utangAmt, customer.balance_c)
+        if (ledgerAmount > 0) {
+          applyCreditEntry(db, {
+            customer_id: sale.customer_id,
+            entry_type: 'REVERSAL',
+            amount_c: ledgerAmount,
+            reference_type: 'SALE',
+            reference_id: sale.id,
+            notes: `Voided ${sale.transaction_no}: ${payload.reason}`,
+            user_id: user.id
+          })
+        }
       }
     }
 

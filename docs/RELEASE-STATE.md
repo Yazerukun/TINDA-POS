@@ -1,5 +1,46 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.15 development - 2026-09-15
+
+Owner authorized moving to v1.0.15 with the Software Update mechanism left
+untouched. Branch: v1.0.15-dev (created from tag v1.0.14 = 20553dc).
+RELEASE-PLAN: docs/RELEASE-PLAN-v1.0.15.md.
+
+Scope implemented:
+- UTANG checkout UI translated to English (owner feedback): "Piliin ang
+  Nangutang" -> "Select the borrower", "bago mag-checkout." -> "before
+  checkout.", modal title "Piliin ang Nangutang" -> "Select the Borrower",
+  "I-click ang customer sa listahan para ma-select." -> "Click a customer in
+  the list to select them." (POS.tsx only). Utang.tsx and Customers.tsx were
+  already English. README + USER-MANUAL string references updated to match.
+- Windows Setup start-at-sign-in is now ON by default on first launch
+  (applyDefaultStartup in startup.ts, marker file startup-default-on-applied.txt
+  in userData so a later manual off is never overridden; index.ts hooks it after
+  registerIpcHandlers). Startup stays opt-out in Settings; Portable unaffected.
+- Refund/void crash fix (owner reported refund error): refunding or voiding a
+  UTANG sale after the customer already settled their balance crashed with
+  "Ledger balance cannot go negative." and rolled back the whole refund.
+  transaction.ts now clamps the ledger reduction to the customer's current
+  balance (min(totalC, customer.balance_c) in processRefund, min(utangAmt,
+  customer.balance_c) in processVoid); the excess is returned from the drawer,
+  matching reports' cashRefunds = total_c - ledger-covered logic. Regression
+  test refund-utang.test.ts added (utang sale 1800 -> fully paid -> refund 1800
+  succeeds, balance stays 0).
+
+QA (source in /home/ian/tindapos-v106-qa/v115-worktree):
+- Automated QA PASS: npm run typecheck PASS, npm run lint PASS, npm test =
+  34 files / 246 tests PASS.
+- Updater gate PASS: git diff --name-only contains no update/electron-builder/
+  app-update files; only index.ts, startup.ts, startup.test.ts, transaction.ts,
+  POS.tsx, refund-utang.test.ts (+ docs) changed. package.json bumped
+  1.0.14 -> 1.0.15 (version-only).
+- rc-source worktree left clean (refund fix was briefly mis-applied there, then
+  fully reverted; all v1.0.15 work is in v115-worktree only).
+
+CURRENT STAGE: source implementation + automated QA complete; no Windows build,
+no RC freeze, no push/tag/release/publish yet. Awaiting owner review of the
+finalized changes before any build.
+
 ## v1.0.14 Utang checkout reachability fix - 2026-09-14
 
 Owner feedback: selecting the borrower for an Utang checkout was confusing; the

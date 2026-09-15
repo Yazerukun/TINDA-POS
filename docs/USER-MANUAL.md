@@ -1,10 +1,10 @@
-# TINDA POS v1.0.14 User Manual
+# TINDA POS v1.0.15 User Manual
 
-**TINDA POS v1.0.14** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.15** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa kasalukuyang stable release (v1.0.14), na may
-inventory expiration tracking, mas malinaw na X-Read/Z-Read reports, at
-mas malinaw na Utang customer selection sa checkout.
+Ang guide na ito ay para sa kasalukuyang stable release (v1.0.15), na may
+English na Utang checkout, awtomatikong pagbukas sa Windows (Setup), at
+mas malinaw na X-Read/Z-Read reports.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
@@ -13,13 +13,14 @@ shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 
 ### Pagpili ng nangutang
 
-1. Sa POS, sa **Piliin ang Nangutang**, pindutin ang **Select Customer**.
+1. Sa POS, sa **Select the borrower**, pindutin ang **Select Customer**.
 2. Hanapin ang pangalan o phone number. I-click ang customer sa listahan para ma-select.
 3. Tingnan ang **Selected: pangalan** at checkmark sa cart. Para magpalit, buksan
    ulit ang parehong listahan; may highlight at checkmark ang kasalukuyang napili.
 4. Sa Checkout, piliin ang **Utang** at suriin muli ang pangalan bago **Charge**.
-5. Kapag may **Please select the customer for this Utang.**, i-Cancel ang Checkout,
-   pumili ng customer sa cart, saka mag-Checkout ulit. Hindi pa na-charge ang sale.
+5. Kapag may **Please select the customer for this Utang before checkout.**,
+   i-Cancel ang Checkout, pumili ng customer sa cart, saka mag-Checkout ulit.
+   Hindi pa na-charge ang sale.
 
 Gamitin ang **Walk-in (no utang)** para alisin ang napiling customer. Ang bagong
 sale ay hindi awtomatikong gagamit ng nangutang sa naunang sale. Hindi nagbago
@@ -27,11 +28,12 @@ ang credit limit: kapag kulang ito, sundin ang kasalukuyang approval process.
 
 ### Awtomatikong pagbukas sa Windows
 
-Sa installed Windows Setup, mag-login gamit ang account na may Settings access.
-Sa **Settings > Store**, i-check ang **Start TINDA POS when I sign in to Windows**.
-Sa susunod na Windows sign-in, bubukas ang app; kailangan pa rin ang normal POS
-login. Alisin ang check para i-OFF. Hindi ito kusang naka-ON at hindi ito
-available sa Portable edition. Hindi ito pagbukas bago mag-sign in sa Windows.
+Sa installed Windows Setup, awtomatikong naka-ON ang pagbukas kasabay ng
+Windows sign-in para mas madaling makapagsimula ang tindahan. Sa
+**Settings > Store**, makikita na naka-check ang **Start TINDA POS when I sign
+in to Windows**. Alisin ang check para i-OFF kung ayaw mo; hindi ito muling
+naka-ON para sa mga action mo. Hindi ito available sa Portable edition at hindi
+ito pagbukas bago mag-sign in sa Windows.
 
 ### Araw-araw na checklist
 
@@ -110,7 +112,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.14. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.15. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -734,7 +736,7 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.14** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.14>
+**TINDA POS v1.0.15** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.15>
 
 Files for this release:
 

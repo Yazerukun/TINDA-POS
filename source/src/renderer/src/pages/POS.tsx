@@ -431,7 +431,7 @@ function CartPanel(): React.JSX.Element {
 
       <div className="space-y-2 border-t border-ink-line px-4 py-3 text-base">
         <div className="flex items-center justify-between text-slate-400">
-          <span className="min-w-0">Piliin ang Nangutang</span>
+          <span className="min-w-0">Select the borrower</span>
           <button onClick={() => setCustomerOpen(true)} className="flex shrink-0 items-center gap-1 text-brand-400 hover:text-brand-300">
             <User className="h-3.5 w-3.5" /> Select Customer
           </button>
@@ -672,7 +672,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
               <>
                 <p className="flex items-start gap-2 text-sm text-amber-300">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Please select the customer for this Utang bago mag-checkout.</span>
+                  <span>Please select the customer for this Utang before checkout.</span>
                 </p>
                 <button onClick={() => setPickerOpen(true)} className="btn-primary mt-2 flex w-full items-center justify-center gap-2 py-2">
                   <User className="h-4 w-4" /> Select Customer
@@ -716,10 +716,10 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
   useEffect(() => { void load('') }, [])
 
   return (
-    <Modal open onClose={onClose} title="Piliin ang Nangutang" maxWidth="max-w-md" footer={
+    <Modal open onClose={onClose} title="Select the Borrower" maxWidth="max-w-md" footer={
       <button onClick={() => { usePosCart.getState().setCustomer(null); onClose() }} className="btn-ghost">Walk-in (no utang)</button>
     }>
-      <p className="mb-3 text-sm text-slate-400">I-click ang customer sa listahan para ma-select.</p>
+      <p className="mb-3 text-sm text-slate-400">Click a customer in the list to select them.</p>
       <input
         value={q}
         onChange={(e) => { setQ(e.target.value); void load(e.target.value) }}
