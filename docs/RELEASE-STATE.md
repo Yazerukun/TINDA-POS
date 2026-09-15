@@ -1,5 +1,26 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.16 STABLE PUBLISHED & LIVE - 2026-09-16 (Ian GO)
+
+- URL: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.16
+- Status: **Stable** | Latest | non-prerelease | non-draft | publicly visible.
+- Tag `v1.0.16` (annotated) peels exactly to frozen RC source commit
+  `de8052b` (de8052be6b97bdde5245fba78e80e4e680c83084) - verified via
+  `git rev-parse` before push and `gh api .tag_name == v1.0.16, prerelease=false, draft=false`.
+- Branch `v1.0.16-dev` pushed (tracks origin/v1.0.16-dev).
+- 6 release assets (GitHub CDN, sizes after upload):
+  * TindaPOS-Setup-1.0.16.exe    - 109657417 B (SHA256 d3aa1319...)
+  * TindaPOS-Portable-1.0.16.exe - 109427031 B (SHA256 b9a2222a...)
+  * TindaPOS-Setup-1.0.16.exe.blockmap - 117030 B
+  * latest.yml                    - 348 B (sha512 YHSm+49P..., sha512+size==Setup)
+  * TindaPOS-User-Guide.pdf       - 140117 B (v1.0.16, 22pp)
+  * SHA256SUMS-RC.txt             - release checksum manifest
+- Post-publish verify: `git ls-remote` shows tag object eb88942 peeling to
+  de8052b; `gh release view` asset count matches canonical set; downloaded and
+  `sha256sum -c` verified PASS for all payloads.
+- Updater gate intact: app-update.yml + electron-builder + lockfile
+  byte-identical to v1.0.15; provider github/Yazerukun/TINDA-POS (NO QA strings).
+
 ## v1.0.16 RC build & freeze complete - 2026-09-15
 
 Windows RC built in source/builds-v116-rc from commit de8052b on branch
