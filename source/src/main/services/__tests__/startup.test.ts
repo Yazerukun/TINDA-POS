@@ -5,22 +5,31 @@ import { join } from 'node:path'
 import { app } from 'electron'
 import { startupSetting, applyDefaultStartup } from '../startup'
 
-const { setLoginItemSettings, getLoginItemSettings } = vi.hoisted(() => ({
+const { setLoginItemSettings, getLoginItemSettings, writeShortcutLink } = vi.hoisted(() => ({
   setLoginItemSettings: vi.fn(),
-  getLoginItemSettings: vi.fn()
+  getLoginItemSettings: vi.fn(),
+  writeShortcutLink: vi.fn()
 }))
-vi.mock('electron', () => ({ app: {
-  isPackaged: true,
-  getPath: vi.fn(() => process.env.__TD_USER_DATA),
-  getLoginItemSettings,
-  setLoginItemSettings
-} }))
+vi.mock('electron', () => ({
+  app: {
+    isPackaged: true,
+    getPath: vi.fn((name) => name === 'appData' ? process.env.__TD_APP_DATA : process.env.__TD_USER_DATA),
+    getLoginItemSettings,
+    setLoginItemSettings
+  },
+  shell: {
+    writeShortcutLink
+  }
+}))
 
 let userData: string
+let appData: string
 
 beforeEach(() => {
   userData = mkdtempSync(join(tmpdir(), 'tinda-ss-'))
+  appData = mkdtempSync(join(tmpdir(), 'tinda-ad-'))
   process.env.__TD_USER_DATA = userData
+  process.env.__TD_APP_DATA = appData
   vi.spyOn(process, 'platform', 'get').mockReturnValue('win32')
   vi.stubEnv('PORTABLE_EXECUTABLE_FILE', '')
   vi.stubEnv('PORTABLE_EXECUTABLE_DIR', '')
@@ -29,7 +38,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllMocks()
   try { rmSync(userData, { recursive: true, force: true }) } catch { /* ignore */ }
+  try { rmSync(appData, { recursive: true, force: true }) } catch { /* ignore */ }
   delete process.env.__TD_USER_DATA
+  delete process.env.__TD_APP_DATA
 })
 
 describe('Windows startup preference', () => {
@@ -41,6 +52,13 @@ describe('Windows startup preference', () => {
     startupSetting(enabled)
     expect(app.setLoginItemSettings).toHaveBeenCalledWith({ path: process.execPath, args: [], openAtLogin: enabled, enabled })
     expect(app.getLoginItemSettings).toHaveBeenCalledWith({ path: process.execPath, args: [] })
+    if (enabled) {
+      expect(writeShortcutLink).toHaveBeenCalledWith(
+        join(appData, 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', 'TINDA POS.lnk'),
+        'replace',
+        expect.objectContaining({ target: process.execPath, description: 'TINDA POS' })
+      )
+    }
   })
   it('reflects startup disabled by Windows', () => {
     vi.mocked(app.getLoginItemSettings).mockReturnValue({ openAtLogin: true, executableWillLaunchAtLogin: false } as ReturnType<typeof app.getLoginItemSettings>)

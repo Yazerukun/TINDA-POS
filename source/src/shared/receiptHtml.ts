@@ -30,7 +30,7 @@ function isSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|Cash|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   return { label: m[1]!.replace(/^./, (c) => c.toUpperCase()), amount: m[2]! }
 }
@@ -84,7 +84,7 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     const money = isMoneyLine(raw)
     if (money) {
-      const cls = money.label === 'SUKLI' ? 'tp-sukli' : /^(TOTAL|NET SALES|Actual Cash)$/i.test(money.label) ? 'tp-total' : 'tp-sum'
+      const cls = money.label === 'SUKLI' ? 'tp-sukli' : /^(TOTAL|NET SALES|TOTAL PAYMENTS|Total Payments|Actual Cash)$/i.test(money.label) ? 'tp-total' : 'tp-sum'
       const label = money.label === 'SUKLI' ? 'Change / SUKLI' : money.label === 'Cash' ? 'Cash' : money.label
       pushRow(
         `<div class="${cls}"><span class="tp-lbl">${escapeHtml(label)}</span><span class="tp-amt">${symbol}${fmt(money.amount)}</span></div>`

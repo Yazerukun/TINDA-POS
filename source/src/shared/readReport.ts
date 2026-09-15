@@ -18,6 +18,7 @@ export function readReportLines(r: ReadReport, reportNo?: string, closing?: { ac
     `Refunds        ${m(r.refunds_c)}`, `Voids          ${m(r.voids_c)}`, `NET SALES      ${m(r.net_sales_c)}`,
     '--------------------------------', 'PAYMENT BREAKDOWN',
     `Cash           ${m(r.cash_c)}`, `GCash          ${m(r.gcash_c)}`, `Maya           ${m(r.maya_c)}`, `Utang          ${m(r.utang_c)}`,
+    `TOTAL PAYMENTS ${m(r.cash_c + r.gcash_c + r.maya_c + r.utang_c)}`,
     '--------------------------------', 'CASH RECONCILIATION',
     `Starting Cash  ${m(r.starting_cash_c)}`, `Cash In        ${m(r.cash_in_c)}`, `Cash Out       ${m(r.cash_out_c)}`,
     ...(r.cash_refunds_c === undefined ? [] : [`Cash Refunds   ${m(r.cash_refunds_c)}`]),

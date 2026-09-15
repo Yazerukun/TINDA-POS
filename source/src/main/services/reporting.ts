@@ -52,8 +52,8 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
        WHERE s.status != 'VOIDED' AND s.created_at >= ? AND s.created_at <= ?`
     )
     .get(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as { c: number }
-  summary.cost_c = cost.c
-  summary.profit_c = summary.sales_total_c - summary.discount_c - summary.cost_c
+  summary.cost_c = Math.round(cost.c)
+  summary.profit_c = Math.round(summary.sales_total_c - summary.cost_c)
 
   const refunds = db
     .prepare(

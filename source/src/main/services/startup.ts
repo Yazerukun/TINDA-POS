@@ -1,6 +1,16 @@
-import { app } from 'electron'
-import { existsSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { app, shell } from 'electron'
+import { existsSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+
+function getStartupShortcutPath(): string {
+  try {
+    const appData = app.getPath('appData')
+    if (!appData) return ''
+    return join(appData, 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', 'TINDA POS.lnk')
+  } catch {
+    return ''
+  }
+}
 
 export function startupSetting(enabled?: boolean): { supported: boolean; enabled: boolean } {
   const supported = process.platform === 'win32' && app.isPackaged && !process.env.PORTABLE_EXECUTABLE_FILE && !process.env.PORTABLE_EXECUTABLE_DIR
@@ -10,9 +20,39 @@ export function startupSetting(enabled?: boolean): { supported: boolean; enabled
     return { supported: false, enabled: false }
   }
   const options = { path: process.execPath, args: [] as string[] }
-  if (enabled !== undefined) app.setLoginItemSettings({ ...options, openAtLogin: enabled, enabled })
+  const shortcutPath = getStartupShortcutPath()
+
+  if (enabled !== undefined) {
+    app.setLoginItemSettings({ ...options, openAtLogin: enabled, enabled })
+    if (shortcutPath) {
+      if (enabled) {
+        try {
+          const dir = dirname(shortcutPath)
+          if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+          if (shell?.writeShortcutLink) {
+            shell.writeShortcutLink(shortcutPath, 'replace', {
+              target: process.execPath,
+              cwd: dirname(process.execPath),
+              description: 'TINDA POS'
+            })
+          }
+        } catch {
+          // Non-fatal if shortcut creation fails
+        }
+      } else {
+        try {
+          if (existsSync(shortcutPath)) unlinkSync(shortcutPath)
+        } catch {
+          // Non-fatal
+        }
+      }
+    }
+  }
+
   const current = app.getLoginItemSettings(options)
-  return { supported: true, enabled: current.openAtLogin && current.executableWillLaunchAtLogin }
+  const shortcutActive = Boolean(shortcutPath && existsSync(shortcutPath))
+  const isEnabled = Boolean((current.openAtLogin && current.executableWillLaunchAtLogin) || shortcutActive)
+  return { supported: true, enabled: isEnabled }
 }
 
 // Marker so a later manual "off" in Settings is not overridden on a subsequent

@@ -71,12 +71,14 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   const cash = sale.payments.find((p) => p.method === 'CASH')
   if (cash) {
     lines.push(`Cash          ${(cash.amount_c / 100).toFixed(2)}`)
-    const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
-    lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
   for (const p of sale.payments) if (p.method !== 'CASH') {
     lines.push(`${p.method}          ${(p.amount_c / 100).toFixed(2)}`)
     if (p.reference) lines.push(`Reference: ${p.reference}`)
+  }
+  if (cash) {
+    const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
+    lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
   lines.push('--------------------------------')
   lines.push(`Total Items: ${sale.items.reduce((total, item) => total + item.qty, 0)}`)

@@ -14,7 +14,7 @@ export function dashboardStats(): DashboardStats {
   }).rows.filter((s) => s.status !== 'VOIDED')
   const todaySales = sales.reduce((s, x) => s + x.total_c, 0)
   const todayCost = sales.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0)
-  const todayProfit = todaySales - sales.reduce((s, x) => s + x.discount_c, 0) - todayCost
+  const todayProfit = Math.round(todaySales - todayCost)
 
   let cash = 0
   let gcash = 0

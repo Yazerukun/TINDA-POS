@@ -1,5 +1,26 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.16 RC development & freeze - 2026-09-15
+
+Owner requested v1.0.16 with:
+1. Windows Auto-Start reliability on boot/power-on without manual shortcut clicking.
+2. Estimated profit .10 / centavo discrepancy fix.
+3. Payment breakdown alignment in live print (Cash + GCash order before Sukli, Total Payments).
+4. Zero changes to Software Update mechanism so v1.0.15 users can auto-update seamlessly.
+5. Strict local RC freeze only; DO NOT publish without explicit approval.
+
+Branch: `v1.0.16-dev` (created from tag `v1.0.15` = `61902bf`).
+Worktree: `/home/ian/tindapos-v106-qa/v116-worktree`.
+
+Implemented:
+- Dual-layer Windows auto-start: Electron login item + Windows Startup folder shortcut (`shell.writeShortcutLink` to `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\TINDA POS.lnk`) in `startup.ts`.
+- Removed duplicate discount deduction from `reporting.ts` and `dashboard.ts`; rounded cost and profit calculations.
+- Fixed POS discount input to display in Pesos and correctly parse centavos.
+- Reordered receipt print lines in `checkout.ts` to output all payment tenders before `SUKLI`.
+- Added `TOTAL PAYMENTS` row in `readReport.ts` and styled in `receiptHtml.ts`.
+- Automated QA: 35 test files / 248 tests PASS, typecheck PASS, lint PASS.
+- Updater Gate: byte-identical update services, configs, and lockfile.
+
 ## v1.0.15 development - 2026-09-15
 
 Owner authorized moving to v1.0.15 with the Software Update mechanism left

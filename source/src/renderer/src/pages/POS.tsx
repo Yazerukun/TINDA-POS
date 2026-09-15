@@ -445,8 +445,9 @@ function CartPanel(): React.JSX.Element {
           <input
             type="number"
             min={0}
-            value={discount_pesos}
-            onChange={(e) => usePosCart.getState().setDiscountPesos((parseFloat(e.target.value) || 0) * 100)}
+            value={discount_pesos ? discount_pesos / 100 : ''}
+            onChange={(e) => usePosCart.getState().setDiscountPesos(Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)))}
+            placeholder="0.00"
             className="w-24 rounded-lg border border-ink-line bg-ink-950 px-2 py-1 text-right text-sm text-slate-200"
           />
         </div>
