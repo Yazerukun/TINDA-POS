@@ -1,5 +1,21 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.17 RC development & freeze - 2026-09-16
+
+Owner requested fix for Windows Startup checkbox accessibility:
+- User reported: "WHEN I SIGN IN WINDOWS DILI GIHAPON MA CLICK ANG BOX wala man ko naka portable" / "bahalag didtoa lang sa TINDAPOSSETUP NATO".
+- Checkbox in Settings > Store ("Start TINDA POS when I sign in to Windows") was disabled / unclickable.
+- Root Cause: Restrictive environment check (`!process.env.PORTABLE_EXECUTABLE_FILE && !process.env.PORTABLE_EXECUTABLE_DIR`) disabled startup when portable variables were present; registry errors in `app.getLoginItemSettings()` caused IPC rejection leaving null state.
+- Fix:
+  - Enabled Windows startup support unconditionally for Windows platforms (`process.platform === 'win32'`).
+  - Wrapped registry calls in `try/catch` in `startup.ts`.
+  - Added safe fallback in `Settings.tsx` so checkbox is never stuck in disabled state.
+- Branch: `v1.0.17-dev` (created from tag `v1.0.16` = `de8052b`).
+- Worktree: `/home/ian/tindapos-v106-qa/v116-worktree`.
+- Automated QA: 35 test files / 247 tests PASS, typecheck PASS, lint PASS.
+- Updater Gate: byte-identical update services, configs, and lockfile.
+- Strict local RC freeze; await explicit owner approval before publishing.
+
 ## v1.0.16 RC development & freeze - 2026-09-15
 
 Owner requested v1.0.16 with:

@@ -13,7 +13,7 @@ function getStartupShortcutPath(): string {
 }
 
 export function startupSetting(enabled?: boolean): { supported: boolean; enabled: boolean } {
-  const supported = process.platform === 'win32' && app.isPackaged && !process.env.PORTABLE_EXECUTABLE_FILE && !process.env.PORTABLE_EXECUTABLE_DIR
+  const supported = process.platform === 'win32'
   if (enabled !== undefined && typeof enabled !== 'boolean') throw new Error('Invalid startup setting')
   if (!supported) {
     if (enabled !== undefined) throw new Error('Windows Setup installation required')
@@ -23,7 +23,12 @@ export function startupSetting(enabled?: boolean): { supported: boolean; enabled
   const shortcutPath = getStartupShortcutPath()
 
   if (enabled !== undefined) {
-    app.setLoginItemSettings({ ...options, openAtLogin: enabled, enabled })
+    try {
+      app.setLoginItemSettings({ ...options, openAtLogin: enabled, enabled })
+    } catch {
+      // Non-fatal if Windows registry login items fail
+    }
+
     if (shortcutPath) {
       if (enabled) {
         try {
@@ -49,7 +54,12 @@ export function startupSetting(enabled?: boolean): { supported: boolean; enabled
     }
   }
 
-  const current = app.getLoginItemSettings(options)
+  let current = { openAtLogin: false, executableWillLaunchAtLogin: false }
+  try {
+    current = app.getLoginItemSettings(options)
+  } catch {
+    // Non-fatal
+  }
   const shortcutActive = Boolean(shortcutPath && existsSync(shortcutPath))
   const isEnabled = Boolean((current.openAtLogin && current.executableWillLaunchAtLogin) || shortcutActive)
   return { supported: true, enabled: isEnabled }
@@ -67,6 +77,10 @@ export function applyDefaultStartup(): boolean {
   if (!current.supported) return false
   if (existsSync(markerFile())) return current.enabled
   startupSetting(true)
-  writeFileSync(markerFile(), '1')
+  try {
+    writeFileSync(markerFile(), '1')
+  } catch {
+    // Non-fatal
+  }
   return true
 }

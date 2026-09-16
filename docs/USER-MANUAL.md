@@ -1,10 +1,11 @@
-# TINDA POS v1.0.16 User Manual
+# TINDA POS v1.0.17 User Manual
 
-**TINDA POS v1.0.16** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.17** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.16), na may maaasahang
-awtomatikong pagbukas sa Windows boot/power-on (Setup), mas pinatibay na
-kalkulasyon ng Estimated Profit, at maayos na payment breakdown sa resibo.
+Ang guide na ito ay para sa release (v1.0.17), na may naiki-click at maaasahang
+"Start TINDA POS when I sign in to Windows" setting sa Settings > Store, awtomatikong
+pagbukas sa Windows boot/power-on (Setup), pinatibay na kalkulasyon ng Estimated Profit,
+at maayos na payment breakdown sa resibo.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
@@ -112,7 +113,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.16. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.17. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -736,12 +737,12 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.16** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.16>
+**TINDA POS v1.0.17** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.17>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.14.exe` — Windows installer
-- `TindaPOS-Portable-1.0.14.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.17.exe` — Windows installer
+- `TindaPOS-Portable-1.0.17.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
 

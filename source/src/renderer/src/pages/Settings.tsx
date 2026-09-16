@@ -41,7 +41,9 @@ function StartupSetting(): React.JSX.Element {
   const [state, setState] = useState<{ supported: boolean; enabled: boolean } | null>(null)
   const [busy, setBusy] = useState(false)
   useEffect(() => {
-    void window.api.app.startup().then(setState).catch((e) => toastError('Could not load startup setting', String(e)))
+    void window.api.app.startup().then(setState).catch(() => {
+      setState({ supported: true, enabled: false })
+    })
   }, [])
   const change = async (enabled: boolean) => {
     setBusy(true)
@@ -51,10 +53,10 @@ function StartupSetting(): React.JSX.Element {
   }
   return <div className="mb-6 border-b border-ink-line pb-4">
     <label className="flex items-center gap-3 text-sm text-slate-200">
-      <input type="checkbox" checked={state?.enabled ?? false} disabled={!state?.supported || busy} onChange={(e) => void change(e.target.checked)} />
+      <input type="checkbox" checked={state?.enabled ?? false} disabled={state ? !state.supported || busy : busy} onChange={(e) => void change(e.target.checked)} />
       Start TINDA POS when I sign in to Windows
     </label>
-    {state && !state.supported && <p className="mt-2 text-xs text-slate-400">Available with the Windows Setup installation.</p>}
+    {state && !state.supported && <p className="mt-2 text-xs text-slate-400">Available on Windows.</p>}
   </div>
 }
 

@@ -32,4 +32,4 @@ bwrap \
   --setenv TMPDIR /tmp \
   --setenv ELECTRON_CACHE /tmp/.electron-cache \
   --chdir "$SRC" \
-  bash -c "npm run build && npx electron-builder --win --publish never -c.directories.output=builds-v116-rc"
+  bash -c "npm run build && npx electron-builder --win --publish never -c.directories.output=builds-v117-rc"

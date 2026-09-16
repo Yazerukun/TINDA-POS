@@ -68,11 +68,9 @@ describe('Windows startup preference', () => {
     vi.mocked(app.getLoginItemSettings).mockReturnValue({ openAtLogin: true, executableWillLaunchAtLogin: true } as ReturnType<typeof app.getLoginItemSettings>)
     expect(startupSetting().enabled).toBe(true)
   })
-  it.each(['PORTABLE_EXECUTABLE_FILE', 'PORTABLE_EXECUTABLE_DIR'])('rejects Portable %s without registering the temporary executable', (name) => {
-    vi.stubEnv(name, 'C:\\Portable')
-    expect(startupSetting().supported).toBe(false)
-    expect(() => startupSetting(true)).toThrow('Windows Setup')
-    expect(app.setLoginItemSettings).not.toHaveBeenCalled()
+  it('is supported on Windows even if portable env variables exist', () => {
+    vi.stubEnv('PORTABLE_EXECUTABLE_FILE', 'C:\\Portable\\TindaPOS.exe')
+    expect(startupSetting().supported).toBe(true)
   })
   it('does not call platform APIs on Linux', () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('linux')
@@ -99,8 +97,8 @@ describe('applyDefaultStartup (default ON for Setup installs)', () => {
     expect(applyDefaultStartup()).toBe(false)
     expect(app.setLoginItemSettings).not.toHaveBeenCalled()
   })
-  it('is a no-op on unsupported (portable) installs', () => {
-    vi.stubEnv('PORTABLE_EXECUTABLE_FILE', 'C:\\Portable')
+  it('is a no-op on non-Windows platforms', () => {
+    vi.spyOn(process, 'platform', 'get').mockReturnValue('linux')
     expect(applyDefaultStartup()).toBe(false)
     expect(app.setLoginItemSettings).not.toHaveBeenCalled()
     expect(existsSync(join(userData, 'startup-default-on-applied.txt'))).toBe(false)
