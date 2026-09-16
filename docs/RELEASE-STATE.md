@@ -1,5 +1,24 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.17 STABLE PUBLISHED & LIVE - 2026-09-16 (Ian GO)
+
+- URL: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.17
+- Status: **Stable** | Latest | non-prerelease | non-draft | publicly visible.
+- Tag `v1.0.17` (annotated) - verified via `gh release view v1.0.17` and `/releases/latest`.
+- Branch `v1.0.17-dev` pushed (tracks origin/v1.0.17-dev).
+- Release assets (GitHub CDN, verified):
+  * TindaPOS-Setup-1.0.17.exe    - 109657454 B (SHA256 4f2f722c...)
+  * TindaPOS-Portable-1.0.17.exe - 109425753 B (SHA256 063ec6b7...)
+  * TindaPOS-Setup-1.0.17.exe.blockmap - 117076 B
+  * latest.yml                    - 348 B (sha512 Fz4VSu23..., sha512+size==Setup)
+  * TindaPOS-User-Guide.pdf       - 140044 B (v1.0.17, 22pp)
+  * SHA256SUMS-RC.txt             - release checksum manifest
+  * SHA256SUMS.txt                - canonical checksums
+- Post-publish verify: `gh release view` shows all assets; `/releases/latest` -> v1.0.17;
+  downloaded and `sha256sum -c` verified PASS for all payloads.
+- Updater gate intact: app-update.yml + electron-builder + lockfile
+  byte-identical to v1.0.16; provider github/Yazerukun/TINDA-POS (NO QA strings).
+
 ## v1.0.17 RC development & freeze - 2026-09-16
 
 Owner requested fix for Windows Startup checkbox accessibility:
