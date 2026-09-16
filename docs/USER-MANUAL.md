@@ -1,10 +1,12 @@
-# TINDA POS v1.0.14 User Manual
+# TINDA POS v1.0.18 User Manual
 
-**TINDA POS v1.0.14** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.18** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa kasalukuyang stable release (v1.0.14), na may
-inventory expiration tracking, mas malinaw na X-Read/Z-Read reports, at
-mas malinaw na Utang customer selection sa checkout.
+Ang guide na ito ay para sa release (v1.0.18), na may bagong **Itemized Recent Transactions**
+(mabilis na pagtingin sa bawat napalit na item nang direkta sa Dashboard card at Transactions table
+gamit ang expandable/accordion view), naiki-click at maaasahang "Start TINDA POS when I sign in
+to Windows" setting sa Settings > Store, awtomatikong pagbukas sa Windows boot/power-on (Setup),
+pinatibay na kalkulasyon ng Estimated Profit, at maayos na payment breakdown sa resibo.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
@@ -13,13 +15,14 @@ shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 
 ### Pagpili ng nangutang
 
-1. Sa POS, sa **Piliin ang Nangutang**, pindutin ang **Select Customer**.
+1. Sa POS, sa **Select the borrower**, pindutin ang **Select Customer**.
 2. Hanapin ang pangalan o phone number. I-click ang customer sa listahan para ma-select.
 3. Tingnan ang **Selected: pangalan** at checkmark sa cart. Para magpalit, buksan
    ulit ang parehong listahan; may highlight at checkmark ang kasalukuyang napili.
 4. Sa Checkout, piliin ang **Utang** at suriin muli ang pangalan bago **Charge**.
-5. Kapag may **Please select the customer for this Utang.**, i-Cancel ang Checkout,
-   pumili ng customer sa cart, saka mag-Checkout ulit. Hindi pa na-charge ang sale.
+5. Kapag may **Please select the customer for this Utang before checkout.**,
+   i-Cancel ang Checkout, pumili ng customer sa cart, saka mag-Checkout ulit.
+   Hindi pa na-charge ang sale.
 
 Gamitin ang **Walk-in (no utang)** para alisin ang napiling customer. Ang bagong
 sale ay hindi awtomatikong gagamit ng nangutang sa naunang sale. Hindi nagbago
@@ -27,11 +30,12 @@ ang credit limit: kapag kulang ito, sundin ang kasalukuyang approval process.
 
 ### Awtomatikong pagbukas sa Windows
 
-Sa installed Windows Setup, mag-login gamit ang account na may Settings access.
-Sa **Settings > Store**, i-check ang **Start TINDA POS when I sign in to Windows**.
-Sa susunod na Windows sign-in, bubukas ang app; kailangan pa rin ang normal POS
-login. Alisin ang check para i-OFF. Hindi ito kusang naka-ON at hindi ito
-available sa Portable edition. Hindi ito pagbukas bago mag-sign in sa Windows.
+Sa installed Windows Setup, awtomatikong naka-ON ang pagbukas kasabay ng
+Windows sign-in para mas madaling makapagsimula ang tindahan. Sa
+**Settings > Store**, makikita na naka-check ang **Start TINDA POS when I sign
+in to Windows**. Alisin ang check para i-OFF kung ayaw mo; hindi ito muling
+naka-ON para sa mga action mo. Hindi ito available sa Portable edition at hindi
+ito pagbukas bago mag-sign in sa Windows.
 
 ### Araw-araw na checklist
 
@@ -110,7 +114,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.14. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.18. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -143,6 +147,19 @@ kapag sinusuri ang refund ng benta mula sa ibang araw.
 **Hindi reset button ang Z-Read.** Daily total ang dashboard, kaya magpapatuloy
 ang total kapag may panibagong shift sa parehong araw. Naka-save pa rin ang lahat
 ng transaction at historical report.
+
+### Recent Transactions sa Dashboard (Bagong Itemized Accordion sa v1.0.18)
+
+Sa Dashboard, ang **RECENT TRANSACTIONS** card ay nagpapakita ng pinakahuling benta ngayong araw.
+Sa v1.0.18, na-upgrade ito para maging interactive accordion:
+
+- **Nakasara (Collapsed):** Makikita ang resibo number, cashier, oras, kabuuang halaga, status badge, at ang 1-line preview ng mga item (hal. `Sprite ×2, Biscuit ×1`).
+- **I-click ang row para mag-expand:** Lalabas sa ilalim ang kumpletong listahan ng mga napalit:
+  - Pangalan ng produkto at dami/unit (hal. `Sprite ×2 pcs`)
+  - Subtotal ng bawat item
+  - Discount (kung may binawas)
+  - Paraan ng pagbayad (hal. `CASH`, `GCASH`, o `UTANG`)
+- **I-click muli ang row:** Magko-collapse muli ang listahan. Isang row lamang ang bukas sa bawat pagkakataon para manatiling malinis ang screen.
 
 ## Products, SKU, barcode, and categories
 
@@ -547,6 +564,27 @@ If the safety backup fails, Reset Database is cancelled without deleting the act
 
 Transactions lets authorized users view receipt details, generate/reconstruct receipt lines, refund eligible items, or void eligible sales. Windows receipt-printer support is implemented, including printer discovery, Test Print, Auto Print, and manual Print Receipt. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.
 
+### Itemized View sa Transactions Table (Bagong Accordion sa v1.0.18)
+
+Sa pahina ng **Transactions**, bawat benta ay mayroon nang expandable accordion para makita kaagad ang mga binili nang hindi na kailangang buksan ang buong resibo modal:
+
+1. **Pindutin ang ▾ chevron** sa tabi ng resibo number (Receipt #).
+2. Agad na magbubukas ang isang inline mini-table sa ilalim ng row na nagpapakita ng:
+   - **Product** — pangalan ng produkto (may kasamang refund indicator kung may naibalik)
+   - **Qty** — dami at unit ng benta (hal. `2 pcs`)
+   - **Unit Price** — presyo bawat piraso
+   - **Subtotal** — kabuuang halaga ng item
+3. Sa ilalim ng mini-table, makikita ang:
+   - **Payment Breakdown** — paraan ng pagbabayad at halaga (hal. `CASH ₱50.00`, `GCASH ₱100.00`, o `UTANG`)
+   - **Discount** (kung may diskwento ang transaksyon)
+   - **Kabuuang Total**
+4. **Pindutin muli ang ▴ chevron** (o pumili ng ibang transaksyon) para isara ang itemized view. Isang row lamang ang bukas sa bawat pagkakataon.
+
+Nananatiling buo at maayos ang mga aksyon sa kanang bahagi:
+- **Eye (👁):** Buksan ang **View Receipt** modal para makita ang buong resibo at mag-print ng physical copy.
+- **RotateCcw (🔄):** Magsagawa ng **Refund** para sa ibinalik na mga piraso ng produkto (ibabalik ang stock).
+- **Ban (🚫):** Magsagawa ng **Void** para kanselahin ang buong benta at ibalik ang stock (Admin/Manager lang).
+
 ## Receipt Printer Setup
 
 Windows receipt-printer support is built through the Windows printer subsystem using the exact device name Windows reports (Electron printer discovery). No vendor-specific driver logic is used, so any Windows-installed thermal receipt printer works.
@@ -734,13 +772,13 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.14** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.14>
+**TINDA POS v1.0.18** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.18>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.14.exe` — Windows installer
-- `TindaPOS-Portable-1.0.14.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.18.exe` — Windows installer
+- `TindaPOS-Portable-1.0.18.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
-- `SHA256SUMS.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS.txt`)
+- `SHA256SUMS-RC.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS-RC.txt`)
 
 The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.
