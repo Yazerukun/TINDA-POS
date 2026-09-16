@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, Banknote, Wallet, Receipt, ShoppingCart, AlertTriangle } from 'lucide-react'
+import { TrendingUp, Banknote, Wallet, Receipt, ShoppingCart, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyState'
 import type { Product, Sale, ReportSummary } from '@shared/types'
@@ -26,6 +26,7 @@ export function Dashboard(): React.JSX.Element | null {
   const [alertProducts, setAlertProducts] = useState<Product[]>([])
   const [utang, setUtang] = useState<number>(0)
   const [error, setError] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -128,19 +129,61 @@ export function Dashboard(): React.JSX.Element | null {
           {recent.length === 0 ? (
             <EmptyState title="No transactions yet" message="Sales you make today will appear here." icon={<ShoppingCart className="h-7 w-7" />} />
           ) : (
-            <div className="space-y-2">
-              {recent.map((s) => (
-                <div key={s.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink-line px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-200">{s.transaction_no}</p>
-                    <p className="text-xs text-slate-500">{s.cashier_name} · {shortDateTime(s.created_at)}</p>
+            <div className="space-y-1">
+              {recent.map((s) => {
+                const isOpen = expandedId === s.id
+                const toggle = () => setExpandedId(isOpen ? null : s.id)
+                const itemSummary = s.items.map((i) => `${i.product_name} ×${i.qty}`).join(', ')
+                return (
+                  <div key={s.id} className="rounded-lg border border-ink-line overflow-hidden">
+                    {/* Header row — clickable */}
+                    <button
+                      onClick={toggle}
+                      className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-ink-700 transition-colors"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-slate-200">{s.transaction_no}</p>
+                        <p className="truncate text-xs text-slate-500">
+                          {s.cashier_name} · {shortDateTime(s.created_at)}
+                          {!isOpen && <span className="text-slate-600"> — {itemSummary}</span>}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-bold text-white">{moneyShort(s.total_c)}</span>
+                        <StatusBadge status={s.status} />
+                        {isOpen
+                          ? <ChevronUp className="h-4 w-4 text-slate-500" />
+                          : <ChevronDown className="h-4 w-4 text-slate-500" />}
+                      </div>
+                    </button>
+                    {/* Expanded item list */}
+                    {isOpen && (
+                      <div className="border-t border-ink-line bg-ink-800 px-3 py-2 space-y-1">
+                        {s.items.map((i) => (
+                          <div key={i.id} className="flex justify-between text-xs">
+                            <span className="text-slate-300">
+                              {i.product_name}{' '}
+                              <span className="text-slate-500">×{i.qty} {i.unit_name}</span>
+                              {i.refunded_qty_base > 0 && (
+                                <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>
+                              )}
+                            </span>
+                            <span className="font-medium text-slate-200">{money(i.subtotal_c)}</span>
+                          </div>
+                        ))}
+                        <div className="mt-1 pt-1 border-t border-ink-line flex justify-between text-xs">
+                          {s.discount_c > 0 && (
+                            <span className="text-slate-500">Discount: -{money(s.discount_c)}</span>
+                          )}
+                          <span className="ml-auto text-slate-400">
+                            {s.payments.map((p) => p.method).join(' + ')}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white">{moneyShort(s.total_c)}</span>
-                    <StatusBadge status={s.status} />
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </SectionCard>

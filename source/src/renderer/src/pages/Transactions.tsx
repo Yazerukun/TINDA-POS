@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText, Printer } from 'lucide-react'
+import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText, Printer, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -18,6 +18,7 @@ export function Transactions(): React.JSX.Element {
   const [view, setView] = useState<Sale | null>(null)
   const [refund, setRefund] = useState<Sale | null>(null)
   const [voider, setVoider] = useState<Sale | null>(null)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -78,27 +79,88 @@ export function Transactions(): React.JSX.Element {
           <table className="table">
             <thead><tr><th>Receipt</th><th>Date</th><th>Cashier</th><th>Customer</th><th className="text-right">Total</th><th>Status</th><th className="w-36">Actions</th></tr></thead>
             <tbody>
-              {rows.map((s) => (
-                <tr key={s.id}>
-                  <td className="font-medium text-brand-400">{s.transaction_no}</td>
-                  <td className="whitespace-nowrap text-slate-400">{shortDateTime(s.created_at)}</td>
-                  <td className="text-slate-300">{s.cashier_name}</td>
-                  <td className="text-slate-400">{s.customer_name ?? ''}</td>
-                  <td className="text-right font-bold text-white">{money(s.total_c)}</td>
-                  <td><StatusBadge status={s.status} /></td>
-                  <td>
-                    <div className="flex gap-1">
-                      <button onClick={() => setView(s)} className="btn-ghost-2 rounded-lg p-2" title="View"><Eye className="h-4 w-4" /></button>
-                      {(s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (
-                        <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-2" title="Refund"><RotateCcw className="h-4 w-4" /></button>
-                      )}
-                      {s.status === 'COMPLETED' && (
-                        <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {rows.map((s) => {
+                const isOpen = expandedId === s.id
+                const toggle = () => setExpandedId(isOpen ? null : s.id)
+                return (
+                  <>
+                    <tr key={s.id} className={isOpen ? 'bg-ink-800' : undefined}>
+                      <td>
+                        <button
+                          onClick={toggle}
+                          className="flex items-center gap-1.5 font-medium text-brand-400 hover:text-brand-300"
+                          title={isOpen ? 'Collapse items' : 'Expand items'}
+                        >
+                          {isOpen
+                            ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                            : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-500" />}
+                          {s.transaction_no}
+                        </button>
+                      </td>
+                      <td className="whitespace-nowrap text-slate-400">{shortDateTime(s.created_at)}</td>
+                      <td className="text-slate-300">{s.cashier_name}</td>
+                      <td className="text-slate-400">{s.customer_name ?? ''}</td>
+                      <td className="text-right font-bold text-white">{money(s.total_c)}</td>
+                      <td><StatusBadge status={s.status} /></td>
+                      <td>
+                        <div className="flex gap-1">
+                          <button onClick={() => setView(s)} className="btn-ghost-2 rounded-lg p-2" title="View"><Eye className="h-4 w-4" /></button>
+                          {(s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (
+                            <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-2" title="Refund"><RotateCcw className="h-4 w-4" /></button>
+                          )}
+                          {s.status === 'COMPLETED' && (
+                            <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr key={`${s.id}-items`} className="bg-ink-800">
+                        <td colSpan={7} className="px-4 pb-3 pt-0">
+                          <div className="rounded-lg border border-ink-line overflow-hidden">
+                            {/* Item rows */}
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="border-b border-ink-line">
+                                  <th className="py-1.5 pl-3 text-left font-medium text-slate-500">Product</th>
+                                  <th className="py-1.5 text-center font-medium text-slate-500">Qty</th>
+                                  <th className="py-1.5 text-right font-medium text-slate-500">Unit Price</th>
+                                  <th className="py-1.5 pr-3 text-right font-medium text-slate-500">Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {s.items.map((i) => (
+                                  <tr key={i.id} className="border-b border-ink-line last:border-0">
+                                    <td className="py-1.5 pl-3 text-slate-200">
+                                      {i.product_name}
+                                      {i.refunded_qty_base > 0 && (
+                                        <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>
+                                      )}
+                                    </td>
+                                    <td className="py-1.5 text-center text-slate-400">{i.qty} {i.unit_name}</td>
+                                    <td className="py-1.5 text-right text-slate-400">{money(i.unit_price_c)}</td>
+                                    <td className="py-1.5 pr-3 text-right font-medium text-slate-200">{money(i.subtotal_c)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                            {/* Footer: discount + payments */}
+                            <div className="flex items-center justify-between border-t border-ink-line px-3 py-1.5 text-xs">
+                              <span className="text-slate-500">
+                                {s.payments.map((p) => `${p.method} ${money(p.amount_c)}`).join(' · ')}
+                              </span>
+                              <span className="text-slate-400">
+                                {s.discount_c > 0 && <span className="mr-3 text-amber-400">Discount −{money(s.discount_c)}</span>}
+                                Total <span className="font-bold text-white">{money(s.total_c)}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )
+              })}
             </tbody>
           </table>
         </div>
