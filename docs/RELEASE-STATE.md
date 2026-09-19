@@ -1,6 +1,6 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.19 LOCAL RC FREEZE - 2026-09-19 (awaiting owner GO to publish)
+## v1.0.19 PUBLISHED & LIVE - 2026-09-19 (Ian GO)
 
 - Branch: `v1.0.19-dev` (from v1.0.18 stable `1e662c8`).
 - RC_COMMIT: `b9f438beff2447e1bd678d708a312c693459a525` (`feat: complete v1.0.19 release candidate`). Clean working tree.
@@ -14,7 +14,9 @@
   * TindaPOS-User-Guide.pdf         - 170447 B (v1.0.19, 24pp, SHA256 78890d798f4b90516e6db5a5af43fae9cfd190a9aa9a3a6a555027d1f353294f)
   * SHA256SUMS-RC.txt (release checksum manifest) + RC-SOURCE-COMMIT.txt
 - Updater gate: electron-updater + electron-builder + app-update.yml untouched (release = source-only additions, no updater code changes).
-- STATUS: **LOCAL RC ONLY. Do not push/tag/release/Latest until Ian explicitly approves b9f438b.**
+- STATUS: **PUBLISHED 2026-09-19 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.19 (Latest, tag v1.0.19 → b9f438b, 6 assets, sha256 verified).
+  * Android release: https://github.com/Yazerukun/TINDA-POS-Android-Free/releases/tag/v1.0.23 (Latest, tag v1.0.23 → f2f6fce, app-release.apk).
 - Android RC counterpart (SUPERSEDED v1.0.22 → **v1.0.23**, see below).
 - Android RC v1.0.23 / versionCode 23: TINDA-POS-Android-Free, RC_COMMIT `f2f6fce`, HEAD chain `f2f6fce`(RC) → `751dbc9`(fix) → `c2d0f9c`(v1.0.22 RC). APK `android/app/build/outputs/apk/release/app-release.apk` 3417611 B (SHA256 6a60100e2373e80b660770e3303c778393e0b3bf476c916f0f82c09bc8700b09). 93/93 tests PASS + release build PASS. Shared receipt module byte-identical to Windows.
   - v1.0.22 was superseded by live-device QA: **refund-amount regression** in Android port (`src/data/sales.ts:307` `unit_price_c*qtyBase/qty_base` recorded ₱32 for 5×₱32 instead of ₱160) — feedback #2. Fixed in `751dbc9` (Windows-matching `(qtyBase/qty_base)*subtotal_c`) + regression tests (`src/data/__tests__/refund.test.ts`), **verified live on realme RMX5070**: Refund ₱320 recorded in full, status REFUNDED, Dashboard Net Sales ₱128 / Refunds ₱352 / Est Profit ₱128 exact.
