@@ -1,15 +1,36 @@
-# TINDA POS v1.0.18 User Manual
+# TINDA POS v1.0.19 User Manual
 
-**TINDA POS v1.0.18** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.19** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.18), na may bagong **Itemized Recent Transactions**
-(mabilis na pagtingin sa bawat napalit na item nang direkta sa Dashboard card at Transactions table
-gamit ang expandable/accordion view), naiki-click at maaasahang "Start TINDA POS when I sign in
-to Windows" setting sa Settings > Store, awtomatikong pagbukas sa Windows boot/power-on (Setup),
-pinatibay na kalkulasyon ng Estimated Profit, at maayos na payment breakdown sa resibo.
+Ang guide na ito ay para sa release (v1.0.19), na may bagong **Universal Backup**
+(Windows ↔ Android na portable `.tinda-backup` exchange), **refund-aware na Estimated
+Profit**, **withdrawal notes sa Stock History**, **maaasahang Reset Database** (Android),
+at **nakapantay na receipt footer** sa 58mm at 80mm.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.19
+
+- **Universal Backup (Windows ↔ Android)** — Sa **Settings > Database & backups**, ang
+  **Export Universal Backup** ay gumagawa ng isang `.tinda-backup` file na may laman ng
+  buong tindahan (mga produkto, benta, refund, customer, utang, gastos, at settings).
+  Ang **Import Universal Backup** ay puwede kang mag-restore — kahit sa Android kung
+  galing sa Windows o vice versa. Bago mag-restore, may safety backup at may checksum
+  verification. Ang data sa kabilang app ay HINDI ginagalaw.
+- **Estimated Profit na may refund** — Sa Dashboard, Sales Report, at cashier report,
+  ang profit ay ngayon tama kahit may refund: ang na-refund na benta at ang kanilang
+  cost ay binabawas. Ang fully-refunded na sale ay nagpapakita ng ₱0 profit (hindi
+  negative), at ang diskwento ay eksaktong isang beses lang nababawas.
+- **Withdrawal notes sa Stock History** — Ang nota na inilagay sa pag-withdraw ng stock
+  ay makikita na sa **Stock History** (hal. `TAKEN — catering`).
+- **Reset Database (Android)** — Maaasahang reset: dapat i-type ang **RESET** para
+  kumpirmahin, at ang safety backup at ang dating mga backup ay NABABALIK (hindi
+  nabubura), tapos bumalik ang app sa first-time setup.
+- **Receipt footer alignment** — Karaniwan na ang layout ng resibo sa Windows at Android.
+  Ang footer ("THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX" kasama ang
+  "Thanks for Shopping with Us!") at ang mga kolum ay pantay na sa 58mm at 80mm, at
+  ang print preview ay pantay sa aktwal na print.
 
 ## Mabilis na gabay sa araw-araw
 
@@ -114,7 +135,7 @@ TINDA POS is an offline POS system for sari-sari stores. The core POS, inventory
 
 This friendly guide is for sari-sari store owners, managers, and cashiers. TINDA POS works offline for everyday selling, inventory, utang, expenses, and reports.
 
-> Guide version: TINDA POS v1.0.18. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
+> Guide version: TINDA POS v1.0.19. Installed v1.0.3–v1.0.5 require a one-time manual Setup upgrade to the approved stable release.
 
 ## Quick start and first-time setup
 
@@ -772,12 +793,12 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Download
 
-**TINDA POS v1.0.18** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.18>
+**TINDA POS v1.0.19** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.19>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.18.exe` — Windows installer
-- `TindaPOS-Portable-1.0.18.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.19.exe` — Windows installer
+- `TindaPOS-Portable-1.0.19.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
 - `SHA256SUMS-RC.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS-RC.txt`)
 

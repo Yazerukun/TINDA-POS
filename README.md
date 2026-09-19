@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.18-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.19-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
@@ -15,25 +15,28 @@
 
 <br />
 
-[⬇️ Download v1.0.18 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-Setup-1.0.18.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-Portable-1.0.18.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Manual PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.19 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Setup-1.0.19.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Portable-1.0.19.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Manual PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.18
+## ✨ What's New in v1.0.19
 
-> **Itemized Recent Transactions** — instantly see what was sold in every transaction without opening a separate window.
+> **Move your store data between Windows and Android** — one universal backup file, plus refund-aware profit and a safer database reset.
 
-- **Dashboard card** — each recent transaction row is now expandable. Click any row to reveal a full item-by-item breakdown: product name, quantity × unit, subtotal per item, and payment method used.
-- **Transactions page** — click the **▾ chevron** beside any receipt number to expand an inline mini-table: Product · Qty · Unit Price · Subtotal, plus a footer showing payment method(s) and total.
-- Only one row is open at a time — click again to collapse. Clean and fast.
+- **Universal `.tinda-backup` exchange** — back up on Windows or Android and restore on the other. Products, stock, sales, utang, and settings travel together in a single file.
+- **Refund-aware Estimated Profit** — refunds now reverse profit correctly on the Dashboard, Reports, and Cashier summaries, not only Net Sales.
+- **Withdrawal notes in Stock History** — the note you add when withdrawing stock is now visible in that product's Stock History.
+- **Reset Database reliability** — reset now requires typing **RESET** to confirm, saves automatic backups first, and reloads into a clean first-run state.
+- **Receipt layout aligned** — 58mm and 80mm receipt output matches the on-screen preview, with byte-identical receipt HTML across Windows and Android.
 
 <details>
 <summary>📋 Full version history</summary>
 
 | Version | Highlights |
 |---|---|
+| v1.0.19 | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
 | v1.0.18 | Itemized accordion for Recent Transactions (Dashboard + Transactions page) |
 | v1.0.17 | Windows Startup checkbox accessibility fix |
 | v1.0.16 | Dual-layer Windows auto-start, profit double-deduction fix, POS discount Pesos format, receipt payment breakdown order |
@@ -68,10 +71,10 @@ TINDA POS is built for everyday store work. Checkout stays usable **100% offline
 
 | File | What it is |
 |---|---|
-| [TindaPOS-Setup-1.0.18.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-Setup-1.0.18.exe) | ✅ **Recommended.** Installs TINDA POS with software auto-update support. |
-| [TindaPOS-Portable-1.0.18.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-Portable-1.0.18.exe) | Run without installing. Keep its `TindaPOS-Data` folder safe. |
-| [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-User-Guide.pdf) | Printable step-by-step user manual. |
-| [SHA256SUMS-RC.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/SHA256SUMS-RC.txt) | Verify downloaded files. |
+| [TindaPOS-Setup-1.0.19.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Setup-1.0.19.exe) | ✅ **Recommended.** Installs TINDA POS with software auto-update support. |
+| [TindaPOS-Portable-1.0.19.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Portable-1.0.19.exe) | Run without installing. Keep its `TindaPOS-Data` folder safe. |
+| [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-User-Guide.pdf) | Printable step-by-step user manual. |
+| [SHA256SUMS-RC.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/SHA256SUMS-RC.txt) | Verify downloaded files. |
 
 > **If Windows SmartScreen appears:** click **More info → Run anyway**. This is normal for community-distributed apps.
 
