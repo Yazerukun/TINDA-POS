@@ -53,7 +53,15 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
     )
     .get(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as { c: number }
   summary.cost_c = Math.round(cost.c)
-  summary.profit_c = Math.round(summary.sales_total_c - summary.cost_c)
+
+  const refundedCost = db
+    .prepare(
+      `SELECT COALESCE(SUM(si.cost_base_c * ri.qty_base),0) AS c
+       FROM refund_items ri JOIN sale_items si ON si.id = ri.sale_item_id
+       JOIN sales s ON s.id = si.sale_id
+       WHERE s.status != 'VOIDED' AND s.created_at >= ? AND s.created_at <= ?`
+    )
+    .get(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as { c: number }
 
   const refunds = db
     .prepare(
@@ -62,6 +70,7 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
     )
     .get(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as { c: number }
   summary.refunds_c = refunds.c
+  summary.profit_c = Math.round((summary.sales_total_c - refunds.c) - (cost.c - refundedCost.c))
 
   const expenses = db
     .prepare(
@@ -71,11 +80,18 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
     .get(opts.from, opts.to) as { c: number }
   summary.expenses_c = expenses.c
 
+  const costBySale = new Map<number, number>()
+  for (const r of db
+    .prepare('SELECT sale_id, COALESCE(SUM(cost_base_c * qty_base),0) AS c FROM sale_items GROUP BY sale_id')
+    .all() as { sale_id: number; c: number }[]) {
+    costBySale.set(r.sale_id, r.c)
+  }
+
   const chart = dateKeys.map((k) => {
     const inGroup = rows.filter((r) => groupKey(r.created_at, groupBy) === k)
     const total = inGroup.reduce((s, r) => s + r.total_c, 0)
-    const cost = inGroup.reduce((s, _r) => s, 0)
-    return { label: k, total_c: total, profit_c: total - (cost || 0) }
+    const cost = inGroup.reduce((s, r) => s + (costBySale.get(r.sale_id) ?? 0), 0)
+    return { label: k, total_c: total, profit_c: Math.round(total - cost) }
   })
 
   return { rows, summary, chart }

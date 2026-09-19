@@ -95,6 +95,19 @@ function DataTab(): React.JSX.Element {
     try { await window.api.backup.restore(backup.filename); toastSuccess('Backup restored', 'TINDA POS is restarting...') }
     catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) }
   }
+  const exportUniversal = async () => {
+    try {
+      const path = await window.api.backup.exportTinda()
+      if (path) toastSuccess('Universal backup exported', path)
+    } catch (e) { toastError('Export failed', String((e as Error)?.message || e)) }
+  }
+  const importUniversal = async () => {
+    if (!window.confirm('Import a .tinda-backup file? The current database is safety-backed up, replaced, verified, and TINDA POS restarts.')) return
+    try {
+      const path = await window.api.backup.importTinda()
+      if (path) toastSuccess('Universal backup imported', 'TINDA POS is restarting...')
+    } catch (e) { toastError('Import failed', String((e as Error)?.message || e)) }
+  }
 
   const reset = async () => {
     if (confirmation !== 'RESET') return
@@ -142,7 +155,10 @@ function DataTab(): React.JSX.Element {
           <button onClick={() => void window.api.app.openDataDir()} className="btn-ghost flex items-center gap-2"><FolderOpen className="h-4 w-4" /> Open Data Folder</button>
           <button onClick={() => void backupNow()} className="btn-primary flex items-center gap-2"><HardDriveDownload className="h-4 w-4" /> Backup Now</button>
           <button onClick={() => void showRestore()} className="btn-ghost flex items-center gap-2"><RotateCcw className="h-4 w-4" /> Restore Backup</button>
+          <button onClick={() => void exportUniversal()} className="btn-ghost flex items-center gap-2"><Download className="h-4 w-4" /> Export Universal Backup</button>
+          <button onClick={() => void importUniversal()} className="btn-ghost flex items-center gap-2"><Save className="h-4 w-4" /> Import Universal Backup</button>
         </div>
+        <p className="mt-3 text-xs text-slate-500">Universal backups (.tinda-backup) let you move your store between the Windows and Android apps — even between different devices.</p>
       </div>
 
       <div className="card p-5">

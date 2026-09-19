@@ -327,6 +327,8 @@ export interface TindaApi {
     list: () => Promise<BackupInfo[]>
     create: (reason?: string) => Promise<BackupInfo>
     restore: (filename: string) => Promise<void>
+    exportTinda: () => Promise<string | null>
+    importTinda: () => Promise<string | null>
     openFolder: () => Promise<void>
     selectSyncFolder: () => Promise<string | null>
     openSyncFolder: () => Promise<void>

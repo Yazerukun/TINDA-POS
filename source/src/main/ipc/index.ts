@@ -1,5 +1,6 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { ipcMain } from 'electron'
+import { promises as fs } from 'node:fs'
 import { getDb, getDbFile } from '../database/connection'
 import * as authSvc from '../services/auth'
 import * as sessionSvc from '../services/session'
@@ -26,6 +27,7 @@ import * as dataManagementSvc from '../services/dataManagement'
 import * as printingSvc from '../services/printing'
 import * as importSvc from '../services/productImport'
 import * as readSvc from '../services/readReports'
+import { importWindowsBackup, exportWindowsBackup } from '../services/tindaBackupWindows'
 import * as cashCountRepo from '../repositories/cashCounts'
 import { cashCountLines } from '@shared/cashCount'
 import { emitInventoryChanged } from '../services/inventoryEvents'
@@ -494,14 +496,24 @@ handle('reports:cashier', (_e: IpcMainInvokeEvent, opts: unknown) => {
   sessionSvc.requirePermission('reports:view')
   const d = (opts ?? {}) as { from?: string; to?: string; cashier_id?: number }
   const result = listSales(db(), { from: d.from ? `${d.from} 00:00:00` : undefined, to: d.to ? `${d.to} 23:59:59` : undefined, cashier_id: d.cashier_id, limit: 100000 }).rows.filter((s) => s.status !== 'VOIDED')
+  const dbh = db()
+  const saleIds = result.map((s) => s.id)
+  const placeholders = saleIds.map(() => '?').join(',')
+  const refundedCost = saleIds.length
+    ? (dbh.prepare(`SELECT COALESCE(SUM(si.cost_base_c * ri.qty_base),0) AS c FROM refund_items ri JOIN sale_items si ON si.id = ri.sale_item_id WHERE si.sale_id IN (${placeholders})`).get(...saleIds) as { c: number }).c
+    : 0
+  const refundsTotal = saleIds.length
+    ? (dbh.prepare(`SELECT COALESCE(SUM(total_c),0) AS c FROM refunds WHERE sale_id IN (${placeholders})`).get(...saleIds) as { c: number }).c
+    : 0
+  const cost = result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0)
   const summary = {
     sales_total_c: result.reduce((s, x) => s + x.total_c, 0),
-    profit_c: result.reduce((s, x) => s + x.total_c, 0) - result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0),
+    profit_c: Math.round((result.reduce((s, x) => s + x.total_c, 0) - refundsTotal) - (cost - refundedCost)),
     items_sold: result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.qty, 0), 0),
     transactions: result.length,
-    cost_c: 0,
+    cost_c: Math.round(cost),
     discount_c: result.reduce((s, x) => s + x.discount_c, 0),
-    refunds_c: 0,
+    refunds_c: refundsTotal,
     expenses_c: 0
   }
   return { rows: result, summary }
@@ -579,6 +591,45 @@ handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
     sessionSvc.requirePermission('backup:manage')
     backupRepo.restoreBackup(db(), filename)
     dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
+})
+handle('backup:exportTinda', async () => {
+  const release = beginCriticalOperation('EXPORT_UNIVERSAL')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const result = await dialog.showSaveDialog({
+      title: 'Export Universal Backup (.tinda-backup)',
+      defaultPath: `tinda-pos-backup-${stamp}.tinda-backup`,
+      filters: [{ name: 'TINDA POS Universal Backup', extensions: ['tinda-backup'] }]
+    })
+    if (result.canceled || !result.filePath) return null
+    const text = await exportWindowsBackup(db(), app.getVersion() ?? '1.0.0')
+    await fs.writeFile(result.filePath, text, 'utf8')
+    auditRepo.audit(db(), { action: 'EXPORT_UNIVERSAL_BACKUP', user_id: user().id, reason: 'Universal .tinda-backup' })
+    return result.filePath
+  } finally {
+    release()
+  }
+})
+handle('backup:importTinda', async () => {
+  const release = beginCriticalOperation('RESTORE_UNIVERSAL')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    const result = await dialog.showOpenDialog({
+      title: 'Import Universal Backup (.tinda-backup)',
+      filters: [{ name: 'TINDA POS Universal Backup', extensions: ['tinda-backup'] }],
+      properties: ['openFile']
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+    const text = await fs.readFile(result.filePaths[0], 'utf8')
+    const { counts } = await importWindowsBackup(db(), text)
+    const total = Object.values(counts).reduce((a, b) => a + b, 0)
+    auditRepo.audit(db(), { action: 'IMPORT_UNIVERSAL_BACKUP', user_id: user().id, reason: `${total} rows from ${result.filePaths[0]}` })
+    dataManagementSvc.relaunchAfterDataChange()
+    return result.filePaths[0]
   } finally {
     release()
   }

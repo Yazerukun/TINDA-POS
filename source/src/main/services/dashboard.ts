@@ -14,7 +14,20 @@ export function dashboardStats(): DashboardStats {
   }).rows.filter((s) => s.status !== 'VOIDED')
   const todaySales = sales.reduce((s, x) => s + x.total_c, 0)
   const todayCost = sales.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0)
-  const todayProfit = Math.round(todaySales - todayCost)
+  const refundsToday = (db
+    .prepare(
+      `SELECT COALESCE(SUM(r.total_c),0) AS c FROM refunds r
+       JOIN sales s ON s.id = r.sale_id WHERE s.created_at >= ? AND s.created_at <= ?`
+    )
+    .get(`${today} 00:00:00`, `${today} 23:59:59`) as { c: number }).c
+  const refundedCostToday = (db
+    .prepare(
+      `SELECT COALESCE(SUM(si.cost_base_c * ri.qty_base),0) AS c
+       FROM refund_items ri JOIN sale_items si ON si.id = ri.sale_item_id
+       JOIN sales s ON s.id = si.sale_id WHERE s.created_at >= ? AND s.created_at <= ?`
+    )
+    .get(`${today} 00:00:00`, `${today} 23:59:59`) as { c: number }).c
+  const todayProfit = Math.round((todaySales - refundsToday) - (todayCost - refundedCostToday))
 
   let cash = 0
   let gcash = 0
