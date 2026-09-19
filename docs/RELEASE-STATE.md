@@ -1,5 +1,27 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.19 LOCAL RC FREEZE - 2026-09-19 (awaiting owner GO to publish)
+
+- Branch: `v1.0.19-dev` (from v1.0.18 stable `1e662c8`).
+- RC_COMMIT: `b9f438beff2447e1bd678d708a312c693459a525` (`feat: complete v1.0.19 release candidate`). Clean working tree.
+- Gates: Windows 260/260 tests PASS, typecheck PASS, lint PASS, build PASS. Android 91/91 tests PASS, release APK build PASS.
+- Features: Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit (sales/reports/dashboard/cashier); withdrawal notes visible in Stock History; Reset Database reliability (RESET gate + preserved backups + reload to first-run); receipt layout aligned (58mm+80mm, preview==print, receiptHtml byte-identical across apps).
+- Windows RC artifacts (builds + installers/, `sha256sum -c SHA256SUMS-RC.txt` PASS):
+  * TindaPOS-Setup-1.0.19.exe    - 109661258 B (SHA256 9720b93860187e1d4acad7b5846602add2070af77e0870919f0fbfa89cac3aec)
+  * TindaPOS-Setup-1.0.19.exe.blockmap - 116995 B (SHA256 9b451e94d5e2756e7d751881f631b7d27120c0a75f98d8ea5c2addabf0d146ed)
+  * latest.yml                      - 348 B (version 1.0.19, sha512 matches Setup)
+  * TindaPOS-Portable-1.0.19.exe    - 109430874 B (SHA256 a663cc3f2928714820409722dd27bdd2472155271ab232a85d34cefaf8066f62)
+  * TindaPOS-User-Guide.pdf         - 170447 B (v1.0.19, 24pp, SHA256 78890d798f4b90516e6db5a5af43fae9cfd190a9aa9a3a6a555027d1f353294f)
+  * SHA256SUMS-RC.txt (release checksum manifest) + RC-SOURCE-COMMIT.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (release = source-only additions, no updater code changes).
+- STATUS: **LOCAL RC ONLY. Do not push/tag/release/Latest until Ian explicitly approves b9f438b.**
+
+## v1.0.18 STABLE PUBLISHED & LIVE - 2026-09-18 (Ian GO)
+
+- Tag `v1.0.18` = `1e662c866bb56c57448f82dccaf8f65f2c29adb1` (`docs: v1.0.18 STABLE PUBLISHED & LIVE (6 assets, updater gate intact)`).
+- Features: Itemized Recent Transactions accordion (Dashboard + Transactions table).
+- 6 canonical assets (Setup/Portable/blockmap/latest.yml/User-Guide/checksums) uploaded and verified.
+
 ## v1.0.17 STABLE PUBLISHED & LIVE - 2026-09-16 (Ian GO)
 
 - URL: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.17

@@ -1,6 +1,6 @@
 # TINDA POS v1.0.19 Stable
 
-RC source commit: `PENDING — filled after Stage 05 freeze`
+RC source commit: `b9f438b`
 Updater gate: byte-identical firmware of v1.0.18's updater machinery (electron-updater + electron-builder + app-update.yml untouched in this release).
 
 ## What's new
