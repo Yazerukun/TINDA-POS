@@ -15,6 +15,7 @@
   * SHA256SUMS-RC.txt (release checksum manifest) + RC-SOURCE-COMMIT.txt
 - Updater gate: electron-updater + electron-builder + app-update.yml untouched (release = source-only additions, no updater code changes).
 - STATUS: **LOCAL RC ONLY. Do not push/tag/release/Latest until Ian explicitly approves b9f438b.**
+- Android RC counterpart: TINDA-POS-Android-Free v1.0.22 / versionCode 22, RC_COMMIT `c2d0f9c`, APK `android/app/build/outputs/apk/release/app-release.apk` 3414639 B (SHA256 e2e274e34e6ca749e9b7f2878db875a06720d70edf8df654c50d31634ad79f8a), 91/91 tests PASS + release build PASS. Shared receipt module byte-identical to Windows.
 
 ## v1.0.18 STABLE PUBLISHED & LIVE - 2026-09-18 (Ian GO)
 
