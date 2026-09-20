@@ -1,11 +1,18 @@
-# TINDA POS v1.0.22 User Manual
+# TINDA POS v1.0.23 User Manual
 
-**TINDA POS v1.0.22** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.23** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.22), na nagdadala ng **English Standardization sa Utang** (With Balance, Settled, All), **Responsive Table Auto-Adjustment sa Lahat ng Screen**, at **Strict Column Alignment sa Utang at Transactions** (kasama ang nakapantay na Total/Discount sa expanded items).
+Ang guide na ito ay para sa release (v1.0.23), na nagdadala ng **Global Responsive Table Auto-Fit & Alignment** sa lahat ng talaan sa app, **Product Picture Uploads** na may thumbnails sa POS at Inventory, **Suggested Retail Price (SRP) na may Auto-Markup Calculator**, at **Dashboard Update Notifications**.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.23
+
+- **Pag-upload ng Larawan ng Produkto (Product Picture Upload)** — Maaari nang maglagay ng picture sa bawat produkto sa Inventory modal. Agad itong makikita bilang thumbnail sa POS cards para mabilis matukoy ng cashier, at sa Inventory listahan.
+- **Suggested Retail Price (SRP) at Auto-Markup Helper** — Maaari nang itala ang Suggested Retail Price (SRP) bilang gabay. May auto-markup buttons (+10%, +15%, +20%, +25%, +30%) base sa puhunan (purchase cost), profit margin indicator, at 1-click **"Use as Price"** button para agad gawing selling price ang SRP.
+- **Global Responsive Table Auto-Fit & Alignment** — Lahat ng talaan sa buong application (Utang, Transactions, Customers, Expenses, Backup, Inventory, Settings, Reports) ay perpektong naka-pantay ang mga kolum gamit ang `table-layout: fixed`, centered alignment, at proportional percentage widths na awtomatikong nag-aadjust sa kahit anong laptop o desktop resolution.
+- **Dashboard Update Notifications** — Awtomatikong nagche-check ng bagong version sa background pagkabukas ng Dashboard, na may malinaw na banner para sa release notes at 1-click Download / Restart & Install.
 
 ## Bago sa v1.0.22
 

@@ -1,5 +1,25 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.23 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.23`).
+- Features:
+  * Global Responsive Table Auto-Fit & Alignment: Enforced `table-layout: fixed`, centered content, and proportional percentage widths across all tables (Utang, Transactions, Customers, Expenses, Backup, Inventory, Settings, Reports). Contained in `.table-container` with `overflow-x-auto` to dynamically scale on small laptops and wide desktop monitors without column shifting.
+  * Product Picture Uploads: Support store owners uploading, previewing, and removing product photos with thumbnails in POS checkout cards and Inventory management. Served via `tinda-image://` protocol.
+  * Suggested Retail Price (SRP) & Auto-Markup: Added Migration 7 (`srp_c` column). Quick auto-markup buttons (+10% to +30%), real-time margin calculation, 1-click "Use as Price", and POS card SRP reference badge.
+  * Dashboard Update Notifications: Automatic background check on Dashboard mount with dismissible notification banner and 1-click Download / Restart & Install.
+- Gates: 40/40 test files (268/268 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-RC.txt` PASS):
+  * TindaPOS-Setup-1.0.23.exe          (SHA256 00db00c76748507a9103e3f59c97fb91861ac92d227b5dc6150134a6bc4bbb77)
+  * TindaPOS-Setup-1.0.23.exe.blockmap (SHA256 b35111fb2b336427df89071429eba697ca7f6a96d25923ad9ecb4dce14bba2b9)
+  * latest.yml                        (version 1.0.23, SHA256 84a6dbae67751a40c133d6ab3f235f82b2824d2c75bfbbe449c22fba828857f8)
+  * TindaPOS-Portable-1.0.23.exe       (SHA256 3305b16f87b92bf00a3f6c7a2b240ece1c6d0c788d3b9b9ca2b3646c951111da)
+  * TindaPOS-User-Guide.pdf           (v1.0.23, 26pp, SHA256 4a9608e364ad64674506f350d8d6b5b8cdaeb18dd755c1774d3a1f8a73b1de1b)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.23.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21/v1.0.22 to v1.0.23 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.23
+
 ## v1.0.22 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.22`).
