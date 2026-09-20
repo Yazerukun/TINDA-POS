@@ -179,7 +179,7 @@ const api: TindaApi = {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)
   },
   priceReferences: {
-    search: (opts) => invoke<{ rows: import('@shared/types').PriceReference[]; total: number }>('priceReferences:search', opts),
+    search: (opts) => invoke<{ rows: import('@shared/types').PriceReference[]; references: import('@shared/types').PriceReference[]; total: number }>('priceReferences:search', opts),
     get: (id) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:get', id),
     getByProduct: (productId) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByProduct', productId),
     getByBarcode: (barcode) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByBarcode', barcode),

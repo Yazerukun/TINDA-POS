@@ -13,10 +13,10 @@
   * Subtle POS Card Indicator: Clean reference badge (`Ref: ₱10.50`) on POS product cards without cluttering or impacting checkout speed.
 - Gates: 42/42 test files (292/292 tests) PASS, typecheck PASS, build PASS.
 - Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-v1.0.24.txt` PASS):
-  * TindaPOS-Setup-1.0.24.exe          (SHA256 60e5c16659da8930b843d818f82517bcca70c05e0ee1832eaf84f3ee1b5ff06a)
-  * TindaPOS-Setup-1.0.24.exe.blockmap (SHA256 e7c7a183cb900fb43b034595ccfa7d9f1ec4945af304d9747b3a5d0d48d38a9e)
+  * TindaPOS-Setup-1.0.24.exe          (SHA256 00940a2b02ba2a9da8b10e6cedb5572cccbb35c53f5f8d75684ef87b6a640587)
+  * TindaPOS-Setup-1.0.24.exe.blockmap (SHA256 1dae3fd4552dca859c66c9a31bcdca732a2313c67ff840959508c9f08fb48f7d)
   * latest.yml                        (version 1.0.24)
-  * TindaPOS-Portable-1.0.24.exe       (SHA256 ba75d3199a43e2fdfa7dbc4a5109cf5821b38bd097b974137f3013c2428af77c)
+  * TindaPOS-Portable-1.0.24.exe       (SHA256 ed987c0ca829121a81e2cddb6b58102f5d48a68665f6ff8685d447bd676cfee5)
   * TindaPOS-User-Guide.pdf           (v1.0.24, 27pp)
   * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.24.txt
 - Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21/v1.0.22/v1.0.23 to v1.0.24 verified).

@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { PriceComparisonStatus, PriceReference, PriceReferenceInput, PriceSourceType } from '../../shared/types'
+import { SEED_PRICE_REFERENCES } from '../services/seedPriceReferences'
 
 export interface ValidationResult {
   valid: boolean
@@ -237,10 +238,63 @@ export interface SearchPriceReferencesOptions {
   offset?: number
 }
 
+export function ensureSeedData(db: Database.Database): void {
+  try {
+    const countRow = db.prepare('SELECT COUNT(*) as c FROM price_references').get() as { c: number }
+    if (countRow.c === 0) {
+      const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
+      const insert = db.prepare(`
+        INSERT INTO price_references (
+          product_id, barcode, product_name, brand, variant, unit,
+          image_path, image_url, market_price_c, min_price_c, max_price_c,
+          currency, source_name, source_type, source_url, location,
+          effective_date, retrieved_at, last_synced_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?
+        )
+      `)
+      const seedTx = db.transaction(() => {
+        for (const s of SEED_PRICE_REFERENCES) {
+          insert.run(
+            s.product_id ?? null,
+            s.barcode?.trim() || null,
+            s.product_name.trim(),
+            s.brand?.trim() || null,
+            s.variant?.trim() || null,
+            s.unit?.trim() || null,
+            s.image_path?.trim() || null,
+            s.image_url?.trim() || null,
+            s.market_price_c ?? null,
+            s.min_price_c ?? null,
+            s.max_price_c ?? null,
+            s.currency || 'PHP',
+            s.source_name,
+            s.source_type || 'market',
+            s.source_url?.trim() || null,
+            s.location || 'Philippines',
+            s.effective_date || null,
+            now,
+            now
+          )
+        }
+      })
+      seedTx()
+    }
+  } catch {
+    // Non-blocking
+  }
+}
+
 export function searchPriceReferences(
   db: Database.Database,
   options: SearchPriceReferencesOptions = {}
-): { references: PriceReference[]; total: number } {
+): { rows: PriceReference[]; references: PriceReference[]; total: number } {
+  // Ensure seed data is populated if table is empty
+  ensureSeedData(db)
+
   const conditions: string[] = []
   const params: unknown[] = []
 
@@ -277,6 +331,7 @@ export function searchPriceReferences(
     .all(...params, limit, offset) as PriceReference[]
 
   return {
+    rows,
     references: rows,
     total: countRow.total
   }

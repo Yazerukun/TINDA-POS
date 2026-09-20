@@ -4,6 +4,7 @@ import type Database from 'better-sqlite3'
 import type { PriceReferenceInput, PriceSyncResult } from '../../shared/types'
 import { appDirs } from '../database/connection'
 import {
+  ensureSeedData,
   getPriceReference,
   upsertPriceReference,
   validatePriceReferenceInput
@@ -136,6 +137,7 @@ export interface PriceReferenceStatus {
 }
 
 export function getPriceReferenceStatus(db: Database.Database): PriceReferenceStatus {
+  ensureSeedData(db)
   const countRow = db.prepare('SELECT COUNT(*) as total FROM price_references').get() as {
     total: number
   }

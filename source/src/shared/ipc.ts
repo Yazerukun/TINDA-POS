@@ -359,7 +359,7 @@ export interface TindaApi {
       unlinkedOnly?: boolean
       limit?: number
       offset?: number
-    }) => Promise<{ rows: PriceReference[]; total: number }>
+    }) => Promise<{ rows: PriceReference[]; references: PriceReference[]; total: number }>
     get: (id: number) => Promise<PriceReference | undefined>
     getByProduct: (productId: number) => Promise<PriceReference | undefined>
     getByBarcode: (barcode: string) => Promise<PriceReference | undefined>

@@ -143,7 +143,8 @@ export function POS(): React.JSX.Element {
       try {
         const refs = await window.api.priceReferences.search({ linkedOnly: true, limit: 100 })
         const map: Record<number, number> = {}
-        for (const r of refs.rows) {
+        const refsList = refs?.rows || (refs as any)?.references || []
+        for (const r of refsList) {
           if (r.product_id && r.market_price_c !== null) {
             map[r.product_id] = r.market_price_c
           }

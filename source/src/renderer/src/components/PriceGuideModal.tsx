@@ -64,10 +64,12 @@ export function PriceGuideModal({
         }),
         window.api.priceReferences.status()
       ])
-      setReferences(res.rows)
-      setStatus(stat)
+      const rows = res?.rows || (res as any)?.references || []
+      setReferences(Array.isArray(rows) ? rows : [])
+      if (stat) setStatus(stat)
     } catch (e) {
       toastError('Failed to load price references', String((e as Error)?.message || e))
+      setReferences([])
     } finally {
       setLoading(false)
     }
@@ -124,7 +126,7 @@ export function PriceGuideModal({
 
   if (!open) return null
 
-  const filteredProductsForLinking = products.filter((p) => {
+  const filteredProductsForLinking = (Array.isArray(products) ? products : []).filter((p) => {
     if (!linkingSearch) return true
     const q = linkingSearch.toLowerCase()
     return (
@@ -226,7 +228,7 @@ export function PriceGuideModal({
             <p className="py-12 text-center text-sm text-slate-400">Loading price references…</p>
           )}
 
-          {!loading && references.length === 0 && (
+          {!loading && (!references || references.length === 0) && (
             <div className="py-12 text-center space-y-2">
               <Layers className="h-8 w-8 text-slate-600 mx-auto" />
               <p className="text-sm font-medium text-slate-300">No price references found</p>
@@ -237,9 +239,10 @@ export function PriceGuideModal({
           )}
 
           {!loading &&
+            Array.isArray(references) &&
             references.map((ref) => {
               const linkedProduct = ref.product_id
-                ? products.find((p) => p.id === ref.product_id)
+                ? (Array.isArray(products) ? products : []).find((p) => p.id === ref.product_id)
                 : null
 
               return (
