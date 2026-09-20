@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyState'
+import { Modal } from '../components/ui/Modal'
 import type { Product, Sale, ReportSummary } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
 import { useUpdate } from '../stores/update'
@@ -58,6 +59,8 @@ export function Dashboard(): React.JSX.Element | null {
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [showNotes, setShowNotes] = useState(false)
   const [updateBusy, setUpdateBusy] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [modalDismissed, setModalDismissed] = useState(false)
 
   const { event, download, install, dismiss } = useUpdate()
 
@@ -105,6 +108,17 @@ export function Dashboard(): React.JSX.Element | null {
       void useUpdate.getState().check(false)
     })
   }, [])
+
+  // Show update modal pop-up when update is detected
+  useEffect(() => {
+    if (
+      event &&
+      ['UPDATE_AVAILABLE', 'DOWNLOADED', 'READY_TO_INSTALL'].includes(event.status as string) &&
+      !modalDismissed
+    ) {
+      setShowModal(true)
+    }
+  }, [event?.status, modalDismissed])
 
   if (error) {
     return (
@@ -189,6 +203,14 @@ export function Dashboard(): React.JSX.Element | null {
                 )}
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(true)}
+                    className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Open Pop-up
+                  </button>
                   {event.available?.releaseNotes && (
                     <button
                       type="button"
@@ -228,7 +250,11 @@ export function Dashboard(): React.JSX.Element | null {
                   )}
                   <button
                     type="button"
-                    onClick={() => void dismiss()}
+                    onClick={() => {
+                      void dismiss()
+                      setShowModal(false)
+                      setModalDismissed(true)
+                    }}
                     className="btn-ghost px-3 py-1.5 text-xs text-slate-400 hover:text-white"
                   >
                     Dismiss
@@ -238,7 +264,11 @@ export function Dashboard(): React.JSX.Element | null {
             </div>
             <button
               type="button"
-              onClick={() => void dismiss()}
+              onClick={() => {
+                void dismiss()
+                setShowModal(false)
+                setModalDismissed(true)
+              }}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
               title="Dismiss update notice"
             >
@@ -247,6 +277,107 @@ export function Dashboard(): React.JSX.Element | null {
           </div>
         </div>
       )}
+
+      {/* Update Available Modal Pop-up */}
+      <Modal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setModalDismissed(true)
+        }}
+        title={`🎉 Bag-ong Update! · v${version}`}
+        maxWidth="max-w-xl"
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <button
+              type="button"
+              onClick={() => {
+                setShowModal(false)
+                setModalDismissed(true)
+              }}
+              className="btn-ghost px-4 py-2 text-xs text-slate-300 hover:text-white"
+            >
+              Unya Na (Later)
+            </button>
+
+            {updateStatus === 'UPDATE_AVAILABLE' && (
+              <button
+                type="button"
+                disabled={updateBusy}
+                onClick={() => {
+                  setUpdateBusy(true)
+                  void download().finally(() => setUpdateBusy(false))
+                }}
+                className="btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
+              >
+                {updateBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                Download Update
+              </button>
+            )}
+
+            {(updateStatus === 'DOWNLOADED' || updateStatus === 'READY_TO_INSTALL') && (
+              <button
+                type="button"
+                disabled={updateBusy}
+                onClick={() => {
+                  setUpdateBusy(true)
+                  void install().finally(() => setUpdateBusy(false))
+                }}
+                className="btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
+              >
+                {updateBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                Restart &amp; Install
+              </button>
+            )}
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-brand-500/30 bg-brand-950/30 p-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500/20 text-brand-300">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">
+                Adunay bag-ong bersyon sa TINDA POS nga magamit!
+              </p>
+              <p className="mt-0.5 text-xs text-slate-300">
+                {event?.portable
+                  ? 'Naka-portable mode ang imong TINDA POS. I-download ang bag-ong portable EXE aron magamit ang bag-ong mga features.'
+                  : 'Ang imong mga data (sales, inventory, utang) luwas ug awtomatikong i-backup sa dili pa mag-update.'}
+              </p>
+            </div>
+          </div>
+
+          {updateStatus === 'DOWNLOADING' && event?.progress && (
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-3">
+              <div className="flex items-center justify-between text-xs text-slate-300 mb-1.5 font-medium">
+                <span>Nag-download sa update…</span>
+                <span>{event.progress.percent}%</span>
+              </div>
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-950">
+                <div
+                  className="h-full rounded-full bg-brand-500 transition-all duration-300"
+                  style={{ width: `${event.progress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {event?.available?.releaseNotes && (
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                Unsay Bago sa Bersyon v{event.available.version}:
+              </p>
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-ink-line bg-ink-950 p-3 text-xs text-slate-300 leading-relaxed">
+                <pre className="whitespace-pre-wrap font-sans text-slate-300">
+                  {event.available.releaseNotes}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard

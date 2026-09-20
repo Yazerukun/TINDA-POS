@@ -137,7 +137,6 @@ export interface PriceReferenceStatus {
 }
 
 export function getPriceReferenceStatus(db: Database.Database): PriceReferenceStatus {
-  ensureSeedData(db)
   const countRow = db.prepare('SELECT COUNT(*) as total FROM price_references').get() as {
     total: number
   }

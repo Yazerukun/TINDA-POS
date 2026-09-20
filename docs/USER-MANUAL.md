@@ -1,11 +1,20 @@
-# TINDA POS v1.0.24 User Manual
+# TINDA POS v1.0.25 User Manual
 
-**TINDA POS v1.0.24** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.25** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.24), na nagdadala ng **Offline-First Online Price Guide / Market Price Reference**, **DTI Suggested Retail Price (SRP) Guidance**, **Advisory Price Ranges**, **Dual-Probe Sync na may Stale Data Transparency**, at **Subtle POS Reference Indicators**.
+Ang guide na ito ay para sa release (v1.0.25), na nagdadala ng **Offline-First Online Price Guide / Market Price Reference**, **DTI Suggested Retail Price (SRP) Guidance**, **Advisory Price Ranges**, **Dual-Probe Sync na may Stale Data Transparency**, **Subtle POS Reference Indicators**, at **Price Guide Modal Blank Screen Stability Fix**.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.25
+
+- **Offline-First Market Price Reference** — May built-in nang gabay sa presyo ng merkado (Market Reference Price) at Suggested Price Ranges base sa opisyal na DTI SRP at market price guides para sa mga pangunahing bilihin (Lucky Me Pancit Canton/Mami, Mega Sardines, 555 Sardines, Bear Brand, Nescafe, Kopiko, Great Taste, Coca-Cola, Datu Puti, Silver Swan, Safeguard, Surf, San Miguel, Red Horse).
+- **Price Guide Modal Stability & Auto-Seed Fix** — Naayos ang isyu kung saan nagiging blangko ang Price Guide modal sa pag-click; awtomatiko na ngayong naglo-load ang pre-seeded staple commodities kahit bago pa lamang ang database o walang internet.
+- **Ligtas at May Kapangyarihan ang May-ari (Store Owner Authority)** — Ang Price Guide ay gabay lamang at **hindi kailanman** kusang magbabago o mag-ooverwrite sa iyong sariling selling price sa tindahan. Maaari mong i-click ang **"Adopt Reference Price"** sa product modal kung nais mong kopyahin ito.
+- **100% Offline-First at Transparent Sync** — Naka-cache sa lokal na SQLite database ang mga reference prices. Ligtas itong mag-sync kapag may internet gamit ang dual-probe check, at kapag walang internet, malinaw na ipapakita ang *"Offline — Showing Last Saved Data"*. May babala rin kung ang data ay higit sa 30 araw na.
+- **Price Guide Modal sa Inventory** — May bagong **"Price Guide"** button sa Inventory header upang maghanap ng presyo, mag-filter base sa source (Official DTI / Market), i-link o i-unlink ang reference sa iyong sariling produkto, at mag-manual sync.
+- **Subtle POS Card Indicator** — Makikita ang munting reference badge (`Ref: ₱10.50`) sa mga POS product cards nang hindi nakakasagabal sa layout o bilis ng barcode scanning at checkout.
 
 ## Bago sa v1.0.24
 

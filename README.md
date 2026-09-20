@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.24-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.25-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-292%2F292_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,18 +16,19 @@
 
 <br />
 
-[⬇️ Download v1.0.24 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.24/TindaPOS-Setup-1.0.24.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.24/TindaPOS-Portable-1.0.24.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.24/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.25 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.25/TindaPOS-Setup-1.0.25.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.25/TindaPOS-Portable-1.0.25.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.25/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.24
+## ✨ What's New in v1.0.25
 
-> **Offline-First Online Price Guide / Market Price Reference & DTI SRP Guidance**
+> **Offline-First Online Price Guide / Market Price Reference, DTI SRP Guidance & Modal Stability Fix**
 
 - 🏷️ **Offline-First Market Price Reference** — consult market prices and suggested price ranges (e.g. DTI SRP, Market Price Guide) for Philippine commodities directly inside TINDA POS. Fully offline-first with local SQLite caching.
 - 🛡️ **Store Owner Authority Guaranteed** — the price guide is strictly advisory. Store owner selling prices are **never** automatically changed or overwritten. Store owners can explicitly click *"Adopt Reference Price"* in the product modal to use it.
+- 🔧 **Price Guide Modal Stability & Auto-Seed Fix** — resolved the blank screen issue when opening the Price Guide modal; preloads 20 Philippine staple commodities automatically on fresh/empty databases without requiring an initial sync.
 - 📡 **Dual-Probe Sync & Stale Data Transparency** — safe background sync with dual-probe connectivity check. When offline, explicitly displays *"Offline — Showing Last Saved Data"*. Stale data (>30 days) is clearly marked.
 - 📦 **Preloaded Philippine Commodity Seed Catalog** — preloaded with official reference prices for staple items (Lucky Me Pancit Canton/Mami, Mega Sardines, 555 Sardines, Bear Brand, Nescafe, Kopiko, Great Taste, Coca-Cola, Datu Puti, Silver Swan, Safeguard, Surf, San Miguel, Red Horse).
 - 🔍 **Interactive Price Guide Modal** — accessible from Inventory header (*"Price Guide"*), allows searching, filtering by source/linked status, manual sync with progress indicator, and manual product linking/unlinking.
@@ -40,6 +41,7 @@
 
 | Version | Highlights |
 |---|---|
+| **v1.0.25** | Price Guide modal stability fix, auto-seed catalog for empty databases, offline-first online price guide & market price reference |
 | **v1.0.24** | Offline-First Online Price Guide / Market Price Reference, DTI SRP guidance, advisory price ranges, dual-probe sync, seed catalog, Price Guide modal, and POS reference indicators |
 | **v1.0.23** | Global Responsive Table Auto-Fit across all screens, Product Picture Uploads with thumbnails, Suggested Retail Price (SRP) with Auto-Markup (+10% to +30%), and Dashboard Update Notifications |
 | **v1.0.22** | English Standardization in Utang (With Balance / Settled / All), responsive table auto-adjustment across all screens, strict column alignment in Utang & Transactions with dedicated expanded items `<tfoot>` |
