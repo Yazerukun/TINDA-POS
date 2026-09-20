@@ -1,0 +1,5 @@
+00db00c76748507a9103e3f59c97fb91861ac92d227b5dc6150134a6bc4bbb77  TindaPOS-Setup-1.0.23.exe
+3305b16f87b92bf00a3f6c7a2b240ece1c6d0c788d3b9b9ca2b3646c951111da  TindaPOS-Portable-1.0.23.exe
+b35111fb2b336427df89071429eba697ca7f6a96d25923ad9ecb4dce14bba2b9  TindaPOS-Setup-1.0.23.exe.blockmap
+4a9608e364ad64674506f350d8d6b5b8cdaeb18dd755c1774d3a1f8a73b1de1b  TindaPOS-User-Guide.pdf
+84a6dbae67751a40c133d6ab3f235f82b2824d2c75bfbbe449c22fba828857f8  latest.yml

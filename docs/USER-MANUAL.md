@@ -1,11 +1,42 @@
-# TINDA POS v1.0.22 User Manual
+# TINDA POS v1.0.26 User Manual
 
-**TINDA POS v1.0.22** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.26** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.22), na nagdadala ng **English Standardization sa Utang** (With Balance, Settled, All), **Responsive Table Auto-Adjustment sa Lahat ng Screen**, at **Strict Column Alignment sa Utang at Transactions** (kasama ang nakapantay na Total/Discount sa expanded items).
+Ang guide na ito ay para sa release (v1.0.26), na nagdadala ng **TINDA BANTAY: Real-Time Market Price Engine**, **Live Online Price Feed**, **Auto Live-Sync on Open & Reconnect**, **Pulsing 🟢 LIVE Indicator**, ug ang **TINDA SCOUT Harvester** (powered by Scrapling).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.26 (TINDA BANTAY Edition)
+
+- **TINDA BANTAY Real-Time Market Feed** — Awtomatiko nang kumukonekta sa live online price catalog feed (`price-catalog.json`) tuwing may internet connection upang maghatid ng pinakabagong presyo sa merkado.
+- **Auto Live-Sync sa Pagbukas at Pag-reconnect** — Sa sandaling buksan ang **Price Guide** modal o muling magka-internet, kusa at tahimik itong mag-sync sa background nang hindi na kailangang pindutin ang "Sync" button.
+- **Pulsing 🟢 LIVE Indicator** — May maliwanag na berdeng umiilaw na indicator kapag konektado sa live feed (🟢 **LIVE · Bantay Presyo Online**), at maayos na nagpapakita ng ⚪ **OFFLINE · Cached Local Data** kapag walang internet.
+- **TINDA SCOUT Harvester (Scrapling)** — May kasamang bagong stealth scraper bot na pinapatakbo ng `d4vinci/Scrapling` upang mag-harvest ng live prices mula sa mga pangunahing supermarket at opisyal na DTI SRP advisories.
+
+## Bago sa v1.0.25
+
+- **Offline-First Market Price Reference** — May built-in nang gabay sa presyo ng merkado (Market Reference Price) at Suggested Price Ranges base sa opisyal na DTI SRP at market price guides para sa mga pangunahing bilihin (Lucky Me Pancit Canton/Mami, Mega Sardines, 555 Sardines, Bear Brand, Nescafe, Kopiko, Great Taste, Coca-Cola, Datu Puti, Silver Swan, Safeguard, Surf, San Miguel, Red Horse).
+- **Price Guide Modal Stability & Auto-Seed Fix** — Naayos ang isyu kung saan nagiging blangko ang Price Guide modal sa pag-click; awtomatiko na ngayong naglo-load ang pre-seeded staple commodities kahit bago pa lamang ang database o walang internet.
+- **Ligtas at May Kapangyarihan ang May-ari (Store Owner Authority)** — Ang Price Guide ay gabay lamang at **hindi kailanman** kusang magbabago o mag-ooverwrite sa iyong sariling selling price sa tindahan. Maaari mong i-click ang **"Adopt Reference Price"** sa product modal kung nais mong kopyahin ito.
+- **100% Offline-First at Transparent Sync** — Naka-cache sa lokal na SQLite database ang mga reference prices. Ligtas itong mag-sync kapag may internet gamit ang dual-probe check, at kapag walang internet, malinaw na ipapakita ang *"Offline — Showing Last Saved Data"*. May babala rin kung ang data ay higit sa 30 araw na.
+- **Price Guide Modal sa Inventory** — May bagong **"Price Guide"** button sa Inventory header upang maghanap ng presyo, mag-filter base sa source (Official DTI / Market), i-link o i-unlink ang reference sa iyong sariling produkto, at mag-manual sync.
+- **Subtle POS Card Indicator** — Makikita ang munting reference badge (`Ref: ₱10.50`) sa mga POS product cards nang hindi nakakasagabal sa layout o bilis ng barcode scanning at checkout.
+
+## Bago sa v1.0.24
+
+- **Offline-First Market Price Reference** — May built-in nang gabay sa presyo ng merkado (Market Reference Price) at Suggested Price Ranges base sa opisyal na DTI SRP at market price guides para sa mga pangunahing bilihin (Lucky Me Pancit Canton/Mami, Mega Sardines, 555 Sardines, Bear Brand, Nescafe, Kopiko, Great Taste, Coca-Cola, Datu Puti, Silver Swan, Safeguard, Surf, San Miguel, Red Horse).
+- **Ligtas at May Kapangyarihan ang May-ari (Store Owner Authority)** — Ang Price Guide ay gabay lamang at **hindi kailanman** kusang magbabago o mag-ooverwrite sa iyong sariling selling price sa tindahan. Maaari mong i-click ang **"Adopt Reference Price"** sa product modal kung nais mong kopyahin ito.
+- **100% Offline-First at Transparent Sync** — Naka-cache sa lokal na SQLite database ang mga reference prices. Ligtas itong mag-sync kapag may internet gamit ang dual-probe check, at kapag walang internet, malinaw na ipapakita ang *"Offline — Showing Last Saved Data"*. May babala rin kung ang data ay higit sa 30 araw na.
+- **Price Guide Modal sa Inventory** — May bagong **"Price Guide"** button sa Inventory header upang maghanap ng presyo, mag-filter base sa source (Official DTI / Market), i-link o i-unlink ang reference sa iyong sariling produkto, at mag-manual sync.
+- **Subtle POS Card Indicator** — Makikita ang munting reference badge (`Ref: ₱10.50`) sa mga POS product cards nang hindi nakakasagabal sa layout o bilis ng barcode scanning at checkout.
+
+## Bago sa v1.0.23
+
+- **Pag-upload ng Larawan ng Produkto (Product Picture Upload)** — Maaari nang maglagay ng picture sa bawat produkto sa Inventory modal. Agad itong makikita bilang thumbnail sa POS cards para mabilis matukoy ng cashier, at sa Inventory listahan.
+- **Suggested Retail Price (SRP) at Auto-Markup Helper** — Maaari nang itala ang Suggested Retail Price (SRP) bilang gabay. May auto-markup buttons (+10%, +15%, +20%, +25%, +30%) base sa puhunan (purchase cost), profit margin indicator, at 1-click **"Use as Price"** button para agad gawing selling price ang SRP.
+- **Global Responsive Table Auto-Fit & Alignment** — Lahat ng talaan sa buong application (Utang, Transactions, Customers, Expenses, Backup, Inventory, Settings, Reports) ay perpektong naka-pantay ang mga kolum gamit ang `table-layout: fixed`, centered alignment, at proportional percentage widths na awtomatikong nag-aadjust sa kahit anong laptop o desktop resolution.
+- **Dashboard Update Notifications** — Awtomatikong nagche-check ng bagong version sa background pagkabukas ng Dashboard, na may malinaw na banner para sa release notes at 1-click Download / Restart & Install.
 
 ## Bago sa v1.0.22
 

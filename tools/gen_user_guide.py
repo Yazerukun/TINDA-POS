@@ -62,20 +62,20 @@ def sec(title):
 sec("Installation Guide")
 story.append(P(
     "TINDA POS is an offline, desktop point-of-sale application built for Philippine "
-    "sari-sari stores. It works without an internet connection, keeps all your data on "
-    "your own computer, and supports cash, GCash, Maya, and utang (credit) sales."
+    "sari-sari stores and small businesses. It runs on Windows 10/11 and works without "
+    "an internet connection, keeping all your data on your own computer. It supports "
+    "cash, GCash, Maya, and utang (credit) sales."
 ))
 story.append(H2("System Requirements"))
 story.append(bullets([
     "<b>Windows:</b> Windows 10 or 11 (64-bit), 4 GB RAM, about 200 MB free disk space.",
-    "<b>Linux:</b> any modern 64-bit distribution (Ubuntu, Arch, Fedora, etc.), 4 GB RAM.",
     "<b>Display:</b> 1366\u00d7768 or higher recommended.",
     "<b>Offline:</b> no internet connection is ever required to run the app.",
 ]))
 story.append(H2("Installing on Windows"))
-story.append(P("TINDA POS v1.0.2 will be distributed as a Windows Setup package and a no-install Portable package after final packaging is complete."))
-story.append(step("1", "Download the official v1.0.2 Setup or Portable package after it is published on the GitHub release page."))
-story.append(step("2", "If Windows SmartScreen warns you, click <b>More info</b> then <b>Run anyway</b>. The app is not code-signed yet, so this notice is expected."))
+story.append(P("Download the Setup or Portable package from the official GitHub release page."))
+story.append(step("1", "Download the official Setup or Portable package from the GitHub release page."))
+story.append(step("2", "If Windows SmartScreen shows a warning, click <b>More info</b> then <b>Run anyway</b>."))
 story.append(step("3", "Choose the <b>Installation directory</b> (the default location is fine)."))
 story.append(step("4", "Tick the options to create a <b>Desktop shortcut</b> and a <b>Start Menu</b> shortcut."))
 story.append(step("5", "Click <b>Install</b> and wait for it to finish. The app will then offer to <b>Run TINDA POS</b>."))
@@ -83,12 +83,7 @@ story.append(P(
     "Your data is saved in <b>%APPDATA%\\TINDA POS</b> (database, backups, receipts). "
     "Uninstalling the app <b>does not delete your data</b>, so you never lose your sales history."
 ))
-story.append(H2("Installing on Linux (AppImage)"))
-story.append(step("1", "Right-click <b>TindaPOS-1.0.0.AppImage</b> and choose <b>Properties \u2192 Permissions</b>, then check <b>Allow executing file as program</b>."))
-story.append(step("2", "Alternative: open a terminal and run <font face='Courier'>chmod +x TindaPOS-1.0.0.AppImage</font>."))
-story.append(step("3", "Double-click the AppImage to launch TINDA POS."))
-story.append(step("4", "If FUSE is not installed, install it (e.g. <font face='Courier'>sudo apt install libfuse2</font> on Debian/Ubuntu), or run the app with <font face='Courier'>--appimage-extract-and-run</font>."))
-story.append(P("Linux data is stored under <b>~/.config/tinda-pos</b> (or a folder you set)."))
+
 
 # ============================================================
 sec("Quick Start &amp; What's New")
@@ -98,15 +93,13 @@ story.append(step("2", "Open <b>Inventory</b>, create categories, then add produ
 story.append(step("3", "Open <b>POS</b>, add products to the cart, choose a payment method, and confirm the sale."))
 story.append(step("4", "Add regular customers before allowing <b>Utang</b>, and record every payment in their ledger."))
 story.append(step("5", "Open <b>Backup</b> at the end of the day and create a backup."))
-story.append(H2("Latest v1.0.2 improvements"))
+story.append(H2("Latest v1.0.18 improvements"))
 story.append(bullets([
-    "The badge now performs a <b>real internet check</b> instead of trusting the computer's Wi-Fi indicator alone.",
-    "<b>ONLINE READY</b> means internet was verified; <b>OFFLINE READY</b> means sales remain available while cloud syncing waits.",
-    "Connection changes trigger notifications and are checked automatically about every 15 seconds.",
-    "Cloud-folder backup supports OneDrive, Google Drive for desktop, and Dropbox.",
-    "Category management, inventory safeguards, customer balances, backups, and accessibility were improved.",
+    '<b>Itemized Recent Transactions</b> — on the Dashboard, each recent transaction row now expands inline to show a full item-by-item breakdown (product name, quantity, unit, and subtotal per item, plus payment method and discount).',
+    '<b>Itemized Transactions table</b> — on the Transactions page, click the ▾ chevron beside any receipt number to expand an inline mini-table showing Product, Qty, Unit Price, and Subtotal per item, plus payment details.',
+    '<b>One-tap collapse</b> — click again to collapse the item list. Only one row is open at a time for a clean, focused view.',
+    'All previous features remain: cash/GCash/Maya/Utang, inventory, reports, backups, refunds, voids, and software auto-update.',
 ]))
-story.append(P("The connection badge only describes internet availability. It never controls checkout, inventory, reports, or other local POS features.", "callout"))
 
 # ============================================================
 sec("Getting Started")
@@ -250,6 +243,11 @@ story.append(bullets([
 # ============================================================
 sec("Transactions, Refunds &amp; Voids")
 story.append(P("The Transactions page lists every sale. You can view a full receipt, refund items, or void a mistaken sale."))
+story.append(H3("Viewing itemized details"))
+story.append(step("1", "In the Transactions list, click the <b>▾ chevron</b> next to any receipt number."))
+story.append(step("2", "An inline table expands below the row showing: <b>Product</b>, <b>Qty</b>, <b>Unit Price</b>, and <b>Subtotal</b> per item."))
+story.append(step("3", "A footer row shows the <b>payment method(s)</b> with amounts and the <b>transaction total</b>."))
+story.append(step("4", "Click the <b>▴ chevron</b> again (or click another row) to collapse."))
 story.append(H3("Refunding a sale (returns)"))
 story.append(step("1", "Open the sale in Transactions."))
 story.append(step("2", "Click <b>Refund</b> and pick which items the customer returned."))
@@ -266,7 +264,7 @@ story.append(P("The first screen after logging in. It shows today's big picture 
 story.append(bullets([
     "<b>Sales</b>, <b>Profit</b>, <b>Utang (receivables)</b>, and <b>Expenses</b> totals.",
     "<b>Low/out-of-stock</b> products that need reordering.",
-    "<b>Recent transactions</b> and any <b>overdue/near-limit</b> customers.",
+    "<b>Recent transactions</b> — each row now expands inline to show the itemized product list and payment breakdown.",
 ]))
 story.append(H2("Reports"))
 story.append(P("The Reports page gives you money and stock insight across sales, inventory, and utang."))
@@ -365,7 +363,7 @@ story.append(P("If TINDA POS helps your store and you would like to buy the deve
 # ---- Table of contents ----
 story_titles = {
     1: "Installation Guide",
-    2: "Quick Start &amp; What's New",
+    2: "Quick Start &amp; What's New in v1.0.18",
     3: "Getting Started",
     4: "Point of Sale (POS)",
     5: "Inventory &amp; Products",
@@ -420,7 +418,7 @@ out.append(Paragraph("Offline Point-of-Sale for Sari-Sari Stores", ParagraphStyl
 out.append(Spacer(1, 2.1 * inch))
 out.append(Paragraph("User Guide &amp; Installation Manual", ParagraphStyle("csub", parent=ST["sub"], fontSize=16, textColor=WHITE)))
 out.append(Spacer(1, 0.08 * inch))
-out.append(Paragraph("Windows \u00b7 Version 1.0.2", ST["small"]))
+out.append(Paragraph("Windows \u00b7 Version 1.0.18", ST["small"]))
 out.append(PageBreak())
 out += toc
 out.append(PageBreak())
