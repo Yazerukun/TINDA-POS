@@ -14,6 +14,14 @@ export function moneyShort(c: number): string {
   return '₱' + v.toLocaleString('en-PH', { minimumFractionDigits: v % 1 === 0 ? 0 : 2 })
 }
 
+export function moneyWholePesos(c: number): string {
+  const v = (c || 0) / 100
+  if (v % 1 === 0) {
+    return '₱' + Math.round(v).toLocaleString('en-PH')
+  }
+  return money(c)
+}
+
 export function pesosToC(pesos: number): number {
   return Math.round(pesos * 100)
 }

@@ -119,39 +119,45 @@ export function Transactions(): React.JSX.Element {
                         <td colSpan={7} className="px-4 pb-3 pt-0">
                           <div className="rounded-lg border border-ink-line overflow-hidden">
                             {/* Item rows */}
-                            <table className="w-full text-xs">
+                            <table className="w-full table-fixed text-xs">
                               <thead>
-                                <tr className="border-b border-ink-line">
-                                  <th className="py-1.5 pl-3 text-left font-medium text-slate-500">Product</th>
-                                  <th className="py-1.5 text-center font-medium text-slate-500">Qty</th>
-                                  <th className="py-1.5 text-right font-medium text-slate-500">Unit Price</th>
-                                  <th className="py-1.5 pr-3 text-right font-medium text-slate-500">Subtotal</th>
+                                <tr className="border-b border-ink-line bg-ink-900/50">
+                                  <th className="py-2 pl-3 pr-2 text-left font-medium text-slate-400">Product</th>
+                                  <th className="w-28 py-2 px-3 text-right font-medium text-slate-400">Qty</th>
+                                  <th className="w-32 py-2 px-3 text-right font-medium text-slate-400">Unit Price</th>
+                                  <th className="w-32 py-2 pl-3 pr-3 text-right font-medium text-slate-400">Subtotal</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {s.items.map((i) => (
-                                  <tr key={i.id} className="border-b border-ink-line last:border-0">
-                                    <td className="py-1.5 pl-3 text-slate-200">
-                                      {i.product_name}
+                                  <tr key={i.id} className="border-b border-ink-line last:border-0 hover:bg-ink-750/30">
+                                    <td className="py-2 pl-3 pr-2 text-slate-200">
+                                      <span className="font-medium">{i.product_name}</span>
                                       {i.refunded_qty_base > 0 && (
-                                        <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>
+                                        <span className="ml-1.5 text-amber-400 text-[11px] font-normal">(ref {i.refunded_qty_base})</span>
                                       )}
                                     </td>
-                                    <td className="py-1.5 text-center text-slate-400">{i.qty} {i.unit_name}</td>
-                                    <td className="py-1.5 text-right text-slate-400">{money(i.unit_price_c)}</td>
-                                    <td className="py-1.5 pr-3 text-right font-medium text-slate-200">{money(i.subtotal_c)}</td>
+                                    <td className="w-28 py-2 px-3 text-right font-mono tabular-nums text-slate-300">
+                                      {i.qty} <span className="font-sans text-[11px] text-slate-500">{i.unit_name}</span>
+                                    </td>
+                                    <td className="w-32 py-2 px-3 text-right font-mono tabular-nums text-slate-300">
+                                      {money(i.unit_price_c)}
+                                    </td>
+                                    <td className="w-32 py-2 pl-3 pr-3 text-right font-mono tabular-nums font-semibold text-slate-100">
+                                      {money(i.subtotal_c)}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
                             {/* Footer: discount + payments */}
-                            <div className="flex items-center justify-between border-t border-ink-line px-3 py-1.5 text-xs">
+                            <div className="flex items-center justify-between border-t border-ink-line px-3 py-2 text-xs">
                               <span className="text-slate-500">
                                 {s.payments.map((p) => `${p.method} ${money(p.amount_c)}`).join(' · ')}
                               </span>
                               <span className="text-slate-400">
                                 {s.discount_c > 0 && <span className="mr-3 text-amber-400">Discount −{money(s.discount_c)}</span>}
-                                Total <span className="font-bold text-white">{money(s.total_c)}</span>
+                                Total <span className="font-bold font-mono tabular-nums text-white">{money(s.total_c)}</span>
                               </span>
                             </div>
                           </div>

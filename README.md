@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.19-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.20-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
@@ -15,27 +15,27 @@
 
 <br />
 
-[⬇️ Download v1.0.19 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Setup-1.0.19.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Portable-1.0.19.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Manual PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.20 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Setup-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Portable-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Manual PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.19
+## ✨ What's New in v1.0.20
 
-> **Move your store data between Windows and Android** — one universal backup file, plus refund-aware profit and a safer database reset.
+> **Color-coded Dashboard and Whole-Peso Receiving** — visual clarity for financial metrics and cleaner inventory costing.
 
-- **Universal `.tinda-backup` exchange** — back up on Windows or Android and restore on the other. Products, stock, sales, utang, and settings travel together in a single file.
-- **Refund-aware Estimated Profit** — refunds now reverse profit correctly on the Dashboard, Reports, and Cashier summaries, not only Net Sales.
-- **Withdrawal notes in Stock History** — the note you add when withdrawing stock is now visible in that product's Stock History.
-- **Reset Database reliability** — reset now requires typing **RESET** to confirm, saves automatic backups first, and reloads into a clean first-run state.
-- **Receipt layout aligned** — 58mm and 80mm receipt output matches the on-screen preview, with byte-identical receipt HTML across Windows and Android.
+- **Color-Coded Dashboard Financial Metrics** — monetary values now use clear semantic colors: **Today's Net Sales** (Emerald Green), **Estimated Profit** (Teal), **Outstanding Utang** (Rose Red), and **Expenses** (Amber) with accessible contrast across themes.
+- **Whole-Peso Unit Cost in Receiving** — Restock and Receiving now require whole-peso Unit Costs (e.g. ₱5, ₱10, ₱25 — no fractional centavos/bungkig) with inline validation to prevent accidental decimal amounts, while safely preserving historical decimal records.
+- **Aligned Receiving Details UI** — monetary figures in Receiving Details and Stock Receiving tables use clean tabular alignment (`font-mono tabular-nums`), ensuring amounts like `Unit Cost ₱5` and `Total Cost ₱300` are perfectly aligned.
+- **Aligned Transactions Expand Items** — expanded transaction rows now feature strictly aligned `Qty`, `Unit Price`, and `Subtotal` columns with fixed widths and tabular numbers (`font-mono tabular-nums text-right`).
 
 <details>
 <summary>📋 Full version history</summary>
 
 | Version | Highlights |
 |---|---|
+| v1.0.20 | Color-coded Dashboard financial metrics (Green Sales, Teal Profit, Red Utang, Amber Expenses); whole-peso Unit Cost validation in Restock/Receiving; aligned Receiving Details modal UI; aligned Transactions Expand Items columns |
 | v1.0.19 | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
 | v1.0.18 | Itemized accordion for Recent Transactions (Dashboard + Transactions page) |
 | v1.0.17 | Windows Startup checkbox accessibility fix |

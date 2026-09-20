@@ -220,6 +220,7 @@ handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
   const i = input as { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }
   if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to add must be greater than zero.')
   if (!Number.isFinite(i.cost_c) || i.cost_c < 0) throw new Error('Cost cannot be negative.')
+  if (i.cost_c > 0 && i.cost_c % 100 !== 0) throw new Error('Unit cost must be in whole pesos (no centavos).')
   const product = prodRepo.getProduct(db(), i.product_id)
   const unit = product.units.find((u) => u.name === i.unit_name)
   if (!unit) throw new Error('Select a valid product unit.')

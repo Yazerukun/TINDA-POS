@@ -1,14 +1,29 @@
-# TINDA POS v1.0.19 User Manual
+# TINDA POS v1.0.20 User Manual
 
-**TINDA POS v1.0.19** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.20** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.19), na may bagong **Universal Backup**
-(Windows ↔ Android na portable `.tinda-backup` exchange), **refund-aware na Estimated
-Profit**, **withdrawal notes sa Stock History**, **maaasahang Reset Database** (Android),
-at **nakapantay na receipt footer** sa 58mm at 80mm.
+Ang guide na ito ay para sa release (v1.0.20), na may bagong **Color-Coded Dashboard**
+(berde para sa benta, teal para sa kita, pula para sa utang, amber para sa gastos),
+**Buong Piso sa Unit Cost sa Pag-restock / Receiving** (walang butal o bungkig na .10 o .20),
+at **nakapantay na mga halaga sa Receiving Details**.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.20
+
+- **Color-Coded Dashboard (May Kulay na Pananalapi)** — Ang mahahalagang halaga sa Dashboard
+  ay may kulay na ngayon upang mabilis matukoy: **Today's Net Sales** (Berde / Emerald Green),
+  **Estimated Profit** (Teal), **Outstanding Utang** (Pula / Rose Red), at **Expenses** (Amber).
+  Malinaw at hindi masakit sa mata sa parehong dark at light theme.
+- **Buong Piso sa Unit Cost sa Pag-restock (Whole-Peso Unit Cost)** — Sa **Inventory > Restock**,
+  ang Unit Cost (₱) ay tumatanggap na lamang ng buong piso (hal. ₱5, ₱10, ₱25 — walang bungkig
+  na .10 o .20). Kung maglalagay ng decimal, may babala at hindi papayagang i-save upang
+  maiwasan ang aksidenteng maling kalkulasyon. Ang mga lumang rekord noon na may sentimo ay
+  nananatiling ligtas at hindi binago.
+- **Nakapantay na mga Halaga sa Receiving Details** — Sa pagsusuri ng resibo ng pagtanggap
+  (**Receiving Details**), ang Unit Cost at Total Cost ay naka-format nang maayos at pantay
+  (hal. `Unit Cost ₱5`, `Total Cost ₱300`) gamit ang malinaw na numero.
 
 ## Bago sa v1.0.19
 
@@ -592,9 +607,10 @@ Sa pahina ng **Transactions**, bawat benta ay mayroon nang expandable accordion 
 1. **Pindutin ang ▾ chevron** sa tabi ng resibo number (Receipt #).
 2. Agad na magbubukas ang isang inline mini-table sa ilalim ng row na nagpapakita ng:
    - **Product** — pangalan ng produkto (may kasamang refund indicator kung may naibalik)
-   - **Qty** — dami at unit ng benta (hal. `2 pcs`)
-   - **Unit Price** — presyo bawat piraso
-   - **Subtotal** — kabuuang halaga ng item
+   - **Qty** — dami at unit ng benta (hal. `2 pcs`, naka-align sa kanan)
+   - **Unit Price** — presyo bawat piraso (naka-align sa kanan gamit ang tabular font)
+   - **Subtotal** — kabuuang halaga ng item (naka-align sa kanan)
+   *(Sa v1.0.20, ang mga kolum na ito ay may fixed widths at tabular monospace numbers para perpektong nakahanay ang mga numero at halaga).*
 3. Sa ilalim ng mini-table, makikita ang:
    - **Payment Breakdown** — paraan ng pagbabayad at halaga (hal. `CASH ₱50.00`, `GCASH ₱100.00`, o `UTANG`)
    - **Discount** (kung may diskwento ang transaksyon)

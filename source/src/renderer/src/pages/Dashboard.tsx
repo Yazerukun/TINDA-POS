@@ -5,16 +5,30 @@ import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyStat
 import type { Product, Sale, ReportSummary } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
 
-function StatCard({ label, value, sub, icon }: { label: string; value: string; sub?: string; icon: React.ReactNode }): React.JSX.Element {
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+  valueColor = 'text-white',
+  iconClass = 'bg-ink-700 text-brand-400'
+}: {
+  label: string
+  value: string
+  sub?: string
+  icon: React.ReactNode
+  valueColor?: string
+  iconClass?: string
+}): React.JSX.Element {
   return (
     <div className="card p-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-          <p className="mt-1 text-2xl font-black text-white">{value}</p>
+          <p className={`mt-1 text-2xl font-black ${valueColor}`}>{value}</p>
           {sub && <p className="mt-0.5 text-xs text-slate-400">{sub}</p>}
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink-700 text-brand-400">{icon}</div>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}>{icon}</div>
       </div>
     </div>
   )
@@ -97,10 +111,38 @@ export function Dashboard(): React.JSX.Element | null {
     <div className="p-6">
       <PageHeader title="Dashboard" subtitle="Sales Overview" />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Today's Net Sales" value={money(summary.sales_total_c - summary.refunds_c)} sub={`${summary.transactions} transactions · Refunds: ${money(summary.refunds_c)}`} icon={<TrendingUp className="h-5 w-5" />} />
-        <StatCard label="Estimated Profit" value={money(summary.profit_c)} sub={`${summary.items_sold} items sold`} icon={<Banknote className="h-5 w-5" />} />
-        <StatCard label="Outstanding Utang" value={money(utang)} sub="customer credit" icon={<Wallet className="h-5 w-5" />} />
-        <StatCard label="Expenses" value={money(summary.expenses_c)} sub="this period" icon={<Receipt className="h-5 w-5" />} />
+        <StatCard
+          label="Today's Net Sales"
+          value={money(summary.sales_total_c - summary.refunds_c)}
+          sub={`${summary.transactions} transactions · Refunds: ${money(summary.refunds_c)}`}
+          icon={<TrendingUp className="h-5 w-5" />}
+          valueColor="text-emerald-400"
+          iconClass="bg-emerald-500/10 text-emerald-400"
+        />
+        <StatCard
+          label="Estimated Profit"
+          value={money(summary.profit_c)}
+          sub={`${summary.items_sold} items sold`}
+          icon={<Banknote className="h-5 w-5" />}
+          valueColor="text-teal-400"
+          iconClass="bg-teal-500/10 text-teal-400"
+        />
+        <StatCard
+          label="Outstanding Utang"
+          value={money(utang)}
+          sub="customer credit"
+          icon={<Wallet className="h-5 w-5" />}
+          valueColor="text-rose-400"
+          iconClass="bg-rose-500/10 text-rose-400"
+        />
+        <StatCard
+          label="Expenses"
+          value={money(summary.expenses_c)}
+          sub="this period"
+          icon={<Receipt className="h-5 w-5" />}
+          valueColor="text-amber-400"
+          iconClass="bg-amber-500/10 text-amber-400"
+        />
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
