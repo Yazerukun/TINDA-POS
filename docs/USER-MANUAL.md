@@ -1,18 +1,20 @@
-# TINDA POS v1.0.26 User Manual
+# TINDA POS v1.0.27 User Manual
 
-**TINDA POS v1.0.26** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.27** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.26), na nagdadala ng **TINDA BANTAY: Real-Time Market Price Engine**, **Live Online Price Feed**, **Auto Live-Sync on Open & Reconnect**, **Pulsing 🟢 LIVE Indicator**, ug ang **TINDA SCOUT Harvester** (powered by Scrapling).
+Ang guide na ito ay para sa release (v1.0.27), na nagdadala ng **Kumpletong 172-Item Real-Time Market Catalog**, **TINDA BANTAY Engine**, **Live Online Price Feed**, **Auto Live-Sync on Open & Reconnect**, **Pulsing 🟢 LIVE Indicator**, at ang **TINDA SCOUT Harvester** (powered by Scrapling v0.4.15).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 
-## Bago sa v1.0.26 (TINDA BANTAY Edition)
+## Bago sa v1.0.27 (TINDA BANTAY: Complete 172-Item Catalog)
 
+- **Kumpletong 172-Item Market Price Catalog** — Mayroon nang 172 staple grocery at sari-sari store products sa 12 pangunahing kategorya (Noodles, Canned Fish, Canned Meat, Dairy, Coffee & Drinks, Condiments, Seasonings, Snacks & Biscuits, Personal Care, Household, Rice & Sugar, Liquor & Tobacco) na may tumpak na EAN-13 barcodes, DTI SRP / supermarket prices, at package pictures.
+- **Built-in 100% Offline Seed** — Kahit bagong install at walang internet, agad nang mabubuksan at magagamit ang lahat ng 172 produkto sa Price Guide.
 - **TINDA BANTAY Real-Time Market Feed** — Awtomatiko nang kumukonekta sa live online price catalog feed (`price-catalog.json`) tuwing may internet connection upang maghatid ng pinakabagong presyo sa merkado.
 - **Auto Live-Sync sa Pagbukas at Pag-reconnect** — Sa sandaling buksan ang **Price Guide** modal o muling magka-internet, kusa at tahimik itong mag-sync sa background nang hindi na kailangang pindutin ang "Sync" button.
 - **Pulsing 🟢 LIVE Indicator** — May maliwanag na berdeng umiilaw na indicator kapag konektado sa live feed (🟢 **LIVE · Bantay Presyo Online**), at maayos na nagpapakita ng ⚪ **OFFLINE · Cached Local Data** kapag walang internet.
-- **TINDA SCOUT Harvester (Scrapling)** — May kasamang bagong stealth scraper bot na pinapatakbo ng `d4vinci/Scrapling` upang mag-harvest ng live prices mula sa mga pangunahing supermarket at opisyal na DTI SRP advisories.
+- **TINDA SCOUT Harvester (Scrapling v0.4.15)** — Pinapatakbo ng pinakabagong `d4vinci/Scrapling` (v0.4.15) upang mag-harvest at mag-normalize ng live prices mula sa official DTI advisories at supermarkets.
 
 ## Bago sa v1.0.25
 

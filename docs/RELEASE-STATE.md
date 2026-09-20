@@ -1,5 +1,28 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.27 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.27`).
+- Features & Fixes (TINDA BANTAY: Complete 172-Item Market Catalog):
+  * Complete 172-Item Market Price Catalog: Full Philippine grocery & sari-sari store commodity price catalog across all 12 key categories (Noodles, Canned Fish, Canned Meat, Dairy, Coffee & Beverages, Cooking Oil & Condiments, Seasonings, Snacks & Biscuits, Personal Care, Household Cleaning, Rice & Sugar, Liquor & Tobacco) with verified EAN-13 barcodes, DTI SRP / supermarket prices, and package images.
+  * Built-in 100% Offline Seed: All 172 commodity records compiled directly into the application (`seedPriceReferences.ts`) for out-of-the-box offline utility with zero internet.
+  * TINDA BANTAY Real-Time Market Feed: Automatically connects to the live verified online Philippine grocery commodity feed (`data/price-catalog.json`) via HTTPS whenever internet connectivity is active.
+  * Auto Live-Sync on Open & Reconnect: Opening the Price Guide modal while online triggers a silent background sync that immediately refreshes market prices live on screen; reconnecting to WiFi/data automatically triggers sync.
+  * Pulsing 🟢 LIVE Indicator Badge: Visual live status indicator (🟢 `LIVE · Bantay Presyo Online`) when connected, with clean neutral ⚪ `OFFLINE · Cached Local Data` fallback when disconnected.
+  * TINDA SCOUT Harvester (`tools/tinda-scout/scout.py`): Powered by the latest `d4vinci/Scrapling` (v0.4.15) for stealth, anti-bot-bypassing price harvesting from major Philippine retail supermarket chains and official DTI SRP advisories.
+  * Store Owner Authority Guaranteed: Reference prices are strictly advisory; store owner POS selling prices and costs are never automatically overwritten or modified.
+- Gates: 42/42 test files (292/292 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-v1.0.27.txt` PASS):
+  * TindaPOS-Setup-1.0.27.exe          (SHA256 77b234843c7b9cdf91a26fc3a298f72d5bd4e8fb89022bf021e674df3df18b84)
+  * TindaPOS-Setup-1.0.27.exe.blockmap (SHA256 d8966c6dad54d6357c666794e45506baf73cec75158470dce3f6cf69368373f7)
+  * latest.yml                        (version 1.0.27)
+  * TindaPOS-Portable-1.0.27.exe       (SHA256 247cb5c007ee6dfc84c7d0bcfa74f87ebf6da47477e4d423ab60fb95c50f21f3)
+  * TindaPOS-User-Guide.pdf           (v1.0.27, 28pp)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.27.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21/v1.0.22/v1.0.23/v1.0.24/v1.0.25/v1.0.26 to v1.0.27 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.27
+
 ## v1.0.26 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.26`).
