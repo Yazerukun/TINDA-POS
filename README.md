@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.26-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.27-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-292%2F292_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,20 +16,22 @@
 
 <br />
 
-[⬇️ Download v1.0.26 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-Setup-1.0.26.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-Portable-1.0.26.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.27 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Portable-1.0.27.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.26 (TINDA BANTAY Edition)
+## ✨ What's New in v1.0.27 (TINDA BANTAY: Complete 172-Item Market Catalog)
 
-> **TINDA BANTAY: Real-Time Market Price Engine, Live Online Feed & Scrapling Scout Harvester**
+> **TINDA BANTAY: Complete 172-Item Market Price Catalog, Built-in Offline Seed & Scrapling v0.4.15**
 
+- 📦 **Complete 172-Item Market Catalog** — fully populated and verified Philippine grocery and sari-sari store commodity price catalog across all 12 major categories (Noodles, Canned Fish, Canned Meat, Dairy, Coffee & Beverages, Cooking Oil & Condiments, Seasonings, Snacks & Biscuits, Personal Care, Household Cleaning, Rice & Sugar, Liquor & Tobacco).
+- 🔌 **Built-in 100% Offline Seed** — all 172 items are compiled directly into the application. Even on fresh offline installations with zero internet, the store owner immediately has complete price references out-of-the-box.
 - 🦅 **TINDA BANTAY Live Market Feed** — automatically connects to the verified Philippine grocery commodity price feed (`data/price-catalog.json`) via HTTPS whenever internet connectivity is detected.
 - ⚡ **Auto Live-Sync on Open & Reconnect** — opening the **Price Guide** modal while connected to the internet triggers a silent background sync that immediately updates prices live on the screen without requiring a manual click on "Sync".
 - 🟢 **Pulsing LIVE Indicator Badge** — clear real-time feedback with a pulsing green LED indicator (🟢 **LIVE · Bantay Presyo Online**) when connected, and neutral ⚪ **OFFLINE** fallback when disconnected.
-- 🤖 **TINDA SCOUT Harvester** — powered by **`d4vinci/Scrapling`** for stealthy, anti-bot-bypassing price harvesting from major Philippine retail supermarket chains (Puregold, Super8, SM Markets) and official DTI SRP advisories.
+- 🤖 **TINDA SCOUT Harvester** — powered by the latest **`d4vinci/Scrapling`** (v0.4.15) for stealthy, anti-bot-bypassing price harvesting from major Philippine retail supermarket chains and official DTI SRP advisories.
 - 🛡️ **Store Owner Authority Guaranteed** — reference prices are strictly advisory. Store owner selling prices and costs are **never** automatically modified or overwritten.
 
 <details>
@@ -39,6 +41,7 @@
 
 | Version | Highlights |
 |---|---|
+| **v1.0.27** | Complete 172-item market catalog across 12 categories, built-in offline seed, real-time live feed, Scrapling v0.4.15 harvester |
 | **v1.0.26** | TINDA BANTAY real-time online market feed, auto live-sync on open/reconnect, pulsing green LIVE indicator, TINDA SCOUT Scrapling harvester |
 | **v1.0.25** | Price Guide modal stability fix, auto-seed catalog for empty databases, offline-first online price guide & market price reference |
 | **v1.0.24** | Offline-First Online Price Guide / Market Price Reference, DTI SRP guidance, advisory price ranges, dual-probe sync, seed catalog, Price Guide modal, and POS reference indicators |
@@ -81,10 +84,10 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 | Deliverable | Description | Download Link |
 |---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-Setup-1.0.26.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-Portable-1.0.26.exe) |
-| **Official User Guide (PDF)** | Comprehensive 27-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/SHA256SUMS-v1.0.26.txt) |
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Portable-1.0.27.exe) |
+| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/SHA256SUMS-v1.0.27.txt) |
 
 > ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
 
@@ -94,7 +97,7 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 ## 🚀 Quick Start (5 Easy Steps)
 
-1. **Install:** Run `TindaPOS-Setup-1.0.26.exe` and launch the application.
+1. **Install:** Run `TindaPOS-Setup-1.0.27.exe` and launch the application.
 2. **First-Run Wizard:** Enter your store name, set your admin password and PIN, and customize receipt header/footer details.
 3. **Add Products:** Open **Inventory** → add your items with purchase cost (whole pesos), selling prices, units, and initial stock.
 4. **Setup Printer:** Go to **Settings → Receipt / Printer**, select your thermal printer (58mm or 80mm), and click **Test Print**.
@@ -146,7 +149,7 @@ For users on the **Setup** edition, updating is fully automated:
 3. Click **Restart & Install** once the download completes.
 4. A safety database backup is created automatically before the update is applied.
 
-> 💡 **Seamless Upgrade:** Users on previous versions (v1.0.19, v1.0.20, v1.0.21, v1.0.22, v1.0.23, v1.0.24, v1.0.25) will automatically detect and upgrade to **v1.0.26** with zero data loss or manual re-configuration.
+> 💡 **Seamless Upgrade:** Users on previous versions (v1.0.19, v1.0.20, v1.0.21, v1.0.22, v1.0.23, v1.0.24, v1.0.25, v1.0.26) will automatically detect and upgrade to **v1.0.27** with zero data loss or manual re-configuration.
 
 ---
 
@@ -225,6 +228,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.26 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-Setup-1.0.26.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.26/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.27 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
