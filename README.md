@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.21-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.22-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-268%2F268_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,20 +16,20 @@
 
 <br />
 
-[⬇️ Download v1.0.21 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-Setup-1.0.21.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-Portable-1.0.21.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.22 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-Setup-1.0.22.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-Portable-1.0.22.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.21
+## ✨ What's New in v1.0.22
 
-> **Customer Utang Filter Tabs & Settled Status** — instantly filter active debtors and fully settled accounts with clear visual indicators.
+> **Utang English Standardization & Strict Responsive Table Alignment** — clean English interface for customer credit and auto-adjusting table column alignment across all laptop and desktop monitors.
 
-- 🏷️ **Utang Customer Filter Tabs** — easily switch views between **May Utang** (active debtors with pending collections), **Bayad Na** (fully settled customers with ₱0.00 balance), and **Tanan** (all customers) with live counter badges on each tab.
-- 📊 **Utang Quick Stats Bar** — three high-visibility summary cards at the top of the Utang page showing **Total Outstanding Utang (₱)**, **May Utang (Active Debtors count)**, and **Bayad Na (Settled count)**.
-- 🟢 **Enhanced Status Badges** — clear color-coded badges in the Utang table: **`BAYAD NA ✓`** (Emerald Green) for zero balance, **`MAY UTANG`** (Amber) for active credit, and **`OVER LIMIT`** (Rose Red) when exceeding credit limits.
-- ⚡ **Contextual Action Buttons** — customers with active utang show a direct **`Pay`** collection button, while settled customers show a **`Ledger`** button to inspect past payment history without accidentally opening a payment prompt on a zero balance.
+- 🌐 **English Standardization in Utang** — all credit interface labels, tabs, badges, and empty states now use standard English: **With Balance** (active debts), **Settled** (₱0.00 accounts), and **All** (all accounts) with live counter badges.
+- 📐 **Strict Column Alignment (Utang & Transactions)** — explicit column widths and matching header/cell padding ensure numbers line up with precision. Switching tabs or expanding rows no longer shifts or jumps columns.
+- 📱 **Responsive Table Auto-Adjustment** — added `overflow-x-auto` to both Utang and Transactions tables, allowing them to automatically adapt across all laptop (1366×768, 1280×800) and desktop screens without squishing or clipping.
+- 🧾 **Transactions Expanded Items `<tfoot>`** — expanded transaction items now use a dedicated footer where **Subtotal**, **Discount**, and **Total** are strictly aligned directly under the Subtotal column.
 
 <details>
 <summary>📋 <b>Full Version History</b></summary>
@@ -38,6 +38,7 @@
 
 | Version | Highlights |
 |---|---|
+| **v1.0.22** | English Standardization in Utang (With Balance / Settled / All), responsive table auto-adjustment across all screens, strict column alignment in Utang & Transactions with dedicated expanded items `<tfoot>` |
 | **v1.0.21** | Utang Customer Filter Tabs (May Utang / Bayad Na / Tanan), Utang Quick Stats bar, `BAYAD NA ✓` status badges, contextual Pay/Ledger action buttons |
 | **v1.0.20** | Semantic color-coded Dashboard cards (Green Sales, Teal Profit, Red Utang, Amber Expenses); whole-peso Unit Cost validation in Restock/Receiving; aligned Receiving Details modal; `table-fixed` aligned columns in Transactions Expand items |
 | **v1.0.19** | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
@@ -75,10 +76,10 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 | Deliverable | Description | Download Link |
 |---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-Setup-1.0.21.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-Portable-1.0.21.exe) |
-| **Official User Guide (PDF)** | Comprehensive 25-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/SHA256SUMS-v1.0.21.txt) |
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-Setup-1.0.22.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-Portable-1.0.22.exe) |
+| **Official User Guide (PDF)** | Comprehensive 26-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/SHA256SUMS-v1.0.22.txt) |
 
 > ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
 
@@ -88,7 +89,7 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 ## 🚀 Quick Start (5 Easy Steps)
 
-1. **Install:** Run `TindaPOS-Setup-1.0.21.exe` and launch the application.
+1. **Install:** Run `TindaPOS-Setup-1.0.22.exe` and launch the application.
 2. **First-Run Wizard:** Enter your store name, set your admin password and PIN, and customize receipt header/footer details.
 3. **Add Products:** Open **Inventory** → add your items with purchase cost (whole pesos), selling prices, units, and initial stock.
 4. **Setup Printer:** Go to **Settings → Receipt / Printer**, select your thermal printer (58mm or 80mm), and click **Test Print**.
@@ -140,7 +141,7 @@ For users on the **Setup** edition, updating is fully automated:
 3. Click **Restart & Install** once the download completes.
 4. A safety database backup is created automatically before the update is applied.
 
-> 💡 **Seamless Upgrade:** Users on **v1.0.19** and **v1.0.20** will automatically detect and upgrade to **v1.0.21** with zero data loss or manual re-configuration.
+> 💡 **Seamless Upgrade:** Users on **v1.0.19**, **v1.0.20**, and **v1.0.21** will automatically detect and upgrade to **v1.0.22** with zero data loss or manual re-configuration.
 
 ---
 
@@ -177,7 +178,7 @@ Your store database is stored safely at:
 | **Update check failed** | Confirm internet connection, wait 30 seconds, and click *Check for Updates* again. |
 
 When reporting issues on [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues), please specify:
-* App version (e.g., `v1.0.21`)
+* App version (e.g., `v1.0.22`)
 * Edition (Setup or Portable)
 * Brief description and screenshot (please blur any sensitive customer names)
 
@@ -219,6 +220,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.21 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-Setup-1.0.21.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.21/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.22 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-Setup-1.0.22.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.22/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>

@@ -1,17 +1,28 @@
-# TINDA POS v1.0.21 User Manual
+# TINDA POS v1.0.22 User Manual
 
-**TINDA POS v1.0.21** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.22** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.21), na nagdadala ng bagong **Filter Tabs sa Utang** (May Utang, Bayad Na, Tanan), **Bayad Na ✓ status badge**, **Quick Stats Summary Bar**, kasama ang **Color-Coded Dashboard** at **Buong Piso sa Unit Cost sa Pag-restock**.
+Ang guide na ito ay para sa release (v1.0.22), na nagdadala ng **English Standardization sa Utang** (With Balance, Settled, All), **Responsive Table Auto-Adjustment sa Lahat ng Screen**, at **Strict Column Alignment sa Utang at Transactions** (kasama ang nakapantay na Total/Discount sa expanded items).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
 
+## Bago sa v1.0.22
+
+- **English Standardization sa Utang** — Lahat ng tabs, badges, at status ay standardized na sa malinis na English:
+  - **Filter Tabs:** `With Balance` (mga may natitirang utang), `Settled` (mga ₱0.00 na ang balanse), at `All` (lahat ng customer).
+  - **Status Badges:** Berdeng `SETTLED ✓` badge para sa bayad na, Amber na `WITH BALANCE`, at Pulang `OVER LIMIT`.
+  - **Quick Stats Bar:** `Total Outstanding Utang`, `With Balance` (pending collections), at `Settled` (fully paid ₱0.00 balance).
+- **Responsive Table Auto-Adjustment sa Lahat ng Screen** — Nilagyan ng `overflow-x-auto` ang mga talaan sa **Utang** at **Transactions** upang awtomatikong mag-adjust nang maayos sa kahit anong laptop o desktop resolution nang hindi nasisira o nasisiksik ang mga kolum.
+- **Strict Column Alignment sa Utang at Transactions** — Pantay na pantay ang mga kolum:
+  - **Utang:** Eksaktong sukat ng Customer, Credit Limit, Balance, Status, at Actions.
+  - **Transactions:** Eksaktong sukat ng Receipt, Date, Cashier, Customer, Total, Status, at Actions.
+  - **Transactions Expanded Items:** Pag-click ng expand sa items, hindi na gagalaw ang mga kolum ng transaction, at ang **Subtotal**, **Discount**, at **Total** ay eksaktong nakalinya sa ilalim ng Subtotal column gamit ang nakalaang `<tfoot>`.
+
 ## Bago sa v1.0.21
 
-- **Filter Tabs sa Utang (May Utang / Bayad Na / Tanan)** — Sa pahina ng **Utang**, maaari nang pumili ng view: **May Utang** (mga may natitira pang balanse), **Bayad Na** (mga nakaimpas na o ₱0.00 balanse), o **Tanan** (lahat ng customer). May kasama itong live counter badges.
+- **Filter Tabs sa Utang** — Sa pahina ng **Utang**, maaari nang pumili ng view gamit ang filter tabs na may live counter badges.
 - **Quick Stats Summary Bar sa Utang** — Tatlong malalaking cards sa itaas ng talaan: Total Outstanding Utang (₱), bilang ng May Utang, at bilang ng mga Bayad Na.
-- **Mas Malinaw na Status Badges** — Berdeng `BAYAD NA ✓` badge para sa mga bayad na, Amber na `MAY UTANG`, at Pulang `OVER LIMIT`.
 - **Contextual Actions** — `Pay` at `Adj` para sa mga may utang; `Ledger` at `Adj` para sa mga nakaimpas na.
 
 ## Bago sa v1.0.20
