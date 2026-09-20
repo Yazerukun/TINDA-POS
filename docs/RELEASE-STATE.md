@@ -1,5 +1,25 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.21 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.21`).
+- Features:
+  * Customers & Utang: Filter Tabs — **May Utang (With Balance)** [Default], **Bayad Na (Settled)**, and **Tanan (All)** with live customer counter badges.
+  * Utang Quick Stats Bar: Top summary cards for Total Outstanding Utang (₱), May Utang count, and Bayad Na count.
+  * Customer Status Badges: Distinct visual pills — `BAYAD NA ✓` (Emerald Green for ₱0.00), `MAY UTANG` (Amber for active debt), `OVER LIMIT` (Rose Red).
+  * Contextual Actions: `Pay` & `Adj` for active debt; `Ledger` & `Adj` for settled customers.
+- Gates: 40/40 test files (268/268 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-RC.txt` PASS):
+  * TindaPOS-Setup-1.0.21.exe          - 109663660 B (SHA256 2b85f287bf5e94292819647e008a8903364d6c2a12b6724ddcc43b440658c5de)
+  * TindaPOS-Setup-1.0.21.exe.blockmap - 117097 B (SHA256 0828826598f0c41a1ed8e1632ec979381376e6213b48151941014c20ea557019)
+  * latest.yml                        - 348 B (version 1.0.21, sha512 matches Setup)
+  * TindaPOS-Portable-1.0.21.exe       - 109433277 B (SHA256 77c2c0e5c2865d93b97824577813be7a0dbdd54d378b66d1e14635498d8bd1d2)
+  * TindaPOS-User-Guide.pdf           - 195855 B (v1.0.21, 25pp, SHA256 e8f093e96febe712e0a05b2637b009cc0ba6e2577792c6b67dc9457936f97963)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.21.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20 to v1.0.21 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.21
+
 ## v1.0.20 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.20`).

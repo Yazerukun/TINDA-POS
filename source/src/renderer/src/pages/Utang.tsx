@@ -7,9 +7,12 @@ import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 
+type UtangTab = 'WITH_BALANCE' | 'SETTLED' | 'ALL'
+
 export function Utang(): React.JSX.Element {
   const [rows, setRows] = useState<Customer[]>([])
   const [q, setQ] = useState('')
+  const [tab, setTab] = useState<UtangTab>('WITH_BALANCE')
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Customer | null>(null)
   const [ledger, setLedger] = useState<CreditLedgerEntry[]>([])
@@ -28,13 +31,25 @@ export function Utang(): React.JSX.Element {
   }
   useEffect(() => { void load() }, [])
 
+  const withBalanceCount = useMemo(() => rows.filter((c) => c.balance_c > 0).length, [rows])
+  const settledCount = useMemo(() => rows.filter((c) => c.balance_c === 0).length, [rows])
+  const totalOutstanding = useMemo(() => rows.reduce((s, c) => s + c.balance_c, 0), [rows])
+
   const filtered = useMemo(() => {
     let list = rows
-    if (q) list = list.filter((c) => (c.full_name + ' ' + (c.nickname || '')).toLowerCase().includes(q.toLowerCase()))
+    if (tab === 'WITH_BALANCE') {
+      list = list.filter((c) => c.balance_c > 0)
+    } else if (tab === 'SETTLED') {
+      list = list.filter((c) => c.balance_c === 0)
+    }
+    if (q.trim()) {
+      const query = q.toLowerCase()
+      list = list.filter((c) =>
+        (c.full_name + ' ' + (c.nickname || '') + ' ' + (c.phone || '')).toLowerCase().includes(query)
+      )
+    }
     return list
-  }, [rows, q])
-
-  const totalOutstanding = rows.reduce((s, c) => s + c.balance_c, 0)
+  }, [rows, tab, q])
 
   const openLedger = async (c: Customer) => {
     setSelected(c)
@@ -58,46 +73,218 @@ export function Utang(): React.JSX.Element {
 
   return (
     <div className="p-6">
-      <PageHeader title="Utang" subtitle={`Customers with credit · total outstanding ${money(totalOutstanding)}`} />
+      <PageHeader
+        title="Utang"
+        subtitle={`Customer credit management · Total outstanding: ${money(totalOutstanding)}`}
+      />
 
-      <div className="mb-4 relative max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customer…" className="input w-full pl-9" />
+      {/* Quick Stats Summary */}
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="card p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total Outstanding Utang</p>
+          <p className="mt-1 text-2xl font-black font-mono tabular-nums text-rose-400">{money(totalOutstanding)}</p>
+          <p className="mt-1 text-xs text-slate-500">{withBalanceCount} customer(s) with balance</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">May Utang (Active)</p>
+          <p className="mt-1 text-2xl font-black font-mono tabular-nums text-amber-400">{withBalanceCount}</p>
+          <p className="mt-1 text-xs text-slate-500">Pending collections</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Bayad Na (Settled)</p>
+          <p className="mt-1 text-2xl font-black font-mono tabular-nums text-emerald-400">{settledCount}</p>
+          <p className="mt-1 text-xs text-slate-500">Fully paid (₱0.00 balance)</p>
+        </div>
+      </div>
+
+      {/* Filter Tabs & Search */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setTab('WITH_BALANCE')}
+            className={`btn-ghost flex items-center gap-2 text-sm rounded-lg px-3 py-2 transition-all ${
+              tab === 'WITH_BALANCE'
+                ? '!border-brand-500 !text-brand-300 font-semibold bg-brand-500/10'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Wallet className="h-4 w-4 text-amber-400" />
+            <span>May Utang</span>
+            <span
+              className={`badge text-xs ${
+                tab === 'WITH_BALANCE' ? 'bg-amber-500/20 text-amber-300' : 'bg-ink-800 text-slate-400'
+              }`}
+            >
+              {withBalanceCount}
+            </span>
+          </button>
+          <button
+            onClick={() => setTab('SETTLED')}
+            className={`btn-ghost flex items-center gap-2 text-sm rounded-lg px-3 py-2 transition-all ${
+              tab === 'SETTLED'
+                ? '!border-brand-500 !text-brand-300 font-semibold bg-brand-500/10'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Check className="h-4 w-4 text-emerald-400" />
+            <span>Bayad Na</span>
+            <span
+              className={`badge text-xs ${
+                tab === 'SETTLED' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-ink-800 text-slate-400'
+              }`}
+            >
+              {settledCount}
+            </span>
+          </button>
+          <button
+            onClick={() => setTab('ALL')}
+            className={`btn-ghost flex items-center gap-2 text-sm rounded-lg px-3 py-2 transition-all ${
+              tab === 'ALL'
+                ? '!border-brand-500 !text-brand-300 font-semibold bg-brand-500/10'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>Tanan</span>
+            <span className="badge bg-ink-800 text-xs text-slate-400">{rows.length}</span>
+          </button>
+        </div>
+
+        <div className="relative w-full max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search name or phone…"
+            className="input w-full pl-9 text-sm"
+          />
+        </div>
       </div>
 
       {loading ? (
-        <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="card h-14 animate-pulse" />)}</div>
+        <div className="space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="card h-14 animate-pulse" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No customers with utang" message="Sell on credit to a customer to see their balance here." icon={<Wallet className="h-7 w-7" />} />
+        tab === 'WITH_BALANCE' ? (
+          <EmptyState
+            title="Walay Utang!"
+            message="Maayo! Walay customer nga naay active nga utang karon."
+            icon={<Check className="h-7 w-7 text-emerald-400" />}
+          />
+        ) : tab === 'SETTLED' ? (
+          <EmptyState
+            title="Walay Naka-impas Pa"
+            message="Makita dinhi ang mga customers nga ₱0.00 na ang balanse human makabayad sa ilang utang."
+            icon={<HandCoins className="h-7 w-7 text-slate-400" />}
+          />
+        ) : (
+          <EmptyState
+            title="Walay Customer nga Nakit-an"
+            message={q ? `Walay nitukma sa imong gipangita nga "${q}".` : 'Wala pay narekord nga customers.'}
+            icon={<Wallet className="h-7 w-7 text-slate-400" />}
+          />
+        )
       ) : (
         <div className="card overflow-hidden">
           <table className="table">
-            <thead><tr><th>Customer</th><th>Limit</th><th>Balance</th><th>Status</th><th className="w-40">Actions</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th className="text-right">Credit Limit</th>
+                <th className="text-right">Balance</th>
+                <th>Status</th>
+                <th className="w-44 text-right pr-4">Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {filtered.map((c) => (
-                <tr key={c.id}>
-                  <td>
-                    <button onClick={() => void openLedger(c)} className="font-medium text-brand-400 hover:underline">{c.full_name}</button>
-                    {c.nickname && <p className="text-xs text-slate-500">{c.nickname}</p>}
-                  </td>
-                  <td className="text-slate-300">{money(c.credit_limit_c)}</td>
-                  <td className={`font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</td>
-                  <td>{c.balance_c > c.credit_limit_c ? <StatusBadge status="VOIDED" /> : <StatusBadge status="ACTIVE" />}</td>
-                  <td>
-                    <div className="flex gap-1">
-                      <button onClick={() => setAction({ type: 'PAY', customer: c })} className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs" title="Collect payment"><HandCoins className="h-3.5 w-3.5" /> Pay</button>
-                      <button onClick={() => setAction({ type: 'ADJUST', customer: c })} className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs" title="Adjust balance"><Scale className="h-3.5 w-3.5" /> Adj</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((c) => {
+                const isOverLimit = c.balance_c > c.credit_limit_c
+                const isSettled = c.balance_c === 0
+                return (
+                  <tr key={c.id}>
+                    <td>
+                      <button
+                        onClick={() => void openLedger(c)}
+                        className="font-medium text-brand-400 hover:text-brand-300 hover:underline text-left"
+                      >
+                        {c.full_name}
+                      </button>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        {c.nickname && <span>{c.nickname}</span>}
+                        {c.nickname && c.phone && <span>·</span>}
+                        {c.phone && <span>{c.phone}</span>}
+                      </div>
+                    </td>
+                    <td className="text-right font-mono tabular-nums text-slate-300">
+                      {money(c.credit_limit_c)}
+                    </td>
+                    <td
+                      className={`text-right font-mono tabular-nums font-bold ${
+                        isSettled ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
+                      {money(c.balance_c)}
+                    </td>
+                    <td>
+                      {isSettled ? (
+                        <span className="badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 inline-flex items-center gap-1 font-semibold">
+                          <Check className="h-3 w-3" /> Bayad Na
+                        </span>
+                      ) : isOverLimit ? (
+                        <span className="badge border border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold">
+                          Over Limit
+                        </span>
+                      ) : (
+                        <span className="badge border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold">
+                          May Utang
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-right pr-4">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {!isSettled ? (
+                          <button
+                            onClick={() => setAction({ type: 'PAY', customer: c })}
+                            className="btn-primary flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs"
+                            title="Collect payment"
+                          >
+                            <HandCoins className="h-3.5 w-3.5" /> Pay
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => void openLedger(c)}
+                            className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-slate-300"
+                            title="View ledger history"
+                          >
+                            <Wallet className="h-3.5 w-3.5" /> Ledger
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setAction({ type: 'ADJUST', customer: c })}
+                          className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-400"
+                          title="Adjust balance"
+                        >
+                          <Scale className="h-3.5 w-3.5" /> Adj
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
       )}
 
       {selected && (
-        <LedgerModal customer={selected} entries={ledger} onClose={() => setSelected(null)} onPay={() => setAction({ type: 'PAY', customer: selected })} />
+        <LedgerModal
+          customer={selected}
+          entries={ledger}
+          onClose={() => setSelected(null)}
+          onPay={() => setAction({ type: 'PAY', customer: selected })}
+        />
       )}
       {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => void actionDone()} />}
     </div>
