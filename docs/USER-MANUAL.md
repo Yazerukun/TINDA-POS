@@ -1,14 +1,18 @@
-# TINDA POS v1.0.20 User Manual
+# TINDA POS v1.0.21 User Manual
 
-**TINDA POS v1.0.20** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.21** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.20), na may bagong **Color-Coded Dashboard**
-(berde para sa benta, teal para sa kita, pula para sa utang, amber para sa gastos),
-**Buong Piso sa Unit Cost sa Pag-restock / Receiving** (walang butal o bungkig na .10 o .20),
-at **nakapantay na mga halaga sa Receiving Details**.
+Ang guide na ito ay para sa release (v1.0.21), na nagdadala ng bagong **Filter Tabs sa Utang** (May Utang, Bayad Na, Tanan), **Bayad Na ✓ status badge**, **Quick Stats Summary Bar**, kasama ang **Color-Coded Dashboard** at **Buong Piso sa Unit Cost sa Pag-restock**.
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.21
+
+- **Filter Tabs sa Utang (May Utang / Bayad Na / Tanan)** — Sa pahina ng **Utang**, maaari nang pumili ng view: **May Utang** (mga may natitira pang balanse), **Bayad Na** (mga nakaimpas na o ₱0.00 balanse), o **Tanan** (lahat ng customer). May kasama itong live counter badges.
+- **Quick Stats Summary Bar sa Utang** — Tatlong malalaking cards sa itaas ng talaan: Total Outstanding Utang (₱), bilang ng May Utang, at bilang ng mga Bayad Na.
+- **Mas Malinaw na Status Badges** — Berdeng `BAYAD NA ✓` badge para sa mga bayad na, Amber na `MAY UTANG`, at Pulang `OVER LIMIT`.
+- **Contextual Actions** — `Pay` at `Adj` para sa mga may utang; `Ledger` at `Adj` para sa mga nakaimpas na.
 
 ## Bago sa v1.0.20
 
@@ -523,6 +527,31 @@ Inventory supports products, categories, suppliers, SKU/barcode values, low-stoc
 ## Customers and Utang
 
 Create customers, configure credit limits, review the full utang ledger, and record payments or authorized adjustments. Refund and void workflows reconcile the related stock and credit records.
+
+### Pamamahala ng Utang (Bagong Filter Tabs at Settled Status sa v1.0.21)
+
+Sa pahina ng **Utang**, mas pinadali at ginawang mas malinaw ang paniningil at pagsusuri ng mga bayarin:
+
+1. **Filter Tabs sa Ibabaw:**
+   - **May Utang (With Balance) [Default]:** Ipinapakita lamang ang mga customer na may aktibong balanse (`balance > 0`). Hindi na magkakahalo ang mga bayad na upang madaling matukoy ng tindera kung sino ang mga dapat singilin.
+   - **Bayad Na (Settled):** Sa isang pindot lamang, makikita ang lahat ng customer na nakabayad na o may `₱0.00` na balanse.
+   - **Tanan (All):** Ipinapakita ang kabuuang listahan ng lahat ng customer.
+   - Bawat tab ay may kasamang counter badge (hal. *May Utang (12)*, *Bayad Na (45)*).
+
+2. **Quick Stats Summary Bar:**
+   - **Total Outstanding Utang:** Real-time na kabuuang utang ng lahat ng customer (`text-rose-400 font-mono`).
+   - **May Utang (Active):** Bilang ng mga customer na may natitira pang balanse.
+   - **Bayad Na (Settled):** Bilang ng mga customer na fully paid na (`text-emerald-400`).
+
+3. **Status Badges sa Talaan:**
+   - **`BAYAD NA ✓` (Berdeng badge):** Para sa mga customer na `₱0.00` ang balanse.
+   - **`MAY UTANG` (Amber badge):** Para sa mga customer na may balanse sa loob ng kanilang limit.
+   - **`OVER LIMIT` (Pulang badge):** Para sa mga lumampas na sa kanilang itinakdang credit limit.
+
+4. **Contextual Actions:**
+   - **Kapag may utang:** May mabilisang **`Pay`** button para agad makapagtala ng bayad, at **`Adj`** para sa adjustment.
+   - **Kapag Bayad Na:** Pinalitan ang Pay ng **`Ledger`** button upang masuri ang kasaysayan ng mga nakaraang bayad nang hindi aksidenteng nagbubukas ng payment modal sa zero balance.
+
 
 ## Settings → Data
 
