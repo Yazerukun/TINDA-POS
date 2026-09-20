@@ -1,5 +1,24 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.20 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.20`).
+- Features:
+  * Dashboard: Semantic color-coding for Net Sales (emerald), Estimated Profit (teal), Utang (rose), Expenses (amber).
+  * Inventory/Receiving: Whole-peso unit cost validation (rejects decimals), aligned receiving details modal UI.
+  * Transactions: Fixed column alignment (`table-fixed`, `w-28` Qty, `w-32` Unit Price, `w-32` Subtotal, right-aligned, `font-mono tabular-nums`).
+- Gates: 40/40 test files (268/268 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-RC.txt` PASS):
+  * TindaPOS-Setup-1.0.20.exe    - 109662950 B (SHA256 a0677c6496ba59b99582f4a4b6af48195d96af66266e0791efa83515830a3e42)
+  * TindaPOS-Setup-1.0.20.exe.blockmap - 117390 B (SHA256 bd48281ab3292fc3d916b924814955814c1dba48732ec711bbd171f2deea572e)
+  * latest.yml                  - 348 B (version 1.0.20, sha512 matches Setup)
+  * TindaPOS-Portable-1.0.20.exe - 109432454 B (SHA256 f26073cb6c9a4e0f3f7ef65d936fdc30ddc89d9db2731a1995e46835c9f2ef28)
+  * TindaPOS-User-Guide.pdf     - 181652 B (v1.0.20, 24pp, SHA256 00bb3df72dbe7f7dce7dfa51d93d90ab14b8de9e24af987a38d26b9b4a413b32)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.20.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19 to v1.0.20 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.20
+
 ## v1.0.19 PUBLISHED & LIVE - 2026-09-19 (Ian GO)
 
 - Branch: `v1.0.19-dev` (from v1.0.18 stable `1e662c8`).
