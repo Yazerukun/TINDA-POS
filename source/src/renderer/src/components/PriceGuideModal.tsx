@@ -51,6 +51,10 @@ export function PriceGuideModal({
     sources: []
   })
 
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  )
+
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
@@ -75,11 +79,42 @@ export function PriceGuideModal({
     }
   }, [searchQuery, sourceTypeFilter, linkFilter])
 
+  const autoLiveSync = useCallback(async () => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return
+    try {
+      const res = await window.api.priceReferences.sync()
+      if (res?.success && res.synced_count > 0) {
+        await loadData()
+      }
+    } catch {
+      // Silent non-blocking background live sync
+    }
+  }, [loadData])
+
+  useEffect(() => {
+    const onOnline = () => {
+      setIsOnline(true)
+      if (open) {
+        void autoLiveSync()
+      }
+    }
+    const onOffline = () => setIsOnline(false)
+    window.addEventListener('online', onOnline)
+    window.addEventListener('offline', onOffline)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      window.removeEventListener('offline', onOffline)
+    }
+  }, [open, autoLiveSync])
+
   useEffect(() => {
     if (open) {
       void loadData()
+      if (typeof navigator === 'undefined' || navigator.onLine) {
+        void autoLiveSync()
+      }
     }
-  }, [open, loadData])
+  }, [open, loadData, autoLiveSync])
 
   const handleSync = async () => {
     if (syncing) return
@@ -163,6 +198,39 @@ export function PriceGuideModal({
       }
     >
       <div className="space-y-4">
+        {/* TINDA BANTAY Real-Time Status Banner */}
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink-line bg-ink-900/80 px-3.5 py-2 text-xs">
+          <div className="flex items-center gap-2.5">
+            {isOnline ? (
+              <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                </span>
+                <span>LIVE · Bantay Presyo Online</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-2.5 py-0.5 text-xs font-semibold text-slate-400">
+                <span className="h-2 w-2 rounded-full bg-slate-500"></span>
+                <span>OFFLINE · Cached Local Data</span>
+              </div>
+            )}
+            <span className="text-slate-400 text-[11px] hidden sm:inline">
+              {isOnline
+                ? 'Automatic real-time market sync active.'
+                : 'Internet disconnected. Showing last saved prices.'}
+            </span>
+          </div>
+
+          <div className="text-slate-400 text-[11px]">
+            {status.last_synced_at ? (
+              <span>Last updated: {status.last_synced_at.slice(0, 16)}</span>
+            ) : (
+              <span>Not yet synchronized</span>
+            )}
+          </div>
+        </div>
+
         {/* Top Control Bar: Search, Filters, and Sync Button */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px]">

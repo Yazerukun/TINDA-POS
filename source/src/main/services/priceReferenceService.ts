@@ -166,6 +166,9 @@ export function getPriceReferenceStatus(db: Database.Database): PriceReferenceSt
   }
 }
 
+export const DEFAULT_REMOTE_PRICE_FEED_URL =
+  'https://raw.githubusercontent.com/Yazerukun/TINDA-POS/v1.0.19-dev/data/price-catalog.json'
+
 export interface SyncPriceReferencesOptions {
   force?: boolean
   remoteUrl?: string
@@ -193,18 +196,19 @@ export async function syncPriceReferences(
       }
     }
 
-    if (options.remoteUrl) {
+    const urlToFetch = options.remoteUrl || DEFAULT_REMOTE_PRICE_FEED_URL
+    if (urlToFetch) {
       try {
         const electronNet = getNet()
         const fetchFn = electronNet?.fetch || (typeof fetch === 'function' ? fetch : undefined)
         if (fetchFn) {
           const controller = new AbortController()
           const timeout = setTimeout(() => controller.abort(), 6_000)
-          const res = await fetchFn(options.remoteUrl, { signal: controller.signal })
+          const res = await fetchFn(urlToFetch, { signal: controller.signal })
           clearTimeout(timeout)
           if (res.ok) {
             const data = await res.json()
-            if (Array.isArray(data)) {
+            if (Array.isArray(data) && data.length > 0) {
               catalogToSync = data
             }
           }
