@@ -1,5 +1,25 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.22 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.22`).
+- Features:
+  * English Standardization in Utang: Standardized tabs (With Balance, Settled, All), stats bar, status badges (SETTLED ✓, WITH BALANCE, OVER LIMIT), and empty states to clean English.
+  * Responsive Table Containment: Added `overflow-x-auto` to both Utang and Transactions tables for seamless scaling across all laptop and desktop resolutions.
+  * Strict Column Alignment: Explicit matching column widths in Utang (Customer auto, Credit Limit w-36, Balance w-36, Status w-36, Actions w-44) and Transactions (Receipt w-48, Date w-40, Cashier w-32, Customer auto, Total w-32, Status w-32, Actions w-32).
+  * Transactions Expanded Items `<tfoot>`: Discount and Total are strictly aligned directly under the Subtotal column without shifting parent columns.
+- Gates: 40/40 test files (268/268 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-RC.txt` PASS):
+  * TindaPOS-Setup-1.0.22.exe          - 109664031 B (SHA256 c4eb32cee591e4c43c1cf2c697f33722dc3a795501aeda108a8e99625527b4f9)
+  * TindaPOS-Setup-1.0.22.exe.blockmap - 117173 B (SHA256 1b02bf7689f03c55e218a826ed85e1bf1525461eb675c19169adf436f0625f53)
+  * latest.yml                        - 348 B (version 1.0.22, sha512 matches Setup)
+  * TindaPOS-Portable-1.0.22.exe       - 109433657 B (SHA256 e46ef62ddcd5b9c7ee7a33d10f99460d360dd59c71086b0a10784470c4c5d283)
+  * TindaPOS-User-Guide.pdf           - 197553 B (v1.0.22, 26pp, SHA256 4af1c9d6275528b20f61564ec5d410275a05541c76a823f18ecd5accba14d959)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.22.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21 to v1.0.22 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.22
+
 ## v1.0.21 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.21`).

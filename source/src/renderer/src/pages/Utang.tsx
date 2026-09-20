@@ -86,12 +86,12 @@ export function Utang(): React.JSX.Element {
           <p className="mt-1 text-xs text-slate-500">{withBalanceCount} customer(s) with balance</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">May Utang (Active)</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">With Balance</p>
           <p className="mt-1 text-2xl font-black font-mono tabular-nums text-amber-400">{withBalanceCount}</p>
           <p className="mt-1 text-xs text-slate-500">Pending collections</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Bayad Na (Settled)</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Settled</p>
           <p className="mt-1 text-2xl font-black font-mono tabular-nums text-emerald-400">{settledCount}</p>
           <p className="mt-1 text-xs text-slate-500">Fully paid (₱0.00 balance)</p>
         </div>
@@ -109,7 +109,7 @@ export function Utang(): React.JSX.Element {
             }`}
           >
             <Wallet className="h-4 w-4 text-amber-400" />
-            <span>May Utang</span>
+            <span>With Balance</span>
             <span
               className={`badge text-xs ${
                 tab === 'WITH_BALANCE' ? 'bg-amber-500/20 text-amber-300' : 'bg-ink-800 text-slate-400'
@@ -127,7 +127,7 @@ export function Utang(): React.JSX.Element {
             }`}
           >
             <Check className="h-4 w-4 text-emerald-400" />
-            <span>Bayad Na</span>
+            <span>Settled</span>
             <span
               className={`badge text-xs ${
                 tab === 'SETTLED' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-ink-800 text-slate-400'
@@ -144,7 +144,7 @@ export function Utang(): React.JSX.Element {
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <span>Tanan</span>
+            <span>All</span>
             <span className="badge bg-ink-800 text-xs text-slate-400">{rows.length}</span>
           </button>
         </div>
@@ -169,112 +169,114 @@ export function Utang(): React.JSX.Element {
       ) : filtered.length === 0 ? (
         tab === 'WITH_BALANCE' ? (
           <EmptyState
-            title="Walay Utang!"
-            message="Maayo! Walay customer nga naay active nga utang karon."
+            title="No Outstanding Balance"
+            message="Great! No customers currently have an unpaid credit balance."
             icon={<Check className="h-7 w-7 text-emerald-400" />}
           />
         ) : tab === 'SETTLED' ? (
           <EmptyState
-            title="Walay Naka-impas Pa"
-            message="Makita dinhi ang mga customers nga ₱0.00 na ang balanse human makabayad sa ilang utang."
+            title="No Settled Accounts"
+            message="Customers who have fully paid off their credit balance (₱0.00) will appear here."
             icon={<HandCoins className="h-7 w-7 text-slate-400" />}
           />
         ) : (
           <EmptyState
-            title="Walay Customer nga Nakit-an"
-            message={q ? `Walay nitukma sa imong gipangita nga "${q}".` : 'Wala pay narekord nga customers.'}
+            title="No Customers Found"
+            message={q ? `No customers matched "${q}".` : 'No customers recorded yet.'}
             icon={<Wallet className="h-7 w-7 text-slate-400" />}
           />
         )
       ) : (
         <div className="card overflow-hidden">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th className="text-right">Credit Limit</th>
-                <th className="text-right">Balance</th>
-                <th>Status</th>
-                <th className="w-44 text-right pr-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => {
-                const isOverLimit = c.balance_c > c.credit_limit_c
-                const isSettled = c.balance_c === 0
-                return (
-                  <tr key={c.id}>
-                    <td>
-                      <button
-                        onClick={() => void openLedger(c)}
-                        className="font-medium text-brand-400 hover:text-brand-300 hover:underline text-left"
-                      >
-                        {c.full_name}
-                      </button>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        {c.nickname && <span>{c.nickname}</span>}
-                        {c.nickname && c.phone && <span>·</span>}
-                        {c.phone && <span>{c.phone}</span>}
-                      </div>
-                    </td>
-                    <td className="text-right font-mono tabular-nums text-slate-300">
-                      {money(c.credit_limit_c)}
-                    </td>
-                    <td
-                      className={`text-right font-mono tabular-nums font-bold ${
-                        isSettled ? 'text-emerald-400' : 'text-rose-400'
-                      }`}
-                    >
-                      {money(c.balance_c)}
-                    </td>
-                    <td>
-                      {isSettled ? (
-                        <span className="badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 inline-flex items-center gap-1 font-semibold">
-                          <Check className="h-3 w-3" /> Bayad Na
-                        </span>
-                      ) : isOverLimit ? (
-                        <span className="badge border border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold">
-                          Over Limit
-                        </span>
-                      ) : (
-                        <span className="badge border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold">
-                          May Utang
-                        </span>
-                      )}
-                    </td>
-                    <td className="text-right pr-4">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {!isSettled ? (
-                          <button
-                            onClick={() => setAction({ type: 'PAY', customer: c })}
-                            className="btn-primary flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs"
-                            title="Collect payment"
-                          >
-                            <HandCoins className="h-3.5 w-3.5" /> Pay
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => void openLedger(c)}
-                            className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-slate-300"
-                            title="View ledger history"
-                          >
-                            <Wallet className="h-3.5 w-3.5" /> Ledger
-                          </button>
-                        )}
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th className="py-3 pl-4 pr-3 text-left">Customer</th>
+                  <th className="w-36 py-3 px-3 text-right">Credit Limit</th>
+                  <th className="w-36 py-3 px-3 text-right">Balance</th>
+                  <th className="w-36 py-3 px-3 text-center">Status</th>
+                  <th className="w-44 py-3 pl-3 pr-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((c) => {
+                  const isOverLimit = c.balance_c > c.credit_limit_c
+                  const isSettled = c.balance_c === 0
+                  return (
+                    <tr key={c.id} className="hover:bg-ink-800/50 transition-colors">
+                      <td className="py-3 pl-4 pr-3">
                         <button
-                          onClick={() => setAction({ type: 'ADJUST', customer: c })}
-                          className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-400"
-                          title="Adjust balance"
+                          onClick={() => void openLedger(c)}
+                          className="font-medium text-brand-400 hover:text-brand-300 hover:underline text-left block truncate"
                         >
-                          <Scale className="h-3.5 w-3.5" /> Adj
+                          {c.full_name}
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 truncate">
+                          {c.nickname && <span>{c.nickname}</span>}
+                          {c.nickname && c.phone && <span>·</span>}
+                          {c.phone && <span>{c.phone}</span>}
+                        </div>
+                      </td>
+                      <td className="w-36 py-3 px-3 text-right font-mono tabular-nums text-slate-300">
+                        {money(c.credit_limit_c)}
+                      </td>
+                      <td
+                        className={`w-36 py-3 px-3 text-right font-mono tabular-nums font-bold ${
+                          isSettled ? 'text-emerald-400' : 'text-rose-400'
+                        }`}
+                      >
+                        {money(c.balance_c)}
+                      </td>
+                      <td className="w-36 py-3 px-3 text-center">
+                        {isSettled ? (
+                          <span className="badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 inline-flex items-center gap-1 font-semibold">
+                            <Check className="h-3 w-3" /> Settled
+                          </span>
+                        ) : isOverLimit ? (
+                          <span className="badge border border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold">
+                            Over Limit
+                          </span>
+                        ) : (
+                          <span className="badge border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold">
+                            With Balance
+                          </span>
+                        )}
+                      </td>
+                      <td className="w-44 py-3 pl-3 pr-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {!isSettled ? (
+                            <button
+                              onClick={() => setAction({ type: 'PAY', customer: c })}
+                              className="btn-primary flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs"
+                              title="Collect payment"
+                            >
+                              <HandCoins className="h-3.5 w-3.5" /> Pay
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => void openLedger(c)}
+                              className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs text-slate-300"
+                              title="View ledger history"
+                            >
+                              <Wallet className="h-3.5 w-3.5" /> Ledger
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setAction({ type: 'ADJUST', customer: c })}
+                            className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-400"
+                            title="Adjust balance"
+                          >
+                            <Scale className="h-3.5 w-3.5" /> Adj
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
