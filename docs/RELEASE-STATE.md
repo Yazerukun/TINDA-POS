@@ -1,5 +1,26 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.26 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.26`).
+- Features & Fixes (TINDA BANTAY Edition):
+  * TINDA BANTAY Real-Time Market Feed: Automatically connects to the live verified online Philippine grocery commodity feed (`data/price-catalog.json`) via HTTPS whenever internet connectivity is active.
+  * Auto Live-Sync on Open & Reconnect: Opening the Price Guide modal while online triggers a silent background sync that immediately refreshes market prices live on screen; reconnecting to WiFi/data automatically triggers sync.
+  * Pulsing 🟢 LIVE Indicator Badge: Visual live status indicator (🟢 `LIVE · Bantay Presyo Online`) when connected, with clean neutral ⚪ `OFFLINE · Cached Local Data` fallback when disconnected.
+  * TINDA SCOUT Harvester (`tools/tinda-scout/scout.py`): Powered by `d4vinci/Scrapling` for stealth, anti-bot-bypassing price harvesting from major Philippine retail supermarket chains (Puregold, Super8, SM Markets) and DTI SRP advisories.
+  * Store Owner Authority Guaranteed: Reference prices are strictly advisory; store owner POS selling prices and costs are never automatically overwritten or modified.
+- Gates: 42/42 test files (292/292 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-v1.0.26.txt` PASS):
+  * TindaPOS-Setup-1.0.26.exe          (SHA256 b16fdb92aa216d3340d0bfe6557ef3a3499a2a7f6d07d1e5ffe1446a5fe79cc5)
+  * TindaPOS-Setup-1.0.26.exe.blockmap (SHA256 e8e5dd5ebe67e09fd2b70c2bb475e52b2a51ef1bf024cdc561bcb29f58bad16e)
+  * latest.yml                        (version 1.0.26)
+  * TindaPOS-Portable-1.0.26.exe       (SHA256 43f59695c79017360d4965b5e56960b9318f8062e565309fc6f0e647d0a68369)
+  * TindaPOS-User-Guide.pdf           (v1.0.26, 28pp)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.26.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21/v1.0.22/v1.0.23/v1.0.24/v1.0.25 to v1.0.26 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.26
+
 ## v1.0.25 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.25`).
