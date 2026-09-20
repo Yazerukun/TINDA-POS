@@ -104,6 +104,7 @@ export function POS(): React.JSX.Element {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const cartItems = usePosCart((state) => state.items)
 
@@ -138,6 +139,19 @@ export function POS(): React.JSX.Element {
       const res = await window.api.products.search(term, opts)
       setProducts(res.rows)
       usePosCart.getState().syncStocks(res.rows)
+
+      try {
+        const refs = await window.api.priceReferences.search({ linkedOnly: true, limit: 100 })
+        const map: Record<number, number> = {}
+        for (const r of refs.rows) {
+          if (r.product_id && r.market_price_c !== null) {
+            map[r.product_id] = r.market_price_c
+          }
+        }
+        setPriceRefs(map)
+      } catch {
+        // Non-blocking
+      }
     } catch (e) {
       setError(String((e as Error)?.message || e))
     } finally {
@@ -273,11 +287,15 @@ export function POS(): React.JSX.Element {
                 </div>
                 <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
                   <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
-                  {p.srp_c != null && (
+                  {p.srp_c != null ? (
                     <span className="text-[11px] text-slate-400 font-normal" title="Suggested Retail Price">
                       SRP: {money(p.srp_c)}
                     </span>
-                  )}
+                  ) : priceRefs[p.id] !== undefined ? (
+                    <span className="text-[11px] text-brand-400/80 font-normal" title="Market Reference Price">
+                      Ref: {money(priceRefs[p.id]!)}
+                    </span>
+                  ) : null}
                 </div>
               </button>
             )

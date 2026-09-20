@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles } from 'lucide-react'
-import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason } from '@shared/types'
+import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -8,6 +8,8 @@ import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import { ProductImage } from '../components/ui/ProductImage'
+import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
+import { PriceGuideModal } from '../components/PriceGuideModal'
 import {
   createProductInput,
   editProductForm,
@@ -34,6 +36,7 @@ export function Inventory(): React.JSX.Element {
   const [viewingMovements, setViewingMovements] = useState(false)
   const [defaultThreshold, setDefaultThreshold] = useState(5)
   const [expirationOpen, setExpirationOpen] = useState(false)
+  const [priceGuideOpen, setPriceGuideOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
   const loadState = useRef({ sequence: 0 })
 
@@ -142,6 +145,7 @@ export function Inventory(): React.JSX.Element {
         subtitle={`${products.length} active products · stock value ${money(totalValue)}`}
         actions={<div className="flex flex-wrap gap-2">
           <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
+          <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
@@ -247,6 +251,7 @@ export function Inventory(): React.JSX.Element {
 
       {editing && <ProductModal form={editing} categories={categories} onSave={saveProduct} onClose={() => setEditing(null)} />}
       {expirationOpen && <ExpirationList onClose={() => setExpirationOpen(false)} />}
+      {priceGuideOpen && <PriceGuideModal open={priceGuideOpen} onClose={() => setPriceGuideOpen(false)} products={products} onProductsChanged={() => void load()} />}
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
@@ -535,6 +540,7 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
   const [addingCategory, setAddingCategory] = useState(false)
   const [categoryBusy, setCategoryBusy] = useState(false)
   const [f, setF] = useState<ProductFormData>(form)
+  const [priceRef, setPriceRef] = useState<PriceReference | null>(null)
   const [rows, setRows] = useState<ProductUnitInput[]>(() => form.units.length > 0
     ? form.units
     : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: form.default_price_c, is_default: true }])
@@ -544,6 +550,26 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
   }
   const addUnit = () => setRows((prev) => [...prev, { name: '', conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: prev.length === 0 }])
   const removeUnit = (index: number) => setRows((prev) => prev.filter((_, i) => i !== index))
+
+  useEffect(() => {
+    let active = true
+    const lookup = async () => {
+      try {
+        const ref = await window.api.priceReferences.matchForProduct({
+          id: f.id ?? 0,
+          name: f.name,
+          barcode: f.barcode
+        })
+        if (active) setPriceRef(ref ?? null)
+      } catch {
+        if (active) setPriceRef(null)
+      }
+    }
+    void lookup()
+    return () => {
+      active = false
+    }
+  }, [f.id, f.name, f.barcode])
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -760,6 +786,22 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
             </div>
           </div>
         </div>
+
+        {/* Online Price Guide Reference Card */}
+        {priceRef && (
+          <div className="col-span-2">
+            <PriceReferenceCard
+              reference={priceRef}
+              currentPriceC={f.default_price_c}
+              onAdoptPrice={(priceC) => {
+                set({ default_price_c: priceC })
+                if (rows[0]?.conversion_to_base === 1) {
+                  setRow(0, { selling_price_c: priceC })
+                }
+              }}
+            />
+          </div>
+        )}
 
         <div>
           <label className="label">Low Stock Alert</label>

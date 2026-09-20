@@ -19,10 +19,12 @@ describe('v1.0.6 to v1.0.7 upgrade preserves data (user feedback release)', () =
     // its own upgrade test.
     // v1.0.12 adds migration 6, covered by expiration.test.ts upgrade preservation.
     // v1.0.23 adds migration 7, covered by srp upgrade preservation.
+    // v1.0.24 adds migration 8, price_references.
     expect(migrations.filter((m) => m.version > 5).map((m) => ({ version: m.version, name: m.name })))
       .toEqual([
         { version: 6, name: 'product_expiration_tracking' },
-        { version: 7, name: 'product_srp' }
+        { version: 7, name: 'product_srp' },
+        { version: 8, name: 'price_references' }
       ])
     const shiftNumbering = migrations.find((m) => m.version === 5)
     expect(shiftNumbering?.name).toBe('shift_numbering')

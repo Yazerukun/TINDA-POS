@@ -1,5 +1,28 @@
 # TINDA POS RELEASE STATE
 
+## v1.0.24 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+
+- Branch: `v1.0.19-dev` (tag `v1.0.24`).
+- Features:
+  * Offline-First Online Price Guide / Market Price Reference: Built-in reference market prices and suggested ranges based on DTI SRP and market price guides.
+  * Store Owner Authority Guaranteed: Advisory-only guidance; store owner POS selling prices and costs are never automatically overwritten or changed.
+  * Migration 8 (`price_references`): Indexed SQLite table with foreign-key safe cascade behavior (`ON DELETE SET NULL`), barcode and name lookup indexes.
+  * Preloaded Seed Catalog: Bundled Philippine grocery commodities (Lucky Me Pancit Canton/Mami, Mega Sardines, 555 Sardines, Bear Brand, Nescafe, Kopiko, Great Taste, Coca-Cola, Datu Puti, Silver Swan, Safeguard, Surf, San Miguel, Red Horse).
+  * Dual-Probe Connectivity Check & Stale Data Transparency: Safe background synchronization with Google and Microsoft endpoints. Explicitly indicates "Offline — Showing Last Saved Data" when disconnected and warns if reference data is >30 days old.
+  * Price Guide Modal in Inventory: Search, filter by source and linked status, manual sync with progress indicator, and manual product linking/unlinking.
+  * Subtle POS Card Indicator: Clean reference badge (`Ref: ₱10.50`) on POS product cards without cluttering or impacting checkout speed.
+- Gates: 42/42 test files (292/292 tests) PASS, typecheck PASS, build PASS.
+- Windows RC artifacts (`installers/`, `sha256sum -c SHA256SUMS-v1.0.24.txt` PASS):
+  * TindaPOS-Setup-1.0.24.exe          (SHA256 60e5c16659da8930b843d818f82517bcca70c05e0ee1832eaf84f3ee1b5ff06a)
+  * TindaPOS-Setup-1.0.24.exe.blockmap (SHA256 e7c7a183cb900fb43b034595ccfa7d9f1ec4945af304d9747b3a5d0d48d38a9e)
+  * latest.yml                        (version 1.0.24)
+  * TindaPOS-Portable-1.0.24.exe       (SHA256 ba75d3199a43e2fdfa7dbc4a5109cf5821b38bd097b974137f3013c2428af77c)
+  * TindaPOS-User-Guide.pdf           (v1.0.24, 27pp)
+  * SHA256SUMS-RC.txt + SHA256SUMS-v1.0.24.txt
+- Updater gate: electron-updater + electron-builder + app-update.yml untouched (byte-identical firmware, auto-update from v1.0.19/v1.0.20/v1.0.21/v1.0.22/v1.0.23 to v1.0.24 verified).
+- STATUS: **PUBLISHED 2026-09-20 (Ian GO).**
+  * Windows release: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.24
+
 ## v1.0.23 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
 
 - Branch: `v1.0.19-dev` (tag `v1.0.23`).

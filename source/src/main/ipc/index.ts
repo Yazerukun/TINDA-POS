@@ -1,7 +1,7 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { ipcMain } from 'electron'
 import { promises as fs } from 'node:fs'
-import { getDb, getDbFile } from '../database/connection'
+import { getDb, getDbFile, appDirs } from '../database/connection'
 import * as authSvc from '../services/auth'
 import * as sessionSvc from '../services/session'
 import * as settingRepo from '../repositories/settings'
@@ -33,10 +33,11 @@ import { cashCountLines } from '@shared/cashCount'
 import { emitInventoryChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
-import { appDirs } from '../database/connection'
 import { beginCriticalOperation } from '../services/operationGuard'
 import { getUpdateService } from '../services/updateRuntime'
 import { startupSetting } from '../services/startup'
+import * as priceRefRepo from '../repositories/priceReferences'
+import * as priceRefSvc from '../services/priceReferenceService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -745,6 +746,48 @@ handle('update:dismiss', () => getUpdateService().dismiss())
 handle('audit:list', (_e: IpcMainInvokeEvent, opts?: unknown) => {
   sessionSvc.requirePermission('audit:view')
   return auditRepo.listAudit(db(), (opts ?? {}) as object)
+})
+
+// ---- Price References ----
+handle('priceReferences:search', (_e: IpcMainInvokeEvent, opts?: priceRefRepo.SearchPriceReferencesOptions) => {
+  user()
+  return priceRefRepo.searchPriceReferences(db(), opts)
+})
+handle('priceReferences:get', (_e: IpcMainInvokeEvent, id: number) => {
+  user()
+  return priceRefRepo.getPriceReference(db(), id)
+})
+handle('priceReferences:getByProduct', (_e: IpcMainInvokeEvent, productId: number) => {
+  user()
+  return priceRefRepo.getPriceReferenceByProductId(db(), productId)
+})
+handle('priceReferences:getByBarcode', (_e: IpcMainInvokeEvent, barcode: string) => {
+  user()
+  return priceRefRepo.getPriceReferenceByBarcode(db(), barcode)
+})
+handle('priceReferences:matchForProduct', (_e: IpcMainInvokeEvent, product: { id: number; name: string; barcode?: string | null }) => {
+  user()
+  return priceRefRepo.matchReferenceForProduct(db(), product)
+})
+handle('priceReferences:link', (_e: IpcMainInvokeEvent, referenceId: number, productId: number) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefRepo.linkProduct(db(), referenceId, productId)
+})
+handle('priceReferences:unlink', (_e: IpcMainInvokeEvent, referenceId: number) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefRepo.unlinkProduct(db(), referenceId)
+})
+handle('priceReferences:sync', (_e: IpcMainInvokeEvent, opts?: priceRefSvc.SyncPriceReferencesOptions) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefSvc.syncPriceReferences(db(), opts)
+})
+handle('priceReferences:status', () => {
+  user()
+  return priceRefSvc.getPriceReferenceStatus(db())
+})
+handle('priceReferences:compare', (_e: IpcMainInvokeEvent, retailPriceC: number, reference: import('@shared/types').PriceReference | null) => {
+  user()
+  return priceRefRepo.comparePrice(retailPriceC, reference)
 })
 
 export function registerIpcHandlers(): void {

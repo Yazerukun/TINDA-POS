@@ -177,6 +177,23 @@ const api: TindaApi = {
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)
+  },
+  priceReferences: {
+    search: (opts) => invoke<{ rows: import('@shared/types').PriceReference[]; total: number }>('priceReferences:search', opts),
+    get: (id) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:get', id),
+    getByProduct: (productId) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByProduct', productId),
+    getByBarcode: (barcode) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByBarcode', barcode),
+    matchForProduct: (product) => invoke<import('@shared/types').PriceReference | null>('priceReferences:matchForProduct', product),
+    link: (referenceId, productId) => invoke<import('@shared/types').PriceReference>('priceReferences:link', referenceId, productId),
+    unlink: (referenceId) => invoke<import('@shared/types').PriceReference>('priceReferences:unlink', referenceId),
+    sync: (opts) => invoke<import('@shared/types').PriceSyncResult>('priceReferences:sync', opts),
+    status: () => invoke<{
+      total: number
+      last_synced_at: string | null
+      is_stale: boolean
+      sources: { source_name: string; count: number }[]
+    }>('priceReferences:status'),
+    compare: (retailPriceC, reference) => invoke<import('@shared/types').PriceComparisonStatus>('priceReferences:compare', retailPriceC, reference)
   }
 }
 

@@ -465,5 +465,38 @@ CREATE INDEX idx_batch_movements_movement ON batch_movements(movement_id);
     sql: `
 ALTER TABLE products ADD COLUMN srp_c INTEGER;
 `
+  },
+  {
+    version: 8,
+    name: 'price_references',
+    sql: `
+CREATE TABLE price_references (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
+  barcode TEXT,
+  product_name TEXT NOT NULL,
+  brand TEXT,
+  variant TEXT,
+  unit TEXT,
+  image_path TEXT,
+  image_url TEXT,
+  market_price_c INTEGER,
+  min_price_c INTEGER,
+  max_price_c INTEGER,
+  currency TEXT NOT NULL DEFAULT 'PHP',
+  source_name TEXT NOT NULL,
+  source_type TEXT NOT NULL DEFAULT 'market' CHECK(source_type IN ('official','market','reference','test')),
+  source_url TEXT,
+  location TEXT DEFAULT 'Philippines',
+  effective_date TEXT,
+  retrieved_at TEXT NOT NULL,
+  last_synced_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX idx_price_refs_product ON price_references(product_id);
+CREATE INDEX idx_price_refs_barcode ON price_references(barcode);
+CREATE INDEX idx_price_refs_name ON price_references(product_name, brand);
+`
   }
 ]
