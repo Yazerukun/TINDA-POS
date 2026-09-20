@@ -66,20 +66,34 @@ export function Customers(): React.JSX.Element {
         <EmptyState title="No customers" message="Add customers to sell on utang (credit)." icon={<Users className="h-7 w-7" />} action={<button onClick={() => setEditing({ id: null, full_name: '', nickname: '', phone: '', address: '', credit_limit_c: 100000 })} className="btn-primary">New Customer</button>} />
       ) : (
         <div className="card overflow-hidden">
-          <table className="table">
-            <thead><tr><th>Name</th><th>Phone</th><th>Limit</th><th>Balance</th><th className="w-16"></th></tr></thead>
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th className="w-[32%] py-3 px-3 text-center align-middle">Name</th>
+                <th className="w-[20%] py-3 px-3 text-center align-middle">Phone</th>
+                <th className="w-[18%] py-3 px-3 text-center align-middle">Limit</th>
+                <th className="w-[18%] py-3 px-3 text-center align-middle">Balance</th>
+                <th className="w-[12%] py-3 px-3 text-center align-middle">Actions</th>
+              </tr>
+            </thead>
             <tbody>
               {filtered.map((c) => (
                 <tr key={c.id}>
-                  <td>
-                    <p className="font-medium text-slate-200">{c.full_name}</p>
-                    {c.nickname && <p className="text-xs text-slate-500">{c.nickname}</p>}
+                  <td className="w-[32%] py-3 px-3 text-center align-middle">
+                    <p className="font-medium text-slate-200 truncate" title={c.full_name}>{c.full_name}</p>
+                    {c.nickname && <p className="text-xs text-slate-500 truncate" title={c.nickname}>{c.nickname}</p>}
                   </td>
-                  <td className="text-slate-400">{c.phone ?? '—'}</td>
-                  <td className="text-slate-300">{money(c.credit_limit_c)}</td>
-                  <td><span className={`font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</span></td>
-                  <td>
-                    <button onClick={() => setEditing({ id: c.id, full_name: c.full_name, nickname: c.nickname ?? '', phone: c.phone ?? '', address: c.address ?? '', credit_limit_c: c.credit_limit_c })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                  <td className="w-[20%] py-3 px-3 text-center align-middle text-slate-400 truncate">{c.phone ?? '—'}</td>
+                  <td className="w-[18%] py-3 px-3 text-center align-middle font-mono tabular-nums text-slate-300">{money(c.credit_limit_c)}</td>
+                  <td className="w-[18%] py-3 px-3 text-center align-middle">
+                    <span className={`font-mono tabular-nums font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {money(c.balance_c)}
+                    </span>
+                  </td>
+                  <td className="w-[12%] py-3 px-3 text-center align-middle">
+                    <div className="flex items-center justify-center">
+                      <button onClick={() => setEditing({ id: c.id, full_name: c.full_name, nickname: c.nickname ?? '', phone: c.phone ?? '', address: c.address ?? '', credit_limit_c: c.credit_limit_c })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                    </div>
                   </td>
                 </tr>
               ))}

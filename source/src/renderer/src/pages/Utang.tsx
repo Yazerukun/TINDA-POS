@@ -192,11 +192,11 @@ export function Utang(): React.JSX.Element {
             <table className="table w-full">
               <thead>
                 <tr>
-                  <th className="py-3 pl-4 pr-3 text-left">Customer</th>
-                  <th className="w-36 py-3 px-3 text-right">Credit Limit</th>
-                  <th className="w-36 py-3 px-3 text-right">Balance</th>
-                  <th className="w-36 py-3 px-3 text-center">Status</th>
-                  <th className="w-44 py-3 pl-3 pr-4 text-right">Actions</th>
+                  <th className="w-[32%] py-3 px-3 text-center align-middle">Customer</th>
+                  <th className="w-[17%] py-3 px-3 text-center align-middle">Credit Limit</th>
+                  <th className="w-[17%] py-3 px-3 text-center align-middle">Balance</th>
+                  <th className="w-[17%] py-3 px-3 text-center align-middle">Status</th>
+                  <th className="w-[17%] py-3 px-3 text-center align-middle">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,46 +205,47 @@ export function Utang(): React.JSX.Element {
                   const isSettled = c.balance_c === 0
                   return (
                     <tr key={c.id} className="hover:bg-ink-800/50 transition-colors">
-                      <td className="py-3 pl-4 pr-3">
+                      <td className="w-[32%] py-3 px-3 text-center align-middle">
                         <button
                           onClick={() => void openLedger(c)}
-                          className="font-medium text-brand-400 hover:text-brand-300 hover:underline text-left block truncate"
+                          className="font-medium text-brand-400 hover:text-brand-300 hover:underline text-center inline-block max-w-full truncate"
+                          title={c.full_name}
                         >
                           {c.full_name}
                         </button>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 truncate">
+                        <div className="flex items-center justify-center gap-2 text-xs text-slate-500 truncate">
                           {c.nickname && <span>{c.nickname}</span>}
                           {c.nickname && c.phone && <span>·</span>}
                           {c.phone && <span>{c.phone}</span>}
                         </div>
                       </td>
-                      <td className="w-36 py-3 px-3 text-right font-mono tabular-nums text-slate-300">
+                      <td className="w-[17%] py-3 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
                         {money(c.credit_limit_c)}
                       </td>
                       <td
-                        className={`w-36 py-3 px-3 text-right font-mono tabular-nums font-bold ${
+                        className={`w-[17%] py-3 px-3 text-center align-middle font-mono tabular-nums font-bold ${
                           isSettled ? 'text-emerald-400' : 'text-rose-400'
                         }`}
                       >
                         {money(c.balance_c)}
                       </td>
-                      <td className="w-36 py-3 px-3 text-center">
+                      <td className="w-[17%] py-3 px-3 text-center align-middle">
                         {isSettled ? (
-                          <span className="badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 inline-flex items-center gap-1 font-semibold">
+                          <span className="badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 inline-flex items-center justify-center gap-1 font-semibold">
                             <Check className="h-3 w-3" /> Settled
                           </span>
                         ) : isOverLimit ? (
-                          <span className="badge border border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold">
+                          <span className="badge border border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold inline-flex items-center justify-center">
                             Over Limit
                           </span>
                         ) : (
-                          <span className="badge border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold">
+                          <span className="badge border border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold inline-flex items-center justify-center">
                             With Balance
                           </span>
                         )}
                       </td>
-                      <td className="w-44 py-3 pl-3 pr-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="w-[17%] py-3 px-3 text-center align-middle">
+                        <div className="flex items-center justify-center gap-1.5">
                           {!isSettled ? (
                             <button
                               onClick={() => setAction({ type: 'PAY', customer: c })}

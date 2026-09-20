@@ -1,9 +1,24 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, Banknote, Wallet, Receipt, ShoppingCart, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  TrendingUp,
+  Banknote,
+  Wallet,
+  Receipt,
+  ShoppingCart,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Download,
+  RotateCcw,
+  X,
+  Loader2
+} from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyState'
 import type { Product, Sale, ReportSummary } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
+import { useUpdate } from '../stores/update'
 
 function StatCard({
   label,
@@ -41,6 +56,10 @@ export function Dashboard(): React.JSX.Element | null {
   const [utang, setUtang] = useState<number>(0)
   const [error, setError] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [showNotes, setShowNotes] = useState(false)
+  const [updateBusy, setUpdateBusy] = useState(false)
+
+  const { event, download, install, dismiss } = useUpdate()
 
   useEffect(() => {
     let alive = true
@@ -80,6 +99,13 @@ export function Dashboard(): React.JSX.Element | null {
     }
   }, [])
 
+  // Automatic background update check on Dashboard mount
+  useEffect(() => {
+    void useUpdate.getState().init().then(() => {
+      void useUpdate.getState().check(false)
+    })
+  }, [])
+
   if (error) {
     return (
       <div className="p-6">
@@ -107,9 +133,121 @@ export function Dashboard(): React.JSX.Element | null {
   const out = alertProducts.filter((p) => p.stock <= 0)
   const low = alertProducts.filter((p) => p.stock > 0)
 
+  const updateStatus = event?.status
+  const showBanner =
+    event &&
+    ['UPDATE_AVAILABLE', 'DOWNLOADING', 'DOWNLOADED', 'READY_TO_INSTALL'].includes(updateStatus as string)
+  const version = event?.available?.version ?? ''
+
   return (
     <div className="p-6">
       <PageHeader title="Dashboard" subtitle="Sales Overview" />
+
+      {/* Dashboard Prominent Update Banner */}
+      {showBanner && (
+        <div className="mb-6 overflow-hidden rounded-xl border border-brand-500/40 bg-gradient-to-r from-brand-950/40 via-ink-900 to-ink-900 p-4 shadow-pop">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-white text-base">
+                    {updateStatus === 'UPDATE_AVAILABLE' && `New Update Available · v${version}`}
+                    {updateStatus === 'DOWNLOADING' && `Downloading Update… v${version}`}
+                    {updateStatus === 'DOWNLOADED' && `Update Downloaded · Ready to Install`}
+                    {updateStatus === 'READY_TO_INSTALL' && `Update Ready to Install · v${version}`}
+                  </h3>
+                  <span className="badge border border-brand-500/40 bg-brand-500/10 text-brand-300 text-[10px] font-semibold uppercase tracking-wider">
+                    Release
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-slate-300">
+                  {event.portable
+                    ? 'TINDA POS is running in portable mode. Download the latest version to get new features and fixes.'
+                    : 'Your store data is safe and will be backed up automatically before installing.'}
+                </p>
+
+                {updateStatus === 'DOWNLOADING' && event.progress && (
+                  <div className="mt-2.5 max-w-md">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-ink-800">
+                      <div
+                        className="h-full rounded-full bg-brand-500 transition-all duration-300"
+                        style={{ width: `${event.progress.percent}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-slate-400">{event.progress.percent}% downloaded</p>
+                  </div>
+                )}
+
+                {showNotes && event.available?.releaseNotes && (
+                  <div className="mt-3 max-h-48 overflow-y-auto rounded-lg border border-ink-line bg-ink-950/80 p-3 text-xs text-slate-300">
+                    <p className="mb-1 font-semibold text-white">What&apos;s New in v{event.available.version}:</p>
+                    <pre className="whitespace-pre-wrap font-sans">{event.available.releaseNotes}</pre>
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {event.available?.releaseNotes && (
+                    <button
+                      type="button"
+                      onClick={() => setShowNotes((v) => !v)}
+                      className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                    >
+                      {showNotes ? 'Hide Changelog' : "View What's New"}
+                    </button>
+                  )}
+                  {updateStatus === 'UPDATE_AVAILABLE' && (
+                    <button
+                      type="button"
+                      disabled={updateBusy}
+                      onClick={() => {
+                        setUpdateBusy(true)
+                        void download().finally(() => setUpdateBusy(false))
+                      }}
+                      className="btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold"
+                    >
+                      {updateBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                      Download Update
+                    </button>
+                  )}
+                  {(updateStatus === 'DOWNLOADED' || updateStatus === 'READY_TO_INSTALL') && (
+                    <button
+                      type="button"
+                      disabled={updateBusy}
+                      onClick={() => {
+                        setUpdateBusy(true)
+                        void install().finally(() => setUpdateBusy(false))
+                      }}
+                      className="btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold"
+                    >
+                      {updateBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                      Restart &amp; Install
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void dismiss()}
+                    className="btn-ghost px-3 py-1.5 text-xs text-slate-400 hover:text-white"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void dismiss()}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+              title="Dismiss update notice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Today's Net Sales"

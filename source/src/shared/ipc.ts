@@ -198,6 +198,9 @@ export interface TindaApi {
     csvTemplate: () => Promise<string>
     previewCsv: (text: string) => Promise<{ rows: Array<Record<string, unknown> & { row_number: number; product_name: string; valid: boolean; duplicate: boolean; reasons: string[] }>; total: number; valid: number; invalid: number; duplicates: number }>
     importCsv: (text: string, strategy: 'SKIP' | 'UPDATE') => Promise<{ created: number; updated: number; skipped: number; product_ids: number[] }>
+    saveImage: (data: { name: string; dataUrl: string }) => Promise<{ filename: string; url: string }>
+    deleteImage: (filename: string) => Promise<void>
+    getImageData: (filename: string) => Promise<string | null>
   }
 
   inventory: {

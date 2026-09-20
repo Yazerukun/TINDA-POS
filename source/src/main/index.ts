@@ -1,10 +1,25 @@
-import { app, BrowserWindow, shell, Menu } from 'electron'
-import { join } from 'node:path'
+import { app, BrowserWindow, shell, Menu, protocol, net } from 'electron'
+import { join, basename } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { registerIpcHandlers } from './ipc'
 import { getDb, closeDb, appDirs } from './database/connection'
 import { getSettings } from './repositories/settings'
 import { startAutoUpdateCheck } from './services/updateRuntime'
 import { applyDefaultStartup } from './services/startup'
+
+// Register custom protocol for local product images before app is ready
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'tinda-image',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      bypassCSP: true
+    }
+  }
+])
 
 let mainWindow: BrowserWindow | null = null
 
@@ -59,6 +74,19 @@ function createWindow(): void {
 app.setName('TINDA POS')
 
 app.whenReady().then(() => {
+  // Protocol handler for serving product images from appDirs().images
+  protocol.handle('tinda-image', (request) => {
+    try {
+      const parsed = new URL(request.url)
+      const rawPath = decodeURIComponent(parsed.pathname.replace(/^\/+/, '')) || parsed.host
+      const filename = basename(rawPath)
+      const filePath = join(appDirs().images, filename)
+      return net.fetch(pathToFileURL(filePath).toString())
+    } catch {
+      return new Response('Image not found', { status: 404 })
+    }
+  })
+
   // Initialize DB and run migrations up front.
   try {
     const database = getDb()

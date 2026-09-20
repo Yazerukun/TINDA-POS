@@ -458,5 +458,12 @@ CREATE TABLE batch_movements (
 );
 CREATE INDEX idx_batch_movements_movement ON batch_movements(movement_id);
 `
+  },
+  {
+    version: 7,
+    name: 'product_srp',
+    sql: `
+ALTER TABLE products ADD COLUMN srp_c INTEGER;
+`
   }
 ]

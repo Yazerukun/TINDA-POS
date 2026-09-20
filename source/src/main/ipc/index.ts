@@ -194,6 +194,45 @@ handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'S
   emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
   return result
 })
+handle('products:saveImage', async (_e: IpcMainInvokeEvent, data: { name: string; dataUrl: string }) => {
+  sessionSvc.requirePermission('products:manage')
+  if (!data?.dataUrl || typeof data.dataUrl !== 'string') throw new Error('Invalid image data.')
+  const match = data.dataUrl.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i)
+  if (!match || !match[1] || !match[2]) throw new Error('Invalid image format. Allowed: PNG, JPEG, WEBP, GIF.')
+  const rawExt = match[1].toLowerCase()
+  const ext = rawExt === 'jpeg' ? 'jpg' : rawExt
+  const base64Data = match[2]
+  const buffer = Buffer.from(base64Data, 'base64')
+  if (buffer.length > 5 * 1024 * 1024) throw new Error('Image size must not exceed 5MB.')
+  const filename = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const filePath = require('node:path').join(appDirs().images, filename)
+  await fs.writeFile(filePath, buffer)
+  return { filename, url: `tinda-image://${filename}` }
+})
+handle('products:deleteImage', async (_e: IpcMainInvokeEvent, filename: string) => {
+  sessionSvc.requirePermission('products:manage')
+  if (!filename || typeof filename !== 'string') return
+  const safeName = require('node:path').basename(filename)
+  const filePath = require('node:path').join(appDirs().images, safeName)
+  try {
+    await fs.unlink(filePath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+})
+handle('products:getImageData', async (_e: IpcMainInvokeEvent, filename: string) => {
+  if (!filename || typeof filename !== 'string') return null
+  const safeName = require('node:path').basename(filename)
+  const filePath = require('node:path').join(appDirs().images, safeName)
+  try {
+    const buffer = await fs.readFile(filePath)
+    const ext = safeName.split('.').pop()?.toLowerCase() || 'png'
+    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
+    return `data:${mime};base64,${buffer.toString('base64')}`
+  } catch {
+    return null
+  }
+})
 
 // ---- Inventory ----
 handle('inventory:expiration', () => { user(); return expirationRepo.listExpiration(db()) })

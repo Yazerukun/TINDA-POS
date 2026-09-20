@@ -20,9 +20,10 @@ import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
 import { ReceiptPaper } from '../components/ReceiptPaper'
-import { toastSuccess, toastError } from '../stores/toast'
 import type { PaymentInput } from '@shared/ipc'
 import type { PrintResult } from '@shared/ipc'
+import { ProductImage } from '../components/ui/ProductImage'
+import { toastSuccess, toastError } from '../stores/toast'
 import { useNav } from '../stores/nav'
 import { cashInputFromCents } from '../lib/payment'
 import { availableBase, cartHasStockConflict, maxQuantity, reservedBase } from '../lib/cartStock'
@@ -257,15 +258,27 @@ export function POS(): React.JSX.Element {
                 aria-disabled={out}
                 className="card group flex h-40 min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
                   <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
                     {blocked > 0 ? `Sellable: ${stock}` : cartItem ? `Available: ${available} / ${stock}` : `Stock: ${stock}`} {p.base_unit}
                   </span>
                 </div>
-                <p className="line-clamp-2 min-h-12 break-words text-base font-semibold leading-6 text-white">{p.name}</p>
-                {blocked > 0 && <p className="truncate text-xs text-red-400">{blocked} expired / undated</p>}
-                <p className="mt-auto text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <ProductImage src={p.image_path} alt={p.name} className="h-10 w-10 rounded-md shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 break-words text-sm font-semibold leading-5 text-white" title={p.name}>{p.name}</p>
+                    {blocked > 0 && <p className="truncate text-xs text-red-400">{blocked} expired / undated</p>}
+                  </div>
+                </div>
+                <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
+                  <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
+                  {p.srp_c != null && (
+                    <span className="text-[11px] text-slate-400 font-normal" title="Suggested Retail Price">
+                      SRP: {money(p.srp_c)}
+                    </span>
+                  )}
+                </div>
               </button>
             )
           })}

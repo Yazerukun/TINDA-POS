@@ -47,6 +47,7 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     base_unit: row.base_unit as string,
     purchase_cost_c: row.purchase_cost_c as number,
     default_price_c: row.default_price_c as number,
+    srp_c: (row.srp_c as number | null) ?? null,
     stock,
     low_stock_threshold: row.low_stock_threshold as number,
     supplier_id: (row.supplier_id as number | null) ?? null,
@@ -144,6 +145,7 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (!input.base_unit || !input.base_unit.trim()) throw new Error('Base unit is required.')
   if (input.default_price_c < 0) throw new Error('Selling price cannot be negative.')
   if (input.purchase_cost_c < 0) throw new Error('Purchase cost cannot be negative.')
+  if (input.srp_c !== undefined && input.srp_c !== null && input.srp_c < 0) throw new Error('Suggested retail price cannot be negative.')
   if ((input.low_stock_threshold ?? 0) < 0) throw new Error('Low stock threshold cannot be negative.')
   const ex = excludeId ? 'AND id != ?' : ''
   const args = excludeId ? [input.sku.trim(), excludeId] : [input.sku.trim()]
@@ -177,31 +179,62 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (!foundBase) throw new Error('One unit must convert to exactly 1 base unit.')
 }
 
+function hasSrpColumn(db: Database.Database): boolean {
+  const cols = db.pragma('table_info(products)') as { name: string }[]
+  return cols.some((c) => c.name === 'srp_c')
+}
+
 export function createProduct(db: Database.Database, input: ProductInput, userId: number): Product {
   validateProductInput(db, input)
   const threshold = input.low_stock_threshold ?? defaultLowStock(db)
+  const hasSrp = hasSrpColumn(db)
   const txn = db.transaction(() => {
-    const info = db
-      .prepare(
-        `INSERT INTO products
-         (category_id, name, sku, barcode, description, base_unit, purchase_cost_c, default_price_c,
-          low_stock_threshold, supplier_id, has_expiration, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        input.category_id,
-        input.name.trim(),
-        input.sku.trim(),
-        input.barcode?.trim() || null,
-        input.description?.trim() || null,
-        input.base_unit.trim(),
-        input.purchase_cost_c,
-        input.default_price_c,
-        threshold,
-        input.supplier_id,
-        input.has_expiration ? 1 : 0,
-        input.notes?.trim() || null
-      )
+    const info = hasSrp
+      ? db
+          .prepare(
+            `INSERT INTO products
+             (category_id, name, sku, barcode, description, base_unit, purchase_cost_c, default_price_c, srp_c,
+              low_stock_threshold, supplier_id, has_expiration, image_path, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          .run(
+            input.category_id,
+            input.name.trim(),
+            input.sku.trim(),
+            input.barcode?.trim() || null,
+            input.description?.trim() || null,
+            input.base_unit.trim(),
+            input.purchase_cost_c,
+            input.default_price_c,
+            input.srp_c ?? null,
+            threshold,
+            input.supplier_id,
+            input.has_expiration ? 1 : 0,
+            input.image_path?.trim() || null,
+            input.notes?.trim() || null
+          )
+      : db
+          .prepare(
+            `INSERT INTO products
+             (category_id, name, sku, barcode, description, base_unit, purchase_cost_c, default_price_c,
+              low_stock_threshold, supplier_id, has_expiration, image_path, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          .run(
+            input.category_id,
+            input.name.trim(),
+            input.sku.trim(),
+            input.barcode?.trim() || null,
+            input.description?.trim() || null,
+            input.base_unit.trim(),
+            input.purchase_cost_c,
+            input.default_price_c,
+            threshold,
+            input.supplier_id,
+            input.has_expiration ? 1 : 0,
+            input.image_path?.trim() || null,
+            input.notes?.trim() || null
+          )
     const productId = Number(info.lastInsertRowid)
     insertUnits(db, productId, input.units)
     if (input.expiration_mode !== undefined) configureExpiration(db, productId, input.expiration_mode, input.expiration_date ?? null, userId)
@@ -235,36 +268,64 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
     base_unit: input.base_unit ?? cur.base_unit,
     purchase_cost_c: input.purchase_cost_c ?? cur.purchase_cost_c,
     default_price_c: input.default_price_c ?? cur.default_price_c,
+    srp_c: input.srp_c !== undefined ? input.srp_c : cur.srp_c,
     low_stock_threshold: input.low_stock_threshold ?? cur.low_stock_threshold,
     supplier_id: input.supplier_id !== undefined ? input.supplier_id : cur.supplier_id,
     has_expiration: input.has_expiration !== undefined ? input.has_expiration : cur.has_expiration,
     expiration_mode: input.expiration_mode ?? cur.expiration_mode ?? 'NONE',
     expiration_date: input.expiration_date !== undefined ? input.expiration_date : cur.expiration_date,
+    image_path: input.image_path !== undefined ? input.image_path : cur.image_path,
     notes: input.notes !== undefined ? input.notes : cur.notes,
     units: input.units ?? cur.units
   }
   validateProductInput(db, merged, id)
+  const hasSrp = hasSrpColumn(db)
   const txn = db.transaction(() => {
     if (input.expiration_mode !== undefined || input.expiration_date !== undefined) configureExpiration(db, id, merged.expiration_mode ?? 'NONE', merged.expiration_date ?? null, userId)
-    db.prepare(
-      `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
-       purchase_cost_c = ?, default_price_c = ?, low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,
-       notes = ?, updated_at = datetime('now','localtime') WHERE id = ?`
-    ).run(
-      merged.category_id,
-      merged.name.trim(),
-      merged.sku.trim(),
-      merged.barcode?.trim() || null,
-      merged.description?.trim() || null,
-      merged.base_unit.trim(),
-      merged.purchase_cost_c,
-      merged.default_price_c,
-      merged.low_stock_threshold,
-      merged.supplier_id,
-      merged.expiration_mode !== 'NONE' ? 1 : input.expiration_mode !== undefined ? 0 : (merged.has_expiration ? 1 : 0),
-      merged.notes?.trim() || null,
-      id
-    )
+    if (hasSrp) {
+      db.prepare(
+        `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
+         purchase_cost_c = ?, default_price_c = ?, srp_c = ?, low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,
+         image_path = ?, notes = ?, updated_at = datetime('now','localtime') WHERE id = ?`
+      ).run(
+        merged.category_id,
+        merged.name.trim(),
+        merged.sku.trim(),
+        merged.barcode?.trim() || null,
+        merged.description?.trim() || null,
+        merged.base_unit.trim(),
+        merged.purchase_cost_c,
+        merged.default_price_c,
+        merged.srp_c ?? null,
+        merged.low_stock_threshold,
+        merged.supplier_id,
+        merged.expiration_mode !== 'NONE' ? 1 : input.expiration_mode !== undefined ? 0 : (merged.has_expiration ? 1 : 0),
+        merged.image_path?.trim() || null,
+        merged.notes?.trim() || null,
+        id
+      )
+    } else {
+      db.prepare(
+        `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
+         purchase_cost_c = ?, default_price_c = ?, low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,
+         image_path = ?, notes = ?, updated_at = datetime('now','localtime') WHERE id = ?`
+      ).run(
+        merged.category_id,
+        merged.name.trim(),
+        merged.sku.trim(),
+        merged.barcode?.trim() || null,
+        merged.description?.trim() || null,
+        merged.base_unit.trim(),
+        merged.purchase_cost_c,
+        merged.default_price_c,
+        merged.low_stock_threshold,
+        merged.supplier_id,
+        merged.expiration_mode !== 'NONE' ? 1 : input.expiration_mode !== undefined ? 0 : (merged.has_expiration ? 1 : 0),
+        merged.image_path?.trim() || null,
+        merged.notes?.trim() || null,
+        id
+      )
+    }
     db.prepare('DELETE FROM product_units WHERE product_id = ?').run(id)
     insertUnits(db, id, merged.units)
   })

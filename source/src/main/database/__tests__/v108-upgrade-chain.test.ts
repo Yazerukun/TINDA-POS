@@ -89,14 +89,14 @@ describe('v1.0.8 DB upgrade chain (v1.0.6 -> v1.0.7 -> v1.0.8)', () => {
       settings: COUNT(db, 'SELECT COUNT(*) c FROM settings')
     }
 
-    // Current app boot applies shift numbering and the additive expiration schema.
+    // Current app boot applies shift numbering, the additive expiration schema, and product srp.
     runMigrations(db)
     expect(db.pragma('integrity_check', { simple: true })).toBe('ok')
-    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(6)
+    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(7)
 
     // A re-boot of the same build is a safe no-op (idempotent migration engine).
     runMigrations(db)
-    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(6)
+    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(7)
     expect(db.pragma('integrity_check', { simple: true })).toBe('ok')
 
     // No data lost, added, or altered in ANY other table.

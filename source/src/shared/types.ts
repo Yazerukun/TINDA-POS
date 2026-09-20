@@ -88,6 +88,7 @@ export interface Product {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
+  srp_c?: number | null
   stock: number
   low_stock_threshold: number
   supplier_id: number | null
@@ -114,11 +115,13 @@ export interface ProductInput {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
+  srp_c?: number | null
   low_stock_threshold?: number
   supplier_id: number | null
   has_expiration: boolean
   expiration_mode?: ExpirationMode
   expiration_date?: string | null
+  image_path?: string | null
   notes: string | null
   units: { name: string; conversion_to_base: number; barcode: string | null; selling_price_c: number; is_default: boolean }[]
   initial_stock_base?: number

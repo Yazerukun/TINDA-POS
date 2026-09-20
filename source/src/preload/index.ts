@@ -65,7 +65,10 @@ const api: TindaApi = {
     count: (status) => invoke<number>('products:count', status),
     csvTemplate: () => invoke<string>('products:csvTemplate'),
     previewCsv: (text) => invoke('products:previewCsv', text),
-    importCsv: (text, strategy) => invoke('products:importCsv', text, strategy)
+    importCsv: (text, strategy) => invoke('products:importCsv', text, strategy),
+    saveImage: (data) => invoke<{ filename: string; url: string }>('products:saveImage', data),
+    deleteImage: (filename) => invoke<void>('products:deleteImage', filename),
+    getImageData: (filename) => invoke<string | null>('products:getImageData', filename)
   },
   inventory: {
     expiration: () => invoke<import('@shared/types').ExpirationEntry[]>('inventory:expiration'),

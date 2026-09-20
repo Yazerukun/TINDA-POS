@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -7,6 +7,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
+import { ProductImage } from '../components/ui/ProductImage'
 import {
   createProductInput,
   editProductForm,
@@ -204,15 +205,30 @@ export function Inventory(): React.JSX.Element {
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
-            <div key={p.id} className="card p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">{p.name}</p>
-                  <p className="text-xs text-slate-500">{p.sku} · {p.category_name ?? 'Uncategorized'}</p>
+            <div key={p.id} className="card p-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-start gap-3">
+                  <ProductImage src={p.image_path} alt={p.name} className="h-12 w-12 rounded-lg" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-white" title={p.name}>{p.name}</p>
+                        <p className="truncate text-xs text-slate-500">{p.sku} · {p.category_name ?? 'Uncategorized'}</p>
+                      </div>
+                      <StockBadge status={p.stock_status} />
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs">
+                      <span className="font-bold text-brand-400">{money(p.default_price_c)}</span>
+                      {p.srp_c != null && (
+                        <span className="text-[11px] text-slate-400" title="Suggested Retail Price">
+                          SRP: {money(p.srp_c)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <StockBadge status={p.stock_status} />
               </div>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between pt-2 border-t border-ink-line/50">
                 <div>
                   <p className="text-lg font-black text-white">{p.stock} <span className="text-xs font-medium text-slate-500">{p.base_unit}</span></p>
                   <p className="text-xs text-slate-500">{money(p.purchase_cost_c)} cost</p>
@@ -282,8 +298,41 @@ function StockReceivingView({ onClose }: { onClose: () => void }): React.JSX.Ele
         <div className="flex gap-2 md:col-span-6"><button className="btn-primary" type="submit">Apply Filters</button><button className="btn-ghost flex items-center gap-1" type="button" onClick={clear}><X className="h-4 w-4"/>Clear Filters</button></div>
       </form>
       <div className="max-h-[55vh] overflow-auto rounded-lg border border-ink-line">
-        <table className="table min-w-[1200px]"><thead><tr><th>Date / Time</th><th>Product</th><th>Received</th><th>Base Qty</th><th>Previous</th><th>New</th><th>Supplier</th><th>Unit Cost</th><th>Total Cost</th><th>Reference</th><th>Received By</th><th>Source</th></tr></thead>
-          <tbody>{rows.map(row => <tr key={row.id} onClick={() => setDetail(row)} className="cursor-pointer hover:bg-ink-800"><td>{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td><td className="font-medium text-white">{row.product_name}</td><td>{row.quantity_received} {row.received_unit}</td><td>{row.base_quantity} {row.base_unit}</td><td>{row.previous_stock}</td><td>{row.new_stock}</td><td>{row.supplier_name || '—'}</td><td className="font-mono tabular-nums">{row.unit_cost_c == null ? '—' : moneyWholePesos(row.unit_cost_c)}</td><td className="font-mono tabular-nums">{row.total_cost_c == null ? '—' : money(row.total_cost_c)}</td><td>{row.reference || '—'}</td><td>{row.received_by || '—'}</td><td><span className="badge">{row.source}</span></td></tr>)}</tbody>
+        <table className="table min-w-[1200px]">
+          <thead>
+            <tr>
+              <th className="w-[12%] py-3 px-2 text-center align-middle">Date / Time</th>
+              <th className="w-[14%] py-3 px-2 text-center align-middle">Product</th>
+              <th className="w-[7%] py-3 px-2 text-center align-middle">Received</th>
+              <th className="w-[7%] py-3 px-2 text-center align-middle">Base Qty</th>
+              <th className="w-[6%] py-3 px-2 text-center align-middle">Previous</th>
+              <th className="w-[6%] py-3 px-2 text-center align-middle">New</th>
+              <th className="w-[11%] py-3 px-2 text-center align-middle">Supplier</th>
+              <th className="w-[8%] py-3 px-2 text-center align-middle">Unit Cost</th>
+              <th className="w-[8%] py-3 px-2 text-center align-middle">Total Cost</th>
+              <th className="w-[7%] py-3 px-2 text-center align-middle">Reference</th>
+              <th className="w-[7%] py-3 px-2 text-center align-middle">Received By</th>
+              <th className="w-[7%] py-3 px-2 text-center align-middle">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id} onClick={() => setDetail(row)} className="cursor-pointer hover:bg-ink-800">
+                <td className="w-[12%] py-2.5 px-2 text-center align-middle text-xs text-slate-400">{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
+                <td className="w-[14%] py-2.5 px-2 text-center align-middle font-medium text-white truncate" title={row.product_name}>{row.product_name}</td>
+                <td className="w-[7%] py-2.5 px-2 text-center align-middle text-xs">{row.quantity_received} {row.received_unit}</td>
+                <td className="w-[7%] py-2.5 px-2 text-center align-middle text-xs">{row.base_quantity} {row.base_unit}</td>
+                <td className="w-[6%] py-2.5 px-2 text-center align-middle text-xs">{row.previous_stock}</td>
+                <td className="w-[6%] py-2.5 px-2 text-center align-middle text-xs">{row.new_stock}</td>
+                <td className="w-[11%] py-2.5 px-2 text-center align-middle text-xs text-slate-300 truncate" title={row.supplier_name || '—'}>{row.supplier_name || '—'}</td>
+                <td className="w-[8%] py-2.5 px-2 text-center align-middle font-mono tabular-nums text-xs">{row.unit_cost_c == null ? '—' : moneyWholePesos(row.unit_cost_c)}</td>
+                <td className="w-[8%] py-2.5 px-2 text-center align-middle font-mono tabular-nums text-xs">{row.total_cost_c == null ? '—' : money(row.total_cost_c)}</td>
+                <td className="w-[7%] py-2.5 px-2 text-center align-middle text-xs text-slate-400 truncate" title={row.reference || '—'}>{row.reference || '—'}</td>
+                <td className="w-[7%] py-2.5 px-2 text-center align-middle text-xs text-slate-300 truncate" title={row.received_by || '—'}>{row.received_by || '—'}</td>
+                <td className="w-[7%] py-2.5 px-2 text-center align-middle"><span className="badge inline-flex items-center justify-center text-[10px]">{row.source}</span></td>
+              </tr>
+            ))}
+          </tbody>
         </table>
         {!loading && rows.length === 0 && <p className="py-10 text-center text-sm text-slate-500">No receiving records match these filters.</p>}
         {loading && <p className="py-10 text-center text-sm text-slate-500">Loading receiving records…</p>}
@@ -304,7 +353,7 @@ function CsvImportModal({ onDone, onClose }: { onDone: () => void; onClose: () =
     <div className="space-y-4"><div className="flex gap-2"><button className="btn-ghost flex gap-2" onClick={() => void download()}><Download className="h-4 w-4"/>Download Template</button><label className="btn-primary cursor-pointer">Select CSV<input className="hidden" type="file" accept=".csv,text/csv" onChange={e => void choose(e.target.files?.[0])}/></label></div>
     {preview && <><div className="grid grid-cols-4 gap-2">{[['Total Rows',preview.total],['Valid Rows',preview.valid],['Invalid Rows',preview.invalid],['Duplicates',preview.duplicates]].map(([a,b])=><div className="card p-3" key={String(a)}><p className="text-xs text-slate-500">{a}</p><p className="text-xl font-bold">{b}</p></div>)}</div>
     {preview.duplicates>0 && <div><label className="label">Existing SKU/barcode</label><select className="input" value={strategy} onChange={e=>setStrategy(e.target.value as 'SKIP'|'UPDATE')}><option value="SKIP">Skip Existing</option><option value="UPDATE">Update Existing</option></select></div>}
-    <div className="max-h-72 overflow-auto card"><table className="table"><thead><tr><th>Row</th><th>Product</th><th>Status</th><th>Reason</th></tr></thead><tbody>{preview.rows.map(r=><tr key={r.row_number}><td>{r.row_number}</td><td>{r.product_name || '—'}</td><td>{!r.valid?'Invalid':r.duplicate?'Duplicate':'Valid'}</td><td className="text-danger-400">{r.reasons.join('; ') || '—'}</td></tr>)}</tbody></table></div></>}
+    <div className="max-h-72 overflow-auto card"><table className="table"><thead><tr><th className="w-[12%] text-center align-middle">Row</th><th className="w-[38%] text-center align-middle">Product</th><th className="w-[20%] text-center align-middle">Status</th><th className="w-[30%] text-center align-middle">Reason</th></tr></thead><tbody>{preview.rows.map(r=><tr key={r.row_number}><td className="w-[12%] text-center align-middle">{r.row_number}</td><td className="w-[38%] text-center align-middle truncate">{r.product_name || '—'}</td><td className="w-[20%] text-center align-middle">{!r.valid?'Invalid':r.duplicate?'Duplicate':'Valid'}</td><td className="w-[30%] text-center align-middle text-danger-400">{r.reasons.join('; ') || '—'}</td></tr>)}</tbody></table></div></>}
     {!preview && <p className="text-sm text-slate-400">Download the template, fill it in, then select the CSV to preview and validate every row before importing.</p>}</div>
   </Modal>
 }
@@ -390,16 +439,32 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
         <div><label className="label">Movement Type</label><select className="input w-full" value={type} onChange={(e) => setType(e.target.value as '' | InventoryMovement['movement_type'])}><option value="">All types</option>{Object.entries(typeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
       </div>
       <div className="max-h-[55vh] overflow-auto rounded-lg border border-ink-line">
-        <table className="table"><thead><tr><th>Date / Time</th><th>Product</th><th>Type</th><th>Change</th><th>After</th><th>Reason</th><th>By</th></tr></thead>
-          <tbody>{rows.map((row) => <tr key={row.id}>
-            <td>{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
-            <td className="font-medium text-white">{productName(row.product_id)}</td>
-            <td><span className={`badge border ${row.movement_type === 'WITHDRAWAL' ? 'border-danger-500/30 bg-danger-500/10 text-danger-300' : 'border-slate-500/30 bg-slate-500/10 text-slate-300'}`}>{typeLabels[row.movement_type] ?? row.movement_type}</span></td>
-            <td className={row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'}>{row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}</td>
-            <td>{row.quantity_after} {row.unit}</td>
-            <td className="max-w-[280px] truncate" title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}>{row.reason || '—'}{row.reference ? <span className="text-slate-500"> — {row.reference}</span> : null}</td>
-            <td>{(row as InventoryMovement & { user_name?: string }).user_name || '—'}</td>
-          </tr>)}</tbody></table>
+        <table className="table">
+          <thead>
+            <tr>
+              <th className="w-[18%] text-center align-middle">Date / Time</th>
+              <th className="w-[22%] text-center align-middle">Product</th>
+              <th className="w-[12%] text-center align-middle">Type</th>
+              <th className="w-[11%] text-center align-middle">Change</th>
+              <th className="w-[11%] text-center align-middle">After</th>
+              <th className="w-[16%] text-center align-middle">Reason</th>
+              <th className="w-[10%] text-center align-middle">By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td className="w-[18%] text-center align-middle text-xs text-slate-400">{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
+                <td className="w-[22%] text-center align-middle font-medium text-white truncate" title={productName(row.product_id)}>{productName(row.product_id)}</td>
+                <td className="w-[12%] text-center align-middle"><span className={`badge border inline-flex items-center justify-center ${row.movement_type === 'WITHDRAWAL' ? 'border-danger-500/30 bg-danger-500/10 text-danger-300' : 'border-slate-500/30 bg-slate-500/10 text-slate-300'}`}>{typeLabels[row.movement_type] ?? row.movement_type}</span></td>
+                <td className={`w-[11%] text-center align-middle font-mono tabular-nums ${row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'}`}>{row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}</td>
+                <td className="w-[11%] text-center align-middle font-mono tabular-nums">{row.quantity_after} {row.unit}</td>
+                <td className="w-[16%] text-center align-middle truncate" title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}>{row.reason || '—'}{row.reference ? <span className="text-slate-500"> — {row.reference}</span> : null}</td>
+                <td className="w-[10%] text-center align-middle truncate text-slate-300">{(row as InventoryMovement & { user_name?: string }).user_name || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         {!loading && rows.length === 0 && <p className="py-10 text-center text-sm text-slate-500">No stock movements match these filters.</p>}
         {loading && <p className="py-10 text-center text-sm text-slate-500">Loading stock movements…</p>}
       </div>
@@ -463,6 +528,8 @@ function StockBadge({ status }: { status: string }): React.JSX.Element {
 
 function ProductModal({ form, categories, onSave, onClose }: { form: ProductFormData; categories: Category[]; onSave: (f: ProductFormData) => Promise<void>; onClose: () => void }): React.JSX.Element {
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [localCategories, setLocalCategories] = useState(categories)
   const [categoryName, setCategoryName] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
@@ -477,6 +544,72 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
   }
   const addUnit = () => setRows((prev) => [...prev, { name: '', conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: prev.length === 0 }])
   const removeUnit = (index: number) => setRows((prev) => prev.filter((_, i) => i !== index))
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toastError('Upload failed', 'Please select a valid image file (PNG, JPG, WEBP).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toastError('Upload failed', 'Image size cannot exceed 5MB.')
+      return
+    }
+    setUploadingImage(true)
+    try {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        try {
+          const dataUrl = reader.result as string
+          const res = await window.api.products.saveImage({ name: file.name, dataUrl })
+          set({ image_path: res.filename })
+          toastSuccess('Image uploaded')
+        } catch (err) {
+          toastError('Image upload failed', String((err as Error)?.message || err))
+        } finally {
+          setUploadingImage(false)
+        }
+      }
+      reader.onerror = () => {
+        toastError('Image read failed', 'Could not read selected file.')
+        setUploadingImage(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      toastError('Image upload failed', String((err as Error)?.message || err))
+      setUploadingImage(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    set({ image_path: null })
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const cost = f.purchase_cost_c
+  const price = f.default_price_c
+  const profit_c = price - cost
+  const marginPct = cost > 0 ? ((profit_c / cost) * 100).toFixed(1) : '0.0'
+
+  const applyMarkup = (pct: number) => {
+    if (cost <= 0) return
+    const calculated = Math.round(cost * (1 + pct / 100))
+    set({ default_price_c: calculated })
+    if (rows[0]?.conversion_to_base === 1) {
+      setRow(0, { selling_price_c: calculated })
+    }
+  }
+
+  const applySrpAsPrice = () => {
+    if (f.srp_c != null && f.srp_c >= 0) {
+      set({ default_price_c: f.srp_c })
+      if (rows[0]?.conversion_to_base === 1) {
+        setRow(0, { selling_price_c: f.srp_c })
+      }
+    }
+  }
+
   const submit = async () => {
     if (saving) return
     setSaving(true)
@@ -495,10 +628,46 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
     <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button disabled={saving || categoryBusy} onClick={() => void submit()} className="btn-primary">Save</button>
+        <button disabled={saving || categoryBusy || uploadingImage} onClick={() => void submit()} className="btn-primary">Save</button>
       </>
     }>
       <form onSubmit={(e) => { e.preventDefault(); void submit() }} className="grid grid-cols-2 gap-3">
+        {/* Picture Upload */}
+        <div className="col-span-2 flex items-center gap-4 rounded-lg border border-ink-line bg-ink-900/40 p-3">
+          <ProductImage src={f.image_path} alt={f.name || 'Product'} className="h-16 w-16 rounded-lg" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-slate-300">Product Picture</p>
+            <p className="text-[11px] text-slate-500">PNG, JPG, or WEBP up to 5MB. Shows in POS and inventory.</p>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                disabled={uploadingImage}
+                onClick={() => fileInputRef.current?.click()}
+                className="btn-ghost text-xs px-2.5 py-1.5 flex items-center gap-1.5"
+              >
+                <ImageIcon className="h-3.5 w-3.5" />
+                {uploadingImage ? 'Uploading…' : f.image_path ? 'Change Picture' : 'Upload Picture'}
+              </button>
+              {f.image_path && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="btn-ghost text-xs px-2.5 py-1.5 text-danger-400 hover:text-danger-300"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="col-span-2">
           <label className="label">Name *</label>
           <input required value={f.name} onChange={(e) => set({ name: e.target.value })} className="input w-full" />
@@ -529,9 +698,69 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           <input type="number" min={0} value={f.purchase_cost_c / 100} onChange={(e) => set({ purchase_cost_c: Math.round(parseFloat(e.target.value || '0') * 100) })} className="input w-full" />
         </div>
         <div>
-          <label className="label">Selling Price (₱)</label>
-          <input type="number" min={0} value={f.default_price_c / 100} onChange={(e) => set({ default_price_c: Math.round(parseFloat(e.target.value || '0') * 100) })} className="input w-full" />
+          <label className="label flex items-center justify-between">
+            <span>Suggested Retail Price (SRP)</span>
+            {f.srp_c != null && f.srp_c > 0 && (
+              <button
+                type="button"
+                onClick={applySrpAsPrice}
+                className="text-[10px] text-brand-400 hover:text-brand-300 hover:underline font-normal"
+                title="Copy SRP to Selling Price"
+              >
+                Use as Price
+              </button>
+            )}
+          </label>
+          <input
+            type="number"
+            min={0}
+            placeholder="Optional SRP"
+            value={f.srp_c != null ? f.srp_c / 100 : ''}
+            onChange={(e) => set({ srp_c: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : null })}
+            className="input w-full"
+          />
         </div>
+        <div>
+          <label className="label">Selling Price (₱)</label>
+          <input
+            type="number"
+            min={0}
+            value={f.default_price_c / 100}
+            onChange={(e) => {
+              const val = Math.round(parseFloat(e.target.value || '0') * 100)
+              set({ default_price_c: val })
+              if (rows[0]?.conversion_to_base === 1) {
+                setRow(0, { selling_price_c: val })
+              }
+            }}
+            className="input w-full"
+          />
+        </div>
+
+        {/* Profit Margin & Auto-Markup Helper */}
+        <div className="col-span-2 rounded-lg border border-ink-line bg-ink-900/30 p-2.5 text-xs text-slate-300">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>
+              Profit Margin: <b className={profit_c >= 0 ? 'text-emerald-400' : 'text-danger-400'}>{money(profit_c)}</b> ({marginPct}%)
+            </span>
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+              <Sparkles className="h-3 w-3 text-brand-400" />
+              <span>Auto-Markup:</span>
+              {[10, 15, 20, 25, 30].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => applyMarkup(pct)}
+                  className="rounded bg-ink-800 px-1.5 py-0.5 hover:bg-brand-500/20 hover:text-brand-300 transition"
+                  title={`Set price to Cost + ${pct}%`}
+                >
+                  +{pct}%
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="label">Low Stock Alert</label>
           <input type="number" min={0} value={f.low_stock_threshold} onChange={(e) => set({ low_stock_threshold: parseInt(e.target.value || '0', 10) })} className="input w-full" />

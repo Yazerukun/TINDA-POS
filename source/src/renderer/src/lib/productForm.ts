@@ -24,10 +24,12 @@ export interface ProductFormData {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
+  srp_c: number | null
   low_stock_threshold: number
   initial_stock_base: number
   description: string | null
   supplier_id: number | null
+  image_path: string | null
   notes: string | null
   units: ProductUnitInput[]
   expiration_mode?: ProductInput['expiration_mode']
@@ -59,10 +61,12 @@ export function newProductForm(defaultLowStock = 5): ProductFormData {
     base_unit: 'pc',
     purchase_cost_c: 0,
     default_price_c: 0,
+    srp_c: null,
     low_stock_threshold: defaultLowStock,
     initial_stock_base: 0,
     description: null,
     supplier_id: null,
+    image_path: null,
     notes: null,
     units: [],
     expiration_mode: 'NONE', expiration_date: null
@@ -82,10 +86,12 @@ export function editProductForm(product: Product): ProductFormData {
     base_unit: product.base_unit,
     purchase_cost_c: product.purchase_cost_c,
     default_price_c: product.default_price_c,
+    srp_c: product.srp_c ?? null,
     low_stock_threshold: product.low_stock_threshold,
     initial_stock_base: 0,
     description: product.description,
     supplier_id: product.supplier_id,
+    image_path: product.image_path ?? null,
     notes: product.notes,
     expiration_mode: product.expiration_mode,
     expiration_date: product.expiration_date,
@@ -122,9 +128,11 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
     base_unit: form.base_unit,
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
+    srp_c: form.srp_c,
     low_stock_threshold: form.low_stock_threshold,
     description: form.description,
     supplier_id: form.supplier_id,
+    image_path: form.image_path,
     notes: form.notes,
     ...(form.expiration_mode !== undefined ? { expiration_mode: form.expiration_mode, expiration_date: form.expiration_date || null } : {}),
     units: form.units
@@ -145,6 +153,7 @@ export function createProductInput(form: ProductFormData): ProductInput {
     base_unit: form.base_unit,
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
+    srp_c: form.srp_c,
     low_stock_threshold: form.low_stock_threshold,
     initial_stock_base: form.initial_stock_base,
     description: form.description,
@@ -152,6 +161,7 @@ export function createProductInput(form: ProductFormData): ProductInput {
     has_expiration: false,
     expiration_mode: form.expiration_mode ?? 'NONE',
     expiration_date: form.expiration_date || null,
+    image_path: form.image_path,
     notes: form.notes,
     units
   }

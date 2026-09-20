@@ -514,18 +514,26 @@ function UsersTab(): React.JSX.Element {
         <p className="text-sm text-slate-400">{users.length} users</p>
         <button onClick={() => setEditing({ id: null, username: '', password: '', pin: '', full_name: '', roles: ['CASHIER'] })} className="btn-primary flex items-center gap-2"><UserPlus className="h-4 w-4" /> New User</button>
       </div>
-      <div className="card overflow-hidden">
+      <div className="card table-container">
         <table className="table">
-          <thead><tr><th>User</th><th>Username</th><th>Roles</th><th>Status</th><th className="w-28">Actions</th></tr></thead>
+          <thead>
+            <tr>
+              <th className="w-[28%]">User</th>
+              <th className="w-[22%]">Username</th>
+              <th className="w-[20%]">Roles</th>
+              <th className="w-[14%]">Status</th>
+              <th className="w-[16%]">Actions</th>
+            </tr>
+          </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="font-medium text-slate-200">{u.full_name}</td>
-                <td className="text-slate-400">{u.username}</td>
-                <td className="text-slate-300">{u.roles.join(', ')}</td>
-                <td><span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
-                <td>
-                  <div className="flex gap-1">
+                <td className="w-[28%] font-medium text-slate-200">{u.full_name}</td>
+                <td className="w-[22%] text-slate-400">{u.username}</td>
+                <td className="w-[20%] text-slate-300">{u.roles.join(', ')}</td>
+                <td className="w-[14%]"><span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td className="w-[16%]">
+                  <div className="flex justify-center gap-1">
                     <button onClick={() => setEditing({ id: u.id, username: u.username, password: '', pin: '', full_name: u.full_name, roles: u.roles })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                     <button onClick={() => setResetPin({ id: u.id, full_name: u.full_name })} className="btn-ghost-2 rounded-lg p-2" title="Reset PIN"><KeyRound className="h-4 w-4" /></button>
                   </div>
