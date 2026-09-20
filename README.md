@@ -3,11 +3,12 @@
 <img src="https://img.shields.io/badge/TINDA_POS-v1.0.20-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
+<img src="https://img.shields.io/badge/Tests-268%2F268_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
 
-# TINDA POS
+# 🏪 TINDA POS
 
 ### Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses
 
@@ -15,7 +16,7 @@
 
 <br />
 
-[⬇️ Download v1.0.20 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Setup-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Portable-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Manual PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.20 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Setup-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Portable-1.0.20.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
@@ -23,25 +24,27 @@
 
 ## ✨ What's New in v1.0.20
 
-> **Color-coded Dashboard and Whole-Peso Receiving** — visual clarity for financial metrics and cleaner inventory costing.
+> **Color-Coded Dashboard, Whole-Peso Receiving, and Perfectly Aligned Transactions** — visual clarity for financial metrics and cleaner, error-free store workflows.
 
-- **Color-Coded Dashboard Financial Metrics** — monetary values now use clear semantic colors: **Today's Net Sales** (Emerald Green), **Estimated Profit** (Teal), **Outstanding Utang** (Rose Red), and **Expenses** (Amber) with accessible contrast across themes.
-- **Whole-Peso Unit Cost in Receiving** — Restock and Receiving now require whole-peso Unit Costs (e.g. ₱5, ₱10, ₱25 — no fractional centavos/bungkig) with inline validation to prevent accidental decimal amounts, while safely preserving historical decimal records.
-- **Aligned Receiving Details UI** — monetary figures in Receiving Details and Stock Receiving tables use clean tabular alignment (`font-mono tabular-nums`), ensuring amounts like `Unit Cost ₱5` and `Total Cost ₱300` are perfectly aligned.
-- **Aligned Transactions Expand Items** — expanded transaction rows now feature strictly aligned `Qty`, `Unit Price`, and `Subtotal` columns with fixed widths and tabular numbers (`font-mono tabular-nums text-right`).
+- 🟢 **Color-Coded Dashboard Financial Metrics** — monetary values now use clear semantic colors: **Today's Net Sales** (Emerald Green), **Estimated Profit** (Teal Green), **Outstanding Utang** (Rose Red), and **Expenses** (Amber Orange) with high contrast across light and dark themes.
+- 🏷️ **Whole-Peso Unit Cost in Receiving** — Restock and Receiving now strictly enforce whole-peso Unit Costs (e.g. ₱5, ₱10, ₱25 — no fractional centavos/bungkig) with instant inline validation, while safely preserving historical decimal records.
+- 📐 **Aligned Receiving Details UI** — monetary figures in Receiving Details and Stock Receiving tables use clean tabular monospace alignment (`font-mono tabular-nums`), ensuring amounts like `Unit Cost ₱5` and `Total Cost ₱300` line up neatly.
+- 📑 **Aligned Transactions Expand Items** — clicking **Expand items** on any sale now displays a `table-fixed` mini-table with designated column widths (`Qty w-28`, `Unit Price w-32`, `Subtotal w-32`) and right-aligned tabular figures (`font-mono tabular-nums text-right`).
 
 <details>
-<summary>📋 Full version history</summary>
+<summary>📋 <b>Full Version History</b></summary>
+
+<br />
 
 | Version | Highlights |
 |---|---|
-| v1.0.20 | Color-coded Dashboard financial metrics (Green Sales, Teal Profit, Red Utang, Amber Expenses); whole-peso Unit Cost validation in Restock/Receiving; aligned Receiving Details modal UI; aligned Transactions Expand Items columns |
-| v1.0.19 | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
-| v1.0.18 | Itemized accordion for Recent Transactions (Dashboard + Transactions page) |
-| v1.0.17 | Windows Startup checkbox accessibility fix |
-| v1.0.16 | Dual-layer Windows auto-start, profit double-deduction fix, POS discount Pesos format, receipt payment breakdown order |
-| v1.0.15 | Utang customer selection from checkout modal |
-| v1.0.14 | Utang customer reachability fix |
+| **v1.0.20** | Semantic color-coded Dashboard cards (Green Sales, Teal Profit, Red Utang, Amber Expenses); whole-peso Unit Cost validation in Restock/Receiving; aligned Receiving Details modal; `table-fixed` aligned columns in Transactions Expand items |
+| **v1.0.19** | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
+| **v1.0.18** | Itemized accordion for Recent Transactions (Dashboard + Transactions page) |
+| **v1.0.17** | Windows Startup checkbox accessibility fix |
+| **v1.0.16** | Dual-layer Windows auto-start, profit double-deduction fix, POS discount Pesos format, receipt payment breakdown order |
+| **v1.0.15** | Utang customer selection from checkout modal |
+| **v1.0.14** | Utang customer reachability fix |
 
 </details>
 
@@ -49,178 +52,172 @@
 
 ## 🏪 Why TINDA POS?
 
-TINDA POS is built for everyday store work. Checkout stays usable **100% offline**, your database stays on your own computer, and the workflow is clear for both owners and cashiers — no training needed.
+TINDA POS is built specifically for everyday Philippine store operations. Checkout stays usable **100% offline**, your database stays on your own computer, and the workflow is intuitive for both store owners and cashiers — no complex training needed.
 
-| | Feature |
-|:---:|---|
-| 🛒 | Fast product search, barcode input, categories, Hold/Resume, and quantity controls |
-| 💵 | Cash, GCash, Maya, split payments, and customer Utang (credit) recording |
-| 📦 | Multi-unit products, stock receiving, restocking, withdrawals, and low-stock alerts |
-| 📅 | Per-item and per-batch expiration dates with checkout protection |
-| 👥 | Customers, credit limits, payments, adjustments, and a complete Utang ledger |
-| 🧾 | Receipt printing, refunds, voids, receipt reprints, X-Read, Cash Count, and Z-Read |
-| 📊 | Sales, profit, inventory, and Utang reports with CSV export |
-| 💾 | Local backups, cloud-folder sync (OneDrive/GDrive/Dropbox), validated restore |
-| 🔒 | Roles & permissions, suppliers, expenses, and software auto-update |
+| Icon | Feature | Description |
+|:---:|---|---|
+| 🛒 | **Fast POS Checkout** | Instant product search, barcode scanner support, category filters, Hold/Resume sales, and quick quantity controls |
+| 💵 | **Flexible Payments** | Cash with auto-computed change (sukli), GCash, Maya, split payments, and customer Utang (credit) |
+| 📦 | **Inventory Management** | Multi-unit products (piece, sachet, pack, box), stock receiving, restock validation, withdrawals, and low-stock alerts |
+| 📅 | **Expiration Tracking** | Per-item and per-batch expiration dates with checkout warnings to prevent selling expired goods |
+| 👥 | **Complete Utang Ledger** | Customer profiles, credit limits, payment history, balance adjustments, and audit trail |
+| 🧾 | **Receipts & Shifts** | Thermal receipt printing (58mm/80mm), refunds, voids, receipt reprints, X-Read, Cash Count, and Z-Read |
+| 📊 | **Reports & Analytics** | Sales, profit margins, inventory valuation, and Utang ledgers with one-click CSV export |
+| 💾 | **Rock-Solid Backups** | Local `.tinda-backup` files, cloud sync (OneDrive / Google Drive / Dropbox), and verified restore |
+| 🔒 | **Security & Access** | PIN protection, Admin/Cashier roles, expense tracking, and seamless software auto-updates |
 
 ---
 
-## ⬇️ Download
+## ⬇️ Downloads & Installers
 
-**Windows 10 / 11 (64-bit)**
+**For Windows 10 / 11 (64-bit)**
 
-| File | What it is |
+| Deliverable | Description | Download Link |
+|---|---|:---:|
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Setup-1.0.20.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Portable-1.0.20.exe) |
+| **Official User Guide (PDF)** | Comprehensive 24-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/SHA256SUMS-v1.0.20.txt) |
+
+> ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
+
+🔗 *View all past releases and changelogs on the [GitHub Releases Page](https://github.com/Yazerukun/TINDA-POS/releases).*
+
+---
+
+## 🚀 Quick Start (5 Easy Steps)
+
+1. **Install:** Run `TindaPOS-Setup-1.0.20.exe` and launch the application.
+2. **First-Run Wizard:** Enter your store name, set your admin password and PIN, and customize receipt header/footer details.
+3. **Add Products:** Open **Inventory** → add your items with purchase cost (whole pesos), selling prices, units, and initial stock.
+4. **Setup Printer:** Go to **Settings → Receipt / Printer**, select your thermal printer (58mm or 80mm), and click **Test Print**.
+5. **Start Selling:** Open **POS**, search or scan an item, and complete your first sale!
+
+---
+
+## 💳 Payment Methods & Utang Management
+
+### Payment Types
+
+| Method | How It Works |
 |---|---|
-| [TindaPOS-Setup-1.0.19.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Setup-1.0.19.exe) | ✅ **Recommended.** Installs TINDA POS with software auto-update support. |
-| [TindaPOS-Portable-1.0.19.exe](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-Portable-1.0.19.exe) | Run without installing. Keep its `TindaPOS-Data` folder safe. |
-| [TindaPOS-User-Guide.pdf](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/TindaPOS-User-Guide.pdf) | Printable step-by-step user manual. |
-| [SHA256SUMS-RC.txt](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.19/SHA256SUMS-RC.txt) | Verify downloaded files. |
+| **Cash** | Enter amount tendered — change (*sukli*) is automatically calculated in real-time. |
+| **GCash / Maya** | Enter the transaction reference number for auditing and balance reconciliation. |
+| **Utang (Credit)** | Select the customer first, verify credit balance, and charge to their account ledger. |
+| **Split Payment** | Click **Add Payment** to combine multiple payment methods (e.g. Part Cash + Part GCash) in a single transaction. |
 
-> **If Windows SmartScreen appears:** click **More info → Run anyway**. This is normal for community-distributed apps.
-
-All releases → [github.com/Yazerukun/TINDA-POS/releases](https://github.com/Yazerukun/TINDA-POS/releases)
-
----
-
-## 🚀 First Setup (5 Steps)
-
-1. Run the Setup installer and launch TINDA POS.
-2. Complete the **first-run wizard** — store name, admin account, and receipt settings.
-3. Open **Inventory** and add your products, prices, units, and opening stock.
-4. Go to **Settings → Receipt** and configure your printer. Use **Test Print** to confirm.
-5. Open **POS** and complete a small test sale before serving customers.
-6. Create a **Backup** before your first real day.
+### 👥 Utang (Credit) Flow
+To prevent charging the wrong customer, TINDA POS features a strict safety check:
+1. In POS checkout, click **Select Customer** under *Select the borrower*.
+2. Search by customer name or phone number.
+3. Click the customer row — the selected customer is highlighted with a green checkmark `✓`.
+4. Confirm **Selected: [Customer Name] ✓** before charging.
+5. If no customer is selected, the system blocks Utang checkout with a helpful prompt.
 
 ---
 
-## 💳 Accepting Payments
+## 🔍 Transactions & Expand Items View
 
-| Method | How |
-|---|---|
-| **Cash** | Enter amount received — change (sukli) is computed automatically. |
-| **GCash / Maya** | Enter the reference number for tracking. |
-| **Utang (credit)** | Select the customer first, then choose Utang at checkout. |
-| **Split payment** | Click **Add Payment** and mix any methods in a single sale. |
-
----
-
-## 🔍 Recent Transactions — Itemized View *(New in v1.0.18)*
-
-### From the Dashboard
-Each row in the **Recent Transactions** card is clickable:
-- **Collapsed** → shows receipt #, cashier, time, total, and a 1-line item preview (`Sprite ×2, Biscuit ×1`)
-- **Expanded** → shows full item breakdown + payment method + discount
-
-### From the Transactions Page
-Click the **▾ chevron** beside any receipt number:
+Click the **▾ chevron** beside any receipt number in the **Transactions** table to inspect itemized details inline:
 
 | Product | Qty | Unit Price | Subtotal |
-|---|---|---|---|
-| Sprite | 2 pcs | ₱25.00 | ₱50.00 |
-| Biscuit | 1 pc | ₱15.00 | ₱15.00 |
+|---|:---:|---:|---:|
+| Nescafe Classic 50g Refill | 2 pcs | ₱45.00 | ₱90.00 |
+| Bear Brand Powdered Milk 33g | 5 sachets | ₱12.00 | ₱60.00 |
+| San Miguel Pale Pilsen 330ml | 3 bottles | ₱65.00 | ₱195.00 |
 
-Footer shows payment method(s) and total. Click **▴** again to collapse.
-
----
-
-## 💳 Utang — Select the Right Customer
-
-The Utang flow is designed to prevent mistakes:
-
-1. In POS, click **Select Customer** under **Select the borrower**.
-2. Search by name or phone number.
-3. Click the customer row. The selected row is highlighted with a checkmark ✓.
-4. Confirm **Selected: Customer Name ✓** before opening Checkout.
-5. Choose **Utang** and review the customer again before charging.
-
-> If no customer is selected, TINDA POS blocks Utang checkout and shows a reminder. Use **Walk-in (no utang)** to clear the selection.
+* **Footer Breakdown:** Displays payment methods used, applied discounts, and bold grand total.
+* **Precise Alignment:** In v1.0.20, `Qty`, `Unit Price`, and `Subtotal` columns are fixed-width and right-aligned with monospace tabular figures (`font-mono tabular-nums`) so numbers line up perfectly across every transaction.
 
 ---
 
-## 🔄 Software Updates
+## 🔄 Automatic Software Updates
 
-For **Setup** users: open **Settings → About → Software Update → Check for Updates**.
+For users on the **Setup** edition, updating is fully automated:
+1. Open **Settings → About → Software Update → Check for Updates**.
+2. TINDA POS downloads the update in the background with progress indicator (0–100%).
+3. Click **Restart & Install** once the download completes.
+4. A safety database backup is created automatically before the update is applied.
 
-- Download the update and wait for 100%
-- Click **Restart & Install** after active transactions are finished
-- TINDA POS creates a safety backup before installation automatically
-
-> Users on v1.0.17 will receive the v1.0.18 update automatically on their next check.  
-> Users on very old v1.0.3–v1.0.5 need one manual Setup upgrade first.
-
----
-
-## 💾 Data & Backups
-
-Your database lives at `%APPDATA%\TINDA POS\database\tindapos.db`.  
-Check the exact location in **Settings → Data**.
-
-**Backup schedule:**
-- At minimum: once a week
-- Busy stores: every day
-- Cloud option: OneDrive, Google Drive for Desktop, or Dropbox (via **Backup → Choose Folder**)
-
-> Uninstalling TINDA POS **does not delete your data.** Your sales history is always safe.
+> 💡 **Seamless Upgrade:** Users on **v1.0.19** will automatically detect and upgrade to **v1.0.20** with zero data loss or manual re-configuration.
 
 ---
 
-## 🔁 Shifts, X-Read & Z-Read
+## 💾 Database Safety & Backups
 
-| Action | When |
+Your store database is stored safely at:
+`%APPDATA%\TINDA POS\database\tindapos.db`
+
+* **Automatic Backups:** Created on system checkpoints, database resets, and software updates.
+* **Manual Backups:** Open **Backup** → click **Create Backup** to generate a timestamped `.tinda-backup` file.
+* **Cloud Sync:** Select your OneDrive, Google Drive, or Dropbox local sync folder as the backup destination.
+* **Data Guarantee:** Uninstalling or upgrading TINDA POS **never deletes your database**. Your sales records, inventory, and customer utang history remain 100% intact.
+
+---
+
+## 🔁 Shifts, Cash Count, X-Read & Z-Read
+
+| Operation | Purpose & Timing |
 |---|---|
-| **X-Read** | Check current totals any time during the shift (non-final). |
-| **Cash Count** | Count the drawer and save it while the shift is still open. |
-| **Z-Read** | Finalize and close the shift. |
-
-> Always save the Cash Count **before** Z-Read.  
-> Dashboard daily totals do not reset after every Z-Read.
+| **X-Read** | Non-final mid-shift summary. Check current sales, cash drawer status, and transaction totals anytime without closing the shift. |
+| **Cash Count** | Physical bill and coin drawer count. Must be completed and saved while the shift is still active. |
+| **Z-Read** | Official end-of-day shift closing report. Finalizes the cashier shift and prints the end-of-day summary receipt. |
 
 ---
 
-## 🛠️ Troubleshooting
+## 🛠️ Common Troubleshooting
 
-| Problem | First check |
+| Issue | Recommended Solution |
 |---|---|
-| Utang customer is unclear | Use **Select the borrower**, confirm the highlighted name shows ✓. |
-| No open shift | Open a shift manually, and save Cash Count before Z-Read next time. |
-| Cash does not match | Check starting float, cash payments, refunds, expenses, and cash movements. |
-| Receipt did not print | Check paper, power, Windows driver, selected printer, width, and Test Print. |
-| Update was interrupted | Restore internet and retry — do not delete store data. |
-| Software Update says "Unable to check" | Verify the PC has internet. Open a browser and check any website. Wait 30 seconds and try again. |
+| **Utang button disabled** | Ensure a customer is selected first under *Select the borrower* until the `✓` badge appears. |
+| **Printer not printing** | Check power and USB connection, verify printer selection in **Settings → Receipt**, and run a **Test Print**. |
+| **Cash discrepancy** | Review starting drawer float, logged cash sales, recorded expenses, refunds, and Cash Count breakdown. |
+| **Unit Cost validation error** | Restock Unit Cost requires whole peso amounts (e.g. ₱5, ₱10, ₱25 — no centavos like .10 or .50). |
+| **Update check failed** | Confirm internet connection, wait 30 seconds, and click *Check for Updates* again. |
 
-When reporting a problem, include: version (v1.0.18), Setup or Portable edition, exact error message, and steps to reproduce. Remove customer names from screenshots. → [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues)
+When reporting issues on [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues), please specify:
+* App version (e.g., `v1.0.20`)
+* Edition (Setup or Portable)
+* Brief description and screenshot (please blur any sensitive customer names)
 
 ---
 
-## 🧑‍💻 Development
+## 🧑‍💻 Technical Stack & Development
 
-TINDA POS uses **Electron · React · TypeScript · SQLite · Tailwind CSS · Zustand**.
+TINDA POS is built with modern desktop and web technologies:
+* **Framework:** Electron & Vite
+* **Frontend:** React 19, TypeScript, Tailwind CSS, Lucide Icons, Zustand
+* **Database:** SQLite with `better-sqlite3` (WAL mode enabled)
+* **Testing:** Vitest (268/268 passing tests across 40 test suites)
 
 ```bash
+# Clone and run locally
 cd source
 npm install
-npm run dev          # development with hot-reload
-npm run typecheck    # TypeScript check
-npm run lint         # ESLint
-npm test             # Vitest (247 tests)
-npm run build        # production build
-```
 
-See [`docs/RELEASE-WORKFLOW.md`](docs/RELEASE-WORKFLOW.md) for the full release and QA process.
+# Start development environment
+npm run dev
+
+# Run quality & verification gates
+npm run typecheck    # TypeScript verification (0 errors)
+npm run lint         # ESLint code quality
+npm test             # Vitest test suite (268/268 passing)
+npm run build        # Production bundle
+```
 
 ---
 
 ## 📄 License
 
 **Proprietary.** Free for personal and small-business use.  
-Do not redistribute or sell without permission.
+Unauthorized resale, commercial rebranding, or redistribution without permission is strictly prohibited.
 
 ---
 
 <div align="center">
 
-Made with ❤️ for Philippine sari-sari stores and small businesses.
+Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[Download v1.0.18](https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.18)** · **[User Manual](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.18/TindaPOS-User-Guide.pdf)** · **[Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.20 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-Setup-1.0.20.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.20/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
