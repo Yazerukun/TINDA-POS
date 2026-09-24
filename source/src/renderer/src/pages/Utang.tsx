@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check } from 'lucide-react'
-import type { Customer, CreditLedgerEntry } from '@shared/types'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer } from 'lucide-react'
+import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
@@ -294,6 +294,120 @@ export function Utang(): React.JSX.Element {
   )
 }
 
+// ─── Ledger Entry Row with expandable items for CREDIT_SALE ─────────────────
+
+function LedgerEntryRow({ entry }: { entry: CreditLedgerEntry }): React.JSX.Element {
+  const [expanded, setExpanded] = useState(false)
+  const [sale, setSale] = useState<Sale | null>(null)
+  const [loadingItems, setLoadingItems] = useState(false)
+
+  const isCreditSale = entry.entry_type === 'CREDIT_SALE' && entry.reference_id != null
+
+  const toggleItems = async () => {
+    if (!isCreditSale) return
+    if (!expanded && !sale) {
+      setLoadingItems(true)
+      try {
+        const s = await window.api.transactions.get(entry.reference_id!)
+        setSale(s)
+      } catch {
+        toastError('Failed to load items')
+      } finally {
+        setLoadingItems(false)
+      }
+    }
+    setExpanded((v) => !v)
+  }
+
+  const handlePrint = async () => {
+    if (!entry.reference_id) return
+    try {
+      await window.api.printer.printReceipt(entry.reference_id)
+      toastSuccess('Receipt sent to printer')
+    } catch (e) {
+      toastError('Print failed', String((e as Error)?.message || e))
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-ink-line text-sm overflow-hidden">
+      {/* Main row */}
+      <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex-1 min-w-0">
+          <p className="font-medium capitalize text-slate-200">
+            {entry.entry_type.replace(/_/g, ' ').toLowerCase()}
+          </p>
+          <p className="text-xs text-slate-500">{shortDateTime(entry.created_at)}</p>
+          {entry.notes && !isCreditSale && (
+            <p className="text-xs text-slate-500 truncate mt-0.5">{entry.notes}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 ml-3 shrink-0">
+          <span className={`font-bold ${entry.amount_c >= 0 ? 'text-danger-400' : 'text-emerald-400'}`}>
+            {entry.amount_c >= 0 ? '+' : ''}{money(entry.amount_c)}
+          </span>
+          {isCreditSale && (
+            <button
+              onClick={() => void toggleItems()}
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-brand-400 hover:text-brand-300 hover:bg-brand-500/10 transition-colors"
+              title="View items taken on credit"
+            >
+              <Package className="h-3 w-3" />
+              {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded items panel */}
+      {isCreditSale && expanded && (
+        <div className="border-t border-ink-line bg-ink-950 px-3 py-2">
+          {loadingItems ? (
+            <p className="text-xs text-slate-500 py-1">Loading items…</p>
+          ) : sale ? (
+            <>
+              <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">Items Taken on Credit</p>
+              <div className="space-y-1">
+                {sale.items.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between text-xs">
+                    <span className="text-slate-300 truncate flex-1 mr-2">
+                      {item.product_name}
+                      <span className="text-slate-500 ml-1">({item.unit_name})</span>
+                    </span>
+                    <span className="text-slate-400 shrink-0">
+                      {item.qty} × {money(item.unit_price_c)}
+                    </span>
+                    <span className="text-slate-200 font-mono font-semibold ml-3 shrink-0">
+                      {money(item.subtotal_c)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 pt-1.5 border-t border-ink-line flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-300">Total on Credit</span>
+                  <span className="text-xs font-black font-mono text-amber-400">{money(sale.total_c)}</span>
+                </div>
+                <button
+                  onClick={() => void handlePrint()}
+                  className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-ink-800 transition-colors"
+                  title="Print receipt"
+                >
+                  <Printer className="h-3 w-3" /> Print Receipt
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-slate-500 py-1">No item data available.</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Ledger Modal ────────────────────────────────────────────────────────────
+
 function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer; entries: CreditLedgerEntry[]; onClose: () => void; onPay: () => void }): React.JSX.Element {
   return (
     <Modal open onClose={onClose} title={customer.full_name} maxWidth="max-w-lg" footer={
@@ -307,18 +421,14 @@ function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer
       <div className="max-h-80 space-y-1 overflow-y-auto">
         {entries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
         {entries.map((e) => (
-          <div key={e.id} className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2 text-sm">
-            <div>
-              <p className="font-medium capitalize text-slate-200">{e.entry_type.replace(/_/g, ' ').toLowerCase()}</p>
-              <p className="text-xs text-slate-500">{shortDateTime(e.created_at)}</p>
-            </div>
-            <span className={`font-bold ${e.amount_c >= 0 ? 'text-danger-400' : 'text-emerald-400'}`}>{e.amount_c >= 0 ? '+' : ''}{money(e.amount_c)}</span>
-          </div>
+          <LedgerEntryRow key={e.id} entry={e} />
         ))}
       </div>
     </Modal>
   )
 }
+
+// ─── Credit Action Modal ─────────────────────────────────────────────────────
 
 function CreditActionModal({ action, onClose, onDone }: { action: { type: 'PAY' | 'ADJUST' | 'OVERLIMIT'; customer: Customer }; onClose: () => void; onDone: () => void }): React.JSX.Element {
   const [amount, setAmount] = useState('')
