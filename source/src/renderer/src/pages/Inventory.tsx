@@ -146,7 +146,7 @@ export function Inventory(): React.JSX.Element {
         actions={<div className="flex flex-wrap gap-2">
           <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
           <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
-          <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import CSV</button>
+          <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
@@ -350,17 +350,205 @@ function StockReceivingView({ onClose }: { onClose: () => void }): React.JSX.Ele
 }
 
 function CsvImportModal({ onDone, onClose }: { onDone: () => void; onClose: () => void }): React.JSX.Element {
-  const [text, setText] = useState(''); const [preview, setPreview] = useState<Awaited<ReturnType<typeof window.api.products.previewCsv>> | null>(null); const [strategy, setStrategy] = useState<'SKIP'|'UPDATE'>('SKIP'); const [busy, setBusy] = useState(false)
-  const choose = async (file?: File) => { if (!file) return; const content = await file.text(); setText(content); try { setPreview(await window.api.products.previewCsv(content)) } catch (e) { setPreview(null); toastError('CSV validation failed', String((e as Error).message || e)) } }
-  const download = async () => { const content = await window.api.products.csvTemplate(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type:'text/csv'})); a.download='TINDA-POS-product-import-template.csv'; a.click(); URL.revokeObjectURL(a.href) }
-  const run = async () => { setBusy(true); try { const r = await window.api.products.importCsv(text, strategy); toastSuccess('CSV import complete', `${r.created} created · ${r.updated} updated · ${r.skipped} skipped`); onDone() } catch(e) { toastError('Import failed', String((e as Error).message || e)) } finally { setBusy(false) } }
-  return <Modal open onClose={onClose} title="Import Products from CSV" maxWidth="max-w-4xl" footer={<><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" disabled={!preview || preview.invalid>0 || busy} onClick={() => void run()}>Import Products</button></>}>
-    <div className="space-y-4"><div className="flex gap-2"><button className="btn-ghost flex gap-2" onClick={() => void download()}><Download className="h-4 w-4"/>Download Template</button><label className="btn-primary cursor-pointer">Select CSV<input className="hidden" type="file" accept=".csv,text/csv" onChange={e => void choose(e.target.files?.[0])}/></label></div>
-    {preview && <><div className="grid grid-cols-4 gap-2">{[['Total Rows',preview.total],['Valid Rows',preview.valid],['Invalid Rows',preview.invalid],['Duplicates',preview.duplicates]].map(([a,b])=><div className="card p-3" key={String(a)}><p className="text-xs text-slate-500">{a}</p><p className="text-xl font-bold">{b}</p></div>)}</div>
-    {preview.duplicates>0 && <div><label className="label">Existing SKU/barcode</label><select className="input" value={strategy} onChange={e=>setStrategy(e.target.value as 'SKIP'|'UPDATE')}><option value="SKIP">Skip Existing</option><option value="UPDATE">Update Existing</option></select></div>}
-    <div className="max-h-72 overflow-auto card"><table className="table"><thead><tr><th className="w-[12%] text-center align-middle">Row</th><th className="w-[38%] text-center align-middle">Product</th><th className="w-[20%] text-center align-middle">Status</th><th className="w-[30%] text-center align-middle">Reason</th></tr></thead><tbody>{preview.rows.map(r=><tr key={r.row_number}><td className="w-[12%] text-center align-middle">{r.row_number}</td><td className="w-[38%] text-center align-middle truncate">{r.product_name || '—'}</td><td className="w-[20%] text-center align-middle">{!r.valid?'Invalid':r.duplicate?'Duplicate':'Valid'}</td><td className="w-[30%] text-center align-middle text-danger-400">{r.reasons.join('; ') || '—'}</td></tr>)}</tbody></table></div></>}
-    {!preview && <p className="text-sm text-slate-400">Download the template, fill it in, then select the CSV to preview and validate every row before importing.</p>}</div>
-  </Modal>
+  const [text, setText] = useState('')
+  const [mode, setMode] = useState<'CSV' | 'SIMPLE_POS'>('CSV')
+  const [preview, setPreview] = useState<{
+    rows: Array<Record<string, unknown> & { row_number: number; product_name: string; sku?: string; category?: string; selling_price?: string; stock?: string; base_unit?: string; valid: boolean; duplicate: boolean; reasons: string[] }>
+    total: number
+    valid: number
+    invalid: number
+    duplicates: number
+    categories_count?: number
+    total_stock?: number
+    total_retail_value_c?: number
+    active_count?: number
+  } | null>(null)
+  const [strategy, setStrategy] = useState<'SKIP' | 'UPDATE'>('SKIP')
+  const [busy, setBusy] = useState(false)
+
+  const choose = async (file?: File) => {
+    if (!file) return
+    const content = await file.text()
+    setText(content)
+    const isJson = file.name.toLowerCase().endsWith('.json') || content.trim().startsWith('{')
+    if (isJson) {
+      setMode('SIMPLE_POS')
+      try {
+        const p = await window.api.products.previewSimplePos(content)
+        setPreview(p)
+      } catch (e) {
+        setPreview(null)
+        toastError('Simple POS JSON validation failed', String((e as Error).message || e))
+      }
+    } else {
+      setMode('CSV')
+      try {
+        const p = await window.api.products.previewCsv(content)
+        setPreview(p)
+      } catch (e) {
+        setPreview(null)
+        toastError('CSV validation failed', String((e as Error).message || e))
+      }
+    }
+  }
+
+  const download = async () => {
+    const content = await window.api.products.csvTemplate()
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' }))
+    a.download = 'TINDA-POS-product-import-template.csv'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
+  const run = async () => {
+    setBusy(true)
+    try {
+      if (mode === 'SIMPLE_POS') {
+        const r = await window.api.products.importSimplePos(text, strategy)
+        toastSuccess('Simple POS import complete', `${r.created} created · ${r.updated} updated · ${r.skipped} skipped · ${r.total_stock} stock units loaded`)
+      } else {
+        const r = await window.api.products.importCsv(text, strategy)
+        toastSuccess('CSV import complete', `${r.created} created · ${r.updated} updated · ${r.skipped} skipped`)
+      }
+      onDone()
+    } catch (e) {
+      toastError('Import failed', String((e as Error).message || e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={mode === 'SIMPLE_POS' ? 'Import Products from Simple POS Backup' : 'Import Products (CSV / Simple POS Backup)'}
+      maxWidth="max-w-4xl"
+      footer={
+        <>
+          <button className="btn-ghost" onClick={onClose}>Cancel</button>
+          <button
+            className="btn-primary"
+            disabled={!preview || preview.invalid > 0 || busy}
+            onClick={() => void run()}
+          >
+            {busy ? 'Importing...' : 'Import Products'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <button className="btn-ghost flex gap-2" onClick={() => void download()}>
+              <Download className="h-4 w-4" />Download CSV Template
+            </button>
+            <label className="btn-primary cursor-pointer flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Select File (.csv or .json)
+              <input
+                className="hidden"
+                type="file"
+                accept=".csv,text/csv,.json,application/json"
+                onChange={(e) => void choose(e.target.files?.[0])}
+              />
+            </label>
+          </div>
+          {mode === 'SIMPLE_POS' && preview && (
+            <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
+              Simple POS Secure Format Detected
+            </span>
+          )}
+        </div>
+
+        {preview && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="card p-3">
+                <p className="text-xs text-slate-500">Total Products</p>
+                <p className="text-xl font-bold">{preview.total}</p>
+              </div>
+              <div className="card p-3">
+                <p className="text-xs text-slate-500">Valid to Import</p>
+                <p className="text-xl font-bold text-emerald-400">{preview.valid}</p>
+              </div>
+              <div className="card p-3">
+                <p className="text-xs text-slate-500">Invalid Rows</p>
+                <p className={`text-xl font-bold ${preview.invalid > 0 ? 'text-danger-400' : 'text-slate-400'}`}>{preview.invalid}</p>
+              </div>
+              <div className="card p-3">
+                <p className="text-xs text-slate-500">
+                  {mode === 'SIMPLE_POS' ? 'Opening Stock Units' : 'Duplicates'}
+                </p>
+                <p className="text-xl font-bold text-brand-400">
+                  {mode === 'SIMPLE_POS' ? `${preview.total_stock ?? 0}` : preview.duplicates}
+                </p>
+              </div>
+            </div>
+
+            {preview.duplicates > 0 && (
+              <div>
+                <label className="label">Existing SKU / Product Strategy</label>
+                <select className="input" value={strategy} onChange={(e) => setStrategy(e.target.value as 'SKIP' | 'UPDATE')}>
+                  <option value="SKIP">Skip Existing (Keep Current TINDA POS Item)</option>
+                  <option value="UPDATE">Update Existing (Overwrite Price & Stock)</option>
+                </select>
+              </div>
+            )}
+
+            <div className="max-h-72 overflow-auto card">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className="w-[10%] text-center align-middle">Row</th>
+                    <th className="w-[35%] text-center align-middle">Product</th>
+                    <th className="w-[15%] text-center align-middle">SKU</th>
+                    <th className="w-[15%] text-center align-middle">Price / Stock</th>
+                    <th className="w-[10%] text-center align-middle">Status</th>
+                    <th className="w-[15%] text-center align-middle">Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.rows.map((r) => (
+                    <tr key={r.row_number}>
+                      <td className="w-[10%] text-center align-middle text-xs">{r.row_number}</td>
+                      <td className="w-[35%] align-middle truncate font-medium">{r.product_name || '—'}</td>
+                      <td className="w-[15%] text-center align-middle text-xs text-slate-400">{r.sku || '—'}</td>
+                      <td className="w-[15%] text-center align-middle text-xs">
+                        {r.selling_price ? `₱${r.selling_price}` : '—'} {r.stock ? `· ${r.stock} ${r.base_unit || 'pcs'}` : ''}
+                      </td>
+                      <td className="w-[10%] text-center align-middle">
+                        {!r.valid ? (
+                          <span className="text-xs text-danger-400 font-semibold">Invalid</span>
+                        ) : r.duplicate ? (
+                          <span className="text-xs text-amber-400 font-semibold">Duplicate</span>
+                        ) : (
+                          <span className="text-xs text-emerald-400 font-semibold">Valid</span>
+                        )}
+                      </td>
+                      <td className="w-[15%] text-center align-middle text-xs text-danger-400">
+                        {r.reasons?.join('; ') || '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {!preview && (
+          <div className="rounded-lg border border-dashed border-slate-700 p-6 text-center">
+            <p className="text-sm font-medium text-slate-300">Choose a file to preview before importing</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Supports standard TINDA POS <b>.csv</b> spreadsheets and Simple POS <b>.json</b> secure backup files.
+            </p>
+          </div>
+        )}
+      </div>
+    </Modal>
+  )
 }
 
 function RestockModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {

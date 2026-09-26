@@ -26,6 +26,7 @@ import * as exportSvc from '../services/export'
 import * as dataManagementSvc from '../services/dataManagement'
 import * as printingSvc from '../services/printing'
 import * as importSvc from '../services/productImport'
+import * as simplePosSvc from '../services/simplePosImport'
 import * as readSvc from '../services/readReports'
 import { importWindowsBackup, exportWindowsBackup } from '../services/tindaBackupWindows'
 import * as cashCountRepo from '../repositories/cashCounts'
@@ -192,6 +193,16 @@ handle('products:previewCsv', (_e: IpcMainInvokeEvent, text: string) => { sessio
 handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {
   sessionSvc.requirePermission('products:manage')
   const result = importSvc.importCsv(db(), text, strategy, user().id)
+  emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
+  return result
+})
+handle('products:previewSimplePos', (_e: IpcMainInvokeEvent, text: string) => {
+  sessionSvc.requirePermission('products:manage')
+  return simplePosSvc.previewSimplePos(db(), text)
+})
+handle('products:importSimplePos', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {
+  sessionSvc.requirePermission('products:manage')
+  const result = simplePosSvc.importSimplePos(db(), text, strategy, user().id)
   emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
   return result
 })
