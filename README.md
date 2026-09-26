@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.27-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.29-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-292%2F292_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-297%2F297_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,23 +16,29 @@
 
 <br />
 
-[⬇️ Download v1.0.27 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Portable-1.0.27.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.29 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.29/TindaPOS-Setup-1.0.29.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.29/TindaPOS-Portable-1.0.29.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.29/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.27 (TINDA BANTAY: Complete 172-Item Market Catalog)
+## ✨ What's New in v1.0.29 (Simple POS Backup Import & Non-Destructive Migration)
 
-> **TINDA BANTAY: Complete 172-Item Market Price Catalog, Built-in Offline Seed & Scrapling v0.4.15**
+> **Zero Setup Migration: Direct Simple POS JSON Ingest, Pre-Import Safety Snapshot & Complete Auth Isolation**
 
-- 📦 **Complete 172-Item Market Catalog** — fully populated and verified Philippine grocery and sari-sari store commodity price catalog across all 12 major categories (Noodles, Canned Fish, Canned Meat, Dairy, Coffee & Beverages, Cooking Oil & Condiments, Seasonings, Snacks & Biscuits, Personal Care, Household Cleaning, Rice & Sugar, Liquor & Tobacco).
-- 🔌 **Built-in 100% Offline Seed** — all 172 items are compiled directly into the application. Even on fresh offline installations with zero internet, the store owner immediately has complete price references out-of-the-box.
-- 🦅 **TINDA BANTAY Live Market Feed** — automatically connects to the verified Philippine grocery commodity price feed (`data/price-catalog.json`) via HTTPS whenever internet connectivity is detected.
-- ⚡ **Auto Live-Sync on Open & Reconnect** — opening the **Price Guide** modal while connected to the internet triggers a silent background sync that immediately updates prices live on the screen without requiring a manual click on "Sync".
-- 🟢 **Pulsing LIVE Indicator Badge** — clear real-time feedback with a pulsing green LED indicator (🟢 **LIVE · Bantay Presyo Online**) when connected, and neutral ⚪ **OFFLINE** fallback when disconnected.
-- 🤖 **TINDA SCOUT Harvester** — powered by the latest **`d4vinci/Scrapling`** (v0.4.15) for stealthy, anti-bot-bypassing price harvesting from major Philippine retail supermarket chains and official DTI SRP advisories.
-- 🛡️ **Store Owner Authority Guaranteed** — reference prices are strictly advisory. Store owner selling prices and costs are **never** automatically modified or overwritten.
+- 📥 **Direct Simple POS JSON Backup Ingest** — seamlessly migrate existing inventory and catalog from third-party Simple POS exports (`simple_pos_secure_*.json`) directly into TINDA POS in seconds without re-encoding items manually.
+- 🗃️ **Unified Import Modal (CSV & Simple POS Backup)** — the Inventory import tool now supports both standard `.csv` spreadsheets and `.json` secure backup files with auto-format detection and live status indicators.
+- 🛡️ **Absolute User & Auth Lockout Protection** — third-party `users` arrays are strictly ignored and quarantined, guaranteeing that existing store owner and cashier credentials, PINs, and sessions are never altered, overwritten, or corrupted.
+- 🔢 **Deterministic SKU Generation** — automatically generates structured, collision-free `SP-0001`+ SKUs mapped from original numerical IDs to fulfill SQLite uniqueness constraints.
+- 🧹 **Robust Data Sanitization** — clamps negative stocks to zero, rounds fractional kilogram quantities to whole base integer units, and preserves multiple selling units.
+- 💾 **Pre-Import Safety Snapshot Backup** — auto-triggers a checkpointed SQLite database snapshot before batch import execution with 100% ACID transaction rollback on any fatal failure.
+
+---
+
+## ✨ What's New in v1.0.28 (Utang Credit Sale Item-Level Breakdown & Reprint)
+
+- 📦 **Expandable Credit Sale Breakdown** — tap the package icon on any CREDIT_SALE entry in the Utang ledger to view item-by-item breakdown (product name, quantity × unit price, and subtotal).
+- 🖨️ **Direct Utang Receipt Reprint** — reprint receipts directly from the Utang ledger with one click without navigating to the Transactions history.
 
 <details>
 <summary>📋 <b>Full Version History</b></summary>
@@ -41,6 +47,8 @@
 
 | Version | Highlights |
 |---|---|
+| **v1.0.29** | Simple POS JSON backup ingest, unified Import Products / Backup modal, auto-SKU generation, pre-import safety backup, auth isolation |
+| **v1.0.28** | Utang credit sale item-level breakdown (📦 package icon), direct receipt reprint from Utang ledger |
 | **v1.0.27** | Complete 172-item market catalog across 12 categories, built-in offline seed, real-time live feed, Scrapling v0.4.15 harvester |
 | **v1.0.26** | TINDA BANTAY real-time online market feed, auto live-sync on open/reconnect, pulsing green LIVE indicator, TINDA SCOUT Scrapling harvester |
 | **v1.0.25** | Price Guide modal stability fix, auto-seed catalog for empty databases, offline-first online price guide & market price reference |
