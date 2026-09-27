@@ -1,0 +1,8 @@
+version: 1.0.4
+files:
+  - url: TindaPOS-Setup-1.0.4.exe
+    sha512: 7Ej90CjBpD4bLbhaYyeYUTh3y7DCNnpbTVZZYCbEobUdeEnP1un12poZ0jQJJGu2yf82ouIlnxmEmdXNHslYhw==
+    size: 109477992
+path: TindaPOS-Setup-1.0.4.exe
+sha512: 7Ej90CjBpD4bLbhaYyeYUTh3y7DCNnpbTVZZYCbEobUdeEnP1un12poZ0jQJJGu2yf82ouIlnxmEmdXNHslYhw==
+releaseDate: '2026-09-08T13:42:41.266Z'

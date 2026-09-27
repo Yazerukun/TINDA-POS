@@ -52,13 +52,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28/v1.0.29 to v1.0.30 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28/v1.0.29/v1.0.30 to v1.0.31 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.30.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.30.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.31.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.31.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.30.exe` (Zero-install portable runtime)
-  - `TindaPOS-User-Guide.pdf` (29-page official documentation)
+  - `TindaPOS-Portable-1.0.31.exe` (Zero-install portable runtime)
+  - `TindaPOS-User-Guide.pdf` (30-page official documentation)
 
 ---
 
@@ -80,14 +80,17 @@
 
 ---
 
-## 9. Universal Hardware Barcode Scanner Engine (v1.0.30+)
-* **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic Chinese USB/2.4G scanners) operate as standard **USB HID Keyboard Wedges**. They require zero driver installation on Windows 10/11.
-* **Global Keystroke Burst Interceptor (`barcodeScanner.ts`):**
-  - **Burst Detection Threshold:** Characters received with inter-character delays under `50ms` are identified as hardware scanner input rather than manual keyboard entry.
-  - **Focus-Independent Scanning:** Intercepts scans globally across the POS window without requiring cashiers to manually focus or click inside the search input box.
-  - **Immediate Cart Addition:** Validated barcodes query `products` and `product_units` for exact matches, instantly incrementing cart quantity and emitting auditory/visual toast confirmations (`Scanned: [Product Name]`).
-  - **Out-of-Stock Protection:** Blocks cart insertion with distinct alert toasts if scanned item sellable stock is 0.
-  - **Visual Indicator:** Persistent `🟢 Scanner Ready` badge displayed in the POS terminal header to provide immediate cashier feedback.
+## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30 & v1.0.31)
+* **Hardware USB Scanner Engine (Preserved & Parallel):**
+  - **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic USB/2.4G HID keyboard wedges) run with zero driver installation on Windows 10/11.
+  - **Global Burst Interceptor (`barcodeScanner.ts`):** Sub-50ms keystroke burst detection intercepts scans anywhere in the POS window without clicking into the search box.
+  - **Visual HUD Status:** Continuous `🟢 Scanner Ready` indicator in the POS header.
+* **Built-in Camera & Smartphone Barcode Scanner (`CameraScannerModal.tsx`, v1.0.31+):**
+  - **Pure-Client Decoding (`@zxing/library`):** Offline video frame decoding for EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, and QR Code with zero network calls.
+  - **Multi-Device Support:** Dynamic camera selector supports laptop webcams, external USB cameras, and smartphones connected via wireless webcam drivers (Iriun Webcam, DroidCam, or Android 14 USB Webcam).
+  - **Web Audio Feedback:** Generates synthesized 920Hz audio beeps on successful scan without external asset dependencies.
+  - **Smart Debounce:** 1.5s duplicate protection prevents runaway cart insertions while holding products steady.
+  - **Integrated Phone Guide:** Built-in modal instructions in Bisaya/English guide store owners through zero-cost smartphone camera setup.
 
 ---
 
