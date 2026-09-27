@@ -270,10 +270,10 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 p-3.5">
               <h4 className="flex items-center gap-2 font-semibold text-brand-300 text-sm">
                 <Smartphone className="h-4 w-4" />
-                Gamita ang Imong Cellphone isip Barcode Scanner (Walay Gastos!)
+                Use Your Smartphone as a Barcode Scanner (Zero Cost)
               </h4>
               <p className="mt-1 text-slate-300">
-                Dili na kinahanglan mopalit og mahal nga scanner hardware. Pwede nimong gamiton ang camera sa imong Android o iPhone sa duha ka libre ug sayon nga paagi:
+                No need to purchase an expensive dedicated barcode scanner. You can use your Android or iPhone camera in two simple, free ways:
               </p>
             </div>
 
@@ -282,12 +282,12 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 <span className="inline-block rounded bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300">
                   OPTION A · WIRELESS / USB WEBCAM (RECOMMENDED)
                 </span>
-                <p className="mt-1.5 font-semibold text-white">Gamita ang Cellphone Camera Direkta sa Live Scanner</p>
+                <p className="mt-1.5 font-semibold text-white">Stream Phone Camera Directly to Live Scanner</p>
                 <ol className="mt-2 list-decimal space-y-1 pl-4 text-slate-400">
-                  <li>I-download ang libreng app nga <strong>Iriun Webcam</strong> o <strong>DroidCam</strong> sa imong cellphone gikan sa Google Play Store o Apple App Store.</li>
-                  <li>I-install usab ang libreng Iriun o DroidCam driver sa imong Windows PC.</li>
-                  <li>I-konek ang cellphone ug PC sa samang Wi-Fi (o isaksak via USB cable).</li>
-                  <li>Balik sa <strong>Live Camera Scanner</strong> tab sa ibabaw, ug pilia ang <em>"Iriun Webcam"</em> o <em>"DroidCam Source"</em> sa dropdown. Makita dayon nimo ang camera sa phone!</li>
+                  <li>Download the free <strong>Iriun Webcam</strong> or <strong>DroidCam</strong> app on your smartphone from Google Play Store or Apple App Store.</li>
+                  <li>Install the corresponding free Iriun or DroidCam Windows driver on your computer.</li>
+                  <li>Connect your phone and PC to the same Wi-Fi network (or connect via USB cable).</li>
+                  <li>Switch back to the <strong>Live Camera Scanner</strong> tab above, and select <em>"Iriun Webcam"</em> or <em>"DroidCam Source"</em> from the dropdown. Your phone's camera feed will appear instantly!</li>
                 </ol>
               </div>
 
@@ -295,11 +295,11 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 <span className="inline-block rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                   OPTION B · WI-FI KEYBOARD SCANNER APP
                 </span>
-                <p className="mt-1.5 font-semibold text-white">Gamita ang "Barcode to PC" Wi-Fi Scanner App</p>
+                <p className="mt-1.5 font-semibold text-white">Use "Barcode to PC" Wi-Fi Scanner App</p>
                 <ol className="mt-2 list-decimal space-y-1 pl-4 text-slate-400">
-                  <li>I-download ang libreng <strong>Barcode to PC: Wi-Fi scanner</strong> sa imong cellphone.</li>
-                  <li>I-konek ang phone sa imong PC pinaagi sa Wi-Fi.</li>
-                  <li>Matag scan nimo sa cellphone, kusa kining ipadala sa TINDA POS pinaagi sa atong built-in hardware burst engine — <strong>awtomatiko kining mosulod sa cart bisan dili bukas ang camera modal!</strong></li>
+                  <li>Download the free <strong>Barcode to PC: Wi-Fi scanner</strong> app on your phone.</li>
+                  <li>Pair your phone with your PC over your local Wi-Fi network.</li>
+                  <li>Every barcode scanned on your phone is automatically transmitted to TINDA POS via our hardware keystroke burst engine — <strong>items are added to your cart instantly even without opening the camera modal!</strong></li>
                 </ol>
               </div>
             </div>
