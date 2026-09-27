@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.35 to v1.0.36 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.36 to v1.0.37 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.36.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.36.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.37.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.37.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.36.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.37.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
@@ -223,8 +223,65 @@
 * **Multi-Input Hardware Concurrency:**
   - Physical USB handheld scanners (via hardware keyboard wedge bursts), docked counter cameras (via live ZXing video streams), and wireless mobile devices (via encrypted local WebSocket packets) feed into the unified POS cart dispatcher simultaneously with zero collisions or mode-switching delays.
 
+---
 
+## 15. Cryptographic Machine-Locked Licensing & Anti-Theft Architecture (v1.0.37)
+* **Objective & Commercial Protection Invariants:**
+  - **Anti-Theft & Piracy Defense:** Prevents unauthorized redistribution, key sharing across multiple store PCs, and repackaged commercial resale on Philippine tech groups (PHCorner, Facebook) without the developer earning.
+  - **100% Offline-First Cryptographic Licensing:** Store computers operate in isolated offline environments without internet access. License validation, activation, and continuous operational checks run completely offline with mathematical certainty.
+* **Hardware-Anchored Machine Fingerprint (`licenseService.ts`):**
+  - **Multi-Anchor Entropy Extraction:**
+    - **Windows:** Motherboard UUID (`wmic csproduct get uuid`), Baseboard Serial Number (`wmic baseboard get serialnumber`), Processor ID (`wmic cpu get processorid`), and Windows Cryptography Machine GUID (`HKLM\SOFTWARE\Microsoft\Cryptography\MachineGuid`).
+    - **Linux:** `/etc/machine-id` or `/sys/class/dmi/id/product_uuid`.
+    - **Physical Layer Fallback:** First non-virtual physical network interface MAC address combined with CPU architecture and host machine name.
+  - **Format Normalization:** Components are combined with hardware salt and hashed via SHA-256 into a clean 16-hex formatted identifier: `TNDA-XXXX-XXXX-XXXX-XXXX`.
+* **Cryptographic HMAC Key Derivation & Tamper Resistance:**
+  - **Obfuscated Pepper Key:** Cryptographic secret pepper bytes are XOR-masked and assembled at runtime, defeating automated string scrapers targeting extracted Electron ASAR bundles.
+  - **Asymmetric Signature Protocol:**
+    - Payload: `TINDA_AUTH_V1::<MACHINE_ID>::VIP_PRO`.
+    - Algorithm: HMAC-SHA256 with 12-hex signature block and 4-hex checksum: `VIP-XXXX-XXXX-XXXX-XXXX`.
+    - **Timing-Safe Equality:** Evaluated via `crypto.timingSafeEqual` to eliminate timing side-channel attacks.
+    - **Hardware-Lock Enforcement:** A license key generated for Machine A will mathematically fail on Machine B.
+  - **File Tamper Guard:** Local license persistence (`tinda_license.json`) embeds an HMAC tamper hash covering `machineId`, `licenseKey`, `activatedAt`, and `customerName`. Any manual modification or file copying reverts the system instantly to Free Community Edition.
+* **Private Developer Keygen Tool (`tools/keygen.mjs`):**
+  - Strictly maintained in the private source repository (`Yazerukun/TINDA-POS-Source`) and forbidden from public distribution per Rule #6.
+  - Generates valid VIP keys from a customer's Machine ID: `node tools/keygen.mjs generate --machine <MACHINE_ID> [--name <NAME>]`.
+  - Also provides instant offline verification: `node tools/keygen.mjs verify --machine <MACHINE_ID> --key <VIP_KEY>`.
+* **Commercialization & Activation Workflow:**
+  - **One-Time Lifetime Fee:** ₱500 via Maya (**0991 225 5156**, Dev Francis / Ian).
+  - **Customer Contact Channel:** Official Facebook profile (**[https://www.facebook.com/Ukauru](https://www.facebook.com/Ukauru)**) for submitting Machine ID and payment proof.
+* **Balanced Centered UI & Sliding Animation (`Settings.tsx`, `VipUpgradeBanner.tsx`, `VipUpgradeModal.tsx`):**
+  - **Centered Layout:** Settings content wrapped in `max-w-4xl mx-auto` with centered tab navigation for visual symmetry across all display resolutions.
+  - **Interactive Sliding Banner:** Smooth CSS transition sliding upgrade banner prominently highlights VIP perks (Multi-PC LAN Hub, Paperless QR Receipts, Utang Suki Scorecard, Store Branding).
+  - **1-Click Actions:** Instant clipboard copy for Machine ID and Maya phone number, plus 1-click external browser launch to Dev Francis's Facebook profile.
+* **Feature Gate Matrix (Free Community vs ₱500 VIP Pro):**
+  - **Free Community Edition Limits (Starter-Friendly):**
+    - 50-item product catalog limit (ample for neighborhood sari-sari stores; expanding mini-groceries with 51+ items are guided to VIP Pro).
+    - Single standalone cashier counter only (Multi-PC LAN Hub locked).
+    - Thermal receipts display standard Community Edition footer watermark.
+    - Standard customer credit (utang) ledger without automated reminder generation.
+  - **VIP Pro Edition Exclusive Perks (High-Conversion Differentiators):**
+    - **Unlimited Product Inventory:** No catalog cap.
+    - **Multi-Counter LAN Hub:** Connect Counter 1 (Master) with Counter 2 / Counter 3 (Satellites) over local Wi-Fi with 1 database.
+    - **Suki Utang Trust Rating (⭐⭐⭐⭐⭐):** Real-time customer repayment trustworthiness scoring.
+    - **1-Click Polite SMS / Messenger Reminder Formatter:** Instant clipboard copy of polite Taglish/English payment reminders to recover credit 3x faster.
+    - **100% Store Custom Branding:** Full removal of developer watermark, customizable store logo, DTI/BIR permit headers, and custom receipt greetings.
+    - **Daily Loss Prevention & Cash Drawer Kupit Checker:** End-of-day cash drawer discrepancy and gross margin auditing.
 
+---
 
-
+## 16. Interactive Legal & Privacy Architecture (Privacy Policy & Terms of Service)
+* **Design Philosophy & Zero-Backdoor Transparency:**
+  - Standard enterprise and professional POS systems require transparent legal disclosures to build long-term trust with merchant owners and mitigate liability.
+  - Documents are accessible both offline via in-app dialogs and persistently within repository documentation.
+* **Dual In-App Access Points (`LegalModal.tsx`):**
+  - **Settings &rarr; About Tab:** Placed directly beneath the developer signature and Maya payment card.
+  - **VIP Upgrade Modal:** Embedded in the security guarantee footer beside the 100% Offline Cryptographic Lock badge.
+* **Component Architecture:**
+  - Modern modal with tabbed switching between **Privacy Policy** and **Terms of Service**.
+  - Accessible via smooth backdrop animation, custom scrollbar styling, and standard keyboard/click dismiss actions.
+* **Compliance & Legal Invariants:**
+  - **100% Offline Sovereignty:** Guarantees that sales receipts, cashier records, inventory valuations, and utang ledgers are never uploaded to any remote or cloud server.
+  - **Philippine Data Privacy Act (RA 10173):** Suki customer records remain strictly on the store owner's computer with full data portability and zero developer access.
+  - **Fair Usage & Anti-Piracy:** VIP Pro lifetime licenses (₱500) are non-transferable single-machine grants. Reverse-engineering, keygen cracking, and commercial rebranding are strictly prohibited.
 

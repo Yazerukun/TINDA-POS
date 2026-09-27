@@ -976,17 +976,17 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Multi-Computer & VPS Cloud Setup
 
-For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](file:///home/ian/Work/TINDA-POS-v1.0.4/docs/MULTI_PC_AND_VPS_GUIDE.md).
+For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](./MULTI_PC_AND_VPS_GUIDE.md).
 
 ## Download
 
-**TINDA POS v1.0.36** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.36>
+**TINDA POS v1.0.37** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.37>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.36.exe` — Windows installer
-- `TindaPOS-Portable-1.0.36.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.37.exe` — Windows installer
+- `TindaPOS-Portable-1.0.37.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
-- `SHA256SUMS-v1.0.36.txt` — checksums for the files above
+- `SHA256SUMS-v1.0.37.txt` — checksums for the files above
 
 The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.
