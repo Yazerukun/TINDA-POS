@@ -86,13 +86,15 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   const qrContainerRef = useRef<HTMLDivElement>(null)
   const lastScannedRef = useRef<string | null>(null)
   const lastScanTimeRef = useRef<number>(0)
+  const candidateRef = useRef<string | null>(null)
+  const candidateHitsRef = useRef<number>(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const fullCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const cropCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const scanLoopRef = useRef<number | null>(null)
 
-  // Configure ZXing reader strictly for retail formats (NO raw ITF or unconstrained Code 39)
+  // Configure ZXing reader strictly for retail linear formats (no QR or unconstrained Code 39)
   const reader = useMemo(() => {
     const hints = new Map()
     hints.set(DecodeHintType.TRY_HARDER, true)
@@ -101,8 +103,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
       BarcodeFormat.EAN_8,
       BarcodeFormat.UPC_A,
       BarcodeFormat.UPC_E,
-      BarcodeFormat.CODE_128,
-      BarcodeFormat.QR_CODE
+      BarcodeFormat.CODE_128
     ])
     const r = new MultiFormatReader()
     r.setHints(hints)
@@ -336,16 +337,28 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 reader.reset()
               }
 
-              // Handle successful scan with 1.8s duplicate debounce
+              // Require 2 consecutive frames to confirm barcode (temporal stability consensus)
               if (detectedText) {
-                const now = Date.now()
-                if (detectedText !== lastScannedRef.current || now - lastScanTimeRef.current > 1800) {
-                  lastScannedRef.current = detectedText
-                  lastScanTimeRef.current = now
-                  setLastScanned(detectedText)
-                  playBeep()
-                  onScan(detectedText)
+                if (detectedText === candidateRef.current) {
+                  candidateHitsRef.current += 1
+                } else {
+                  candidateRef.current = detectedText
+                  candidateHitsRef.current = 1
                 }
+
+                if (candidateHitsRef.current >= 2) {
+                  const now = Date.now()
+                  if (detectedText !== lastScannedRef.current || now - lastScanTimeRef.current > 3000) {
+                    lastScannedRef.current = detectedText
+                    lastScanTimeRef.current = now
+                    setLastScanned(detectedText)
+                    playBeep()
+                    onScan(detectedText)
+                  }
+                }
+              } else {
+                candidateHitsRef.current = 0
+                candidateRef.current = null
               }
             } catch {
               // Frame decoding error, continue loop

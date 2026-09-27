@@ -194,19 +194,29 @@ export function POS(): React.JSX.Element {
     }
   }, [categoryMenuOpen])
 
+  const lastScanRef = useRef<{ code: string; time: number }>({ code: '', time: 0 })
+
   const handleScan = async (scannedBarcode: string) => {
     try {
       const code = scannedBarcode.trim()
       if (!code) return
+
+      const now = Date.now()
+      // Enforce 2.5s debounce for identical barcode scans to prevent accidental duplicate cart additions
+      if (lastScanRef.current.code.toLowerCase() === code.toLowerCase() && now - lastScanRef.current.time < 2500) {
+        return
+      }
+      lastScanRef.current = { code, time: now }
+
       const res = await window.api.products.search(code, { status: 'ACTIVE', limit: 10 })
       const target = code.toLowerCase()
-      const found =
-        res.rows.find(
-          (p) =>
-            p.barcode?.toLowerCase() === target ||
-            p.sku?.toLowerCase() === target ||
-            p.units?.some((u) => u.barcode?.toLowerCase() === target)
-        ) ?? (res.rows.length > 0 ? res.rows[0] : null)
+      // Strict matching: Barcode scans MUST match exact barcode or SKU only. Never pick random name matches.
+      const found = res.rows.find(
+        (p) =>
+          p.barcode?.toLowerCase() === target ||
+          p.sku?.toLowerCase() === target ||
+          p.units?.some((u) => u.barcode?.toLowerCase() === target)
+      )
 
       if (found) {
         if (saleStock(found) < 1) {

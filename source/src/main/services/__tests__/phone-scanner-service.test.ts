@@ -78,7 +78,7 @@ describe('PhoneScannerService', () => {
   })
 
   it('accepts valid barcode scans via POST /api/scan', async () => {
-    const payload = JSON.stringify({ barcode: '4800016644800', session: 'test' })
+    const payload = JSON.stringify({ barcode: '4800016644818', session: 'test' })
 
     const response = await new Promise<string>((resolve, reject) => {
       const req = http.request(
@@ -91,7 +91,10 @@ describe('PhoneScannerService', () => {
           }
         },
         (res) => {
-          expect(res.statusCode).toBe(200)
+          if (res.statusCode !== 200) {
+            reject(new Error(`Unexpected status code: ${res.statusCode}`))
+            return
+          }
           let data = ''
           res.on('data', (c) => (data += c))
           res.on('end', () => resolve(data))
@@ -104,6 +107,6 @@ describe('PhoneScannerService', () => {
 
     const parsed = JSON.parse(response)
     expect(parsed.ok).toBe(true)
-    expect(parsed.barcode).toBe('4800016644800')
+    expect(parsed.barcode).toBe('4800016644818')
   })
 })

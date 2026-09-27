@@ -140,6 +140,18 @@ export function findBySku(db: Database.Database, sku: string): Product | undefin
   return row ? rowToProduct(db, row) : undefined
 }
 
+export function generateSku(db: Database.Database): string {
+  const maxRow = db.prepare(`SELECT MAX(id) as maxId FROM products`).get() as { maxId: number | null } | undefined
+  const nextId = (maxRow?.maxId ?? 0) + 1
+  let candidate = `SKU-${String(nextId).padStart(4, '0')}`
+  let count = 0
+  while (db.prepare(`SELECT id FROM products WHERE sku = ? COLLATE NOCASE`).get(candidate)) {
+    count++
+    candidate = `SKU-${String(nextId + count).padStart(4, '0')}`
+  }
+  return candidate
+}
+
 export function validateProductInput(db: Database.Database, input: ProductInput, excludeId?: number): void {
   if (input.expiration_mode !== undefined) validateExpiration(input.expiration_mode, input.expiration_date)
   if (!input.name || !input.name.trim()) throw new Error('Product name is required.')
@@ -149,8 +161,9 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (input.srp_c !== undefined && input.srp_c !== null && input.srp_c < 0) throw new Error('Suggested retail price cannot be negative.')
   if ((input.low_stock_threshold ?? 0) < 0) throw new Error('Low stock threshold cannot be negative.')
   const ex = excludeId ? 'AND id != ?' : ''
-  const args = excludeId ? [input.sku.trim(), excludeId] : [input.sku.trim()]
-  if (input.sku?.trim()) {
+  const trimmedSku = input.sku?.trim() || ''
+  if (trimmedSku) {
+    const args = excludeId ? [trimmedSku, excludeId] : [trimmedSku]
     const dupe = db.prepare(`SELECT id FROM products WHERE sku = ? COLLATE NOCASE ${ex}`).get(...args) as { id: number } | undefined
     if (dupe) throw new Error('Duplicate SKU.')
   }
@@ -159,7 +172,8 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
       | { id: number }
       | undefined
     if (dupe) throw new Error('Duplicate barcode.')
-    const unitDupe = db.prepare(`SELECT id FROM product_units WHERE barcode = ?`).get(input.barcode.trim()) as
+    const unitEx = excludeId ? 'AND product_id != ?' : ''
+    const unitDupe = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(input.barcode.trim(), ...(excludeId ? [excludeId] : [])) as
       | { id: number }
       | undefined
     if (unitDupe) throw new Error('Duplicate barcode on a product unit.')
@@ -186,6 +200,9 @@ function hasSrpColumn(db: Database.Database): boolean {
 }
 
 export function createProduct(db: Database.Database, input: ProductInput, userId: number): Product {
+  if (!input.sku || !input.sku.trim()) {
+    input.sku = generateSku(db)
+  }
   validateProductInput(db, input)
   const threshold = input.low_stock_threshold ?? defaultLowStock(db)
   const hasSrp = hasSrpColumn(db)
@@ -263,7 +280,7 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
   const merged: ProductInput = {
     category_id: input.category_id !== undefined ? input.category_id : cur.category_id,
     name: input.name ?? cur.name,
-    sku: input.sku ?? cur.sku,
+    sku: input.sku && input.sku.trim() ? input.sku.trim() : (cur.sku || generateSku(db)),
     barcode: input.barcode !== undefined ? input.barcode : cur.barcode,
     description: input.description !== undefined ? input.description : cur.description,
     base_unit: input.base_unit ?? cur.base_unit,

@@ -258,6 +258,10 @@ function generateMobileHtml(): string {
       pointer-events: none;
       z-index: 10;
       box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55);
+      transition: box-shadow 0.25s ease;
+    }
+    .reticle.scanned {
+      box-shadow: 0 0 0 4000px rgba(16, 185, 129, 0.45) !important;
     }
     .reticle::before, .reticle::after,
     .reticle-corner-bl, .reticle-corner-br {
@@ -536,13 +540,18 @@ function generateMobileHtml(): string {
     let facingMode = 'environment';
     let lastScanned = '';
     let lastScanTime = 0;
+    let candidateCode = '';
+    let candidateHits = 0;
     let isScanning = false;
     let scanCanvas = document.createElement('canvas');
 
-    // Official GS1 Modulo-10 Checksum Validator
+    // Official GS1 Modulo-10 Checksum Validator & Strict Format Verifier
     function isValidBarcode(text) {
       if (!text) return false;
       const clean = text.trim();
+      if (clean.length < 4 || clean.length > 32) return false;
+
+      // Retail linear barcodes with GS1 check digit (EAN-8, UPC-E/A, EAN-13, ITF-14)
       if (/^\\d{8}$|^\\d{12}$|^\\d{13}$|^\\d{14}$/.test(clean)) {
         let sum = 0;
         let multiplier = 3;
@@ -553,7 +562,22 @@ function generateMobileHtml(): string {
         const check = (10 - (sum % 10)) % 10;
         return check === (clean.charCodeAt(clean.length - 1) - 48);
       }
-      return clean.length >= 3;
+
+      // Pure digits 4-32 chars
+      if (/^\\d{4,32}$/.test(clean)) return true;
+
+      // Alphanumeric barcodes (Code 128, Code 39, custom alphanumeric SKU)
+      if (/^[A-Za-z0-9_-]{4,32}$/.test(clean)) return true;
+
+      return false;
+    }
+
+    function triggerScanVisual() {
+      const ret = document.querySelector('.reticle');
+      if (ret) {
+        ret.classList.add('scanned');
+        setTimeout(() => ret.classList.remove('scanned'), 600);
+      }
     }
 
     function playBeep() {
@@ -576,6 +600,7 @@ function generateMobileHtml(): string {
     function showToast(msg, type = 'success') {
       if (type === 'success') {
         if (navigator.vibrate) navigator.vibrate(80);
+        triggerScanVisual();
         playBeep();
       }
       toast.textContent = msg;
@@ -587,7 +612,7 @@ function generateMobileHtml(): string {
 
     async function sendScan(code) {
       const trimmed = code.trim();
-      if (!trimmed) return;
+      if (!trimmed || !isValidBarcode(trimmed)) return;
       showToast('✅ Scanned: ' + trimmed, 'success');
       try {
         await fetch('/api/scan', {
@@ -602,16 +627,20 @@ function generateMobileHtml(): string {
       e.preventDefault();
       const code = manualInput.value.trim();
       if (!code) return;
+      if (!isValidBarcode(code)) {
+        showToast('⚠️ Invalid barcode format (min 4 characters)', 'error');
+        return;
+      }
       sendScan(code);
       manualInput.value = '';
     });
 
-    // Native BarcodeDetector or ZXing Fallback
+    // Native BarcodeDetector or ZXing Fallback - Linear Retail Formats Only
     let nativeDetector = null;
     if ('BarcodeDetector' in window) {
       try {
         nativeDetector = new BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code']
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
         });
       } catch (e) { nativeDetector = null; }
     }
@@ -626,8 +655,7 @@ function generateMobileHtml(): string {
           ZXing.BarcodeFormat.EAN_8,
           ZXing.BarcodeFormat.UPC_A,
           ZXing.BarcodeFormat.UPC_E,
-          ZXing.BarcodeFormat.CODE_128,
-          ZXing.BarcodeFormat.QR_CODE
+          ZXing.BarcodeFormat.CODE_128
         ]);
         zxingReader = new ZXing.MultiFormatReader();
         zxingReader.setHints(hints);
@@ -777,12 +805,24 @@ function generateMobileHtml(): string {
           ctx.drawImage(video, cropX, cropY, rawW, rawH, 0, 0, targetW, targetH);
           const detected = await decodeCanvas(scanCanvas);
           if (detected) {
-            const now = Date.now();
-            if (detected !== lastScanned || now - lastScanTime > 1800) {
-              lastScanned = detected;
-              lastScanTime = now;
-              sendScan(detected);
+            if (detected === candidateCode) {
+              candidateHits++;
+            } else {
+              candidateCode = detected;
+              candidateHits = 1;
             }
+
+            if (candidateHits >= 2) {
+              const now = Date.now();
+              if (detected !== lastScanned || now - lastScanTime > 3500) {
+                lastScanned = detected;
+                lastScanTime = now;
+                sendScan(detected);
+              }
+            }
+          } else {
+            candidateHits = 0;
+            candidateCode = '';
           }
         }
       }
@@ -833,6 +873,32 @@ function generateMobileHtml(): string {
   </script>
 </body>
 </html>`
+}
+
+function isValidBarcodeServer(text: string): boolean {
+  if (!text) return false
+  const clean = text.trim()
+  if (clean.length < 4 || clean.length > 32) return false
+
+  // Standard retail linear barcodes with GS1 check digit (EAN-8, UPC-E/A, EAN-13, ITF-14)
+  if (/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(clean)) {
+    let sum = 0
+    let multiplier = 3
+    for (let i = clean.length - 2; i >= 0; i--) {
+      sum += (clean.charCodeAt(i) - 48) * multiplier
+      multiplier = multiplier === 3 ? 1 : 3
+    }
+    const check = (10 - (sum % 10)) % 10
+    return check === clean.charCodeAt(clean.length - 1) - 48
+  }
+
+  // Pure digits: 4 to 32 digits
+  if (/^\d{4,32}$/.test(clean)) return true
+
+  // Alphanumeric barcodes (Code 128, Code 39, custom alphanumeric SKU)
+  if (/^[A-Za-z0-9_-]{4,32}$/.test(clean)) return true
+
+  return false
 }
 
 function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -899,7 +965,7 @@ function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse):
       try {
         const data = JSON.parse(body)
         const barcode = typeof data.barcode === 'string' ? data.barcode.trim() : ''
-        if (barcode) {
+        if (barcode && isValidBarcodeServer(barcode)) {
           lastClientPing = Date.now()
           notifyBarcodeScan(barcode)
           res.writeHead(200, { 'Content-Type': 'application/json' })

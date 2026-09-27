@@ -84,6 +84,13 @@ export function isValidBarcode(text: string): boolean {
     return check === clean.charCodeAt(clean.length - 1) - 48
   }
 
-  // Code 128 / QR Code / custom SKU: Require minimum length of 3 characters
-  return clean.length >= 3
+  // Non-GS1 retail barcodes (Code 128, store SKUs, internal codes):
+  // Must be clean alphanumeric (minimum 4 characters) without whitespace or random symbols
+  if (/^[A-Za-z0-9_-]{4,32}$/.test(clean)) {
+    // Reject short pure-letter words (< 4 chars) to prevent OCR text noise
+    if (/^[A-Za-z]{1,3}$/.test(clean)) return false
+    return true
+  }
+
+  return false
 }

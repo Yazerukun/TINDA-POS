@@ -890,7 +890,7 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
         </div>
         <div>
           <label className="label">SKU</label>
-          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" />
+          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" placeholder="Auto-generated if blank" />
         </div>
         <div>
           <label className="label">Barcode</label>
