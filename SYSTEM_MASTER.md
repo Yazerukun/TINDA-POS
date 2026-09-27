@@ -36,6 +36,7 @@
 3. ❌ Never introduce telemetry or cloud phoning home without explicit user opt-in.
 4. ❌ Never mutate, overwrite, or drop existing user credentials, authentication hashes, or active sessions during third-party data imports.
 5. ❌ Never execute multi-record external imports outside of an atomic SQLite transaction (`db.transaction`).
+6. ❌ Never push, merge, or track proprietary source code (`source/`, `tools/`) to the public distribution repository (`Yazerukun/TINDA-POS`). All application source code must strictly reside in the private repository (`Yazerukun/TINDA-POS-Source`).
 
 ---
 
@@ -102,6 +103,23 @@
 * **Self-Hosting on VPS:** Store owners who want remote owner dashboards or multi-branch consolidation can deploy TINDA POS Cloud Hub on any Linux/Windows VPS ($5/mo digitalocean, linode, etc.):
   - **Option 1: Headless TINDA Node Daemon on VPS:** Exposes authenticated endpoints over TLS/HTTPS with a PostgreSQL or checkpointed SQLite backend.
   - **Option 2: Offline-First Async Replication (Recommended):** Each retail branch runs a local Master Terminal with zero-latency local checkouts. Transactions stream asynchronously to the VPS via Litestream SQLite replication or JSON event logs. If internet fails, store sales never stall.
+
+---
+
+## 11. Dual-Repository Security & Intellectual Property Protection Architecture
+* **Proprietary Source Isolation (`Yazerukun/TINDA-POS-Source`):**
+  - **Visibility:** STRICTLY PRIVATE.
+  - **Scope:** Complete repository containing 100% of the application source code (`source/`), build automation & packaging scripts (`tools/`), raw databases, development branches (`*-dev`), and full git history.
+  - **Access Rule:** Restricted strictly to the project owner/admin. Never made public.
+* **Public Distribution & Release Hub (`Yazerukun/TINDA-POS`):**
+  - **Visibility:** PUBLIC.
+  - **Scope:** Sanitized binary distribution hub containing exclusively:
+    - User documentation (`README.md`, `docs/USER-MANUAL.md`, official PDF user guides).
+    - Architecture & Release manifests (`latest.yml`, `.blockmap`, SHA-256 checksums).
+    - Public GitHub Releases delivering compiled Windows NSIS installers and portable executables.
+  - **Security Invariant:** The public repository MUST NEVER track or host the `source/` or `tools/` directories. All development, commits, and tests occur strictly within the private repository and local private tracking branches.
+  - **Auto-Updater Continuity:** Preserves the public GitHub Releases endpoint so `electron-updater` operates smoothly for all retail store clients without requiring private tokens.
+
 
 
 
