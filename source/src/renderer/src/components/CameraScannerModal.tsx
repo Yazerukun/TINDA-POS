@@ -528,6 +528,14 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
               </div>
             </div>
 
+            {/* Hands-Free Background Scanning Notice */}
+            <div className="flex items-center gap-2.5 rounded-lg border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-brand-300">
+              <Sparkles className="h-4 w-4 shrink-0 text-brand-400" />
+              <span>
+                <strong>💡 Hands-Free Direct Scanning:</strong> Once your phone is connected, you can close this window! Keep the scanner open on your phone, and all barcodes you scan will automatically appear directly in your POS cart in real-time.
+              </span>
+            </div>
+
             {/* Last Scanned Barcode Alert */}
             {lastScanned && (
               <div className="flex items-center justify-between rounded-lg bg-emerald-950/95 px-3 py-2 text-xs text-emerald-200 border border-emerald-500/50 shadow-sm">
@@ -597,6 +605,25 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 title="Refresh Camera Devices"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Hands-Free Counter Camera Option */}
+            <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-300">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Want continuous hands-free scanning on the counter without opening this modal?</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.setItem('tinda_counter_camera_enabled', 'true')
+                  window.dispatchEvent(new Event('tinda-counter-camera-toggle'))
+                  onClose()
+                }}
+                className="rounded bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors shrink-0"
+              >
+                Enable Counter Camera
               </button>
             </div>
 

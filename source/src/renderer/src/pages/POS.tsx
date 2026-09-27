@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
+import { CounterCameraScanner } from '../components/CounterCameraScanner'
 import { useGuide } from '../stores/guide'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
@@ -113,6 +114,26 @@ export function POS(): React.JSX.Element {
   const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const [cameraScannerOpen, setCameraScannerOpen] = useState(false)
+  const [counterCameraEnabled, setCounterCameraEnabled] = useState(() => {
+    return localStorage.getItem('tinda_counter_camera_enabled') === 'true'
+  })
+
+  useEffect(() => {
+    const handleToggleEvent = () => {
+      setCounterCameraEnabled(localStorage.getItem('tinda_counter_camera_enabled') === 'true')
+    }
+    window.addEventListener('tinda-counter-camera-toggle', handleToggleEvent)
+    return () => window.removeEventListener('tinda-counter-camera-toggle', handleToggleEvent)
+  }, [])
+
+  const handleToggleCounterCamera = (val: boolean) => {
+    setCounterCameraEnabled(val)
+    localStorage.setItem('tinda_counter_camera_enabled', String(val))
+    if (val) {
+      toastSuccess('Hands-Free Counter Camera Active', 'Wave products in front of camera to auto-scan')
+    }
+  }
+
   const cartItems = usePosCart((state) => state.items)
 
   useEffect(() => {
@@ -342,12 +363,30 @@ export function POS(): React.JSX.Element {
               <Barcode className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Scanner Ready</span>
             </div>
+
+            {/* Hands-Free Counter Camera Toggle */}
+            <button
+              type="button"
+              onClick={() => handleToggleCounterCamera(!counterCameraEnabled)}
+              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                counterCameraEnabled
+                  ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm'
+                  : 'border-ink-line bg-ink-800 text-slate-300 hover:border-emerald-500/40 hover:bg-ink-700'
+              }`}
+              title={counterCameraEnabled ? 'Hands-Free Counter Camera is ON — wave items to auto-scan' : 'Turn On Hands-Free Counter Camera (Zero-click wave scan)'}
+            >
+              <span className={`h-2 w-2 rounded-full ${counterCameraEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+              <Camera className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{counterCameraEnabled ? 'Camera Active' : 'Counter Camera'}</span>
+            </button>
+
+            {/* Wireless Phone Scanner Status / Pair Button */}
             {phoneConnected ? (
               <button
                 type="button"
                 onClick={() => setCameraScannerOpen(true)}
                 className="flex items-center gap-1.5 rounded-md border border-brand-500/40 bg-brand-500/15 px-2.5 py-1 text-xs font-semibold text-brand-300 hover:bg-brand-500/25 transition-colors shadow-sm"
-                title="Wireless Phone Scanner Connected over Wi-Fi"
+                title="Wireless Phone Scanner Connected over Wi-Fi — Scans automatically beam to cart without clicking anything!"
               >
                 <span className="h-2 w-2 rounded-full bg-brand-400 animate-pulse" />
                 <Smartphone className="h-3.5 w-3.5 text-brand-400" />
@@ -358,12 +397,13 @@ export function POS(): React.JSX.Element {
                 type="button"
                 onClick={() => setCameraScannerOpen(true)}
                 className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
-                title="Scan Barcode using Smartphone QR or Laptop Webcam"
+                title="Pair Phone via QR Code or Open Fullscreen Scanner"
               >
                 <Smartphone className="h-3.5 w-3.5 text-brand-400" />
-                <span className="hidden sm:inline">Phone / Camera</span>
+                <span className="hidden sm:inline">Pair Phone</span>
               </button>
             )}
+
             <button
               type="button"
               onClick={() => useGuide.getState().openGuide('pos')}
@@ -431,7 +471,11 @@ export function POS(): React.JSX.Element {
         </div>
       </div>
 
-      <CartPanel />
+      <CartPanel
+        counterCameraEnabled={counterCameraEnabled}
+        onToggleCounterCamera={handleToggleCounterCamera}
+        onScan={(code) => void handleScan(code)}
+      />
 
       <CameraScannerModal
         open={cameraScannerOpen}
@@ -442,7 +486,15 @@ export function POS(): React.JSX.Element {
   )
 }
 
-function CartPanel(): React.JSX.Element {
+function CartPanel({
+  counterCameraEnabled,
+  onToggleCounterCamera,
+  onScan
+}: {
+  counterCameraEnabled: boolean
+  onToggleCounterCamera: (enabled: boolean) => void
+  onScan: (code: string) => void
+}): React.JSX.Element {
   const { items, discount_pesos, customer_name } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [customerOpen, setCustomerOpen] = useState(false)
@@ -555,6 +607,13 @@ function CartPanel(): React.JSX.Element {
         )}
         </div>
       </div>
+
+      {/* Hands-Free Counter Camera Scanner Widget */}
+      <CounterCameraScanner
+        enabled={counterCameraEnabled}
+        onToggleEnabled={onToggleCounterCamera}
+        onScan={onScan}
+      />
 
       <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
         {items.length === 0 && (

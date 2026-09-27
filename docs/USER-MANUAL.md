@@ -1,10 +1,24 @@
-# TINDA POS v1.0.34 User Manual
+# TINDA POS v1.0.35 User Manual
 
-**TINDA POS v1.0.34** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.35** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.34**, introducing the **Multi-Frame Barcode Consensus Engine**, **Duplicate Cart Protection**, **Automatic SKU Assignment**, and **Product Editing Stabilization**, alongside the **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
+This guide covers release **v1.0.35**, introducing the **Hands-Free Counter Camera & Zero-Click Background Scanning**, alongside the **Multi-Frame Barcode Consensus Engine** (v1.0.34), **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.35 (Hands-Free Counter Camera & Zero-Click Background Scanning)
+
+- **Docked Hands-Free Counter Camera Scanner:**
+  - Cashiers no longer need to click "Phone / Camera" or keep any popup window open to scan products using a webcam. The counter camera is now embedded directly above the active cart in the POS screen.
+  - Features quick toggle power switch, minimize/expand drawer, camera device selector, live animated green reticle, and visual scan confirmation flash.
+  - Automatically remembers minimized/expanded state and preferred webcam hardware across sessions.
+- **Zero-Click Wireless Phone Scanning in Background:**
+  - Cashiers can now pair their smartphone once via the QR code modal, and immediately close the dialog. The wireless phone companion scanner remains continuously armed in the background, streaming barcodes directly into the POS cart in real-time.
+  - Dedicated POS header status indicators (`🟢 Phone Ready` / `📱 Pair Phone`) provide instant connectivity awareness without needing open modals.
+- **Dual-Frame Temporal Consensus & Audio Confirmation:**
+  - The counter camera enforces real-time 2-frame consensus (`candidateHits >= 2`) with retail barcode format restrictions (`EAN_13`, `EAN_8`, `UPC_A`, `UPC_E`, `CODE_128`) and a 3-second identical-barcode debounce, paired with a distinct 920Hz audio beep.
+- **Concurrent Three-Way Scanner Architecture:**
+  - Physical USB handheld laser scanners, docked counter webcams, and wireless companion smartphones operate simultaneously without interference or cursor focus dependencies.
 
 ## What's New in v1.0.34 (Multi-Frame Barcode Consensus & Product Editing Stabilization)
 
