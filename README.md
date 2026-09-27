@@ -213,28 +213,16 @@ When reporting issues on [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/
 
 ---
 
-## 🧑‍💻 Technical Stack & Development
+## 🧑‍💻 Technical Architecture & Distribution
 
 TINDA POS is built with modern desktop and web technologies:
-* **Framework:** Electron & Vite
+* **Desktop Shell:** Electron (Chromium & Node.js native runner)
 * **Frontend:** React 19, TypeScript, Tailwind CSS, Lucide Icons, Zustand
-* **Database:** SQLite with `better-sqlite3` (WAL mode enabled)
-* **Testing:** Vitest (292/292 passing tests across 42 test suites)
+* **Database Engine:** Embedded SQLite3 with `better-sqlite3` (WAL mode enabled, strict local ACID guarantees)
+* **Packaging:** NSIS Installer, Portable Executable, and differential delta update blockmaps
+* **Verification Gate:** 100% automated test pass (302/302 tests across 44 test suites)
 
-```bash
-# Clone and run locally
-cd source
-npm install
-
-# Start development environment
-npm run dev
-
-# Run quality & verification gates
-npm run typecheck    # TypeScript verification (0 errors)
-npm run lint         # ESLint code quality
-npm test             # Vitest test suite (292/292 passing)
-npm run build        # Production bundle
-```
+This repository serves as the official public distribution, issue tracker, and user documentation hub. Binaries, auto-update manifests, and release checksums are published directly under [GitHub Releases](https://github.com/Yazerukun/TINDA-POS/releases). Proprietary source code is maintained and audited in a secure private repository.
 
 ---
 
