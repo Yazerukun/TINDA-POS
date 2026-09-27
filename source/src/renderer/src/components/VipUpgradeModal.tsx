@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import type { LicenseStatus } from '@shared/types'
 import { toastSuccess, toastError } from '../stores/toast'
+import { LegalModal, type LegalTab } from './LegalModal'
 
 interface VipUpgradeModalProps {
   open: boolean
@@ -29,6 +30,8 @@ export function VipUpgradeModal({ open, onClose, onActivated }: VipUpgradeModalP
   const [loading, setLoading] = useState(false)
   const [copiedMid, setCopiedMid] = useState(false)
   const [copiedMaya, setCopiedMaya] = useState(false)
+  const [legalOpen, setLegalOpen] = useState(false)
+  const [legalTab, setLegalTab] = useState<LegalTab>('privacy')
 
   const loadStatus = async (): Promise<void> => {
     try {
@@ -275,16 +278,39 @@ export function VipUpgradeModal({ open, onClose, onActivated }: VipUpgradeModalP
           )}
 
           {/* Guarantee Footer */}
-          <div className="flex items-center justify-between border-t border-ink-line pt-4 text-[11px] text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-ink-line pt-4 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4 text-emerald-400" /> 100% Offline Cryptographic Lock
             </span>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => { setLegalTab('privacy'); setLegalOpen(true); }}
+                className="hover:text-emerald-400 hover:underline transition"
+              >
+                Privacy Policy
+              </button>
+              <span className="text-slate-600">•</span>
+              <button
+                type="button"
+                onClick={() => { setLegalTab('terms'); setLegalOpen(true); }}
+                className="hover:text-amber-400 hover:underline transition"
+              >
+                Terms of Service
+              </button>
+            </div>
             <button onClick={onClose} className="btn-ghost py-1 px-3 text-xs">
               Close
             </button>
           </div>
         </div>
       </div>
+
+      <LegalModal
+        open={legalOpen}
+        initialTab={legalTab}
+        onClose={() => setLegalOpen(false)}
+      />
     </div>
   )
 }

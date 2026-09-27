@@ -39,6 +39,7 @@ import { ReceiptPaper } from '../components/ReceiptPaper'
 import { NetworkSettingsTab } from '../components/NetworkSettingsTab'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { VipUpgradeBanner } from '../components/VipUpgradeBanner'
+import { LegalModal, type LegalTab } from '../components/LegalModal'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'VIP' | 'ABOUT'
 
@@ -614,6 +615,9 @@ function DataTab(): React.JSX.Element {
 }
 
 function AboutTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?: () => void }): React.JSX.Element {
+  const [legalOpen, setLegalOpen] = useState(false)
+  const [legalTab, setLegalTab] = useState<LegalTab>('privacy')
+
   const copyMaya = async () => {
     try {
       await navigator.clipboard.writeText('09912255156')
@@ -679,8 +683,33 @@ function AboutTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?:
               </button>
             </div>
           )}
+
+          {/* Privacy Policy & Terms of Service Links */}
+          <div className="pt-6 mt-6 border-t border-ink-line/60 flex items-center justify-center gap-3 text-xs text-slate-400">
+            <button
+              type="button"
+              onClick={() => { setLegalTab('privacy'); setLegalOpen(true); }}
+              className="hover:text-emerald-400 hover:underline transition"
+            >
+              Privacy Policy
+            </button>
+            <span className="text-slate-600">•</span>
+            <button
+              type="button"
+              onClick={() => { setLegalTab('terms'); setLegalOpen(true); }}
+              className="hover:text-amber-400 hover:underline transition"
+            >
+              Terms of Service
+            </button>
+          </div>
         </div>
       </div>
+
+      <LegalModal
+        open={legalOpen}
+        initialTab={legalTab}
+        onClose={() => setLegalOpen(false)}
+      />
     </div>
   )
 }
