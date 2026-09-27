@@ -1,26 +1,25 @@
 # TINDA POS v1.0.31 User Manual
 
-**TINDA POS v1.0.31** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.31** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-Ang guide na ito ay para sa release (v1.0.31), na nagdadala ng **Built-in Camera & Smartphone Barcode Scanner Engine (@zxing/library)**, **Live Viewfinder & Camera Device Selector**, **Smartphone Wireless Scanner Guide**, kasama ang **Universal Hardware Barcode Scanner Engine** (v1.0.30) ug **Simple POS JSON Backup Import** (v1.0.29).
+This guide covers release **v1.0.31**, introducing the **Built-in Camera & Smartphone Barcode Scanner Engine (@zxing/library)**, **Live Viewfinder & Camera Device Selector**, **Zero-Cost Smartphone Wireless Scanner Guide**, alongside the **Universal Hardware Barcode Scanner Engine** (v1.0.30) and **Simple POS JSON Backup Ingestion** (v1.0.29).
 
-Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
-shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## Bago sa v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
+## What's New in v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
 
-- **Built-in Camera Barcode Scanner** — Maaari nang gamitin ang anumang nakakabit na webcam o laptop camera upang mag-scan ng mga produkto. I-click lamang ang **"📷 Camera / Phone"** button sa itaas ng POS screen upang buksan ang live scanner modal na may built-in targeting reticle.
-- **Suporta sa Cellphone Camera (Libreng Scanner)** — Hindi na kailangang bumili ng mamahaling hardware scanner. Gamit ang libreng apps tulad ng *Iriun Webcam* o *DroidCam*, maaaring gamitin ang high-resolution camera ng iyong Android o iPhone nang direkta sa TINDA POS.
-- **Pure-Client Offline Decoding (@zxing/library)** — 100% offline ang pag-decode ng EAN-13, UPC, Code 128, at QR codes sa pamamagitan ng client-side video processing nang walang internet o cloud API.
-- **Audio Beep & Smart Debounce** — Awtomatikong nagpapatunog ng malinaw na audio beep sa bawat matagumpay na scan, at may 1.5-segundong debounce upang hindi dumoble ang pagpasok ng item sa cart habang hawak ang produkto.
-- **Physical USB Scanner 100% Preserved** — Ang dating physical USB hardware scanner ay nananatiling aktibo at laging handa sa background nang walang anumang pagbabago.
+- **Built-in Camera Barcode Scanner** — Use any connected webcam or integrated laptop camera to scan retail product barcodes. Simply click the **"📷 Camera / Phone"** button in the POS header to launch the live scanner viewfinder equipped with an animated targeting reticle.
+- **Smartphone Camera Support (Zero Hardware Cost)** — Turn any Android or iPhone into a high-resolution barcode scanner without purchasing expensive equipment. Using free streaming apps like *Iriun Webcam* or *DroidCam*, your smartphone camera functions directly inside TINDA POS.
+- **Pure-Client Offline Decoding (@zxing/library)** — 100% offline barcode decoding for EAN-13, UPC-A, UPC-E, Code 128, Code 39, and QR codes using client-side video frame processing with zero internet or cloud API dependencies.
+- **Audio Beep & Smart Debounce** — Synthesizes an audible audio beep on every successful scan, with a 1.5-second duplicate protection debounce window to prevent accidental double-scans while handling items.
+- **Hardware USB Scanner 100% Preserved** — The universal physical USB hardware scanner engine remains fully active and listening in parallel with zero configuration changes.
 
-## Bago sa v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
+## What's New in v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
 
-- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Gumagana na ngayon ang lahat ng karaniwang USB at 2.4GHz wireless barcode scanner (Zebra, Honeywell, Netum, Eyoyo, generic Chinese USB HID keyboard wedges) nang walang kinakailangang driver installation sa Windows 10/11.
-- **Global Keystroke Burst Interceptor** — Hindi na kailangang i-click pa ng cashier ang search bar bago mag-scan. Kahit saan nakatutok ang cursor sa POS, awtomatikong nahuhuli ng system ang mabilis na barcode burst (< 50ms) at agarang idinaragdag ang produkto sa cart.
-- **🟢 Scanner Ready Visual Status** — May bagong pulsing green indicator sa itaas ng POS screen na nagbibigay-kumpirmasyon na aktibo at handang tumanggap ng scans ang barcode engine nang walang aberya.
-- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Kumpletong blueprint at gabay para sa paggamit ng iisang database sa maraming computer (Master-Satellite LAN setup) nang walang database corruption, at opsyon para sa remote VPS mirroring gamit ang offline-first replication.
+- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Out-of-the-box compatibility with all standard USB and 2.4GHz wireless handheld barcode scanners (Zebra, Honeywell, Netum, Eyoyo, and generic USB HID keyboard wedges) with zero driver installation required on Windows 10/11.
+- **Global Keystroke Burst Interceptor** — Cashiers no longer need to click the search input before scanning. Regardless of where cursor focus is in the POS screen, the system captures sub-50ms barcode bursts and automatically adds matched products to the cart.
+- **🟢 Scanner Ready Visual Status** — A new visual indicator badge in the POS header confirms the barcode scanner engine is active and ready for input.
+- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Comprehensive architectural guide and topology blueprint for sharing a single database across multiple store computers (Master-Satellite LAN) without database corruption, plus remote VPS mirroring options via offline-first replication.
 
 ## Bago sa v1.0.29 (Simple POS Backup Import & Database Safety)
 

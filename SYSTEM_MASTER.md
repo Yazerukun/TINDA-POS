@@ -90,7 +90,7 @@
   - **Multi-Device Support:** Dynamic camera selector supports laptop webcams, external USB cameras, and smartphones connected via wireless webcam drivers (Iriun Webcam, DroidCam, or Android 14 USB Webcam).
   - **Web Audio Feedback:** Generates synthesized 920Hz audio beeps on successful scan without external asset dependencies.
   - **Smart Debounce:** 1.5s duplicate protection prevents runaway cart insertions while holding products steady.
-  - **Integrated Phone Guide:** Built-in modal instructions in Bisaya/English guide store owners through zero-cost smartphone camera setup.
+  - **Integrated Phone Guide:** Built-in modal instructions in English guide store owners through zero-cost smartphone camera setup.
 
 ---
 
