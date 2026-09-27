@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.32 to v1.0.33 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.33 to v1.0.34 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.33.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.33.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.34.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.34.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.33.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.34.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (31-page official documentation)
 
 ---
@@ -74,7 +74,7 @@
 ---
 
 ## 8. Quality Assurance & Distribution Verification Protocols
-1. **Automated Test Gate:** 100% pass mandate across all 45 test suites (310/310 Vitest tests) before pushing any release branch or tag.
+1. **Automated Test Gate:** 100% pass mandate across all 46 test suites (315/315 Vitest tests) before pushing any release branch or tag.
 2. **User Manual Sync:** `USER-MANUAL.md` must be updated with matching release notes; `TindaPOS-User-Guide.pdf` must be compiled via Electron headless renderer (`gen_user_guide.mjs`) ensuring correct page count and EOF validation.
 3. **Release Integrity Check:** All 5 canonical assets (`Setup.exe`, `Portable.exe`, `.blockmap`, `latest.yml`, `User-Guide.pdf`) must be uploaded and verified against SHA-512 and SHA-256 manifests on GitHub Releases.
 
@@ -162,6 +162,26 @@
   - Contains daily opening/closing procedures, keyboard shortcut matrix, payment handling steps, and emergency troubleshooting protocols.
 * **100% English Language Standard:**
   - All user-facing documentation, manuals, tooltips, modals, and handbook chapters are strictly authored and maintained in standard professional English to eliminate linguistic ambiguity across multi-regional deployments.
+
+---
+
+## 13. Multi-Frame Barcode Consensus & Product Editing Stabilization (v1.0.34)
+* **Product Editing & Unit Barcode Isolation (`products.ts`):**
+  - **Root Cause & Fix:** In previous releases, updating a product with an existing barcode threw `Error: Duplicate barcode on a product unit.` because `validateProductInput` queried `product_units` without excluding the product's own ID (`excludeId`). The query now strictly checks `WHERE barcode = ? AND product_id != ?`, enabling store owners to edit product prices, names, and stock at any time without collision.
+* **Deterministic Auto-SKU Generation (`generateSku`):**
+  - **Zero Blank Collision:** SQLite enforces a strict `UNIQUE` constraint on `products.sku`. When a product is created or updated with a blank SKU (common in fast sari-sari store onboarding), the repository automatically assigns a sequential `SKU-XXXX` identifier (e.g. `SKU-0001`), completely eliminating `UNIQUE constraint failed: products.sku` errors.
+* **Temporal Multi-Frame Stability Consensus:**
+  - **False-Positive Elimination:** Camera glares, package wrinkles, and optical noise can occasionally produce single-frame false decodes. Both `CameraScannerModal.tsx` and `phoneScannerService.ts` now require **2 consecutive frames** with the identical barcode candidate before accepting the code (`candidateHits >= 2`).
+  - **Decay Filter:** If a subsequent frame does not detect the candidate barcode, the hit counter immediately resets to zero, eliminating ghost reads.
+* **Cart Strict Exact-Match Invariant (`POS.tsx`):**
+  - **Zero Accidental Cart Fallbacks:** Removed `?? (res.rows.length > 0 ? res.rows[0] : null)` fallback logic from the POS cart scan handler. Scanned barcodes MUST match an exact primary barcode, unit barcode, or SKU. Optical noise or unrecognized text will never add arbitrary products to the cart.
+* **Tiered Anti-Duplicate Debouncing:**
+  - Implemented smart debounce timers across the entire scanner stack:
+    - **Phone Scanner Loop:** 3500ms identical-barcode debounce.
+    - **Webcam Modal Loop:** 3000ms identical-barcode debounce.
+    - **POS Checkout Cart:** 2500ms identical-barcode debounce.
+* **Phone Scanner Visual Confirmation Flash:**
+  - The phone camera reticle triggers a prominent green border and laser pulse (`.reticle.scanned`) upon confirmed transmission, providing instant visual feedback alongside haptic vibration and Web Audio beeps.
 
 
 

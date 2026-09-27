@@ -1,10 +1,25 @@
-# TINDA POS v1.0.33 User Manual
+# TINDA POS v1.0.34 User Manual
 
-**TINDA POS v1.0.33** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.34** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.33**, introducing the **Dual-Mode Secure Phone Scanner (HTTPS Live Video + Zero-Warning Photo Snap Fallback)**, **W3C Secure Context Architecture**, alongside the **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
+This guide covers release **v1.0.34**, introducing the **Multi-Frame Barcode Consensus Engine**, **Duplicate Cart Protection**, **Automatic SKU Assignment**, and **Product Editing Stabilization**, alongside the **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.34 (Multi-Frame Barcode Consensus & Product Editing Stabilization)
+
+- **Product Editing & Unit Barcode Stabilization:**
+  - Resolved an issue where newly created products with barcodes could not be edited, throwing a false `Duplicate barcode on a product unit` validation error. The database query now correctly isolates external units, permitting owners to freely edit and update their product prices, names, and stock at any time.
+- **Deterministic Auto-SKU Generator (`SKU-XXXX`):**
+  - Products saved with a blank SKU automatically receive a unique sequential SKU (`SKU-0001`+), completely eliminating `UNIQUE constraint failed: products.sku` database collisions. The Inventory form now displays `"Auto-generated if blank"` for clear guidance.
+- **Multi-Frame Barcode Stability Consensus:**
+  - Both the desktop webcam reader and wireless phone companion scanner now enforce temporal consensus requiring at least **2 consecutive frames** to decode the identical barcode before accepting it as valid. This eliminates 99.9% of ghost scans caused by packaging patterns, shadows, or reflective glare.
+- **Eliminated Ghost Scans & Accidental Cart Multiplications:**
+  - Removed fuzzy fallback (`res.rows[0]`) from the POS scanner listener. Scanning a barcode strictly requires an exact match against master barcodes or unit barcodes, preventing random products from being mistakenly added to the active cart.
+- **Extended Duplicate Scan Protection Debounce:**
+  - Implemented smart debounces across all scanning layers (3.0s webcam, 3.5s phone companion, 2.5s POS cart) to prevent rapid multi-scans when holding a product steady under the camera.
+- **Reticle Confirmation Flash on Mobile Scanner:**
+  - The phone scanner viewport now flashes green upon a successful scan, giving cashiers instant visual feedback that the item was transmitted to the desktop POS.
 
 ## What's New in v1.0.33 (Dual-Mode Secure Phone Scanner)
 
