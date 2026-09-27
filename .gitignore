@@ -1,3 +1,8 @@
+# === Proprietary Source (Managed in Private Repository) ===
+source/
+tools/
+data/
+
 # === Dependencies ===
 node_modules/
 .env
