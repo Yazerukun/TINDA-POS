@@ -105,18 +105,28 @@ export function Backup(): React.JSX.Element {
             <span className="font-semibold">{rows.length} backups</span>{rows[0] && <> · latest {shortDateTime(rows[0].created_at)}</>}
           </div>
           <div className="card overflow-hidden">
-            <table className="table">
-              <thead><tr><th>Filename</th><th>Date</th><th>Size</th><th>Type</th><th className="w-40">Actions</th></tr></thead>
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th className="w-[38%] py-3 px-3 text-center align-middle">Filename</th>
+                  <th className="w-[22%] py-3 px-3 text-center align-middle">Date</th>
+                  <th className="w-[14%] py-3 px-3 text-center align-middle">Size</th>
+                  <th className="w-[12%] py-3 px-3 text-center align-middle">Type</th>
+                  <th className="w-[14%] py-3 px-3 text-center align-middle">Actions</th>
+                </tr>
+              </thead>
               <tbody>
                 {rows.map((b) => (
                   <tr key={b.filename}>
-                    <td className="font-medium text-slate-200">{b.filename}</td>
-                    <td className="text-slate-400">{shortDateTime(b.created_at)}</td>
-                    <td className="text-slate-400">{formatBytes(b.size)}</td>
-                    <td><span className="badge bg-ink-700 text-slate-300">manual</span></td>
-                    <td>
-                      <div className="flex gap-1">
-                        <button onClick={() => setConfirm(b)} className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs"><RotateCcw className="h-3.5 w-3.5" /> Restore</button>
+                    <td className="w-[38%] py-3 px-3 text-center align-middle font-medium text-slate-200 truncate" title={b.filename}>{b.filename}</td>
+                    <td className="w-[22%] py-3 px-3 text-center align-middle text-slate-400 text-xs">{shortDateTime(b.created_at)}</td>
+                    <td className="w-[14%] py-3 px-3 text-center align-middle text-slate-400 text-xs">{formatBytes(b.size)}</td>
+                    <td className="w-[12%] py-3 px-3 text-center align-middle">
+                      <span className="badge bg-ink-700 text-slate-300 inline-flex items-center justify-center">manual</span>
+                    </td>
+                    <td className="w-[14%] py-3 px-3 text-center align-middle">
+                      <div className="flex items-center justify-center">
+                        <button onClick={() => setConfirm(b)} className="btn-ghost-2 inline-flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs"><RotateCcw className="h-3.5 w-3.5" /> Restore</button>
                       </div>
                     </td>
                   </tr>

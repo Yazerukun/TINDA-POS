@@ -7,6 +7,7 @@ import type { UpdateStatusEvent } from '@shared/update'
 const invoke = <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => ipcRenderer.invoke(channel, ...args)
 const api: TindaApi = {
   app: {
+    startup: (enabled?: boolean) => invoke<{ supported: boolean; enabled: boolean }>('app:startup', enabled),
     info: () => invoke<{ name: string; version: string; offline: boolean }>('app:info'),
     dataDir: () => invoke<string>('app:dataDir'),
     databaseFile: () => invoke<string>('app:databaseFile'),
@@ -61,14 +62,32 @@ const api: TindaApi = {
     update: (id, input) => invoke<import('@shared/types').Product>('products:update', id, input),
     archive: (id) => invoke<import('@shared/types').Product>('products:archive', id),
     restore: (id) => invoke<import('@shared/types').Product>('products:restore', id),
-    count: (status) => invoke<number>('products:count', status)
+    count: (status) => invoke<number>('products:count', status),
+    csvTemplate: () => invoke<string>('products:csvTemplate'),
+    previewCsv: (text) => invoke('products:previewCsv', text),
+    importCsv: (text, strategy) => invoke('products:importCsv', text, strategy),
+    previewSimplePos: (text) => invoke('products:previewSimplePos', text),
+    importSimplePos: (text, strategy) => invoke('products:importSimplePos', text, strategy),
+    saveImage: (data) => invoke<{ filename: string; url: string }>('products:saveImage', data),
+    deleteImage: (filename) => invoke<void>('products:deleteImage', filename),
+    getImageData: (filename) => invoke<string | null>('products:getImageData', filename)
   },
   inventory: {
+    expiration: () => invoke<import('@shared/types').ExpirationEntry[]>('inventory:expiration'),
+    batchDate: (id, date) => invoke<void>('inventory:batchDate', id, date),
+    onChanged: (cb) => {
+      const listener = (_e: IpcRendererEvent, event: import('@shared/types').InventoryChangedEvent): void => cb(event)
+      ipcRenderer.on('inventory:changed', listener)
+      return () => ipcRenderer.removeListener('inventory:changed', listener)
+    },
     movements: (opts) => invoke<{ rows: import('@shared/types').InventoryMovement[]; total: number }>('inventory:movements', opts),
+    receiving: (opts) => invoke<{ rows: import('@shared/types').StockReceivingRecord[]; total: number; total_cost_c: number }>('inventory:receiving', opts),
     receive: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:receive', input),
     adjust: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:adjust', input),
     movement: (type, input) => invoke<import('@shared/types').InventoryMovement>('inventory:movement', type, input),
-    count: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:count', input)
+    count: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:count', input),
+    restock: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:restock', input),
+    withdraw: (input) => invoke<import('@shared/types').InventoryMovement>('inventory:withdraw', input)
   },
   suppliers: {
     list: (opts) => invoke<import('@shared/types').Supplier[]>('suppliers:list', opts),
@@ -126,17 +145,28 @@ const api: TindaApi = {
     summary: (id) => invoke<import('@shared/types').Shift>('shifts:summary', id)
   },
   reports: {
+    cashCount: (input) => invoke<import('@shared/types').CashCountRecord>('reports:cashCount', input),
+    cashCounts: (opts) => invoke<import('@shared/types').CashCountRecord[]>('reports:cashCounts', opts),
+    cashCountExpected: () => invoke<import('@shared/types').ReadReport>('reports:cashCountExpected'),
+    cashCountPrint: (id) => invoke<import('@shared/ipc').PrintResult>('reports:cashCountPrint', id),
     sales: (opts) => invoke<{ rows: import('@shared/types').SalesReportRow[]; summary: import('@shared/types').ReportSummary; chart: { label: string; total_c: number; profit_c: number }[] }>('reports:sales', opts),
     inventory: () => invoke<{ rows: (import('@shared/types').Product & { inventory_value_c: number; total_cost_c: number })[]; summary: { total_units: number; inventory_value_c: number; low_stock: number; out_of_stock: number } }>('reports:inventory'),
     utang: () => invoke<{ rows: import('@shared/types').Customer[]; total_outstanding_c: number; payments_c: number }>('reports:utang'),
     cashier: (opts) => invoke<{ rows: import('@shared/types').Sale[]; summary: import('@shared/types').ReportSummary }>('reports:cashier', opts),
     shifts: (opts) => invoke<{ rows: import('@shared/types').Shift[]; summary: import('@shared/types').ReportSummary }>('reports:shifts', opts),
-    exportCsv: (kind, opts) => invoke<import('@shared/types').ExportResult>('reports:exportCsv', kind, opts)
+    exportCsv: (kind, opts) => invoke<import('@shared/types').ExportResult>('reports:exportCsv', kind, opts),
+    xRead: () => invoke<import('@shared/types').ReadReport>('reports:xRead'),
+    printXRead: () => invoke<import('@shared/ipc').PrintResult & { report: import('@shared/types').ReadReport }>('reports:printXRead'),
+    finalizeZ: (input) => invoke<import('@shared/types').ZRead>('reports:finalizeZ', input),
+    zHistory: () => invoke<import('@shared/types').ZRead[]>('reports:zHistory'),
+    printZRead: (id) => invoke<import('@shared/ipc').PrintResult>('reports:printZRead', id)
   },
   backup: {
     list: () => invoke<import('@shared/types').BackupInfo[]>('backup:list'),
     create: (reason) => invoke<import('@shared/types').BackupInfo>('backup:create', reason),
     restore: (filename) => invoke<void>('backup:restore', filename),
+    exportTinda: () => invoke<string | null>('backup:exportTinda'),
+    importTinda: () => invoke<string | null>('backup:importTinda'),
     openFolder: () => invoke<void>('backup:openFolder'),
     selectSyncFolder: () => invoke<string | null>('backup:selectSyncFolder'),
     openSyncFolder: () => invoke<void>('backup:openSyncFolder'),
@@ -149,6 +179,23 @@ const api: TindaApi = {
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)
+  },
+  priceReferences: {
+    search: (opts) => invoke<{ rows: import('@shared/types').PriceReference[]; references: import('@shared/types').PriceReference[]; total: number }>('priceReferences:search', opts),
+    get: (id) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:get', id),
+    getByProduct: (productId) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByProduct', productId),
+    getByBarcode: (barcode) => invoke<import('@shared/types').PriceReference | undefined>('priceReferences:getByBarcode', barcode),
+    matchForProduct: (product) => invoke<import('@shared/types').PriceReference | null>('priceReferences:matchForProduct', product),
+    link: (referenceId, productId) => invoke<import('@shared/types').PriceReference>('priceReferences:link', referenceId, productId),
+    unlink: (referenceId) => invoke<import('@shared/types').PriceReference>('priceReferences:unlink', referenceId),
+    sync: (opts) => invoke<import('@shared/types').PriceSyncResult>('priceReferences:sync', opts),
+    status: () => invoke<{
+      total: number
+      last_synced_at: string | null
+      is_stale: boolean
+      sources: { source_name: string; count: number }[]
+    }>('priceReferences:status'),
+    compare: (retailPriceC, reference) => invoke<import('@shared/types').PriceComparisonStatus>('priceReferences:compare', retailPriceC, reference)
   }
 }
 

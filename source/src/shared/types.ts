@@ -58,6 +58,25 @@ export interface ProductUnit {
   is_default: boolean
 }
 
+export type ExpirationMode = 'NONE' | 'ITEM' | 'BATCH'
+export interface StockBatch {
+  id: number
+  product_id: number
+  label: string
+  expiration_date: string | null
+  quantity: number
+  created_at: string
+}
+export interface ExpirationEntry {
+  product_id: number
+  product_name: string
+  base_unit: string
+  batch_id: number | null
+  label: string
+  expiration_date: string | null
+  quantity: number
+}
+
 export interface Product {
   id: number
   category_id: number | null
@@ -69,10 +88,15 @@ export interface Product {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
+  srp_c?: number | null
   stock: number
   low_stock_threshold: number
   supplier_id: number | null
   has_expiration: boolean
+  expiration_mode?: ExpirationMode
+  expiration_date?: string | null
+  batches?: StockBatch[]
+  sellable_stock?: number
   image_path: string | null
   status: ProductStatus
   notes: string | null
@@ -91,9 +115,13 @@ export interface ProductInput {
   base_unit: string
   purchase_cost_c: number
   default_price_c: number
-  low_stock_threshold: number
+  srp_c?: number | null
+  low_stock_threshold?: number
   supplier_id: number | null
   has_expiration: boolean
+  expiration_mode?: ExpirationMode
+  expiration_date?: string | null
+  image_path?: string | null
   notes: string | null
   units: { name: string; conversion_to_base: number; barcode: string | null; selling_price_c: number; is_default: boolean }[]
   initial_stock_base?: number
@@ -109,6 +137,9 @@ export type InventoryMovementType =
   | 'LOSS'
   | 'ADJUSTMENT'
   | 'INITIAL_STOCK'
+  | 'WITHDRAWAL'
+
+export type WithdrawalReason = 'TAKEN' | 'DAMAGED' | 'EXPIRED' | 'FORWARD'
 
 export interface InventoryMovement {
   id: number
@@ -121,6 +152,29 @@ export interface InventoryMovement {
   reason: string | null
   reference: string | null
   user_id: number
+  created_at: string
+}
+
+export type StockReceivingSource = 'RESTOCK' | 'PURCHASE' | 'CSV OPENING STOCK' | 'INITIAL STOCK' | 'MANUAL RECEIVING'
+
+export interface StockReceivingRecord {
+  id: number
+  product_id: number
+  product_name: string
+  quantity_received: number
+  received_unit: string
+  base_quantity: number
+  base_unit: string
+  previous_stock: number
+  new_stock: number
+  supplier_id: number | null
+  supplier_name: string | null
+  unit_cost_c: number | null
+  total_cost_c: number | null
+  reference: string | null
+  notes: string | null
+  received_by: string
+  source: StockReceivingSource
   created_at: string
 }
 
@@ -285,6 +339,7 @@ export type ShiftStatus = 'OPENED' | 'CLOSED'
 export interface Shift {
   id: number
   user_id: number
+  shift_no: number | null
   cashier_name: string
   opened_at: string
   closed_at: string | null
@@ -360,6 +415,8 @@ export interface StoreSettings {
   tin: string
   currency: string
   receipt_header: string
+  receipt_title: string
+  receipt_show_app_name: boolean
   receipt_footer: string
   logo_path: string | null
   default_low_stock: number
@@ -375,6 +432,66 @@ export interface StoreSettings {
   receipt_copies: number
   theme: string
   data_dir: string
+}
+
+export interface InventoryChangedEvent {
+  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE'
+  product_ids: number[]
+}
+
+export interface ReadReport {
+  shift_id: number
+  shift_no: number | null
+  report_type: 'X' | 'Z'
+  report_at: string
+  cashier_id: number
+  cashier_name: string
+  opened_at: string
+  closed_at: string | null
+  starting_cash_c: number
+  gross_sales_c: number
+  discount_c: number
+  refunds_c: number
+  cash_refunds_c?: number
+  voids_c: number
+  net_sales_c: number
+  cash_c: number
+  gcash_c: number
+  maya_c: number
+  utang_c: number
+  expenses_c: number
+  cash_in_c: number
+  cash_out_c: number
+  expected_cash_c: number
+  transaction_count: number
+  void_count: number
+  split_count: number
+}
+
+export interface ZRead {
+  id: number
+  shift_id: number
+  report_no: string
+  snapshot: ReadReport
+  finalized_by: number
+  finalized_by_name: string
+  finalized_at: string
+}
+
+export interface CashCountRecord {
+  id: number
+  shift_id: number
+  user_id: number
+  cashier_name: string
+  business_date: string
+  starting_cash_c: number
+  expected_cash_c: number
+  actual_cash_c: number
+  difference_c: number
+  status: 'BALANCED' | 'OVER' | 'SHORT'
+  denominations: number[]
+  notes: string | null
+  created_at: string
 }
 
 export interface BackupInfo {
@@ -429,4 +546,67 @@ export interface ReportSummary {
 export interface ExportResult {
   path: string
   rows: number
+}
+
+export type PriceSourceType = 'official' | 'market' | 'reference' | 'test'
+
+export type PriceComparisonStatus =
+  | 'WITHIN_RANGE'
+  | 'BELOW_RANGE'
+  | 'ABOVE_RANGE'
+  | 'NO_REFERENCE'
+
+export interface PriceReference {
+  id: number
+  product_id: number | null
+  barcode: string | null
+  product_name: string
+  brand: string | null
+  variant: string | null
+  unit: string | null
+  image_path: string | null
+  image_url: string | null
+  market_price_c: number | null
+  min_price_c: number | null
+  max_price_c: number | null
+  currency: string
+  source_name: string
+  source_type: PriceSourceType
+  source_url: string | null
+  location: string | null
+  effective_date: string | null
+  retrieved_at: string
+  last_synced_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PriceReferenceInput {
+  product_id?: number | null
+  barcode?: string | null
+  product_name: string
+  brand?: string | null
+  variant?: string | null
+  unit?: string | null
+  image_path?: string | null
+  image_url?: string | null
+  market_price_c?: number | null
+  min_price_c?: number | null
+  max_price_c?: number | null
+  currency?: string
+  source_name: string
+  source_type?: PriceSourceType
+  source_url?: string | null
+  location?: string | null
+  effective_date?: string | null
+}
+
+export interface PriceSyncResult {
+  success: boolean
+  synced_count: number
+  rejected_count: number
+  errors: string[]
+  last_synced_at: string
+  message: string
+  is_offline?: boolean
 }

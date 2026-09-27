@@ -8,6 +8,7 @@ import { Modal } from '../components/ui/Modal'
 import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useUpdate } from '../stores/update'
+import { ReceiptPaper } from '../components/ReceiptPaper'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'ABOUT'
 
@@ -27,13 +28,36 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('DATA')} className={`btn-ghost flex items-center gap-2 ${tab === 'DATA' ? '!border-brand-500 !text-brand-400' : ''}`}><DatabaseZap className="h-4 w-4" /> Data</button>
         <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
-      {tab === 'HOME' && <StoreSettingsTab />}
+      {tab === 'HOME' && <><StartupSetting /><StoreSettingsTab /></>}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
       {tab === 'DATA' && <DataTab />}
       {tab === 'ABOUT' && <AboutTab />}
     </div>
   )
+}
+
+function StartupSetting(): React.JSX.Element {
+  const [state, setState] = useState<{ supported: boolean; enabled: boolean } | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    void window.api.app.startup().then(setState).catch(() => {
+      setState({ supported: true, enabled: false })
+    })
+  }, [])
+  const change = async (enabled: boolean) => {
+    setBusy(true)
+    try { setState(await window.api.app.startup(enabled)) }
+    catch (e) { toastError('Could not change startup setting', String(e)) }
+    finally { setBusy(false) }
+  }
+  return <div className="mb-6 border-b border-ink-line pb-4">
+    <label className="flex items-center gap-3 text-sm text-slate-200">
+      <input type="checkbox" checked={state?.enabled ?? false} disabled={state ? !state.supported || busy : busy} onChange={(e) => void change(e.target.checked)} />
+      Start TINDA POS when I sign in to Windows
+    </label>
+    {state && !state.supported && <p className="mt-2 text-xs text-slate-400">Available on Windows.</p>}
+  </div>
 }
 
 function DataTab(): React.JSX.Element {
@@ -70,6 +94,19 @@ function DataTab(): React.JSX.Element {
     if (!window.confirm(`Restore ${backup.filename}? Current data will be safety-backed up first.`)) return
     try { await window.api.backup.restore(backup.filename); toastSuccess('Backup restored', 'TINDA POS is restarting...') }
     catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) }
+  }
+  const exportUniversal = async () => {
+    try {
+      const path = await window.api.backup.exportTinda()
+      if (path) toastSuccess('Universal backup exported', path)
+    } catch (e) { toastError('Export failed', String((e as Error)?.message || e)) }
+  }
+  const importUniversal = async () => {
+    if (!window.confirm('Import a .tinda-backup file? The current database is safety-backed up, replaced, verified, and TINDA POS restarts.')) return
+    try {
+      const path = await window.api.backup.importTinda()
+      if (path) toastSuccess('Universal backup imported', 'TINDA POS is restarting...')
+    } catch (e) { toastError('Import failed', String((e as Error)?.message || e)) }
   }
 
   const reset = async () => {
@@ -118,7 +155,10 @@ function DataTab(): React.JSX.Element {
           <button onClick={() => void window.api.app.openDataDir()} className="btn-ghost flex items-center gap-2"><FolderOpen className="h-4 w-4" /> Open Data Folder</button>
           <button onClick={() => void backupNow()} className="btn-primary flex items-center gap-2"><HardDriveDownload className="h-4 w-4" /> Backup Now</button>
           <button onClick={() => void showRestore()} className="btn-ghost flex items-center gap-2"><RotateCcw className="h-4 w-4" /> Restore Backup</button>
+          <button onClick={() => void exportUniversal()} className="btn-ghost flex items-center gap-2"><Download className="h-4 w-4" /> Export Universal Backup</button>
+          <button onClick={() => void importUniversal()} className="btn-ghost flex items-center gap-2"><Save className="h-4 w-4" /> Import Universal Backup</button>
         </div>
+        <p className="mt-3 text-xs text-slate-500">Universal backups (.tinda-backup) let you move your store between the Windows and Android apps — even between different devices.</p>
       </div>
 
       <div className="card p-5">
@@ -247,6 +287,11 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
             <Download className="h-3.5 w-3.5" /> Download Update
           </button>
         )}
+        {event.status === 'ERROR' && event.available && (
+          <button onClick={() => { setBusy(true); void download().finally(() => setBusy(false)) }} disabled={busy} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs">
+            <Download className="h-3.5 w-3.5" /> Retry Download
+          </button>
+        )}
         {event.status === 'UPDATE_AVAILABLE' && (
           <button onClick={() => void dismiss()} className="btn-ghost px-3 py-1.5 text-xs">Later</button>
         )}
@@ -349,14 +394,14 @@ function StoreSettingsTab(): React.JSX.Element {
 
 function ReceiptSettingsTab(): React.JSX.Element {
   const { settings, update } = useSettings()
-  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '80mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
+  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_title: settings?.receipt_title ?? '', receipt_show_app_name: settings?.receipt_show_app_name ?? true, receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '80mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [printers, setPrinters] = useState<PrinterChoice[]>([])
 
   useEffect(() => {
-    if (settings) setF({ receipt_header: settings.receipt_header, receipt_footer: settings.receipt_footer, receipt_printer: settings.receipt_printer, auto_print_after_sale: settings.auto_print_after_sale, receipt_paper_width: settings.receipt_paper_width, receipt_copies: settings.receipt_copies })
+    if (settings) setF({ receipt_header: settings.receipt_header, receipt_title: settings.receipt_title, receipt_show_app_name: settings.receipt_show_app_name, receipt_footer: settings.receipt_footer, receipt_printer: settings.receipt_printer, auto_print_after_sale: settings.auto_print_after_sale, receipt_paper_width: settings.receipt_paper_width, receipt_copies: settings.receipt_copies })
   }, [settings])
 
   // Refresh the installed printer list (also used by the Refresh Printers button
@@ -390,7 +435,7 @@ function ReceiptSettingsTab(): React.JSX.Element {
   const save = async () => {
     setSaving(true)
     try {
-      await update({ receipt_header: f.receipt_header, receipt_footer: f.receipt_footer })
+      await update({ receipt_header: f.receipt_header, receipt_title: f.receipt_title, receipt_show_app_name: f.receipt_show_app_name, receipt_footer: f.receipt_footer })
       await window.api.printer.save({ name: f.receipt_printer, autoPrint: f.auto_print_after_sale, paperWidth: f.receipt_paper_width, copies: f.receipt_copies })
       toastSuccess('Receipt settings saved')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
@@ -408,6 +453,8 @@ function ReceiptSettingsTab(): React.JSX.Element {
   return (
     <div className="card max-w-xl p-5">
       <div className="space-y-3">
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Show TINDA POS App Name</p><p className="text-xs text-slate-500">Turn this off to remove TINDA POS from the receipt heading.</p></div><Toggle on={f.receipt_show_app_name} onClick={() => set({receipt_show_app_name: !f.receipt_show_app_name})}/></div>
+        <div><label className="label">Receipt Title</label><input value={f.receipt_title} onChange={e=>set({receipt_title:e.target.value})} placeholder="JUAN STORE" className="input w-full"/></div>
         <div><label className="label">Receipt Header (shown on top)</label><textarea value={f.receipt_header} onChange={(e) => set({ receipt_header: e.target.value })} rows={2} className="input w-full" /></div>
         <div><label className="label">Receipt Footer (message at bottom)</label><textarea value={f.receipt_footer} onChange={(e) => set({ receipt_footer: e.target.value })} rows={2} className="input w-full" /></div>
         <div><label className="label">Printer</label><select value={f.receipt_printer} onChange={(e) => set({ receipt_printer: e.target.value })} className="input w-full"><option value="">No receipt printer configured</option>{printers.map((printer) => <option key={printer.name} value={printer.name}>{printer.displayName}{printer.isDefault ? ' (Default)' : ''}</option>)}{pick.status === 'UNAVAILABLE' && <option value={pick.name}>{pick.name} (unavailable)</option>}</select></div>
@@ -422,6 +469,7 @@ function ReceiptSettingsTab(): React.JSX.Element {
         {pick.status === 'NOT_CONFIGURED' && printers.length === 0 && <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">No receipt printer configured. Install a thermal receipt printer in Windows, then press Refresh Printers.</p>}
         <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">One silent print job, sent only after the sale commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
         <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm (default)</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={3} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Math.min(3, Math.trunc(Number(e.target.value) || 1))) })} className="input w-full" /></div></div>
+        <div><p className="label">Live Receipt Preview</p><ReceiptPaper width={f.receipt_paper_width} lines={[...f.receipt_header.trim().split(/\r?\n/).filter(Boolean), ...(f.receipt_title.trim() ? [f.receipt_title.trim()] : []), ...(f.receipt_show_app_name && f.receipt_title.trim().toUpperCase() !== 'TINDA POS' ? ['TINDA POS'] : []), settings?.store_name || 'My Sari-Sari Store','--------------------------------','TPOS-PREVIEW','1 x Sample Item        10.00','TOTAL                  10.00','--------------------------------',f.receipt_footer || 'Salamat po!']}/></div>
         <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. For automatic cutting, enable Auto Cut in the Windows driver/preferences of that printer. Sales still complete if the printer is missing or offline.</p>
         <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
       </div>
@@ -466,18 +514,26 @@ function UsersTab(): React.JSX.Element {
         <p className="text-sm text-slate-400">{users.length} users</p>
         <button onClick={() => setEditing({ id: null, username: '', password: '', pin: '', full_name: '', roles: ['CASHIER'] })} className="btn-primary flex items-center gap-2"><UserPlus className="h-4 w-4" /> New User</button>
       </div>
-      <div className="card overflow-hidden">
+      <div className="card table-container">
         <table className="table">
-          <thead><tr><th>User</th><th>Username</th><th>Roles</th><th>Status</th><th className="w-28">Actions</th></tr></thead>
+          <thead>
+            <tr>
+              <th className="w-[28%]">User</th>
+              <th className="w-[22%]">Username</th>
+              <th className="w-[20%]">Roles</th>
+              <th className="w-[14%]">Status</th>
+              <th className="w-[16%]">Actions</th>
+            </tr>
+          </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="font-medium text-slate-200">{u.full_name}</td>
-                <td className="text-slate-400">{u.username}</td>
-                <td className="text-slate-300">{u.roles.join(', ')}</td>
-                <td><span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
-                <td>
-                  <div className="flex gap-1">
+                <td className="w-[28%] font-medium text-slate-200">{u.full_name}</td>
+                <td className="w-[22%] text-slate-400">{u.username}</td>
+                <td className="w-[20%] text-slate-300">{u.roles.join(', ')}</td>
+                <td className="w-[14%]"><span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td className="w-[16%]">
+                  <div className="flex justify-center gap-1">
                     <button onClick={() => setEditing({ id: u.id, username: u.username, password: '', pin: '', full_name: u.full_name, roles: u.roles })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                     <button onClick={() => setResetPin({ id: u.id, full_name: u.full_name })} className="btn-ghost-2 rounded-lg p-2" title="Reset PIN"><KeyRound className="h-4 w-4" /></button>
                   </div>

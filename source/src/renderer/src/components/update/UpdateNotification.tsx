@@ -53,6 +53,7 @@ export function UpdateNotification(): React.JSX.Element | null {
           <p className="mt-1 text-xs text-slate-400">{event.progress.percent}%</p>
         )}
         {installError && <p className="mt-1 text-xs text-amber-300">{installError}</p>}
+        {s === 'READY_TO_INSTALL' && event.message && <p className="mt-1 text-xs text-slate-300">{event.message}</p>}
         {showNotes && event.available && (
           <div className="mt-3 max-h-44 overflow-y-auto rounded-lg bg-ink-900/70 p-3 text-xs leading-relaxed text-slate-300">
             <p className="mb-1 font-semibold text-white">What&apos;s New in v{event.available.version}</p>
@@ -76,6 +77,12 @@ export function UpdateNotification(): React.JSX.Element | null {
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} Download Update
       </button>,
       <button key="later" onClick={() => void dismiss()} className="btn-ghost px-3 py-1.5 text-xs">Later</button>
+    )
+  } else if (s === 'ERROR' && event.available) {
+    actions.push(
+      <button key="retry" onClick={() => { setInstallError(null); setBusy(true); void download().finally(() => setBusy(false)) }} className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs" disabled={busy}>
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} Retry Download
+      </button>
     )
   } else if (s === 'DOWNLOADED') {
     actions.push(

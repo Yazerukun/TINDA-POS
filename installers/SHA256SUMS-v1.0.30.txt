@@ -1,0 +1,3 @@
+e4fda052f8482353803519f2fea6f4e3d412b31aed8a15cace17d24a9f7eb7cc  TindaPOS-Setup-1.0.30.exe
+30e7b3f98bca34f29a4d519d48e469af99258049f70a1434b3fe489513d07ad5  TindaPOS-Portable-1.0.30.exe
+205230f65ce6ad988c7afed412e3dff0f773546bf4b010687236b96cbeeeb1fa  TindaPOS-Setup-1.0.30.exe.blockmap

@@ -313,7 +313,39 @@ describe('update service — download & install', () => {
     await service.check({ manual: true })
     const s = await service.download()
     expect(s.status).toBe('ERROR')
-    expect(s.message).toBe('disk full')
+    expect(s.message).toBe('The update download failed. Please try again.')
+    expect(s.available?.version).toBe('1.0.4')
+  })
+
+  it('shows a friendly interruption error and retries the known release to 100%', async () => {
+    let attempts = 0
+    const progress: number[] = []
+    const fake = makeFakeTransport({
+      downloadSetup: async (_r, onProgress) => {
+        attempts++
+        onProgress(30, 100)
+        if (attempts === 1) throw new Error('net::ERR_CONTENT_LENGTH_MISMATCH')
+        onProgress(100, 100)
+      },
+      safetyBackup: () => {
+        fake.calls.push('safetyBackup')
+        return { path: 'C:\\backups\\before-update.db' }
+      }
+    })
+    fake.releases = [release('1.0.4')]
+    const emitted: UpdateStatusEvent[] = []
+    const service = createUpdateService({ transport: fake, storage: makeStorage(), emit: (event) => emitted.push(event) })
+    await service.check({ manual: true })
+    const failed = await service.download()
+    expect(failed.status).toBe('ERROR')
+    expect(failed.message).toBe('Update download was interrupted. Check your connection and try again.')
+    const retried = await service.download()
+    expect(retried.status).toBe('READY_TO_INSTALL')
+    expect(fake.calls.filter((call) => call === 'safetyBackup')).toHaveLength(1)
+    for (const event of emitted) {
+      if (event.progress) progress.push(event.progress.percent)
+    }
+    expect(progress).toContain(100)
   })
 })
 
@@ -328,9 +360,11 @@ describe('update service — dismissal', () => {
     service.dismiss()
     expect(service.getState().status).toBe('DISMISSED')
     storage.save({ lastCheckedAt: storage.saved.at(-1)?.lastCheckedAt ?? null, dismissedVersion: '1.0.4' })
-    const s = await service.check({ manual: true })
+    const s = await service.check({ manual: false })
     expect(s.status).toBe('UP_TO_DATE')
-    expect(s.message).toContain('1.0.4')
+    const manual = await service.check({ manual: true })
+    expect(manual.status).toBe('UPDATE_AVAILABLE')
+    expect(manual.available?.version).toBe('1.0.4')
   })
 
   it('stops suppressing updates once a newer version appears', async () => {
@@ -363,5 +397,30 @@ describe('update service — sanitizes ingested release notes end to end', () =>
     fake.releases = [raw!]
     const s = await checkService(fake, { manual: true })
     expect(s.available?.releaseNotes).toBe('Fixed a bug with keys')
+  })
+})
+
+describe('installed update backup at the moment of installation', () => {
+  it('takes a fresh backup after download and blocks installation until backup succeeds', async () => {
+    let backups = 0
+    let backupWorks = true
+    const fake = makeFakeTransport({ safetyBackup: () => {
+      backups++
+      return backupWorks ? { path: `backup-${backups}.db` } : null
+    } })
+    fake.releases = [release('1.0.6')]
+    const { service } = makeService(fake)
+    await service.check({ manual: true })
+    await service.download()
+    expect(backups).toBe(1)
+    backupWorks = false
+    const paused = await service.install()
+    expect(paused.status).toBe('READY_TO_INSTALL')
+    expect(paused.message).toContain('safety backup')
+    expect(fake.calls).not.toContain('restartAndInstall')
+    backupWorks = true
+    await service.install()
+    expect(backups).toBe(3)
+    expect(fake.calls.filter(c => c === 'restartAndInstall')).toHaveLength(1)
   })
 })

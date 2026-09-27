@@ -55,7 +55,7 @@ export interface UpdateStatusEvent {
   lastCheckedAt: string | null
 }
 
-export const UPDATE_CHECK_THROTTLE_MS = 24 * 60 * 60 * 1000
+export const UPDATE_CHECK_THROTTLE_MS = 15 * 60 * 1000 // 15 minutes
 export const UPDATE_OWNER = 'Yazerukun'
 export const UPDATE_REPO = 'TINDA-POS'
 

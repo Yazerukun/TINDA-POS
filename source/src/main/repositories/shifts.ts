@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { CashMovement, Shift } from '@shared/types'
+import { calculateRead } from '../services/readReports'
 
 export function getShift(db: Database.Database, id: number): Shift {
   const row = db
@@ -41,69 +42,19 @@ export function openShift(db: Database.Database, userId: number, startingCashC: 
   if (startingCashC < 0) throw new Error('Starting cash cannot be negative.')
   const existing = currentShiftFor(db, userId)
   if (existing) throw new Error('You already have an open shift.')
+  const nextNo = (db.prepare('SELECT COALESCE(MAX(shift_no), 0) + 1 AS n FROM shifts WHERE user_id = ?').get(userId) as { n: number }).n
   const info = db
-    .prepare(`INSERT INTO shifts (user_id, starting_cash_c, expected_cash_c) VALUES (?, ?, ?)`)
-    .run(userId, startingCashC, startingCashC)
+    .prepare(`INSERT INTO shifts (user_id, shift_no, starting_cash_c, expected_cash_c) VALUES (?, ?, ?, ?)`)
+    .run(userId, nextNo, startingCashC, startingCashC)
   return getShift(db, Number(info.lastInsertRowid))
 }
 
 export function updateShiftTotals(db: Database.Database, shiftId: number): void {
-  const totals = db
-    .prepare(
-      `SELECT
-        COALESCE(SUM(CASE WHEN s.status != 'VOIDED' AND EXISTS (SELECT 1 FROM payments p WHERE p.sale_id = s.id AND p.method = 'CASH') THEN s.total_c ELSE 0 END), 0) AS cash_sales_c,
-        COALESCE(SUM(CASE WHEN EXISTS (SELECT 1 FROM payments p1 WHERE p1.sale_id = s.id AND p1.method = 'GCASH') THEN (SELECT amount_c FROM payments WHERE sale_id = s.id AND method = 'GCASH' ORDER BY id LIMIT 1) ELSE 0 END), 0) AS gcash_c,
-        COALESCE(SUM(CASE WHEN EXISTS (SELECT 1 FROM payments p2 WHERE p2.sale_id = s.id AND p2.method = 'MAYA') THEN (SELECT amount_c FROM payments WHERE sale_id = s.id AND method = 'MAYA' ORDER BY id LIMIT 1) ELSE 0 END), 0) AS maya_c,
-        COALESCE(SUM(CASE WHEN EXISTS (SELECT 1 FROM payments p3 WHERE p3.sale_id = s.id AND p3.method = 'UTANG') THEN (SELECT amount_c FROM payments WHERE sale_id = s.id AND method = 'UTANG' ORDER BY id LIMIT 1) ELSE 0 END), 0) AS utang_sold_c
-       FROM sales s WHERE s.shift_id = ? AND s.status != 'VOIDED'`
-    )
-    .get(shiftId) as { cash_sales_c: number; gcash_c: number; maya_c: number; utang_sold_c: number }
-
-  const extras = db
-    .prepare(
-      `SELECT
-        COALESCE(SUM(CASE WHEN type = 'CASH_OUT' AND amount_c > 0 THEN amount_c ELSE 0 END), 0) AS cash_out_c,
-        COALESCE(SUM(CASE WHEN type = 'CASH_IN' AND amount_c > 0 THEN amount_c ELSE 0 END), 0) AS cash_in_c
-       FROM cash_movements WHERE shift_id = ?`
-    )
-    .get(shiftId) as { cash_out_c: number; cash_in_c: number }
-
-  const refundCash = db
-    .prepare(
-      `SELECT COALESCE(SUM(r.total_c),0) AS s FROM refunds r
-       JOIN sales s ON s.id = r.sale_id WHERE s.shift_id = ? AND s.status != 'VOIDED'`
-    )
-    .get(shiftId) as { s: number }
-
-  const expenses = db
-    .prepare(
-      `SELECT COALESCE(SUM(e.amount_c),0) AS s FROM expenses e
-       WHERE e.expense_date = date('now','localtime')`
-    )
-    .get() as { s: number }
-
-  db.prepare(
-    `UPDATE shifts SET
-       cash_sales_c = ?, gcash_c = ?, maya_c = ?, utang_sold_c = ?,
-       refund_cash_c = ?, cash_expenses_c = ?, cash_in_c = ?, cash_out_c = ?,
-       expected_cash_c = starting_cash_c + ? + ? - ? - ? - ?
-     WHERE id = ?`
-  ).run(
-    totals.cash_sales_c,
-    totals.gcash_c,
-    totals.maya_c,
-    totals.utang_sold_c,
-    refundCash.s,
-    expenses.s,
-    extras.cash_in_c,
-    extras.cash_out_c,
-    extras.cash_in_c,
-    totals.cash_sales_c,
-    refundCash.s,
-    expenses.s,
-    extras.cash_out_c,
-    shiftId
-  )
+  const r = calculateRead(db, shiftId)
+  db.prepare(`UPDATE shifts SET cash_sales_c=?, gcash_c=?, maya_c=?, utang_sold_c=?,
+    refund_cash_c=?, cash_expenses_c=?, cash_in_c=?, cash_out_c=?, expected_cash_c=?
+    WHERE id=?`).run(r.cash_c, r.gcash_c, r.maya_c, r.utang_c, r.cash_refunds_c ?? r.refunds_c,
+      r.expenses_c, r.cash_in_c, r.cash_out_c, r.expected_cash_c, shiftId)
 }
 
 export function closeShift(

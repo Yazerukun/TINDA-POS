@@ -9,6 +9,8 @@ export const defaultSettings: StoreSettings = {
   tin: '',
   currency: 'PHP',
   receipt_header: '',
+  receipt_title: '',
+  receipt_show_app_name: true,
   receipt_footer: 'Salamat po!',
   logo_path: null,
   default_low_stock: 5,

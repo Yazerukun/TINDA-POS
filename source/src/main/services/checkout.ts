@@ -29,6 +29,9 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
       const p = prodRepo.getProduct(db, it.product_id)
       costC = p.purchase_cost_c
       stockBase = p.stock
+      if (p.expiration_mode && p.expiration_mode !== 'NONE' && it.qty_base > (p.sellable_stock ?? 0)) {
+        throw new Error(`${p.name}: only ${p.sellable_stock ?? 0} ${p.base_unit} available for sale. Expired or undated stock is blocked.`)
+      }
       if (!settings.allow_negative_inventory && it.qty_base > p.stock) {
         throw new Error(`Insufficient stock for "${p.name}". Available: ${p.stock} ${p.base_unit}.`)
       }
@@ -39,10 +42,13 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
   })
 }
 
-export function buildReceiptLines(store: { header: string; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
+export function buildReceiptLines(store: { header: string; title?: string; show_app_name?: boolean; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
   const lines: string[] = []
   if (store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
-  lines.push('TINDA POS')
+  const title = store.title?.trim() ?? ''
+  const showApp = store.show_app_name !== false
+  if (title) lines.push(title)
+  if (showApp && title.toUpperCase() !== 'TINDA POS') lines.push('TINDA POS')
   if (store.store_name) lines.push(store.store_name)
   if (store.owner_name) lines.push(`Owner: ${store.owner_name}`)
   if (store.address) lines.push(store.address)
@@ -65,14 +71,17 @@ export function buildReceiptLines(store: { header: string; store_name: string; o
   const cash = sale.payments.find((p) => p.method === 'CASH')
   if (cash) {
     lines.push(`Cash          ${(cash.amount_c / 100).toFixed(2)}`)
-    const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
-    lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
   for (const p of sale.payments) if (p.method !== 'CASH') {
     lines.push(`${p.method}          ${(p.amount_c / 100).toFixed(2)}`)
     if (p.reference) lines.push(`Reference: ${p.reference}`)
   }
+  if (cash) {
+    const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
+    lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
+  }
   lines.push('--------------------------------')
+  lines.push(`Total Items: ${sale.items.reduce((total, item) => total + item.qty, 0)}`)
   lines.push(store.footer || 'Salamat po!')
   return lines
 }
@@ -115,10 +124,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
 
     for (const l of lines) {
       const it = l.cart
-      if (it.product_id) {
-        prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo)
-      }
-      salesRepo.insertSaleItem(db, {
+      const saleItemId = salesRepo.insertSaleItem(db, {
         sale_id: saleId,
         product_id: it.product_id,
         product_name: it.name,
@@ -129,6 +135,9 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
         subtotal_c: it.subtotal_c,
         cost_base_c: it.cost_base_c ?? 0
       })
+      if (it.product_id) {
+        prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
+      }
     }
 
     for (const p of payload.payments) {
@@ -153,7 +162,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
-    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
   return { sale, receipt }
@@ -192,7 +201,7 @@ export function reprint(saleId: number): string[] {
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   return buildReceiptLines(
-    { header: settings.receipt_header, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
     sale
   )
 }

@@ -179,8 +179,8 @@ export function insertSaleItem(
     subtotal_c: number
     cost_base_c: number
   }
-): void {
-  db.prepare(
+): number {
+  const result = db.prepare(
     `INSERT INTO sale_items (sale_id, product_id, product_name, unit_name, qty, qty_base, unit_price_c, subtotal_c, cost_base_c)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
@@ -194,6 +194,7 @@ export function insertSaleItem(
     input.subtotal_c,
     input.cost_base_c
   )
+  return Number(result.lastInsertRowid)
 }
 
 export function insertPayment(

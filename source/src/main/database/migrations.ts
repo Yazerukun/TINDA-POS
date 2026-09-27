@@ -369,5 +369,134 @@ CREATE TABLE backup_history (
   status TEXT NOT NULL DEFAULT 'OK',
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );`
+  },
+  {
+    version: 2,
+    name: 'z_read_snapshots',
+    sql: `
+CREATE TABLE IF NOT EXISTS z_reads (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER NOT NULL UNIQUE REFERENCES shifts(id),
+  report_no TEXT NOT NULL UNIQUE,
+  snapshot_json TEXT NOT NULL,
+  finalized_by INTEGER NOT NULL REFERENCES users(id),
+  finalized_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_z_reads_finalized_at ON z_reads(finalized_at);
+`
+  },
+  {
+    version: 3,
+    name: 'structured_stock_receiving_metadata',
+    sql: `
+ALTER TABLE inventory_movements ADD COLUMN source TEXT;
+ALTER TABLE inventory_movements ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL;
+ALTER TABLE inventory_movements ADD COLUMN received_unit TEXT;
+ALTER TABLE inventory_movements ADD COLUMN received_quantity INTEGER;
+ALTER TABLE inventory_movements ADD COLUMN unit_cost_c INTEGER;
+ALTER TABLE inventory_movements ADD COLUMN receiving_notes TEXT;
+CREATE INDEX IF NOT EXISTS idx_movements_supplier ON inventory_movements(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_movements_source ON inventory_movements(source);
+`
+  },
+  {
+    version: 4,
+    name: 'cash_counts',
+    sql: `
+CREATE TABLE IF NOT EXISTS cash_counts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER NOT NULL REFERENCES shifts(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  business_date TEXT NOT NULL,
+  starting_cash_c INTEGER NOT NULL,
+  expected_cash_c INTEGER NOT NULL,
+  actual_cash_c INTEGER NOT NULL,
+  difference_c INTEGER NOT NULL,
+  status TEXT NOT NULL CHECK(status IN ('BALANCED','OVER','SHORT')),
+  denominations_json TEXT NOT NULL,
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX IF NOT EXISTS idx_cash_counts_date ON cash_counts(business_date);
+CREATE INDEX IF NOT EXISTS idx_cash_counts_shift ON cash_counts(shift_id);
+`
+  },
+  {
+    version: 5,
+    name: 'shift_numbering',
+    sql: `
+ALTER TABLE shifts ADD COLUMN shift_no INTEGER;
+WITH numbered AS (
+  SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY id) AS rn FROM shifts
+)
+UPDATE shifts SET shift_no = (SELECT rn FROM numbered WHERE numbered.id = shifts.id);
+CREATE INDEX IF NOT EXISTS idx_shifts_user_shift_no ON shifts(user_id, shift_no);
+`
+  },
+  {
+    version: 6,
+    name: 'product_expiration_tracking',
+    sql: `
+ALTER TABLE products ADD COLUMN expiration_mode TEXT NOT NULL DEFAULT 'NONE' CHECK(expiration_mode IN ('NONE','ITEM','BATCH'));
+ALTER TABLE products ADD COLUMN expiration_date TEXT;
+CREATE TABLE stock_batches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  label TEXT NOT NULL,
+  expiration_date TEXT,
+  quantity INTEGER NOT NULL CHECK(quantity >= 0),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX idx_stock_batches_product ON stock_batches(product_id, expiration_date);
+CREATE TABLE batch_movements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  batch_id INTEGER NOT NULL REFERENCES stock_batches(id),
+  movement_id INTEGER NOT NULL REFERENCES inventory_movements(id),
+  sale_item_id INTEGER REFERENCES sale_items(id),
+  quantity_change INTEGER NOT NULL,
+  restored_quantity INTEGER NOT NULL DEFAULT 0 CHECK(restored_quantity >= 0)
+);
+CREATE INDEX idx_batch_movements_movement ON batch_movements(movement_id);
+`
+  },
+  {
+    version: 7,
+    name: 'product_srp',
+    sql: `
+ALTER TABLE products ADD COLUMN srp_c INTEGER;
+`
+  },
+  {
+    version: 8,
+    name: 'price_references',
+    sql: `
+CREATE TABLE price_references (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
+  barcode TEXT,
+  product_name TEXT NOT NULL,
+  brand TEXT,
+  variant TEXT,
+  unit TEXT,
+  image_path TEXT,
+  image_url TEXT,
+  market_price_c INTEGER,
+  min_price_c INTEGER,
+  max_price_c INTEGER,
+  currency TEXT NOT NULL DEFAULT 'PHP',
+  source_name TEXT NOT NULL,
+  source_type TEXT NOT NULL DEFAULT 'market' CHECK(source_type IN ('official','market','reference','test')),
+  source_url TEXT,
+  location TEXT DEFAULT 'Philippines',
+  effective_date TEXT,
+  retrieved_at TEXT NOT NULL,
+  last_synced_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+CREATE INDEX idx_price_refs_product ON price_references(product_id);
+CREATE INDEX idx_price_refs_barcode ON price_references(barcode);
+CREATE INDEX idx_price_refs_name ON price_references(product_name, brand);
+`
   }
 ]

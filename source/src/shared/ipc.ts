@@ -12,6 +12,10 @@ import type {
   HeldSale,
   InventoryMovement,
   InventoryMovementType,
+  PriceComparisonStatus,
+  PriceReference,
+  PriceSourceType,
+  PriceSyncResult,
   Product,
   ProductInput,
   Purchase,
@@ -123,6 +127,7 @@ export interface CompleteSetupPayload {
  */
 export interface TindaApi {
   app: {
+    startup: (enabled?: boolean) => Promise<{ supported: boolean; enabled: boolean }>
     info: () => Promise<{ name: string; version: string; offline: boolean }>
     dataDir: () => Promise<string>
     databaseFile: () => Promise<string>
@@ -194,17 +199,46 @@ export interface TindaApi {
     archive: (id: number) => Promise<Product>
     restore: (id: number) => Promise<Product>
     count: (status?: string) => Promise<number>
+    csvTemplate: () => Promise<string>
+    previewCsv: (text: string) => Promise<{ rows: Array<Record<string, unknown> & { row_number: number; product_name: string; valid: boolean; duplicate: boolean; reasons: string[] }>; total: number; valid: number; invalid: number; duplicates: number }>
+    importCsv: (text: string, strategy: 'SKIP' | 'UPDATE') => Promise<{ created: number; updated: number; skipped: number; product_ids: number[] }>
+    previewSimplePos: (text: string) => Promise<{
+      rows: Array<Record<string, unknown> & { row_number: number; product_name: string; valid: boolean; duplicate: boolean; reasons: string[] }>
+      total: number
+      valid: number
+      invalid: number
+      duplicates: number
+      categories_count: number
+      total_stock: number
+      total_retail_value_c: number
+      active_count: number
+      inactive_count: number
+    }>
+    importSimplePos: (text: string, strategy: 'SKIP' | 'UPDATE') => Promise<{ created: number; updated: number; skipped: number; total_stock: number; product_ids: number[] }>
+    saveImage: (data: { name: string; dataUrl: string }) => Promise<{ filename: string; url: string }>
+    deleteImage: (filename: string) => Promise<void>
+    getImageData: (filename: string) => Promise<string | null>
   }
 
   inventory: {
+    expiration: () => Promise<import('./types').ExpirationEntry[]>
+    batchDate: (id: number, date: string) => Promise<void>
+    onChanged: (cb: (event: import('./types').InventoryChangedEvent) => void) => () => void
     movements: (opts: { product_id?: number; movement_type?: InventoryMovementType | ''; limit?: number; offset?: number; from?: string; to?: string }) => Promise<{
       rows: InventoryMovement[]
       total: number
+    }>
+    receiving: (opts?: { search?: string; from?: string; to?: string; supplier_id?: number; source?: import('./types').StockReceivingSource | ''; limit?: number; offset?: number }) => Promise<{
+      rows: import('./types').StockReceivingRecord[]
+      total: number
+      total_cost_c: number
     }>
     receive: (input: { product_id: number; qty_base: number; unit_name: string; cost_c: number; reason?: string }) => Promise<InventoryMovement>
     adjust: (input: { product_id: number; qty_base: number; reason: string }) => Promise<InventoryMovement>
     movement: (type: InventoryMovementType, input: { product_id: number; qty_base: number; reason?: string; notes?: string }) => Promise<InventoryMovement>
     count: (input: { product_id: number; actual_base: number; notes?: string }) => Promise<InventoryMovement>
+    restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }) => Promise<InventoryMovement>
+    withdraw: (input: { product_id: number; quantity: number; unit_name: string; reason: import('./types').WithdrawalReason; notes?: string; batch_id?: number }) => Promise<InventoryMovement>
   }
 
   suppliers: {
@@ -282,6 +316,10 @@ export interface TindaApi {
   }
 
   reports: {
+    cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<import('./types').CashCountRecord>
+    cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<import('./types').CashCountRecord[]>
+    cashCountExpected: () => Promise<import('./types').ReadReport>
+    cashCountPrint: (id: number) => Promise<PrintResult>
     sales: (opts: { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) => Promise<{
       rows: SalesReportRow[]
       summary: ReportSummary
@@ -298,12 +336,19 @@ export interface TindaApi {
     }>
     shifts: (opts?: { from?: string; to?: string }) => Promise<{ rows: Shift[]; summary: ReportSummary }>
     exportCsv: (kind: 'SALES' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS', opts?: { from?: string; to?: string }) => Promise<ExportResult>
+    xRead: () => Promise<import('./types').ReadReport>
+    printXRead: () => Promise<PrintResult & { report: import('./types').ReadReport }>
+    finalizeZ: (input: { actual_cash_c: number; note?: string }) => Promise<import('./types').ZRead>
+    zHistory: () => Promise<import('./types').ZRead[]>
+    printZRead: (id: number) => Promise<PrintResult>
   }
 
   backup: {
     list: () => Promise<BackupInfo[]>
     create: (reason?: string) => Promise<BackupInfo>
     restore: (filename: string) => Promise<void>
+    exportTinda: () => Promise<string | null>
+    importTinda: () => Promise<string | null>
     openFolder: () => Promise<void>
     selectSyncFolder: () => Promise<string | null>
     openSyncFolder: () => Promise<void>
@@ -317,6 +362,31 @@ export interface TindaApi {
 
   audit: {
     list: (opts?: { limit?: number; offset?: number; action?: string }) => Promise<{ rows: AuditLog[]; total: number }>
+  }
+
+  priceReferences: {
+    search: (opts?: {
+      query?: string
+      sourceType?: PriceSourceType
+      linkedOnly?: boolean
+      unlinkedOnly?: boolean
+      limit?: number
+      offset?: number
+    }) => Promise<{ rows: PriceReference[]; references: PriceReference[]; total: number }>
+    get: (id: number) => Promise<PriceReference | undefined>
+    getByProduct: (productId: number) => Promise<PriceReference | undefined>
+    getByBarcode: (barcode: string) => Promise<PriceReference | undefined>
+    matchForProduct: (product: { id: number; name: string; barcode?: string | null }) => Promise<PriceReference | null>
+    link: (referenceId: number, productId: number) => Promise<PriceReference>
+    unlink: (referenceId: number) => Promise<PriceReference>
+    sync: (opts?: { force?: boolean; remoteUrl?: string }) => Promise<PriceSyncResult>
+    status: () => Promise<{
+      total: number
+      last_synced_at: string | null
+      is_stale: boolean
+      sources: { source_name: string; count: number }[]
+    }>
+    compare: (retailPriceC: number, reference: PriceReference | null) => Promise<PriceComparisonStatus>
   }
 }
 

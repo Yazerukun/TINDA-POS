@@ -1,6 +1,7 @@
 import type { ReleaseInfo, UpdateStatusEvent } from '@shared/update'
 import { compareSemver, latestStable, shouldAutoCheck, UPDATE_CHECK_THROTTLE_MS } from '@shared/update'
 import { hasCriticalOperation, OperationInProgressError } from './operationGuard'
+import { friendlyDownloadError } from './updateDownload'
 
 export type CheckFailureKind = 'OFFLINE' | 'NETWORK' | 'TIMEOUT' | 'HTTP' | 'RATE_LIMIT' | 'INVALID'
 
@@ -53,6 +54,7 @@ export class UpdateService {
   private state: UpdateStatusEvent
   private busy = false
   private downloadedPath: string | null = null
+  private backupCreatedForVersion: string | null = null
 
   constructor(private readonly deps: UpdateServiceDeps) {
     const saved = deps.storage.load()
@@ -124,7 +126,7 @@ export class UpdateService {
         return this.getState()
       }
 
-      if (saved.dismissedVersion === available.version) {
+      if (!manual && saved.dismissedVersion === available.version) {
         this.set({ status: 'UP_TO_DATE', message: `Update to version ${available.version} is available.`, lastCheckedAt: new Date().toISOString() }, true)
         return this.getState()
       }
@@ -139,11 +141,11 @@ export class UpdateService {
   /** Download the pending update. For installed builds this also creates the pre-update safety backup. */
   async download(): Promise<UpdateStatusEvent> {
     const available = this.state.available
-    if (!available || this.state.status !== 'UPDATE_AVAILABLE') return this.getState()
+    if (!available || (this.state.status !== 'UPDATE_AVAILABLE' && this.state.status !== 'ERROR')) return this.getState()
     if (this.busy) return this.getState()
     this.busy = true
     try {
-      if (!this.deps.transport.isPortable()) {
+      if (!this.deps.transport.isPortable() && this.backupCreatedForVersion !== available.version) {
         let backup: { path: string } | null = null
         try {
           backup = this.deps.transport.safetyBackup()
@@ -154,6 +156,7 @@ export class UpdateService {
           this.set({ status: 'ERROR', message: 'Update installation paused because a safety backup could not be created.' })
           return this.getState()
         }
+        this.backupCreatedForVersion = available.version
       }
 
       this.set({ status: 'DOWNLOADING', message: null, progress: { downloaded: 0, total: 0, percent: 0 } })
@@ -175,7 +178,8 @@ export class UpdateService {
           this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null })
         }
       } catch (err) {
-        const message = err instanceof Error && err.message ? err.message : 'The update download failed. Please try again.'
+        console.error('[updater] download failed', err)
+        const message = friendlyDownloadError(err)
         this.set({ status: 'ERROR', message, progress: null })
       }
       return this.getState()
@@ -194,6 +198,11 @@ export class UpdateService {
       return this.getState()
     }
     try {
+      // Sales may have changed since the download started or Install Later was chosen.
+      if (!this.deps.transport.safetyBackup()) {
+        this.set({ message: 'Update installation paused because a safety backup could not be created. Try Restart & Install again.' })
+        return this.getState()
+      }
       this.deps.transport.restartAndInstall()
     } catch (err) {
       const message = err instanceof Error && err.message ? err.message : 'The update could not be installed right now.'
@@ -203,6 +212,8 @@ export class UpdateService {
   }
 
   dismiss(): void {
+    // Closing the banner must not discard an in-flight check or download.
+    if (this.busy) return
     this.persistDismissed(this.state.available?.version ?? null)
     this.set({ status: 'DISMISSED', available: null, message: null })
   }

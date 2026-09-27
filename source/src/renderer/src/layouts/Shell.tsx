@@ -16,6 +16,7 @@ import { Transactions } from '../pages/Transactions'
 import { Reports } from '../pages/Reports'
 import { Backup } from '../pages/Backup'
 import { Settings } from '../pages/Settings'
+import { ExpirationAlerts } from '../components/Expiration'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -29,7 +30,9 @@ export function Shell(): React.JSX.Element {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-ink-950">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex min-w-0 flex-1 flex-col">
+        {user && <ExpirationAlerts key={user.id} remind />}
+        <div className="min-h-0 flex-1 overflow-y-auto">
         {user && page === 'dashboard' && <Dashboard />}
         {user && page === 'pos' && <POS />}
         {user && page === 'inventory' && <Inventory />}
@@ -41,6 +44,7 @@ export function Shell(): React.JSX.Element {
         {user && page === 'reports' && <Reports />}
         {user && page === 'backup' && <Backup />}
         {user && page === 'settings' && <Settings />}
+        </div>
       </main>
       <ToastHost />
       <UpdateNotification />

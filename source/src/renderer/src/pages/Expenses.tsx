@@ -98,19 +98,29 @@ export function Expenses(): React.JSX.Element {
         <EmptyState title="No expenses" message="Expenses you record will appear here." icon={<Receipt className="h-7 w-7" />} />
       ) : (
         <div className="card overflow-hidden">
-          <table className="table">
-            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th className="text-right">Amount</th><th className="w-16"></th></tr></thead>
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th className="w-[18%] py-3 px-3 text-center align-middle">Date</th>
+                <th className="w-[22%] py-3 px-3 text-center align-middle">Category</th>
+                <th className="w-[30%] py-3 px-3 text-center align-middle">Description</th>
+                <th className="w-[18%] py-3 px-3 text-center align-middle">Amount</th>
+                <th className="w-[12%] py-3 px-3 text-center align-middle">Actions</th>
+              </tr>
+            </thead>
             <tbody>
               {rows.map((e) => (
                 <tr key={e.id}>
-                  <td className="whitespace-nowrap text-slate-400">{shortDate(e.expense_date)}</td>
-                  <td><span className="badge bg-ink-700 text-slate-300">{e.category_name}</span></td>
-                  <td className="text-slate-300">{e.description ?? '—'}</td>
-                  <td className="text-right font-bold text-danger-400">{money(e.amount_c)}</td>
-                  <td>
-                    <div className="flex gap-1">
-                      <button onClick={() => setEditing({ id: e.id, category_id: e.category_id, amount_c: e.amount_c, expense_date: e.expense_date, description: e.description ?? '' })} className="btn-ghost-2 rounded-lg p-2"><Pencil className="h-4 w-4" /></button>
-                      <button onClick={() => void remove(e.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400"><Trash2 className="h-4 w-4" /></button>
+                  <td className="w-[18%] py-3 px-3 text-center align-middle whitespace-nowrap text-slate-400 text-xs">{shortDate(e.expense_date)}</td>
+                  <td className="w-[22%] py-3 px-3 text-center align-middle">
+                    <span className="badge bg-ink-700 text-slate-300 inline-flex items-center justify-center truncate max-w-full">{e.category_name}</span>
+                  </td>
+                  <td className="w-[30%] py-3 px-3 text-center align-middle text-slate-300 truncate" title={e.description ?? '—'}>{e.description ?? '—'}</td>
+                  <td className="w-[18%] py-3 px-3 text-center align-middle font-mono tabular-nums font-bold text-danger-400">{money(e.amount_c)}</td>
+                  <td className="w-[12%] py-3 px-3 text-center align-middle">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => setEditing({ id: e.id, category_id: e.category_id, amount_c: e.amount_c, expense_date: e.expense_date, description: e.description ?? '' })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => void remove(e.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Delete"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </td>
                 </tr>

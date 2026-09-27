@@ -20,23 +20,28 @@ export const useUpdate = create<UpdateState>((set, get) => ({
     if (get().initialized) return
     set({ initialized: true })
     unsubscribe?.()
+    if (!window?.api?.update) return
     unsubscribe = window.api.update.onEvent((event) => set({ event }))
     const event = await window.api.update.state()
     set({ event })
   },
   check: async (manual) => {
+    if (!window?.api?.update) return
     const event = await window.api.update.check(manual)
     set({ event })
   },
   download: async () => {
+    if (!window?.api?.update) return
     const event = await window.api.update.download()
     set({ event })
   },
   install: async () => {
+    if (!window?.api?.update) return
     const event = await window.api.update.install()
     set({ event })
   },
   dismiss: async () => {
+    if (!window?.api?.update) return
     await window.api.update.dismiss()
     set({ event: null })
   }

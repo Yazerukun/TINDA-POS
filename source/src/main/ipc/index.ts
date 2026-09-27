@@ -1,6 +1,7 @@
 import type { IpcMainInvokeEvent } from 'electron'
 import { ipcMain } from 'electron'
-import { getDb, getDbFile } from '../database/connection'
+import { promises as fs } from 'node:fs'
+import { getDb, getDbFile, appDirs } from '../database/connection'
 import * as authSvc from '../services/auth'
 import * as sessionSvc from '../services/session'
 import * as settingRepo from '../repositories/settings'
@@ -18,16 +19,26 @@ import * as backupRepo from '../repositories/backup'
 import * as userRepo from '../repositories/users'
 import { getSale, listSales } from '../repositories/sales'
 import * as checkoutSvc from '../services/checkout'
+import * as expirationRepo from '../repositories/expiration'
 import * as txSvc from '../services/transaction'
 import * as reportSvc from '../services/reporting'
 import * as exportSvc from '../services/export'
 import * as dataManagementSvc from '../services/dataManagement'
 import * as printingSvc from '../services/printing'
+import * as importSvc from '../services/productImport'
+import * as simplePosSvc from '../services/simplePosImport'
+import * as readSvc from '../services/readReports'
+import { importWindowsBackup, exportWindowsBackup } from '../services/tindaBackupWindows'
+import * as cashCountRepo from '../repositories/cashCounts'
+import { cashCountLines } from '@shared/cashCount'
+import { emitInventoryChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
-import { appDirs } from '../database/connection'
 import { beginCriticalOperation } from '../services/operationGuard'
 import { getUpdateService } from '../services/updateRuntime'
+import { startupSetting } from '../services/startup'
+import * as priceRefRepo from '../repositories/priceReferences'
+import * as priceRefSvc from '../services/priceReferenceService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -50,6 +61,10 @@ const user = () => sessionSvc.requireUser()
 
 // ---- App ----
 handle('app:info', () => ({ name: 'TINDA POS', version: app.getVersion() ?? '1.0.0', offline: true }))
+handle('app:startup', (_e, enabled?: boolean) => {
+  sessionSvc.requirePermission('settings:manage')
+  return startupSetting(enabled)
+})
 handle('app:dataDir', () => appDirs().root)
 handle('app:databaseFile', () => getDbFile())
 handle('app:openDataDir', () => { sessionSvc.requirePermission('settings:manage'); return shell.openPath(appDirs().root) })
@@ -154,11 +169,15 @@ handle('products:search', (_e: IpcMainInvokeEvent, q: string, opts?: unknown) =>
 handle('products:get', (_e: IpcMainInvokeEvent, id: number) => prodRepo.getProduct(db(), id))
 handle('products:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
-  return prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  const product = prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [product.id] })
+  return product
 })
 handle('products:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
   user()
-  return prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  const product = prodRepo.updateProduct(db(), id, input as Parameters<typeof prodRepo.updateProduct>[2], user().id)
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [id] })
+  return product
 })
 handle('products:archive', (_e: IpcMainInvokeEvent, id: number) => {
   sessionSvc.requirePermission('products:archive')
@@ -169,28 +188,124 @@ handle('products:restore', (_e: IpcMainInvokeEvent, id: number) => {
   return prodRepo.setProductStatus(db(), id, 'ACTIVE', user().id)
 })
 handle('products:count', (_e: IpcMainInvokeEvent, status?: string) => prodRepo.productCount(db(), status))
+handle('products:csvTemplate', () => { sessionSvc.requirePermission('products:manage'); return importSvc.CSV_TEMPLATE })
+handle('products:previewCsv', (_e: IpcMainInvokeEvent, text: string) => { sessionSvc.requirePermission('products:manage'); return importSvc.previewCsv(db(), text) })
+handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {
+  sessionSvc.requirePermission('products:manage')
+  const result = importSvc.importCsv(db(), text, strategy, user().id)
+  emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
+  return result
+})
+handle('products:previewSimplePos', (_e: IpcMainInvokeEvent, text: string) => {
+  sessionSvc.requirePermission('products:manage')
+  return simplePosSvc.previewSimplePos(db(), text)
+})
+handle('products:importSimplePos', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {
+  sessionSvc.requirePermission('products:manage')
+  const result = simplePosSvc.importSimplePos(db(), text, strategy, user().id)
+  emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
+  return result
+})
+handle('products:saveImage', async (_e: IpcMainInvokeEvent, data: { name: string; dataUrl: string }) => {
+  sessionSvc.requirePermission('products:manage')
+  if (!data?.dataUrl || typeof data.dataUrl !== 'string') throw new Error('Invalid image data.')
+  const match = data.dataUrl.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i)
+  if (!match || !match[1] || !match[2]) throw new Error('Invalid image format. Allowed: PNG, JPEG, WEBP, GIF.')
+  const rawExt = match[1].toLowerCase()
+  const ext = rawExt === 'jpeg' ? 'jpg' : rawExt
+  const base64Data = match[2]
+  const buffer = Buffer.from(base64Data, 'base64')
+  if (buffer.length > 5 * 1024 * 1024) throw new Error('Image size must not exceed 5MB.')
+  const filename = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const filePath = require('node:path').join(appDirs().images, filename)
+  await fs.writeFile(filePath, buffer)
+  return { filename, url: `tinda-image://${filename}` }
+})
+handle('products:deleteImage', async (_e: IpcMainInvokeEvent, filename: string) => {
+  sessionSvc.requirePermission('products:manage')
+  if (!filename || typeof filename !== 'string') return
+  const safeName = require('node:path').basename(filename)
+  const filePath = require('node:path').join(appDirs().images, safeName)
+  try {
+    await fs.unlink(filePath)
+  } catch {
+    // Ignore if file doesn't exist
+  }
+})
+handle('products:getImageData', async (_e: IpcMainInvokeEvent, filename: string) => {
+  if (!filename || typeof filename !== 'string') return null
+  const safeName = require('node:path').basename(filename)
+  const filePath = require('node:path').join(appDirs().images, safeName)
+  try {
+    const buffer = await fs.readFile(filePath)
+    const ext = safeName.split('.').pop()?.toLowerCase() || 'png'
+    const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`
+    return `data:${mime};base64,${buffer.toString('base64')}`
+  } catch {
+    return null
+  }
+})
 
 // ---- Inventory ----
+handle('inventory:expiration', () => { user(); return expirationRepo.listExpiration(db()) })
+handle('inventory:batchDate', (_e: IpcMainInvokeEvent, id: number, date: string) => {
+  sessionSvc.requirePermission('products:manage')
+  const productId = db().transaction(() => expirationRepo.updateBatchDate(db(), id, date, user().id))()
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [productId] })
+})
 handle('inventory:movements', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listMovements(db(), (opts ?? {}) as object))
+handle('inventory:receiving', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listReceiving(db(), (opts ?? {}) as object))
 handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:receive')
   const i = input as { product_id: number; qty_base: number; unit_name: string; cost_c: number; reason?: string }
-  prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'PURCHASE', i.reason ?? 'Stock receiving', user().id, i.cost_c ? `cost ${i.cost_c}` : undefined)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'PURCHASE', i.reason ?? 'Stock receiving', user().id, undefined, {
+    source: 'MANUAL RECEIVING', received_unit: i.unit_name, received_quantity: i.qty_base,
+    unit_cost_c: i.cost_c || null, notes: i.reason ?? null
+  })
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'PURCHASE', product_ids: [i.product_id] })
+  return movement
+})
+handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
+  sessionSvc.requirePermission('inventory:receive')
+  const i = input as { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }
+  if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to add must be greater than zero.')
+  if (!Number.isFinite(i.cost_c) || i.cost_c < 0) throw new Error('Cost cannot be negative.')
+  if (i.cost_c > 0 && i.cost_c % 100 !== 0) throw new Error('Unit cost must be in whole pesos (no centavos).')
+  const product = prodRepo.getProduct(db(), i.product_id)
+  const unit = product.units.find((u) => u.name === i.unit_name)
+  if (!unit) throw new Error('Select a valid product unit.')
+  const qtyBase = i.quantity * unit.conversion_to_base
+  if (!Number.isInteger(qtyBase)) throw new Error('Restock must convert to a whole base unit.')
+  const supplier = i.supplier_id ? supRepo.getSupplier(db(), i.supplier_id) : null
+  const reason = [`Restock: ${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, supplier ? `Supplier: ${supplier.name}` : '', i.cost_c ? `Cost: ${i.cost_c}` : '', i.notes?.trim() || ''].filter(Boolean).join(' | ')
+  db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference, {
+    source: 'RESTOCK', supplier_id: i.supplier_id ?? null, received_unit: unit.name,
+    received_quantity: i.quantity, unit_cost_c: i.cost_c || null, notes: i.notes ?? null,
+    expiration_date: i.expiration_date, batch_label: i.batch_label
+  }))()
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'RESTOCK', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:adjust', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
   const i = input as { product_id: number; qty_base: number; reason: string }
   prodRepo.adjustStock(db(), i.product_id, i.qty_base, 'ADJUSTMENT', i.reason, user().id)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:movement', (_e: IpcMainInvokeEvent, type: string, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
   const i = input as { product_id: number; qty_base: number; reason?: string }
   const validTypes = ['PURCHASE', 'REFUND', 'RETURN', 'DAMAGE', 'EXPIRATION', 'LOSS', 'ADJUSTMENT']
   if (!validTypes.includes(type)) throw new Error('Invalid movement type.')
-  prodRepo.adjustStock(db(), i.product_id, i.qty_base, type, i.reason ?? '', user().id)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  prodRepo.adjustStock(db(), i.product_id, i.qty_base, type, i.reason ?? '', user().id, undefined,
+    type === 'PURCHASE' && i.qty_base > 0 ? { source: 'MANUAL RECEIVING', received_quantity: i.qty_base, notes: i.reason ?? null } : undefined)
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: type === 'PURCHASE' ? 'PURCHASE' : 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:count')
@@ -198,7 +313,26 @@ handle('inventory:count', (_e: IpcMainInvokeEvent, input: unknown) => {
   const p = prodRepo.getProduct(db(), i.product_id)
   const diff = i.actual_base - p.stock
   prodRepo.adjustStock(db(), i.product_id, diff, 'ADJUSTMENT', `Inventory count: expected ${p.stock}, actual ${i.actual_base}`, user().id, i.notes)
-  return invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
+})
+handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
+  sessionSvc.requirePermission('inventory:adjust')
+  const i = input as { product_id: number; quantity: number; unit_name: string; reason: string; notes?: string; batch_id?: number }
+  const validReasons = ['TAKEN', 'DAMAGED', 'EXPIRED', 'FORWARD']
+  if (!validReasons.includes(i.reason)) throw new Error('Invalid withdrawal reason.')
+  if (!Number.isFinite(i.quantity) || i.quantity <= 0) throw new Error('Quantity to withdraw must be greater than zero.')
+  const product = prodRepo.getProduct(db(), i.product_id)
+  const unit = product.units.find((u) => u.name === i.unit_name)
+  if (!unit) throw new Error('Select a valid product unit.')
+  const qtyBase = i.quantity * unit.conversion_to_base
+  if (!Number.isInteger(qtyBase)) throw new Error('Withdrawal must convert to a whole base unit.')
+  const reason = [`Withdrawal: ${i.reason}`, `${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, i.notes?.trim() || ''].filter(Boolean).join(' | ')
+  prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'WITHDRAWAL', reason, user().id, undefined, { batch_id: i.batch_id })
+  const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+  return movement
 })
 
 // ---- Suppliers ----
@@ -263,6 +397,7 @@ handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
     user()
     const v = require('../validation/schemas').validateCheckout(payload)
     const completed = checkoutSvc.checkout(v)
+    emitInventoryChanged({ reason: 'SALE', product_ids: completed.sale.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
     const settings = settingRepo.getSettings(db())
     return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
   } finally {
@@ -330,7 +465,9 @@ handle('transactions:get', (_e: IpcMainInvokeEvent, id: number) => getSale(db(),
 handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const release = beginCriticalOperation('REFUND')
   try {
-    return txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
+    const result = txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
+    emitInventoryChanged({ reason: 'REFUND', product_ids: [...new Set(result.items.map((item) => item.product_id))] })
+    return result
   } finally {
     release()
   }
@@ -338,7 +475,9 @@ handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
 handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const release = beginCriticalOperation('VOID')
   try {
-    return txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
+    const result = txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
+    emitInventoryChanged({ reason: 'VOID', product_ids: result.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    return result
   } finally {
     release()
   }
@@ -409,14 +548,24 @@ handle('reports:cashier', (_e: IpcMainInvokeEvent, opts: unknown) => {
   sessionSvc.requirePermission('reports:view')
   const d = (opts ?? {}) as { from?: string; to?: string; cashier_id?: number }
   const result = listSales(db(), { from: d.from ? `${d.from} 00:00:00` : undefined, to: d.to ? `${d.to} 23:59:59` : undefined, cashier_id: d.cashier_id, limit: 100000 }).rows.filter((s) => s.status !== 'VOIDED')
+  const dbh = db()
+  const saleIds = result.map((s) => s.id)
+  const placeholders = saleIds.map(() => '?').join(',')
+  const refundedCost = saleIds.length
+    ? (dbh.prepare(`SELECT COALESCE(SUM(si.cost_base_c * ri.qty_base),0) AS c FROM refund_items ri JOIN sale_items si ON si.id = ri.sale_item_id WHERE si.sale_id IN (${placeholders})`).get(...saleIds) as { c: number }).c
+    : 0
+  const refundsTotal = saleIds.length
+    ? (dbh.prepare(`SELECT COALESCE(SUM(total_c),0) AS c FROM refunds WHERE sale_id IN (${placeholders})`).get(...saleIds) as { c: number }).c
+    : 0
+  const cost = result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0)
   const summary = {
     sales_total_c: result.reduce((s, x) => s + x.total_c, 0),
-    profit_c: result.reduce((s, x) => s + x.total_c, 0) - result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0),
+    profit_c: Math.round((result.reduce((s, x) => s + x.total_c, 0) - refundsTotal) - (cost - refundedCost)),
     items_sold: result.reduce((s, x) => s + x.items.reduce((a, i) => a + i.qty, 0), 0),
     transactions: result.length,
-    cost_c: 0,
+    cost_c: Math.round(cost),
     discount_c: result.reduce((s, x) => s + x.discount_c, 0),
-    refunds_c: 0,
+    refunds_c: refundsTotal,
     expenses_c: 0
   }
   return { rows: result, summary }
@@ -430,6 +579,49 @@ handle('reports:shifts', (_e: IpcMainInvokeEvent, opts?: unknown) => {
 handle('reports:exportCsv', (_e: IpcMainInvokeEvent, kind: string, opts?: unknown) => {
   sessionSvc.requirePermission('reports:export')
   return exportSvc.exportCsv(kind as Parameters<typeof exportSvc.exportCsv>[0], (opts ?? {}) as { from?: string; to?: string })
+})
+handle('reports:xRead', () => {
+  sessionSvc.requirePermission('reports:view')
+  const shift = shiftRepo.currentShiftFor(db(), user().id)
+  if (!shift) throw new Error('No open shift for X-Read.')
+  return readSvc.calculateRead(db(), shift.id, 'X')
+})
+handle('reports:cashCountExpected', () => { sessionSvc.requirePermission('reports:view'); const s=shiftRepo.currentShiftFor(db(),user().id); if(!s) throw new Error('No open shift.'); return cashCountRepo.getExpected(db(),s.id) })
+handle('reports:cashCount', (_e: IpcMainInvokeEvent, input: cashCountRepo.CashCountInput) => { const u=user(); sessionSvc.requirePermission('reports:view'); return cashCountRepo.save(db(),u.id,input) })
+handle('reports:cashCounts', (_e: IpcMainInvokeEvent, opts?: unknown) => { sessionSvc.requirePermission('reports:view'); const u=user(); const o=(opts??{}) as {business_date?:string;user_id?:number;status?:string}; if(!u.roles.some(r=>r==='ADMIN'||r==='MANAGER')) o.user_id=u.id; return cashCountRepo.list(db(),o) })
+handle('reports:cashCountPrint', async (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view')
+  const record = cashCountRepo.get(db(), id)
+  const settings = settingRepo.getSettings(db())
+  // Printing is read-only: it only formats the authoritative saved Cash Count.
+  // A printer failure must never alter expected/actual/difference/status.
+  return printingSvc.printLines(settings, cashCountLines({ ...record, store_name: settings.store_name }))
+})
+handle('reports:printXRead', async () => {
+  sessionSvc.requirePermission('reports:view')
+  const shift = shiftRepo.currentShiftFor(db(), user().id)
+  if (!shift) throw new Error('No open shift for X-Read.')
+  const settings = settingRepo.getSettings(db())
+  const report = readSvc.calculateRead(db(), shift.id, 'X')
+  const result = await printingSvc.printLines(settings, readSvc.readReportLines(report, undefined, undefined, settings.store_name))
+  return { ...result, report }
+})
+handle('reports:finalizeZ', (_e: IpcMainInvokeEvent, input: { actual_cash_c: number; note?: string }) => {
+  const u = user()
+  if (!u.roles.some((role) => role === 'ADMIN' || role === 'MANAGER')) throw new Error('Only an Admin or Manager can finalize a Z-Read.')
+  const shift = shiftRepo.currentShiftFor(db(), u.id)
+  if (!shift) throw new Error('No open shift to finalize.')
+  const z = readSvc.finalizeZ(db(), shift.id, u.id, input.actual_cash_c, input.note)
+  auditRepo.audit(db(), { action: 'Z_READ_FINALIZE', user_id: u.id, entity_type: 'SHIFT', entity_id: shift.id, new_value: z.report_no })
+  return z
+})
+handle('reports:zHistory', () => { sessionSvc.requirePermission('reports:view'); return readSvc.listZ(db()) })
+handle('reports:printZRead', async (_e: IpcMainInvokeEvent, id: number) => {
+  sessionSvc.requirePermission('reports:view'); const z = readSvc.getZ(db(), id)
+  const settings = settingRepo.getSettings(db())
+  const shift = shiftRepo.getShift(db(), z.shift_id)
+  const closing = shift.actual_cash_c == null ? undefined : { actual_cash_c: shift.actual_cash_c, finalized_at: z.finalized_at }
+  return printingSvc.printLines(settings, readSvc.readReportLines(z.snapshot, z.report_no, closing, settings.store_name))
 })
 
 // ---- Backup ----
@@ -451,6 +643,45 @@ handle('backup:restore', (_e: IpcMainInvokeEvent, filename: string) => {
     sessionSvc.requirePermission('backup:manage')
     backupRepo.restoreBackup(db(), filename)
     dataManagementSvc.relaunchAfterDataChange()
+  } finally {
+    release()
+  }
+})
+handle('backup:exportTinda', async () => {
+  const release = beginCriticalOperation('EXPORT_UNIVERSAL')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+    const result = await dialog.showSaveDialog({
+      title: 'Export Universal Backup (.tinda-backup)',
+      defaultPath: `tinda-pos-backup-${stamp}.tinda-backup`,
+      filters: [{ name: 'TINDA POS Universal Backup', extensions: ['tinda-backup'] }]
+    })
+    if (result.canceled || !result.filePath) return null
+    const text = await exportWindowsBackup(db(), app.getVersion() ?? '1.0.0')
+    await fs.writeFile(result.filePath, text, 'utf8')
+    auditRepo.audit(db(), { action: 'EXPORT_UNIVERSAL_BACKUP', user_id: user().id, reason: 'Universal .tinda-backup' })
+    return result.filePath
+  } finally {
+    release()
+  }
+})
+handle('backup:importTinda', async () => {
+  const release = beginCriticalOperation('RESTORE_UNIVERSAL')
+  try {
+    sessionSvc.requirePermission('backup:manage')
+    const result = await dialog.showOpenDialog({
+      title: 'Import Universal Backup (.tinda-backup)',
+      filters: [{ name: 'TINDA POS Universal Backup', extensions: ['tinda-backup'] }],
+      properties: ['openFile']
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+    const text = await fs.readFile(result.filePaths[0], 'utf8')
+    const { counts } = await importWindowsBackup(db(), text)
+    const total = Object.values(counts).reduce((a, b) => a + b, 0)
+    auditRepo.audit(db(), { action: 'IMPORT_UNIVERSAL_BACKUP', user_id: user().id, reason: `${total} rows from ${result.filePaths[0]}` })
+    dataManagementSvc.relaunchAfterDataChange()
+    return result.filePaths[0]
   } finally {
     release()
   }
@@ -526,6 +757,48 @@ handle('update:dismiss', () => getUpdateService().dismiss())
 handle('audit:list', (_e: IpcMainInvokeEvent, opts?: unknown) => {
   sessionSvc.requirePermission('audit:view')
   return auditRepo.listAudit(db(), (opts ?? {}) as object)
+})
+
+// ---- Price References ----
+handle('priceReferences:search', (_e: IpcMainInvokeEvent, opts?: priceRefRepo.SearchPriceReferencesOptions) => {
+  user()
+  return priceRefRepo.searchPriceReferences(db(), opts)
+})
+handle('priceReferences:get', (_e: IpcMainInvokeEvent, id: number) => {
+  user()
+  return priceRefRepo.getPriceReference(db(), id)
+})
+handle('priceReferences:getByProduct', (_e: IpcMainInvokeEvent, productId: number) => {
+  user()
+  return priceRefRepo.getPriceReferenceByProductId(db(), productId)
+})
+handle('priceReferences:getByBarcode', (_e: IpcMainInvokeEvent, barcode: string) => {
+  user()
+  return priceRefRepo.getPriceReferenceByBarcode(db(), barcode)
+})
+handle('priceReferences:matchForProduct', (_e: IpcMainInvokeEvent, product: { id: number; name: string; barcode?: string | null }) => {
+  user()
+  return priceRefRepo.matchReferenceForProduct(db(), product)
+})
+handle('priceReferences:link', (_e: IpcMainInvokeEvent, referenceId: number, productId: number) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefRepo.linkProduct(db(), referenceId, productId)
+})
+handle('priceReferences:unlink', (_e: IpcMainInvokeEvent, referenceId: number) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefRepo.unlinkProduct(db(), referenceId)
+})
+handle('priceReferences:sync', (_e: IpcMainInvokeEvent, opts?: priceRefSvc.SyncPriceReferencesOptions) => {
+  sessionSvc.requirePermission('products:manage')
+  return priceRefSvc.syncPriceReferences(db(), opts)
+})
+handle('priceReferences:status', () => {
+  user()
+  return priceRefSvc.getPriceReferenceStatus(db())
+})
+handle('priceReferences:compare', (_e: IpcMainInvokeEvent, retailPriceC: number, reference: import('@shared/types').PriceReference | null) => {
+  user()
+  return priceRefRepo.comparePrice(retailPriceC, reference)
 })
 
 export function registerIpcHandlers(): void {

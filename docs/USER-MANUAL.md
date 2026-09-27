@@ -1,11 +1,31 @@
-# TINDA POS v1.0.27 User Manual
+# TINDA POS v1.0.30 User Manual
 
-**TINDA POS v1.0.27** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.30** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.27), na nagdadala ng **Kumpletong 172-Item Real-Time Market Catalog**, **TINDA BANTAY Engine**, **Live Online Price Feed**, **Auto Live-Sync on Open & Reconnect**, **Pulsing 🟢 LIVE Indicator**, at ang **TINDA SCOUT Harvester** (powered by Scrapling v0.4.15).
+Ang guide na ito ay para sa release (v1.0.30), na nagdadala ng **Universal Hardware Barcode Scanner Engine (Driver-Free Plug-and-Play)**, **Global Keystroke Burst Interceptor**, **🟢 Scanner Ready HUD Status Indicator**, at **Multi-Terminal LAN Architecture & VPS Remote Database Blueprint**, kasama ang **Simple POS JSON Backup Import** (v1.0.29) at **Utang Credit Sale Item-Level Breakdown** (v1.0.28).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
+
+- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Gumagana na ngayon ang lahat ng karaniwang USB at 2.4GHz wireless barcode scanner (Zebra, Honeywell, Netum, Eyoyo, generic Chinese USB HID keyboard wedges) nang walang kinakailangang driver installation sa Windows 10/11.
+- **Global Keystroke Burst Interceptor** — Hindi na kailangang i-click pa ng cashier ang search bar bago mag-scan. Kahit saan nakatutok ang cursor sa POS, awtomatikong nahuhuli ng system ang mabilis na barcode burst (< 50ms) at agarang idinaragdag ang produkto sa cart.
+- **🟢 Scanner Ready Visual Status** — May bagong pulsing green indicator sa itaas ng POS screen na nagbibigay-kumpirmasyon na aktibo at handang tumanggap ng scans ang barcode engine nang walang aberya.
+- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Kumpletong blueprint at gabay para sa paggamit ng iisang database sa maraming computer (Master-Satellite LAN setup) nang walang database corruption, at opsyon para sa remote VPS mirroring gamit ang offline-first replication.
+
+## Bago sa v1.0.29 (Simple POS Backup Import & Database Safety)
+
+- **Direct Simple POS JSON Backup Import** — Maaari nang i-import nang direkta ang mga na-export na JSON backup mula sa Simple POS (`simple_pos_secure_*.json`) upang agad na mailipat ang daan-daang produkto, kategorya, presyo, at kasalukuyang stocks sa TINDA POS nang hindi na kailangang mag-encode muli.
+- **Unified Import Modal sa Inventory** — Ang dating "Import CSV" button sa Inventory ay naging **"Import Products / Backup"** na sumusuporta na ngayon sa parehong `.csv` spreadsheets at `.json` secure backup files. May auto-detection kung saan kusang kinikilala ng app kung Simple POS format ang napiling file.
+- **Automatic Pre-Import Safety Snapshot Backup** — Bago iproseso ang pag-import ng maraming produkto, awtomatikong gumagawa ang TINDA POS ng checkpointed safety backup (`tindapos-pre-import.db`) upang matiyak na 100% ligtas ang iyong tindahan at may agarang rollback kung magkaroon ng brownout o aberya sa PC.
+- **Strict User & Auth Lockout Protection** — Ganap na nakahiwalay (isolated) ang authentication; ang `users` array mula sa lumang POS ay hindi kailanman binabasa o ipinapasok sa database upang matiyak na hindi mabubura, mababago, o mai-lockout ang kasalukuyang may-ari, admin, o cashier ng TINDA POS.
+- **Deterministic Auto-SKU & Data Sanitization** — Awtomatikong bumubuo ng malinis na SKU (`SP-0001` pataas) base sa orihinal na produkto ID para sa mga lumang POS na walang SKU. Ang mga negative stocks mula sa lumang POS ay ligtas na ginagawang `0`, at ang mga lansang o tie wire na may decimals sa kilo ay kinukumpleto sa whole base integer units.
+
+## Bago sa v1.0.28 (Utang Credit Sale Item Breakdown & Reprint)
+
+- **Item-Level Breakdown sa Utang Ledger** — Sa pahina ng Utang (Credit Ledger), mayroon nang 📦 Package icon sa bawat CREDIT_SALE entry. Sa isang tapik lamang, mag-eexpand ito upang ipakita ang buong detalye ng mga items na inutang (pangalan ng produkto, unit, quantity × presyo, at subtotal).
+- **Reprint Receipt Diretso sa Utang** — Maaari nang mag-reprint ng opisyal na resibo ng inutang nang direkta mula sa loob ng Utang ledger gamit ang "Print Receipt" button nang hindi na kailangang hanapin pa ito sa Transactions page.
 
 ## Bago sa v1.0.27 (TINDA BANTAY: Complete 172-Item Catalog)
 
