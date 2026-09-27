@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.35 to v1.0.36 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.36 to v1.0.37 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.36.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.36.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.37.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.37.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.36.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.37.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
@@ -268,9 +268,20 @@
     - **100% Store Custom Branding:** Full removal of developer watermark, customizable store logo, DTI/BIR permit headers, and custom receipt greetings.
     - **Daily Loss Prevention & Cash Drawer Kupit Checker:** End-of-day cash drawer discrepancy and gross margin auditing.
 
+---
 
-
-
-
-
+## 16. Interactive Legal & Privacy Architecture (Privacy Policy & Terms of Service)
+* **Design Philosophy & Zero-Backdoor Transparency:**
+  - Standard enterprise and professional POS systems require transparent legal disclosures to build long-term trust with merchant owners and mitigate liability.
+  - Documents are accessible both offline via in-app dialogs and persistently within repository documentation.
+* **Dual In-App Access Points (`LegalModal.tsx`):**
+  - **Settings &rarr; About Tab:** Placed directly beneath the developer signature and Maya payment card.
+  - **VIP Upgrade Modal:** Embedded in the security guarantee footer beside the 100% Offline Cryptographic Lock badge.
+* **Component Architecture:**
+  - Modern modal with tabbed switching between **Privacy Policy** and **Terms of Service**.
+  - Accessible via smooth backdrop animation, custom scrollbar styling, and standard keyboard/click dismiss actions.
+* **Compliance & Legal Invariants:**
+  - **100% Offline Sovereignty:** Guarantees that sales receipts, cashier records, inventory valuations, and utang ledgers are never uploaded to any remote or cloud server.
+  - **Philippine Data Privacy Act (RA 10173):** Suki customer records remain strictly on the store owner's computer with full data portability and zero developer access.
+  - **Fair Usage & Anti-Piracy:** VIP Pro lifetime licenses (₱500) are non-transferable single-machine grants. Reverse-engineering, keygen cracking, and commercial rebranding are strictly prohibited.
 
