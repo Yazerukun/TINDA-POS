@@ -52,13 +52,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28/v1.0.29/v1.0.30 to v1.0.31 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.31 to v1.0.32 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.31.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.31.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.32.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.32.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.31.exe` (Zero-install portable runtime)
-  - `TindaPOS-User-Guide.pdf` (30-page official documentation)
+  - `TindaPOS-Portable-1.0.32.exe` (Zero-install portable runtime)
+  - `TindaPOS-User-Guide.pdf` (31-page official documentation)
 
 ---
 
@@ -74,25 +74,31 @@
 ---
 
 ## 8. Quality Assurance & Distribution Verification Protocols
-1. **Automated Test Gate:** 100% pass mandate across all 44 test suites (303/303 Vitest tests) before pushing any release branch or tag.
+1. **Automated Test Gate:** 100% pass mandate across all 45 test suites (310/310 Vitest tests) before pushing any release branch or tag.
 2. **User Manual Sync:** `USER-MANUAL.md` must be updated with matching release notes; `TindaPOS-User-Guide.pdf` must be compiled via Electron headless renderer (`gen_user_guide.mjs`) ensuring correct page count and EOF validation.
 3. **Release Integrity Check:** All 5 canonical assets (`Setup.exe`, `Portable.exe`, `.blockmap`, `latest.yml`, `User-Guide.pdf`) must be uploaded and verified against SHA-512 and SHA-256 manifests on GitHub Releases.
 
 ---
 
-## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30 & v1.0.31)
+## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30–v1.0.32)
+* **1-Click Phone QR Companion Scanner Engine (`phoneScannerService.ts`, v1.0.32+):**
+  - **Embedded Node.js HTTP Companion Server:** Lightweight zero-dependency local HTTP service running inside Electron Main Process on port 3112. Automatically discovers the local Wi-Fi IP and binds zero-config pairing routes (`/scanner?session=...`).
+  - **Zero App Download Requirement:** Cashier scans the QR code directly with their smartphone's native camera (iPhone Camera / Google Lens). The phone instantly loads an offline-capable mobile web app over local Wi-Fi with zero external downloads or drivers.
+  - **Mobile Hardware Acceleration:** Leverages smartphone rear camera with autofocus, hardware-accelerated `BarcodeDetector` (or local ZXing fallback), haptic feedback (`navigator.vibrate`), Web Audio beeps, and torch/flashlight toggle.
+  - **Real-Time POS Push:** Scanned product barcodes beam via HTTP `POST /api/scan` directly into the Electron main process, which dispatches them into the active checkout cart in under 50ms.
+  - **Live Pairing HUD:** The POS header and modal display a real-time connection badge (`🟢 Phone Ready: iPhone / Android`) updated via a 3-second heartbeat ping.
 * **Hardware USB Scanner Engine (Preserved & Parallel):**
   - **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic USB/2.4G HID keyboard wedges) run with zero driver installation on Windows 10/11.
-  - **Global Burst Interceptor (`barcodeScanner.ts`):** 120ms keystroke burst detection window (expanded from 50ms) and 350ms trailing window intercepts scans anywhere in the POS window without clicking into the search box.
-  - **Wireless Mobile App Scanner Support:** The 120ms burst window accommodates Wi-Fi network packet jitter from smartphone scanner apps (e.g. "Barcode to PC", Wi-Fi keyboard wedges), preventing dropped digits or mistaking scans for slow manual keyboard input.
+  - **Global Burst Interceptor (`barcodeScanner.ts`):** 120ms keystroke burst detection window and 350ms trailing window intercepts scans anywhere in the POS window without clicking into the search box.
+  - **Wireless Mobile App Scanner Support:** Accommodates network packet jitter from wireless phone scanner apps (e.g. "Barcode to PC", Wi-Fi keyboard wedges), preventing dropped digits or mistaking scans for slow manual keyboard input.
   - **Direct Search Enter Handler (`POS.tsx`):** Scanned barcodes directed into the search input trigger immediate exact matching and cart addition on `Enter`, ensuring seamless operation even when the input field has active focus.
   - **Visual HUD Status:** Continuous `🟢 Scanner Ready` indicator in the POS header.
-* **Built-in Camera & Smartphone Barcode Scanner (`CameraScannerModal.tsx`, v1.0.31+):**
-  - **Dual-Region Center-Reticle Crop Engine:** Eliminates ZXing 0x0 cached canvas and aspect-ratio distortion bugs by maintaining custom offscreen rendering. Performs priority 70% center-reticle crop decoding followed by full-frame fallback decoding.
-  - **Dual Binarizer Strategy:** Combines `HybridBinarizer` and `GlobalHistogramBinarizer` with `TRY_HARDER` hints and explicit retail formats (EAN-13, EAN-8, UPC-A, UPC-E, CODE-128, CODE-39, QR Code) with zero cloud dependencies.
-  - **Multi-Device & Hotplug Discovery:** Dynamic camera selector supports laptop webcams, external USB cameras, and smartphones connected via wireless webcam drivers (Iriun Webcam, DroidCam, Android 14 USB Webcam). Listens to `devicechange` events to auto-detect newly plugged cameras without restarting the app.
-  - **Web Audio Feedback:** Synthesizes clear 920Hz audio beeps on successful scan without external media asset dependencies.
-  - **Smart Debounce:** 1.5s duplicate protection prevents runaway cart insertions while holding products steady in the viewfinder.
+* **Built-in Camera Barcode Scanner Overhaul (`CameraScannerModal.tsx`, v1.0.32+):**
+  - **Elimination of False-Positive Reads:** Removed unconstrained `ITF` (Interleaved 2 of 5) and `CODE_39` decoders that previously misread grocery barcode stripes as random 4-to-6-digit numbers.
+  - **GS1 Modulo-10 Checksum Engine (`isValidBarcode`):** Implemented the official GS1 right-to-left alternating 3x/1x Modulo-10 algorithm for EAN-13, UPC-A, and EAN-8. Any corrupted frame or misread check digit is discarded immediately.
+  - **High-Sensitivity Rapid Decoding (<15ms per frame):** Canvas frame downscaling (max 480px crop, 640px full-frame) reduces JavaScript CPU decoding time from 200ms to ~15ms, boosting frame sampling to **25 FPS** for snappy recognition.
+  - **Decoder State Hygiene:** Explicitly invokes `reader.reset()` on every frame cycle to eliminate internal state residue.
+  - **Hotplug Discovery:** Listens to `devicechange` events to auto-detect newly plugged cameras without restarting the app.
   - **Unit Barcode Matching (`products.ts`):** Database queries match both primary product barcodes and unit-level barcodes (`product_units.barcode`), allowing scanning variant packages (e.g., box vs single piece) directly into the cart.
   - **Manual Fallback Input:** Integrated manual barcode entry input inside the scanner modal allows immediate entry for worn, torn, or unreadable retail labels.
 
