@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useGuide } from '../stores/guide'
 
 type UtangTab = 'WITH_BALANCE' | 'SETTLED' | 'ALL'
 
@@ -76,6 +77,14 @@ export function Utang(): React.JSX.Element {
       <PageHeader
         title="Utang"
         subtitle={`Customer credit management · Total outstanding: ${money(totalOutstanding)}`}
+        actions={
+          <button
+            onClick={() => useGuide.getState().openGuide('utang')}
+            className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"
+          >
+            <HelpCircle className="h-4 w-4 text-amber-400" /> Utang Guide
+          </button>
+        }
       />
 
       {/* Quick Stats Summary */}

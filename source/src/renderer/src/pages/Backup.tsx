@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save } from 'lucide-react'
+import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save, HelpCircle } from 'lucide-react'
 import type { BackupInfo, StoreSettings } from '@shared/types'
 import { shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useGuide } from '../stores/guide'
 
 export function Backup(): React.JSX.Element {
   const [rows, setRows] = useState<BackupInfo[]>([])
@@ -68,7 +69,12 @@ export function Backup(): React.JSX.Element {
         title="Backup & Restore"
         subtitle="Your data is stored offline on this computer."
         actions={
-          <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => useGuide.getState().openGuide('backup')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200">
+              <HelpCircle className="h-4 w-4 text-amber-400" /> Backup Guide
+            </button>
+            <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
+          </div>
         }
       />
 

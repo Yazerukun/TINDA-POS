@@ -17,6 +17,7 @@ import { Reports } from '../pages/Reports'
 import { Backup } from '../pages/Backup'
 import { Settings } from '../pages/Settings'
 import { ExpirationAlerts } from '../components/Expiration'
+import { HelpGuideModal } from '../components/HelpGuideModal'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -48,6 +49,7 @@ export function Shell(): React.JSX.Element {
       </main>
       <ToastHost />
       <UpdateNotification />
+      <HelpGuideModal />
     </div>
   )
 }

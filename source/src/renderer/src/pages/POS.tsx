@@ -16,10 +16,12 @@ import {
   ChevronDown,
   AlertTriangle,
   Barcode,
-  Camera
+  Camera,
+  HelpCircle
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
+import { useGuide } from '../stores/guide'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
@@ -310,6 +312,15 @@ export function POS(): React.JSX.Element {
             >
               <Camera className="h-3.5 w-3.5 text-brand-400" />
               <span className="hidden sm:inline">Camera / Phone</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => useGuide.getState().openGuide('pos')}
+              className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:border-amber-500/50 hover:bg-amber-500/20 transition-colors shadow-sm"
+              title="Open Cashier & POS Instructions Guide"
+            >
+              <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Guide</span>
             </button>
             <div className="flex items-center gap-1 text-xs text-slate-500">
               <Plus className="h-3.5 w-3.5" /> add

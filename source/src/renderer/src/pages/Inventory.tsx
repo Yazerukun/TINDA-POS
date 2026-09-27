@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useGuide } from '../stores/guide'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import { ProductImage } from '../components/ui/ProductImage'
 import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
@@ -144,6 +145,7 @@ export function Inventory(): React.JSX.Element {
         title="Inventory"
         subtitle={`${products.length} active products · stock value ${money(totalValue)}`}
         actions={<div className="flex flex-wrap gap-2">
+          <button onClick={() => useGuide.getState().openGuide('inventory')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"><HelpCircle className="h-4 w-4 text-amber-400" /> Guide</button>
           <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
           <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
