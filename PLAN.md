@@ -50,7 +50,7 @@ Security and data safety are the absolute non-negotiable priority:
 - [x] **M4: Satellite Terminal Client Proxy** — Implement network RPC dispatching for satellite terminals with automatic reconnection.
 - [x] **M5: Settings UI & Header Connection Badges** — Add Terminal Network Mode settings panel and live connection status indicators.
 - [x] **M6: Comprehensive Test Suite & Quality Verification** — Add Vitest suites covering pairing, authorization rejection, and race conditions. Typecheck 100% clean (47/47 suites, 323/323 tests).
-- [ ] **Final: Production Packaging & Release** — Build and verify Windows installers and update changelogs.
+- [x] **Final: Production Packaging & Release** — Build and verify Windows installers and update changelogs. Release v1.0.36 published on GitHub Releases.
 
 ## Scope boundaries
 
