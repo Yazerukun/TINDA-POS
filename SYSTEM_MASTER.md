@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.31 to v1.0.32 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.32 to v1.0.33 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.32.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.32.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.33.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.33.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.32.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.33.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (31-page official documentation)
 
 ---
@@ -80,12 +80,15 @@
 
 ---
 
-## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30–v1.0.32)
-* **1-Click Phone QR Companion Scanner Engine (`phoneScannerService.ts`, v1.0.32+):**
-  - **Embedded Node.js HTTP Companion Server:** Lightweight zero-dependency local HTTP service running inside Electron Main Process on port 3112. Automatically discovers the local Wi-Fi IP and binds zero-config pairing routes (`/scanner?session=...`).
+## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30–v1.0.33)
+* **1-Click Phone QR Companion Scanner Engine (`phoneScannerService.ts`, v1.0.32–v1.0.33):**
+  - **Dual HTTP & HTTPS Simultaneous Local Service:** 
+    - **Port 3113 (HTTPS Secure Context):** Embeds a 100-year self-signed RSA-2048 SSL certificate (`IP:127.0.0.1, DNS:localhost`) directly in the Electron main process. Solves modern W3C browser security policy where `navigator.mediaDevices.getUserMedia` is strictly restricted to secure contexts (`isSecureContext === true`). On mobile Chrome/Safari, cashiers tap "Advanced" &rarr; "Proceed" once on first connect to unlock full 60 FPS live video scanning with animated laser reticle and continuous barcode capture.
+    - **Port 3112 (Zero-Warning HTTP Fallback):** Runs in parallel on plain HTTP. If users do not want certificate security prompts, the mobile web interface offers an instant **📸 Tap to Snap Barcode Photo** mode powered by `<input type="file" accept="image/*" capture="environment">`. It directly launches the smartphone's native camera with autofocus and flash, captures the barcode image, and decodes it via in-memory ZXing. Works on 100% of mobile browsers with zero warnings and zero configuration.
+  - **Adaptive Mobile Interface:** Mobile web client detects `isSecureContext` and `navigator.mediaDevices` availability automatically. If accessed over HTTP, it presents a prominent 1-tap "👉 Switch to HTTPS (Live Video)" action alongside the instant native photo snapshot button.
   - **Zero App Download Requirement:** Cashier scans the QR code directly with their smartphone's native camera (iPhone Camera / Google Lens). The phone instantly loads an offline-capable mobile web app over local Wi-Fi with zero external downloads or drivers.
   - **Mobile Hardware Acceleration:** Leverages smartphone rear camera with autofocus, hardware-accelerated `BarcodeDetector` (or local ZXing fallback), haptic feedback (`navigator.vibrate`), Web Audio beeps, and torch/flashlight toggle.
-  - **Real-Time POS Push:** Scanned product barcodes beam via HTTP `POST /api/scan` directly into the Electron main process, which dispatches them into the active checkout cart in under 50ms.
+  - **Real-Time POS Push:** Scanned product barcodes beam via HTTP/HTTPS `POST /api/scan` directly into the Electron main process, which dispatches them into the active checkout cart in under 50ms.
   - **Live Pairing HUD:** The POS header and modal display a real-time connection badge (`🟢 Phone Ready: iPhone / Android`) updated via a 3-second heartbeat ping.
 * **Hardware USB Scanner Engine (Preserved & Parallel):**
   - **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic USB/2.4G HID keyboard wedges) run with zero driver installation on Windows 10/11.

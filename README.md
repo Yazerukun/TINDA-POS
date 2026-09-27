@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.31-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.33-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-302%2F302_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-311%2F311_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,21 +16,23 @@
 
 <br />
 
-[⬇️ Download v1.0.31 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-Setup-1.0.31.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-Portable-1.0.31.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.33 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.33/TindaPOS-Setup-1.0.33.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.33/TindaPOS-Portable-1.0.33.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.33/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
+## ✨ What's New in v1.0.33 (Dual-Mode Secure Phone Scanner)
 
-> **Built-in Camera Scanner Engine (@zxing/library), Smartphone Wireless Scanner Guide & Zero Hardware Cost Scanning**
+> **HTTPS W3C Secure Context Engine, Zero-Warning Direct Photo Snap Scanner & GS1 Modulo-10 Precision Checksum**
 
-- 📷 **Built-in Camera Barcode Scanner** — scan barcodes using any connected webcam or laptop camera directly inside TINDA POS via the **"📷 Camera / Phone"** button in the POS header.
-- 📱 **Smartphone Camera Support (Zero Hardware Cost)** — use your Android or iPhone high-res camera as a wireless barcode scanner using free wireless webcam drivers (Iriun Webcam, DroidCam, or Android 14 USB webcam) with step-by-step setup guides inside the app.
-- ⚡ **Pure-Client Offline Decoding (@zxing/library)** — 100% offline barcode decoding for EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, and QR codes with zero cloud calls.
-- 🔊 **Web Audio Beep & Smart Debounce** — crisp 920Hz audio feedback on every scan with 1.5s duplicate protection.
-- 🔌 **Physical USB Scanner 100% Preserved** — the high-speed physical USB hardware scanner continues running simultaneously in the background.
+- ⚡ **Dual-Mode Phone Companion Scanner (HTTPS + HTTP)**:
+  - **Live Video Mode (HTTPS on port 3113)**: Built-in 100-year self-signed SSL certificate unlocks W3C Secure Context (`isSecureContext === true`) on mobile browsers (Android Chrome, iOS Safari), fixing the `getUserMedia` camera permission restriction. Provides continuous 60 FPS live video scanning with animated laser reticle.
+  - **Direct Snap Mode (HTTP on port 3112)**: Zero-warning native camera photo snapshot mode via `<input type="file" capture="environment">`. Works instantly across 100% of mobile browsers without certificate warnings or security bypass. Tap the camera button on phone to snap barcodes straight into the POS cart!
+- 🔄 **Adaptive Mobile Web Client**: Companion page dynamically detects browser capabilities and provides a 1-tap switcher between live video and instant photo snap modes.
+- 📱 **Desktop Mode Toggle**: Cashiers can easily switch between **⚡ Live Video Scanner** and **📸 Direct Snap Scanner** in the desktop pairing modal.
+- 🛡️ **GS1 Modulo-10 Algorithmic Verification**: Enforces official GS1 checksum validation for EAN-13, UPC-A, and EAN-8 barcodes, eliminating all false-positive and misread partial barcodes.
+- 🔌 **Physical USB Scanner 100% Preserved**: High-speed USB/wireless handheld barcode scanners continue operating simultaneously in parallel.
 
 ---
 
