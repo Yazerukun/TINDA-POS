@@ -74,7 +74,7 @@
 ---
 
 ## 8. Quality Assurance & Distribution Verification Protocols
-1. **Automated Test Gate:** 100% pass mandate across all 44 test suites (302/302 Vitest tests) before pushing any release branch or tag.
+1. **Automated Test Gate:** 100% pass mandate across all 44 test suites (303/303 Vitest tests) before pushing any release branch or tag.
 2. **User Manual Sync:** `USER-MANUAL.md` must be updated with matching release notes; `TindaPOS-User-Guide.pdf` must be compiled via Electron headless renderer (`gen_user_guide.mjs`) ensuring correct page count and EOF validation.
 3. **Release Integrity Check:** All 5 canonical assets (`Setup.exe`, `Portable.exe`, `.blockmap`, `latest.yml`, `User-Guide.pdf`) must be uploaded and verified against SHA-512 and SHA-256 manifests on GitHub Releases.
 
@@ -83,14 +83,18 @@
 ## 9. Universal Hardware & Camera Barcode Scanner Architecture (v1.0.30 & v1.0.31)
 * **Hardware USB Scanner Engine (Preserved & Parallel):**
   - **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic USB/2.4G HID keyboard wedges) run with zero driver installation on Windows 10/11.
-  - **Global Burst Interceptor (`barcodeScanner.ts`):** Sub-50ms keystroke burst detection intercepts scans anywhere in the POS window without clicking into the search box.
+  - **Global Burst Interceptor (`barcodeScanner.ts`):** 120ms keystroke burst detection window (expanded from 50ms) and 350ms trailing window intercepts scans anywhere in the POS window without clicking into the search box.
+  - **Wireless Mobile App Scanner Support:** The 120ms burst window accommodates Wi-Fi network packet jitter from smartphone scanner apps (e.g. "Barcode to PC", Wi-Fi keyboard wedges), preventing dropped digits or mistaking scans for slow manual keyboard input.
+  - **Direct Search Enter Handler (`POS.tsx`):** Scanned barcodes directed into the search input trigger immediate exact matching and cart addition on `Enter`, ensuring seamless operation even when the input field has active focus.
   - **Visual HUD Status:** Continuous `🟢 Scanner Ready` indicator in the POS header.
 * **Built-in Camera & Smartphone Barcode Scanner (`CameraScannerModal.tsx`, v1.0.31+):**
-  - **Pure-Client Decoding (`@zxing/library`):** Offline video frame decoding for EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, and QR Code with zero network calls.
-  - **Multi-Device Support:** Dynamic camera selector supports laptop webcams, external USB cameras, and smartphones connected via wireless webcam drivers (Iriun Webcam, DroidCam, or Android 14 USB Webcam).
-  - **Web Audio Feedback:** Generates synthesized 920Hz audio beeps on successful scan without external asset dependencies.
-  - **Smart Debounce:** 1.5s duplicate protection prevents runaway cart insertions while holding products steady.
-  - **Integrated Phone Guide:** Built-in modal instructions in English guide store owners through zero-cost smartphone camera setup.
+  - **Dual-Region Center-Reticle Crop Engine:** Eliminates ZXing 0x0 cached canvas and aspect-ratio distortion bugs by maintaining custom offscreen rendering. Performs priority 70% center-reticle crop decoding followed by full-frame fallback decoding.
+  - **Dual Binarizer Strategy:** Combines `HybridBinarizer` and `GlobalHistogramBinarizer` with `TRY_HARDER` hints and explicit retail formats (EAN-13, EAN-8, UPC-A, UPC-E, CODE-128, CODE-39, QR Code) with zero cloud dependencies.
+  - **Multi-Device & Hotplug Discovery:** Dynamic camera selector supports laptop webcams, external USB cameras, and smartphones connected via wireless webcam drivers (Iriun Webcam, DroidCam, Android 14 USB Webcam). Listens to `devicechange` events to auto-detect newly plugged cameras without restarting the app.
+  - **Web Audio Feedback:** Synthesizes clear 920Hz audio beeps on successful scan without external media asset dependencies.
+  - **Smart Debounce:** 1.5s duplicate protection prevents runaway cart insertions while holding products steady in the viewfinder.
+  - **Unit Barcode Matching (`products.ts`):** Database queries match both primary product barcodes and unit-level barcodes (`product_units.barcode`), allowing scanning variant packages (e.g., box vs single piece) directly into the cart.
+  - **Manual Fallback Input:** Integrated manual barcode entry input inside the scanner modal allows immediate entry for worn, torn, or unreadable retail labels.
 
 ---
 
@@ -122,6 +126,34 @@
     - Public GitHub Releases delivering compiled Windows NSIS installers and portable executables.
   - **Security Invariant:** The public repository MUST NEVER track or host the `source/` or `tools/` directories. All development, commits, and tests occur strictly within the private repository and local private tracking branches.
   - **Auto-Updater Continuity:** Preserves the public GitHub Releases endpoint so `electron-updater` operates smoothly for all retail store clients without requiring private tokens.
+
+---
+
+## 12. In-System Knowledge Architecture & Digital Book System (`Handbook.tsx`, v1.0.31+)
+* **Zero-Download Offline Philosophy:**
+  - Retail staff and cashiers frequently operate in offline environments without internet access or PDF viewers. Forcing users to download external manual PDFs creates severe operational friction.
+  - Documentation is compiled directly into the application bundle as a first-class, interactive **Store Handbook** page (`/handbook`).
+* **Digital Book Architecture ("Mura Ganig Libro"):**
+  - **9 Comprehensive Operational Chapters:**
+    1. System Overview & Daily Routine
+    2. Cashier Terminal & POS Operations
+    3. Barcode Scanners (USB & Smartphone Camera)
+    4. Products, Units, Pricing & SRP Guide
+    5. Customer Credit Ledger (Utang Tracking)
+    6. Inventory Management & Stock Replenishment
+    7. Shift Reconciliation, Cash Count & Z-Reading
+    8. Database Backup, Safety & Data Recovery
+    9. System Settings, Thermal Printers & Devices
+  - **Book-Like Navigation UX:** Side drawer chapter selector, page-turn Next / Previous Chapter buttons, top chapter badge indicators, full search filtering across titles and subtopics, and quick-jump table of contents.
+* **Contextual In-App Quick Help Modals (`HelpGuideModal.tsx`):**
+  - Instant on-screen assistance embedded directly into high-traffic operational headers (**POS**, **Inventory**, **Utang**, **Backup & Data Safety**).
+  - Cashiers click the floating **"Guide"** button to view modal operational checklists and hotkeys without losing their active checkout cart or screen state.
+* **Printable Cashier Counter Cheat Sheet (`docs/CASHIER-QUICK-GUIDE.md`):**
+  - Single-page, high-density reference sheet designed to be printed and laminated directly onto the cashier checkout counter.
+  - Contains daily opening/closing procedures, keyboard shortcut matrix, payment handling steps, and emergency troubleshooting protocols.
+* **100% English Language Standard:**
+  - All user-facing documentation, manuals, tooltips, modals, and handbook chapters are strictly authored and maintained in standard professional English to eliminate linguistic ambiguity across multi-regional deployments.
+
 
 
 
