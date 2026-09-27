@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.36 to v1.0.37 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.37 to v1.0.38 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.37.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.37.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.38.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.38.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.37.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.38.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
@@ -284,4 +284,19 @@
   - **100% Offline Sovereignty:** Guarantees that sales receipts, cashier records, inventory valuations, and utang ledgers are never uploaded to any remote or cloud server.
   - **Philippine Data Privacy Act (RA 10173):** Suki customer records remain strictly on the store owner's computer with full data portability and zero developer access.
   - **Fair Usage & Anti-Piracy:** VIP Pro lifetime licenses (₱500) are non-transferable single-machine grants. Reverse-engineering, keygen cracking, and commercial rebranding are strictly prohibited.
+
+---
+
+## 17. UI Scaling & Modal Accessibility Architecture (v1.0.38)
+* **Problem Addressed:** On smaller laptop screens (1366x768 or 1080p with 125%/150% Windows display scaling), complex multi-card modals could exceed vertical viewport height, pushing floating top-right close buttons off-screen.
+* **Architectural Guarantees:**
+  - **Strict Viewport Containment:** Modals are constrained to `max-w-xl` and `max-h-[88vh]` using a vertical flex column layout (`flex flex-col overflow-hidden`).
+  - **Sticky Header & Always-Visible Close Button:** The header remains fixed at the top with a permanent, high-contrast `[ X Close ]` button that never scrolls away.
+  - **Internal Scroll Container:** Content is contained in an independent, smoothly scrollable container (`flex-1 overflow-y-auto custom-scrollbar`).
+  - **Quadruple-Action Dismiss:**
+    1. Top sticky header Close button (`[ X Close ]`).
+    2. Bottom sticky footer button (`Close Dialog`).
+    3. Keyboard `Escape` listener (`useEffect` global event).
+    4. Backdrop overlay click-to-dismiss (`onMouseDown` targeting `currentTarget`).
+
 

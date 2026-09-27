@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.37-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.38-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-332%2F332_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,21 +16,23 @@
 
 <br />
 
-[⬇️ Download v1.0.37 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.37/TindaPOS-Setup-1.0.37.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.37/TindaPOS-Portable-1.0.37.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.37/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.38 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-Setup-1.0.38.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-Portable-1.0.38.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
 ---
 
-## ✨ What's New in v1.0.37 (Centered Settings UI, Suki Credit Scoring & VIP Pro Architecture)
+## ✨ What's New in v1.0.38 (UI Scaling Hotfix & Modal Accessibility)
 
-> **Centered Settings Navigation, 5-Star Suki Utang Scoring, 1-Click SMS Collection Reminders & Privacy Disclosures**
+> **Compact Responsive VIP Pro Modal, Sticky Header with Permanent Close Buttons, Multi-Path Dismiss & Display Scaling Fixes**
 
-- 🎨 **Centered Settings Layout**: Completely redesigned settings workspace wrapped in a symmetrical `max-w-4xl mx-auto` container with centered navigation tabs for optimal display on wide monitors and laptops.
-- ⭐ **Suki Utang Credit Trust Scoring**: Real-time 5-star customer reliability indicator (⭐⭐⭐⭐⭐) that helps store owners evaluate customer credit risk and payment punctuality at a glance.
+- 📐 **Strict Viewport Containment (`max-h-[88vh]`)**: The VIP Pro modal is now strictly constrained to prevent vertical overflow on compact 1366x768 screens or laptops with 125%/150% Windows display scaling.
+- ❌ **Prominent Sticky Header & Permanent Close Button**: The modal header remains permanently fixed at the top with a high-contrast `[ X Close ]` button that never scrolls off-screen.
+- ⚡ **Quadruple-Action Dismiss**: Easily close the modal via top sticky Close button, bottom footer Close button, pressing the `Escape` key, or clicking outside on the backdrop.
 - 📱 **1-Click Polite SMS & Messenger Debt Reminders**: Instant 1-click clipboard generator formatted with gentle, polite Taglish/English payment reminders to recover credit 3x faster without awkward confrontations.
-- 📜 **Interactive Privacy Policy & Terms of Service**: In-app legal transparency dialogs guaranteeing 100% offline local data sovereignty, zero remote analytics, and full compliance with RA 10173 (Philippine Data Privacy Act).
-- 💎 **TINDA POS VIP Pro Edition (₱500 Lifetime)**: Optional one-time lifetime license unlocking Multi-PC LAN Hub multi-counter checkouts, paperless QR receipts, customer branding, and unlimited product catalogs with zero recurring fees.
+- ⭐ **Suki Utang Credit Trust Scoring**: Real-time 5-star customer reliability indicator (⭐⭐⭐⭐⭐) to evaluate credit risk.
+- 📜 **Interactive Privacy Policy & Terms of Service**: In-app legal transparency dialogs guaranteeing 100% offline data sovereignty.
+- 💎 **TINDA POS VIP Pro Edition (₱500 Lifetime)**: Optional one-time lifetime license unlocking Multi-PC LAN Hub, QR receipts, and branding.
 
 ---
 
