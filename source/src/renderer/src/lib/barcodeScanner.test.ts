@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createScannerListener, isUsbScannerSupported } from './barcodeScanner'
+import { createScannerListener, isUsbScannerSupported, isValidBarcode } from './barcodeScanner'
 
 describe('Universal Barcode Scanner Burst Listener', () => {
   it('triggers onScan when rapid keystrokes (<50ms) are followed by Enter', () => {
@@ -148,5 +148,33 @@ describe('Universal Barcode Scanner Burst Listener', () => {
 
   it('checks isUsbScannerSupported without throwing', () => {
     expect(typeof isUsbScannerSupported()).toBe('boolean')
+  })
+
+  it('validates standard EAN-13 retail barcodes with Modulo-10 checksum', () => {
+    // Valid Philippine grocery barcodes (verified GS1 check digits)
+    expect(isValidBarcode('4800016644818')).toBe(true)
+    expect(isValidBarcode('4800016644832')).toBe(true)
+
+    // Corrupted or misread EAN-13 (wrong check digit)
+    expect(isValidBarcode('4800016644819')).toBe(false)
+    expect(isValidBarcode('4800016644800')).toBe(false)
+  })
+
+  it('validates UPC-A and EAN-8 retail barcodes correctly', () => {
+    // Valid UPC-A
+    expect(isValidBarcode('012345678905')).toBe(true)
+    expect(isValidBarcode('012345678909')).toBe(false) // invalid
+
+    // Valid EAN-8
+    expect(isValidBarcode('40123455')).toBe(true)
+    expect(isValidBarcode('40123459')).toBe(false) // invalid
+  })
+
+  it('rejects empty, short, or invalid barcode noise', () => {
+    expect(isValidBarcode('')).toBe(false)
+    expect(isValidBarcode('12')).toBe(false)
+    expect(isValidBarcode('A')).toBe(false)
+    // Code 128 / general barcodes with min length 3
+    expect(isValidBarcode('BOX-01')).toBe(true)
   })
 })

@@ -388,6 +388,19 @@ export interface TindaApi {
     }>
     compare: (retailPriceC: number, reference: PriceReference | null) => Promise<PriceComparisonStatus>
   }
+  phoneScanner: {
+    getStatus: () => Promise<{
+      running: boolean
+      port: number
+      ip: string
+      url: string
+      connected: boolean
+      device?: string
+    }>
+    restart: () => Promise<number>
+    onScan: (cb: (barcode: string) => void) => () => void
+    onStatus: (cb: (status: { connected: boolean; device?: string }) => void) => () => void
+  }
 }
 
 export type SupplierInput = {

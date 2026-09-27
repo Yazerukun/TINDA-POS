@@ -801,6 +801,16 @@ handle('priceReferences:compare', (_e: IpcMainInvokeEvent, retailPriceC: number,
   return priceRefRepo.comparePrice(retailPriceC, reference)
 })
 
+handle('phoneScanner:getStatus', () => {
+  const { getPhoneScannerStatus } = require('../services/phoneScannerService')
+  return getPhoneScannerStatus()
+})
+
+handle('phoneScanner:restart', () => {
+  const { startPhoneScannerService } = require('../services/phoneScannerService')
+  return startPhoneScannerService()
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }

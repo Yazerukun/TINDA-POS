@@ -123,6 +123,8 @@ app.whenReady().then(() => {
   )
   createWindow()
   startAutoUpdateCheck()
+  const { startPhoneScannerService, stopPhoneScannerService } = require('./services/phoneScannerService')
+  void startPhoneScannerService()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -134,6 +136,12 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  try {
+    const { stopPhoneScannerService } = require('./services/phoneScannerService')
+    stopPhoneScannerService()
+  } catch {
+    // Non-fatal
+  }
   const settings = getSettings(getDb())
   if (settings.auto_backup_enabled && settings.auto_backup_on_exit) {
     try {

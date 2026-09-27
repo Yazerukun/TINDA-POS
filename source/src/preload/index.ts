@@ -196,6 +196,31 @@ const api: TindaApi = {
       sources: { source_name: string; count: number }[]
     }>('priceReferences:status'),
     compare: (retailPriceC, reference) => invoke<import('@shared/types').PriceComparisonStatus>('priceReferences:compare', retailPriceC, reference)
+  },
+  phoneScanner: {
+    getStatus: () => invoke<{
+      running: boolean
+      port: number
+      ip: string
+      url: string
+      connected: boolean
+      device?: string
+    }>('phoneScanner:getStatus'),
+    restart: () => invoke<number>('phoneScanner:restart'),
+    onScan: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: { barcode: string }): void => cb(data.barcode)
+      ipcRenderer.on('phoneScanner:scan', listener)
+      return () => {
+        ipcRenderer.removeListener('phoneScanner:scan', listener)
+      }
+    },
+    onStatus: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: { connected: boolean; device?: string }): void => cb(data)
+      ipcRenderer.on('phoneScanner:status', listener)
+      return () => {
+        ipcRenderer.removeListener('phoneScanner:status', listener)
+      }
+    }
   }
 }
 

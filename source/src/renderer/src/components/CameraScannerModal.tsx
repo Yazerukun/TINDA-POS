@@ -6,18 +6,22 @@ import {
   HTMLCanvasElementLuminanceSource,
   HybridBinarizer,
   GlobalHistogramBinarizer,
-  BinaryBitmap
+  BinaryBitmap,
+  BrowserQRCodeSvgWriter
 } from '@zxing/library'
 import {
   Camera,
   Smartphone,
+  QrCode,
   RefreshCw,
   CheckCircle2,
   AlertCircle,
   VideoOff,
   FlipHorizontal,
   CornerDownLeft,
-  Sparkles
+  Wifi,
+  Sparkles,
+  ExternalLink
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 
@@ -46,8 +50,10 @@ function playBeep(): void {
   }
 }
 
+import { isValidBarcode } from '../lib/barcodeScanner'
+
 export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModalProps): React.JSX.Element | null {
-  const [tab, setTab] = useState<'camera' | 'guide'>('camera')
+  const [tab, setTab] = useState<'phone' | 'camera' | 'guide'>('phone')
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('')
   const [cameraActive, setCameraActive] = useState(false)
@@ -56,6 +62,23 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   const [lastScanned, setLastScanned] = useState<string | null>(null)
   const [manualCode, setManualCode] = useState('')
 
+  // Phone QR Scanner State
+  const [phoneStatus, setPhoneStatus] = useState<{
+    running: boolean
+    port: number
+    ip: string
+    url: string
+    connected: boolean
+    device?: string
+  }>({
+    running: false,
+    port: 3112,
+    ip: '127.0.0.1',
+    url: '',
+    connected: false
+  })
+
+  const qrContainerRef = useRef<HTMLDivElement>(null)
   const lastScannedRef = useRef<string | null>(null)
   const lastScanTimeRef = useRef<number>(0)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -64,7 +87,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   const cropCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const scanLoopRef = useRef<number | null>(null)
 
-  // Configure ZXing reader with TRY_HARDER and explicit retail 1D/2D formats
+  // Configure ZXing reader strictly for retail formats (NO raw ITF or unconstrained Code 39)
   const reader = useMemo(() => {
     const hints = new Map()
     hints.set(DecodeHintType.TRY_HARDER, true)
@@ -74,8 +97,6 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
       BarcodeFormat.UPC_A,
       BarcodeFormat.UPC_E,
       BarcodeFormat.CODE_128,
-      BarcodeFormat.CODE_39,
-      BarcodeFormat.ITF,
       BarcodeFormat.QR_CODE
     ])
     const r = new MultiFormatReader()
@@ -83,7 +104,49 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
     return r
   }, [])
 
-  // Load available camera devices
+  // Sync Phone Companion Scanner State from Electron Main Service
+  useEffect(() => {
+    if (!open) return
+
+    void window.api.phoneScanner?.getStatus().then((status) => {
+      if (status) setPhoneStatus(status)
+    })
+
+    const cleanupStatus = window.api.phoneScanner?.onStatus((status) => {
+      setPhoneStatus((prev) => ({
+        ...prev,
+        connected: status.connected,
+        device: status.device
+      }))
+    })
+
+    const cleanupScan = window.api.phoneScanner?.onScan((barcode) => {
+      playBeep()
+      setLastScanned(barcode)
+      onScan(barcode)
+    })
+
+    return () => {
+      cleanupStatus?.()
+      cleanupScan?.()
+    }
+  }, [open, onScan])
+
+  // Render QR Code SVG whenever phone scanner URL is available
+  useEffect(() => {
+    if (tab === 'phone' && phoneStatus.url && qrContainerRef.current) {
+      try {
+        const writer = new BrowserQRCodeSvgWriter()
+        const svg = writer.write(phoneStatus.url, 240, 240)
+        svg.setAttribute('style', 'display:block;border-radius:12px;background:#ffffff;padding:12px;')
+        qrContainerRef.current.replaceChildren(svg)
+      } catch (err) {
+        console.error('Failed to generate companion QR code:', err)
+      }
+    }
+  }, [tab, phoneStatus.url])
+
+  // Load available camera devices for local webcam tab
   const loadDevices = async () => {
     try {
       if (!navigator.mediaDevices?.enumerateDevices) {
@@ -91,7 +154,6 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
         return
       }
 
-      // Request brief initial stream to grant permission so camera names are visible
       try {
         const testStream = await navigator.mediaDevices.getUserMedia({ video: true })
         testStream.getTracks().forEach((t) => t.stop())
@@ -104,7 +166,6 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
       setDevices(videoInputs)
 
       if (videoInputs.length > 0) {
-        // Look for phone apps (Iriun, DroidCam) or back camera
         const preferred = videoInputs.find(
           (d) =>
             d.label.toLowerCase().includes('iriun') ||
@@ -122,9 +183,9 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
     }
   }
 
-  // Listen for device plug/unplug (e.g. when Iriun or DroidCam connects)
+  // Listen for camera hardware plug/unplug events
   useEffect(() => {
-    if (!open) return
+    if (!open || tab !== 'camera') return
     void loadDevices()
 
     const onDeviceChange = () => {
@@ -135,7 +196,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
     return () => {
       navigator.mediaDevices?.removeEventListener('devicechange', onDeviceChange)
     }
-  }, [open])
+  }, [open, tab])
 
   const stopActiveStream = () => {
     if (scanLoopRef.current) {
@@ -152,7 +213,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
     setCameraActive(false)
   }
 
-  // Start robust camera stream and continuous scan loop
+  // Start robust camera stream and continuous scan loop for local webcam
   useEffect(() => {
     if (!open || tab !== 'camera') {
       stopActiveStream()
@@ -189,15 +250,10 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
           setCameraActive(true)
         }
 
-        // Initialize offscreen canvas elements
-        if (!fullCanvasRef.current) {
-          fullCanvasRef.current = document.createElement('canvas')
-        }
-        if (!cropCanvasRef.current) {
-          cropCanvasRef.current = document.createElement('canvas')
-        }
+        if (!fullCanvasRef.current) fullCanvasRef.current = document.createElement('canvas')
+        if (!cropCanvasRef.current) cropCanvasRef.current = document.createElement('canvas')
 
-        // Continuous Scanning Frame Loop
+        // Continuous High-Speed Scanning Frame Loop
         const scanTick = () => {
           if (isCancelled) return
 
@@ -209,58 +265,71 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             try {
               let detectedText: string | null = null
 
-              // 1. Try Center Reticle Crop (Focus Box)
-              // Retail barcodes on cans, boxes, and pouches are easiest to decode without surrounding clutter
-              const cropW = Math.max(100, Math.round(vw * 0.70))
-              const cropH = Math.max(80, Math.round(vh * 0.55))
-              const cropX = Math.round((vw - cropW) / 2)
-              const cropY = Math.round((vh - cropH) / 2)
+              // 1. Center Reticle Crop (Focus Box) scaled to max 480px width for ~10ms decode
+              const rawCropW = Math.max(100, Math.round(vw * 0.70))
+              const rawCropH = Math.max(80, Math.round(vh * 0.55))
+              const cropX = Math.round((vw - rawCropW) / 2)
+              const cropY = Math.round((vh - rawCropH) / 2)
+
+              const scaleCrop = Math.min(1, 480 / rawCropW)
+              const targetCropW = Math.round(rawCropW * scaleCrop)
+              const targetCropH = Math.round(rawCropH * scaleCrop)
 
               const cropCanvas = cropCanvasRef.current!
-              cropCanvas.width = cropW
-              cropCanvas.height = cropH
+              cropCanvas.width = targetCropW
+              cropCanvas.height = targetCropH
               const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true })
 
               if (cropCtx) {
-                cropCtx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH)
+                cropCtx.drawImage(video, cropX, cropY, rawCropW, rawCropH, 0, 0, targetCropW, targetCropH)
                 const cropLum = new HTMLCanvasElementLuminanceSource(cropCanvas, false)
                 try {
                   const result = reader.decode(new BinaryBitmap(new HybridBinarizer(cropLum)))
-                  detectedText = result.getText()?.trim() || null
+                  const txt = result.getText()?.trim() || null
+                  if (txt && isValidBarcode(txt)) detectedText = txt
                 } catch {
                   try {
                     const fallback = reader.decode(new BinaryBitmap(new GlobalHistogramBinarizer(cropLum)))
-                    detectedText = fallback.getText()?.trim() || null
+                    const txt = fallback.getText()?.trim() || null
+                    if (txt && isValidBarcode(txt)) detectedText = txt
                   } catch {
                     // Not in center crop
                   }
                 }
               }
+              reader.reset()
 
-              // 2. If center crop didn't find anything, try full video frame
+              // 2. Full video frame fallback (scaled to max 640px width)
               if (!detectedText) {
+                const scaleFull = Math.min(1, 640 / vw)
+                const targetFullW = Math.round(vw * scaleFull)
+                const targetFullH = Math.round(vh * scaleFull)
+
                 const fullCanvas = fullCanvasRef.current!
-                fullCanvas.width = vw
-                fullCanvas.height = vh
+                fullCanvas.width = targetFullW
+                fullCanvas.height = targetFullH
                 const fullCtx = fullCanvas.getContext('2d', { willReadFrequently: true })
                 if (fullCtx) {
-                  fullCtx.drawImage(video, 0, 0, vw, vh)
+                  fullCtx.drawImage(video, 0, 0, vw, vh, 0, 0, targetFullW, targetFullH)
                   const fullLum = new HTMLCanvasElementLuminanceSource(fullCanvas, false)
                   try {
                     const result = reader.decode(new BinaryBitmap(new HybridBinarizer(fullLum)))
-                    detectedText = result.getText()?.trim() || null
+                    const txt = result.getText()?.trim() || null
+                    if (txt && isValidBarcode(txt)) detectedText = txt
                   } catch {
                     try {
                       const fallback = reader.decode(new BinaryBitmap(new GlobalHistogramBinarizer(fullLum)))
-                      detectedText = fallback.getText()?.trim() || null
+                      const txt = fallback.getText()?.trim() || null
+                      if (txt && isValidBarcode(txt)) detectedText = txt
                     } catch {
                       // No barcode in this frame
                     }
                   }
                 }
+                reader.reset()
               }
 
-              // Handle successful scan with smart debounce
+              // Handle successful scan with 1.8s duplicate debounce
               if (detectedText) {
                 const now = Date.now()
                 if (detectedText !== lastScannedRef.current || now - lastScanTimeRef.current > 1800) {
@@ -276,16 +345,15 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             }
           }
 
-          // Schedule next frame in 120ms (approx 8-10 scans/second)
-          scanLoopRef.current = window.setTimeout(scanTick, 120)
+          // Schedule next frame in 40ms (~25 scans/second for instantaneous detection)
+          scanLoopRef.current = window.setTimeout(scanTick, 40)
         }
 
-        // Start scanning loop after video is playing
-        scanLoopRef.current = window.setTimeout(scanTick, 150)
+        scanLoopRef.current = window.setTimeout(scanTick, 80)
       } catch (err) {
         if (!isCancelled) {
           setCameraActive(false)
-          setCameraError(`Camera connection failed: ${String((err as Error)?.message || err)}. Please verify the camera is not used by another application.`)
+          setCameraError(`Camera connection failed: ${String((err as Error)?.message || err)}. Please verify the camera is not in use by another program.`)
         }
       }
     }
@@ -311,10 +379,22 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   if (!open) return null
 
   return (
-    <Modal open onClose={onClose} title="Barcode Scanner (Camera & Phone)" maxWidth="max-w-xl">
+    <Modal open onClose={onClose} title="Universal Barcode Scanner (Phone & Camera)" maxWidth="max-w-xl">
       <div className="space-y-4">
         {/* Navigation Tabs */}
         <div className="flex border-b border-ink-line">
+          <button
+            type="button"
+            onClick={() => setTab('phone')}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'phone'
+                ? 'border-brand-500 text-brand-400'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Smartphone className="h-4 w-4" />
+            1-Click Phone QR Scanner
+          </button>
           <button
             type="button"
             onClick={() => setTab('camera')}
@@ -325,7 +405,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             }`}
           >
             <Camera className="h-4 w-4" />
-            Live Camera Scanner
+            PC / Laptop Webcam
           </button>
           <button
             type="button"
@@ -336,14 +416,93 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Smartphone className="h-4 w-4" />
-            Connect Your Phone
+            <Sparkles className="h-4 w-4" />
+            Setup Guide &amp; Tips
           </button>
         </div>
 
+        {/* TAB 1: 1-Click Phone QR Scanner (Instant, Zero App Install) */}
+        {tab === 'phone' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center gap-5 rounded-xl border border-brand-500/30 bg-ink-900/90 p-4">
+              <div className="flex flex-col items-center shrink-0">
+                <div ref={qrContainerRef} className="rounded-xl overflow-hidden shadow-pop bg-white p-2 border border-slate-200" />
+                <span className="mt-2 text-[10px] uppercase font-bold tracking-wider text-brand-300">Scan with Phone Camera</span>
+              </div>
+
+              <div className="space-y-2.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      phoneStatus.connected
+                        ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
+                        : 'border border-ink-line bg-ink-800 text-slate-400'
+                    }`}
+                  >
+                    <span className={`h-2 w-2 rounded-full ${phoneStatus.connected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                    {phoneStatus.connected
+                      ? `🟢 Connected: ${phoneStatus.device || 'Phone'}`
+                      : '⚪ Waiting for phone to scan…'}
+                  </div>
+                </div>
+
+                <h4 className="font-bold text-white text-sm">Turn Your Phone Into a Wireless Scanner</h4>
+                <ol className="list-decimal pl-4 space-y-1.5 text-xs text-slate-300">
+                  <li>Connect your phone to the same Wi-Fi as this computer.</li>
+                  <li>Open your phone's camera (iPhone Camera or Android Google Lens).</li>
+                  <li>Scan the QR code and tap the link to open the scanner.</li>
+                  <li>Point your phone at product barcodes — items are added to your POS cart automatically!</li>
+                </ol>
+
+                <div className="rounded-lg bg-ink-950 p-2.5 text-[11px] text-slate-400 border border-ink-line flex items-center justify-between">
+                  <span className="truncate">URL: <code className="text-brand-300 font-mono">{phoneStatus.url || 'Generating…'}</code></span>
+                  <button
+                    type="button"
+                    onClick={() => void window.api.phoneScanner?.restart().then(() => window.api.phoneScanner.getStatus().then(setPhoneStatus))}
+                    className="text-xs text-slate-400 hover:text-brand-300 ml-2"
+                    title="Restart local companion server"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Last Scanned Barcode Alert */}
+            {lastScanned && (
+              <div className="flex items-center justify-between rounded-lg bg-emerald-950/95 px-3 py-2 text-xs text-emerald-200 border border-emerald-500/50 shadow-sm">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span className="truncate">Scanned from Phone: <strong>{lastScanned}</strong></span>
+                </span>
+                <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">Added to Cart</span>
+              </div>
+            )}
+
+            {/* Quick Manual Entry for Damaged Barcodes */}
+            <form onSubmit={handleManualSubmit} className="flex items-center gap-2 pt-2 border-t border-ink-line">
+              <input
+                type="text"
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                placeholder="Can't scan? Type barcode number manually…"
+                className="input h-9 flex-1 text-xs font-mono"
+              />
+              <button
+                type="submit"
+                disabled={!manualCode.trim()}
+                className="btn-primary h-9 px-3 text-xs flex items-center gap-1 font-semibold"
+              >
+                <span>Add</span>
+                <CornerDownLeft className="h-3 w-3" />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* TAB 2: PC / Laptop Webcam */}
         {tab === 'camera' && (
           <div className="space-y-3">
-            {/* Camera Toolbar */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <label className="mb-1 block text-xs font-medium text-slate-400">Selected Camera Device</label>
@@ -381,7 +540,6 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
               </button>
             </div>
 
-            {/* Live Video Viewfinder */}
             <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-ink-line bg-black">
               <video
                 ref={videoRef}
@@ -391,22 +549,18 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 muted
               />
 
-              {/* Viewfinder Target Reticle */}
               {cameraActive && !cameraError && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
                   <div className="relative h-44 w-72 rounded-lg border-2 border-emerald-400/80 shadow-[0_0_20px_rgba(52,211,153,0.3)]">
-                    {/* Corner Reticle Accents */}
                     <div className="absolute -left-1 -top-1 h-4 w-4 border-l-4 border-t-4 border-emerald-400" />
                     <div className="absolute -right-1 -top-1 h-4 w-4 border-r-4 border-t-4 border-emerald-400" />
                     <div className="absolute -bottom-1 -left-1 h-4 w-4 border-b-4 border-l-4 border-emerald-400" />
                     <div className="absolute -bottom-1 -right-1 h-4 w-4 border-b-4 border-r-4 border-emerald-400" />
-                    {/* Animated Scanning Line */}
                     <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-pulse top-1/2 -translate-y-1/2 shadow-[0_0_8px_#34d399]" />
                   </div>
                 </div>
               )}
 
-              {/* Camera Error / Offline Overlay */}
               {cameraError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/90 p-4 text-center">
                   <AlertCircle className="mb-2 h-8 w-8 text-rose-400" />
@@ -422,7 +576,6 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                 </div>
               )}
 
-              {/* Last Scanned Tag */}
               {lastScanned && (
                 <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between rounded-lg bg-emerald-950/95 px-3 py-1.5 text-xs text-emerald-200 border border-emerald-500/50 backdrop-blur-sm shadow-lg">
                   <span className="flex items-center gap-1.5 font-medium">
@@ -435,10 +588,9 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             </div>
 
             <p className="text-center text-xs text-slate-400">
-              Hold the barcode (EAN-13, UPC, Code 128, QR) steady inside the green reticle box.
+              Align retail barcode (EAN-13, UPC, Code 128, QR) inside the green reticle.
             </p>
 
-            {/* Quick Manual Entry for Damaged / Faded Barcodes */}
             <form onSubmit={handleManualSubmit} className="flex items-center gap-2 pt-1 border-t border-ink-line">
               <input
                 type="text"
@@ -459,42 +611,50 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
           </div>
         )}
 
+        {/* TAB 3: Setup Guide & Tips */}
         {tab === 'guide' && (
           <div className="space-y-4 text-xs text-slate-300">
             <div className="rounded-lg border border-brand-500/20 bg-brand-500/10 p-3.5">
               <h4 className="flex items-center gap-2 font-semibold text-brand-300 text-sm">
                 <Smartphone className="h-4 w-4" />
-                Use Your Smartphone as a Barcode Scanner (Zero Cost)
+                Frequently Asked Questions &amp; Troubleshooting
               </h4>
               <p className="mt-1 text-slate-300">
-                No need to purchase an expensive dedicated barcode scanner. You can use your Android or iPhone camera in two simple, free ways:
+                TINDA POS supports physical handheld USB scanners, laptop webcams, and wireless smartphone cameras simultaneously.
               </p>
             </div>
 
             <div className="space-y-3">
               <div className="rounded-lg border border-ink-line bg-ink-900 p-3">
                 <span className="inline-block rounded bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300">
-                  OPTION A · WIRELESS / USB WEBCAM (RECOMMENDED)
+                  METHOD 1 · 1-CLICK INSTANT QR SCANNER (ZERO INSTALL)
                 </span>
-                <p className="mt-1.5 font-semibold text-white">Stream Phone Camera Directly to Live Scanner</p>
-                <ol className="mt-2 list-decimal space-y-1 pl-4 text-slate-400">
-                  <li>Download the free <strong>Iriun Webcam</strong> or <strong>DroidCam</strong> app on your smartphone from Google Play Store or Apple App Store.</li>
-                  <li>Install the corresponding free Iriun or DroidCam Windows driver on your computer.</li>
-                  <li>Connect your phone and PC to the same Wi-Fi network (or connect via USB cable).</li>
-                  <li>Switch back to the <strong>Live Camera Scanner</strong> tab above, and select <em>"Iriun Webcam"</em> or <em>"DroidCam Source"</em> from the dropdown. Your phone's camera feed will appear instantly!</li>
-                </ol>
+                <p className="mt-1.5 font-semibold text-white">How does the 1-Click Phone QR Scanner work?</p>
+                <p className="mt-1 text-slate-400">
+                  TINDA POS runs an internal lightweight companion service on your computer. When you scan the QR code on your phone, your phone opens a web scanner over your local Wi-Fi. It uses your phone's native camera with hardware autofocus to scan barcodes at high speed and beams them directly into your desktop checkout cart.
+                </p>
               </div>
 
               <div className="rounded-lg border border-ink-line bg-ink-900 p-3">
                 <span className="inline-block rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                  OPTION B · WI-FI KEYBOARD SCANNER APP
+                  METHOD 2 · WI-FI TROUBLESHOOTING
                 </span>
-                <p className="mt-1.5 font-semibold text-white">Use "Barcode to PC" Wi-Fi Scanner App</p>
-                <ol className="mt-2 list-decimal space-y-1 pl-4 text-slate-400">
-                  <li>Download the free <strong>Barcode to PC: Wi-Fi scanner</strong> app on your phone.</li>
-                  <li>Pair your phone with your PC over your local Wi-Fi network.</li>
-                  <li>Every barcode scanned on your phone is automatically transmitted to TINDA POS via our hardware keystroke burst engine — <strong>items are added to your cart instantly even without opening the camera modal!</strong></li>
+                <p className="mt-1.5 font-semibold text-white">Phone cannot connect or load the QR code?</p>
+                <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-slate-400">
+                  <li>Ensure your smartphone and computer are connected to the <strong>exact same Wi-Fi router</strong>.</li>
+                  <li>If your store router has "Guest Isolation" or "AP Isolation" enabled, turn on your Windows PC's <strong>Mobile Hotspot</strong> and connect your phone to it.</li>
+                  <li>Check Windows Firewall to allow port 3112 on Private networks.</li>
                 </ol>
+              </div>
+
+              <div className="rounded-lg border border-ink-line bg-ink-900 p-3">
+                <span className="inline-block rounded bg-teal-500/20 px-2 py-0.5 text-[10px] font-bold text-teal-300">
+                  METHOD 3 · PHYSICAL HANDHELD USB SCANNERS
+                </span>
+                <p className="mt-1.5 font-semibold text-white">Standard Handheld Scanners Always Active</p>
+                <p className="mt-1 text-slate-400">
+                  You can plug in any standard USB or 2.4GHz wireless barcode scanner gun at any time. It operates in parallel with zero configuration needed.
+                </p>
               </div>
             </div>
           </div>

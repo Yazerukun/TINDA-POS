@@ -224,6 +224,8 @@ export function POS(): React.JSX.Element {
     }
   }
 
+  const [phoneConnected, setPhoneConnected] = useState(false)
+
   useEffect(() => {
     const scannerListener = createScannerListener({
       onScan: (code) => {
@@ -232,8 +234,26 @@ export function POS(): React.JSX.Element {
     })
 
     window.addEventListener('keydown', scannerListener)
+
+    // Check initial phone scanner status
+    void window.api.phoneScanner?.getStatus().then((status) => {
+      if (status?.connected) setPhoneConnected(true)
+    })
+
+    // Listen for phone scanner scans over Wi-Fi
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
+      void handleScan(code)
+    })
+
+    // Listen for phone connection state changes
+    const cleanupPhoneStatus = window.api.phoneScanner?.onStatus((status) => {
+      setPhoneConnected(!!status.connected)
+    })
+
     return () => {
       window.removeEventListener('keydown', scannerListener)
+      cleanupPhoneScan?.()
+      cleanupPhoneStatus?.()
     }
   }, [])
 
@@ -312,15 +332,28 @@ export function POS(): React.JSX.Element {
               <Barcode className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Scanner Ready</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setCameraScannerOpen(true)}
-              className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
-              title="Scan Barcode using Laptop Webcam or Smartphone Camera"
-            >
-              <Camera className="h-3.5 w-3.5 text-brand-400" />
-              <span className="hidden sm:inline">Camera / Phone</span>
-            </button>
+            {phoneConnected ? (
+              <button
+                type="button"
+                onClick={() => setCameraScannerOpen(true)}
+                className="flex items-center gap-1.5 rounded-md border border-brand-500/40 bg-brand-500/15 px-2.5 py-1 text-xs font-semibold text-brand-300 hover:bg-brand-500/25 transition-colors shadow-sm"
+                title="Wireless Phone Scanner Connected over Wi-Fi"
+              >
+                <span className="h-2 w-2 rounded-full bg-brand-400 animate-pulse" />
+                <Smartphone className="h-3.5 w-3.5 text-brand-400" />
+                <span className="hidden sm:inline">Phone Ready</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCameraScannerOpen(true)}
+                className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
+                title="Scan Barcode using Smartphone QR or Laptop Webcam"
+              >
+                <Smartphone className="h-3.5 w-3.5 text-brand-400" />
+                <span className="hidden sm:inline">Phone / Camera</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => useGuide.getState().openGuide('pos')}

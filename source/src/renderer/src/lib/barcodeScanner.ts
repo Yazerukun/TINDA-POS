@@ -62,3 +62,28 @@ export function createScannerListener(options: ScannerListenerOptions): (e: Keyb
 export function isUsbScannerSupported(): boolean {
   return typeof navigator !== 'undefined' && ('usb' in navigator || 'hid' in navigator)
 }
+
+/**
+ * Official GS1 Modulo-10 Checksum Validation for retail barcodes.
+ * Works universally across EAN-13, UPC-A, EAN-8, and GTIN-14.
+ * Prevents false-positive partial matches and corrupted frame decodes.
+ */
+export function isValidBarcode(text: string): boolean {
+  if (!text) return false
+  const clean = text.trim()
+
+  // Standard GS1 retail barcodes (EAN-8, UPC-A, EAN-13, GTIN-14)
+  if (/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(clean)) {
+    let sum = 0
+    let multiplier = 3
+    for (let i = clean.length - 2; i >= 0; i--) {
+      sum += (clean.charCodeAt(i) - 48) * multiplier
+      multiplier = multiplier === 3 ? 1 : 3
+    }
+    const check = (10 - (sum % 10)) % 10
+    return check === clean.charCodeAt(clean.length - 1) - 48
+  }
+
+  // Code 128 / QR Code / custom SKU: Require minimum length of 3 characters
+  return clean.length >= 3
+}

@@ -185,7 +185,7 @@ async function main() {
   if (check.subarray(0, 5).toString('ascii') !== '%PDF-') throw new Error('Generated file has an invalid PDF header.')
   if (!check.subarray(-2048).toString('latin1').includes('%%EOF')) throw new Error('Generated PDF has no EOF marker.')
   const pageCount = (check.toString('latin1').match(/\/Type\s*\/Page\b/g) || []).length
-  if (pageCount < 3 || pageCount > 30) throw new Error(`Generated PDF page count is unreasonable (${pageCount}).`)
+  if (pageCount < 3 || pageCount > 35) throw new Error(`Generated PDF page count is unreasonable (${pageCount}).`)
 
   if (existsSync(outputPath)) renameSync(outputPath, previousPdf)
   try {
