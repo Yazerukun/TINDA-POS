@@ -223,6 +223,21 @@ const api: TindaApi = {
         ipcRenderer.removeListener('phoneScanner:status', listener)
       }
     }
+  },
+  lan: {
+    getStatus: () => invoke<import('@shared/types').LanStatus>('lan:getStatus'),
+    setMode: (mode, config) => invoke<import('@shared/types').LanStatus>('lan:setMode', mode, config),
+    generatePin: () => invoke<string>('lan:generatePin'),
+    pair: (masterIp, pin, deviceName) => invoke<{ ok: boolean; error?: string; storeName?: string }>('lan:pair', masterIp, pin, deviceName),
+    testVps: (url, token) => invoke<{ ok: boolean; message: string }>('lan:testVps', url, token),
+    triggerVpsSync: () => invoke<{ ok: boolean; syncedCount: number; message: string }>('lan:triggerVpsSync'),
+    onStatus: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: import('@shared/types').LanStatus): void => cb(data)
+      ipcRenderer.on('lan:status', listener)
+      return () => {
+        ipcRenderer.removeListener('lan:status', listener)
+      }
+    }
   }
 }
 

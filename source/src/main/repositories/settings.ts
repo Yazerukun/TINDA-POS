@@ -25,7 +25,15 @@ export const defaultSettings: StoreSettings = {
   receipt_paper_width: '80mm',
   receipt_copies: 1,
   theme: 'dark',
-  data_dir: ''
+  data_dir: '',
+  lan_network_mode: 'standalone',
+  lan_master_ip: '',
+  lan_master_port: 3111,
+  lan_pairing_pin: '',
+  vps_sync_enabled: false,
+  vps_server_url: '',
+  vps_api_token: '',
+  vps_sync_interval_mins: 5
 }
 
 export function getSettings(db: Database.Database): StoreSettings {

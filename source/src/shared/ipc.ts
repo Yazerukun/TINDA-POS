@@ -403,6 +403,15 @@ export interface TindaApi {
     onScan: (cb: (barcode: string) => void) => () => void
     onStatus: (cb: (status: { connected: boolean; device?: string }) => void) => () => void
   }
+  lan: {
+    getStatus: () => Promise<import('@shared/types').LanStatus>
+    setMode: (mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => Promise<import('@shared/types').LanStatus>
+    generatePin: () => Promise<string>
+    pair: (masterIp: string, pin: string, deviceName?: string) => Promise<{ ok: boolean; error?: string; storeName?: string }>
+    testVps: (url: string, token: string) => Promise<{ ok: boolean; message: string }>
+    triggerVpsSync: () => Promise<{ ok: boolean; syncedCount: number; message: string }>
+    onStatus: (cb: (status: import('@shared/types').LanStatus) => void) => () => void
+  }
 }
 
 export type SupplierInput = {

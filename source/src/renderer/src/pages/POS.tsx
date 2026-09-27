@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   Barcode,
   Camera,
-  HelpCircle
+  HelpCircle,
+  Server,
+  Laptop
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
@@ -133,6 +135,13 @@ export function POS(): React.JSX.Element {
       toastSuccess('Hands-Free Counter Camera Active', 'Wave products in front of camera to auto-scan')
     }
   }
+
+  const [lanStatus, setLanStatus] = useState<import('@shared/types').LanStatus | null>(null)
+  useEffect(() => {
+    void window.api.lan?.getStatus().then(setLanStatus).catch(() => {})
+    const unsub = window.api.lan?.onStatus((s) => setLanStatus(s))
+    return () => unsub?.()
+  }, [])
 
   const cartItems = usePosCart((state) => state.items)
 
@@ -363,6 +372,32 @@ export function POS(): React.JSX.Element {
               <Barcode className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Scanner Ready</span>
             </div>
+
+            {/* LAN Master / Satellite Status Badge */}
+            {lanStatus?.role === 'master' && (
+              <div
+                className="flex items-center gap-1.5 rounded-md border border-sky-500/40 bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-300 shadow-sm"
+                title={`Master Server Active (0.0.0.0:${lanStatus.port}) — ${lanStatus.connectedClients} connected satellite terminal(s)`}
+              >
+                <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
+                <Server className="h-3.5 w-3.5 text-sky-400" />
+                <span className="hidden sm:inline">LAN Master {lanStatus.connectedClients > 0 ? `(${lanStatus.connectedClients})` : ''}</span>
+              </div>
+            )}
+            {lanStatus?.role === 'satellite' && (
+              <div
+                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold shadow-sm ${
+                  lanStatus.satelliteConnected
+                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-300'
+                    : 'border-amber-500/40 bg-amber-500/15 text-amber-300'
+                }`}
+                title={lanStatus.satelliteConnected ? 'Connected to Store Master Server' : 'Reconnecting to Store Master Server...'}
+              >
+                <span className={`h-2 w-2 rounded-full ${lanStatus.satelliteConnected ? 'bg-sky-400 animate-pulse' : 'bg-amber-400'}`} />
+                <Laptop className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{lanStatus.satelliteConnected ? 'Satellite Linked' : 'LAN Reconnecting'}</span>
+              </div>
+            )}
 
             {/* Hands-Free Counter Camera Toggle */}
             <button

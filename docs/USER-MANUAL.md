@@ -1,10 +1,25 @@
-# TINDA POS v1.0.35 User Manual
+# TINDA POS v1.0.36 User Manual
 
-**TINDA POS v1.0.35** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.36** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.35**, introducing the **Hands-Free Counter Camera & Zero-Click Background Scanning**, alongside the **Multi-Frame Barcode Consensus Engine** (v1.0.34), **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
+This guide covers release **v1.0.36**, introducing the **Multi-Terminal Local LAN Hub (Master & Satellite Mode)** and **Self-Hosted VPS Cloud Mirroring Architecture**, alongside the **Hands-Free Counter Camera & Zero-Click Background Scanning** (v1.0.35), **Multi-Frame Barcode Consensus Engine** (v1.0.34), **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)
+
+- **Local Multi-Computer LAN Hub (100% Offline):**
+  - Run multiple checkout computers in one store sharing a single unified database without internet.
+  - **Master Server Mode (Host):** Cashier 1 / Server PC hosts the database and serves satellite checkout terminals over local Wi-Fi / Ethernet.
+  - **Satellite Terminal Mode (Client):** Cashier 2 and Stockroom PCs connect to the Master PC's IP address. Products, prices, cart checkouts, and customer utang records synchronize automatically.
+- **6-Digit Pairing PIN & HMAC Session Tokens:**
+  - High-security transient PIN pairing prevents unauthorized Wi-Fi devices from connecting or querying store sales.
+- **Role-Based Satellite Lockdown:**
+  - Satellite checkout terminals are strictly locked to cashier checkout operations. Destructive administrative operations (Database Reset, Backup Restore, and Raw File Exports) are locked to the physical Master console.
+- **Real-Time Inventory Broadcast (SSE):**
+  - Completed checkouts on any terminal instantly update stock badges across all connected screens via live Server-Sent Events.
+- **Self-Hosted VPS Cloud Mirroring Bridge:**
+  - Store owners who operate their own Linux VPS ($4-$5/mo) can configure automated cloud sales replication to monitor their store from a phone or home laptop while keeping physical checkout 100% offline-first.
 
 ## What's New in v1.0.35 (Hands-Free Counter Camera & Zero-Click Background Scanning)
 
@@ -959,15 +974,19 @@ i-install ang approved current Setup sa existing installation gamit ang parehong
 Windows account. Huwag mag-uninstall, mag-Reset Database, o mag-delete ng AppData.
 Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
+## Multi-Computer & VPS Cloud Setup
+
+For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](file:///home/ian/Work/TINDA-POS-v1.0.4/docs/MULTI_PC_AND_VPS_GUIDE.md).
+
 ## Download
 
-**TINDA POS v1.0.19** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.19>
+**TINDA POS v1.0.36** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.36>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.19.exe` — Windows installer
-- `TindaPOS-Portable-1.0.19.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.36.exe` — Windows installer
+- `TindaPOS-Portable-1.0.36.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
-- `SHA256SUMS-RC.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS-RC.txt`)
+- `SHA256SUMS-v1.0.36.txt` — checksums for the files above
 
 The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.

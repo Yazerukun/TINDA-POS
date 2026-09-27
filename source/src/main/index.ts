@@ -125,6 +125,8 @@ app.whenReady().then(() => {
   startAutoUpdateCheck()
   const { startPhoneScannerService, stopPhoneScannerService } = require('./services/phoneScannerService')
   void startPhoneScannerService()
+  const { initializeLanHub, stopMasterServer } = require('./services/lanHubService')
+  initializeLanHub()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -139,6 +141,12 @@ app.on('before-quit', () => {
   try {
     const { stopPhoneScannerService } = require('./services/phoneScannerService')
     stopPhoneScannerService()
+  } catch {
+    // Non-fatal
+  }
+  try {
+    const { stopMasterServer } = require('./services/lanHubService')
+    stopMasterServer()
   } catch {
     // Non-fatal
   }

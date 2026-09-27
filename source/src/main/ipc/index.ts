@@ -39,6 +39,7 @@ import { getUpdateService } from '../services/updateRuntime'
 import { startupSetting } from '../services/startup'
 import * as priceRefRepo from '../repositories/priceReferences'
 import * as priceRefSvc from '../services/priceReferenceService'
+import * as lanHubSvc from '../services/lanHubService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -48,13 +49,23 @@ const router: Record<string, Handler> = {}
 
 function handle(channel: string, fn: Handler): void {
   router[channel] = fn
-  // Pass the Electron event THROUGH to the handler as its first argument.
-  // Handlers are all declared as `(_e, ...realArgs)`; dropping `_e` here
-  // shifted every real argument left by one, so the first invoke argument
-  // (e.g. the setup payload) was consumed as the event and arrived as
-  // `undefined`. This broke every argument-carrying IPC endpoint.
-  ipcMain.handle(channel, (_e: IpcMainInvokeEvent, ...args: unknown[]) => fn(_e, ...args))
+  ipcMain.handle(channel, async (_e: IpcMainInvokeEvent, ...args: unknown[]) => {
+    if (lanHubSvc.isSatellite() && lanHubSvc.shouldProxyChannel(channel)) {
+      try {
+        return await lanHubSvc.callRemoteRpc(channel, args)
+      } catch (err) {
+        throw new Error((err as Error).message || String(err))
+      }
+    }
+    return fn(_e, ...args)
+  })
 }
+
+lanHubSvc.setMasterDispatcher(async (channel: string, args: unknown[]) => {
+  const handler = router[channel]
+  if (!handler) throw new Error(`Unknown RPC channel: ${channel}`)
+  return handler({} as IpcMainInvokeEvent, ...args)
+})
 
 const db = () => getDb()
 const user = () => sessionSvc.requireUser()
@@ -809,6 +820,29 @@ handle('phoneScanner:getStatus', () => {
 handle('phoneScanner:restart', () => {
   const { startPhoneScannerService } = require('../services/phoneScannerService')
   return startPhoneScannerService()
+})
+
+// ---- LAN Hub & VPS Sync ----
+handle('lan:getStatus', () => lanHubSvc.getLanStatus())
+handle('lan:setMode', (_e: IpcMainInvokeEvent, mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.setLanMode(mode, config)
+})
+handle('lan:generatePin', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.generatePin()
+})
+handle('lan:pair', (_e: IpcMainInvokeEvent, masterIp: string, pin: string, deviceName?: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.pairWithMaster(masterIp, pin, deviceName)
+})
+handle('lan:testVps', (_e: IpcMainInvokeEvent, url: string, token: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.testVpsConnection(url, token)
+})
+handle('lan:triggerVpsSync', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.triggerVpsSync()
 })
 
 export function registerIpcHandlers(): void {

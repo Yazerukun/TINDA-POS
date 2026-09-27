@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2, Download, Sparkles } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2, Download, Sparkles, Network } from 'lucide-react'
 import type { BackupInfo, User } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel } from '@shared/printer'
@@ -9,8 +9,9 @@ import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useUpdate } from '../stores/update'
 import { ReceiptPaper } from '../components/ReceiptPaper'
+import { NetworkSettingsTab } from '../components/NetworkSettingsTab'
 
-type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'ABOUT'
+type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
@@ -26,12 +27,14 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('RECEIPT')} className={`btn-ghost flex items-center gap-2 ${tab === 'RECEIPT' ? '!border-brand-500 !text-brand-400' : ''}`}><Receipt className="h-4 w-4" /> Receipt</button>
         <button onClick={() => setTab('USERS')} className={`btn-ghost flex items-center gap-2 ${tab === 'USERS' ? '!border-brand-500 !text-brand-400' : ''}`}><Users className="h-4 w-4" /> Users</button>
         <button onClick={() => setTab('DATA')} className={`btn-ghost flex items-center gap-2 ${tab === 'DATA' ? '!border-brand-500 !text-brand-400' : ''}`}><DatabaseZap className="h-4 w-4" /> Data</button>
+        <button onClick={() => setTab('NETWORK')} className={`btn-ghost flex items-center gap-2 ${tab === 'NETWORK' ? '!border-brand-500 !text-brand-400' : ''}`}><Network className="h-4 w-4" /> Multi-PC & Cloud</button>
         <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
       {tab === 'HOME' && <><StartupSetting /><StoreSettingsTab /></>}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
       {tab === 'DATA' && <DataTab />}
+      {tab === 'NETWORK' && <NetworkSettingsTab />}
       {tab === 'ABOUT' && <AboutTab />}
     </div>
   )

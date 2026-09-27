@@ -52,13 +52,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.34 to v1.0.35 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.35 to v1.0.36 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.35.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.35.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.36.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.36.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.35.exe` (Zero-install portable runtime)
-  - `TindaPOS-User-Guide.pdf` (33-page official documentation)
+  - `TindaPOS-Portable-1.0.36.exe` (Zero-install portable runtime)
+  - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
 
@@ -108,17 +108,44 @@
 ---
 
 ## 10. Multi-Terminal LAN Architecture & VPS Remote Database Blueprint
-### A. The Multi-PC Shared Database Reality (Offline LAN Master/Satellite)
+### A. Feature 1: Secure Multi-Terminal Local LAN Architecture (Master-Satellite Hub)
+* **Target Audience:** Single-store retailers with multiple checkout lanes (Cashier 1, Cashier 2) or a dedicated back-office/stockroom encoding terminal sharing a single database without internet access.
 * **CRITICAL INVARIANT:** Never share a raw SQLite `.db` file across Windows Network Shares (SMB / mapped drive). Doing so causes locking starvation (`SQLITE_BUSY`), disk cache incoherence, and index corruption when multiple terminals write concurrently.
-* **Master-Satellite LAN Topology:**
-  1. **Master Terminal (Cashier 1 / Server PC):** Hosts the local SQLite database and runs the local TINDA POS REST/IPC service bound to the store's Local Area Network IP (e.g. `192.168.1.100:3111`).
-  2. **Satellite Terminals (Cashier 2, Cashier 3, Stockroom PC):** Run TINDA POS in Satellite Client mode configured with the Master's IP. All transactions, cart checkouts, and inventory adjustments route over high-speed local HTTP/WebSocket calls.
-  3. **Zero Internet Requirement:** Functions 100% offline via local Wi-Fi router or unmanaged Ethernet switch.
+* **Master-Satellite Topology:**
+  1. **Master Terminal (Cashier 1 / Server PC):**
+     - Hosts the local SQLite database (`tindapos.db`) and executes all atomic read/write queries.
+     - Runs the authenticated TINDA LAN RPC Server bound to the local network interface (e.g. `192.168.1.100:3111`).
+     - Generates a transient 6-digit **Security Pairing PIN** and static pairing QR code for satellite device onboarding.
+     - Holds exclusive rights to administrative functions (Database Reset, Database Restore, Raw File Exports, System Setting Overrides).
+  2. **Satellite Terminals (Cashier 2, Cashier 3, Stockroom PC):**
+     - Run TINDA POS configured in **Satellite Client Mode**.
+     - Connects over local Wi-Fi / Ethernet to the Master Terminal's IP address.
+     - Authenticates during initial handshake using the 6-digit Security PIN to acquire a signed HMAC-SHA256 session token.
+     - Routes all POS cart operations, product searches, customer utang records, and stock adjustments via local RPC requests.
+  3. **Zero Internet Requirement:** Functions 100% offline via standard local Wi-Fi router or unmanaged Ethernet switch.
+* **Security & Concurrency Invariants:**
+  - **Serialized Write Queue (`BEGIN IMMEDIATE`):** SQLite transactions are strictly sequenced. When two cashiers attempt to sell the final remaining unit of an item simultaneously, the first transaction commits atomically; the second immediately returns an `INSUFFICIENT_STOCK` error, preventing negative inventory.
+  - **Role-Based Terminal Lockdown:** Satellite clients are strictly forbidden from issuing destructive schema operations or administrative restores.
+  - **Real-Time Inventory Broadcast:** Master Terminal emits WebSocket events (`inventory:changed`) on every completed checkout, immediately updating product stock badges across all connected satellite screens without manual refresh.
 
-### B. VPS Remote Hosting & Cloud Mirroring Architecture
-* **Self-Hosting on VPS:** Store owners who want remote owner dashboards or multi-branch consolidation can deploy TINDA POS Cloud Hub on any Linux/Windows VPS ($5/mo digitalocean, linode, etc.):
-  - **Option 1: Headless TINDA Node Daemon on VPS:** Exposes authenticated endpoints over TLS/HTTPS with a PostgreSQL or checkpointed SQLite backend.
-  - **Option 2: Offline-First Async Replication (Recommended):** Each retail branch runs a local Master Terminal with zero-latency local checkouts. Transactions stream asynchronously to the VPS via Litestream SQLite replication or JSON event logs. If internet fails, store sales never stall.
+### B. Feature 2: VPS Remote Hosting & Cloud Mirroring Architecture
+* **Target Audience:** Store owners requiring remote visibility (sales analytics, cash on hand, stock levels, profit reports) from a smartphone or home laptop, or multi-branch retail consolidation.
+* **Self-Hosting on Linux VPS ($4–$6/month):**
+  - Compatible with standard lightweight Linux VPS instances (DigitalOcean Droplet, Linode, AWS Lightsail, Hetzner Cloud).
+  - Deploys the headless TINDA Cloud Hub daemon container with automated SSL (Let's Encrypt / HTTPS on port 443).
+* **Two-Tier Synchronization Architecture:**
+  - **Tier 1: Offline-First Store Guarantee (Recommended):**
+    - The physical store's Master PC continues running local SQLite with sub-5ms local checkout latency.
+    - If retail internet drops, cashiers continue ringing up sales without disruption or software hang.
+    - Asynchronous Sync Bridge: Every transaction or periodic interval (e.g. every 5 minutes), the Master PC batches new sales receipts, inventory movements, and utang repayments to the VPS over an authenticated TLS stream.
+  - **Tier 2: Remote Owner Web Dashboard:**
+    - The store owner visits `https://pos.mystore.com` via mobile or desktop browser.
+    - Authenticates via Owner Master PIN / JWT token.
+    - Views live aggregated metrics: Today's Gross Sales, Total Sukli Given, Drawer Cash Count, Low Stock Warnings, and Customer Utang Balances.
+* **Security & Isolation Invariants:**
+  - **Strict Transport Security (TLS 1.3):** All traffic between store Master PC and cloud VPS is encrypted end-to-end.
+  - **API Token Authentication:** Unauthenticated requests or incorrect bearer tokens are rejected with HTTP 401.
+  - **Read-Only Owner Default:** Remote web dashboards operate in read-only audit mode by default to prevent accidental remote disruption of physical store checkout carts.
 
 ---
 
