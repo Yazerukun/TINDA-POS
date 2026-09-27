@@ -6,13 +6,19 @@ This guide covers release **v1.0.31**, introducing the **Built-in Camera & Smart
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## What's New in v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
+## What's New in v1.0.31 (In-System Digital Handbook & Universal Barcode Scanner Overhaul)
 
-- **Built-in Camera Barcode Scanner** — Use any connected webcam or integrated laptop camera to scan retail product barcodes. Simply click the **"📷 Camera / Phone"** button in the POS header to launch the live scanner viewfinder equipped with an animated targeting reticle.
-- **Smartphone Camera Support (Zero Hardware Cost)** — Turn any Android or iPhone into a high-resolution barcode scanner without purchasing expensive equipment. Using free streaming apps like *Iriun Webcam* or *DroidCam*, your smartphone camera functions directly inside TINDA POS.
-- **Pure-Client Offline Decoding (@zxing/library)** — 100% offline barcode decoding for EAN-13, UPC-A, UPC-E, Code 128, Code 39, and QR codes using client-side video frame processing with zero internet or cloud API dependencies.
-- **Audio Beep & Smart Debounce** — Synthesizes an audible audio beep on every successful scan, with a 1.5-second duplicate protection debounce window to prevent accidental double-scans while handling items.
-- **Hardware USB Scanner 100% Preserved** — The universal physical USB hardware scanner engine remains fully active and listening in parallel with zero configuration changes.
+- **In-System Store Handbook ("Digital Book" Reader)** — Read the entire official store operations manual directly inside TINDA POS without downloading any external PDF. Click **"Store Handbook"** (book icon) in the sidebar to open the 9-chapter offline reader with chapter drawers, turn-page navigation, search filter, and quick jump buttons.
+- **Contextual In-App Quick Help Modals** — Instant operational guidance built directly into the POS, Inventory, Utang (Credit Ledger), and Backup screens. Click the **"Guide"** button in any header to review step-by-step instructions, rules, and shortcut keys without leaving your active screen.
+- **Printable Cashier Counter Quick Reference Guide** — Available at `docs/CASHIER-QUICK-GUIDE.md`, this single-page cheat sheet is ready to print and laminate for cashier checkout counters, covering opening/closing checklists, keyboard shortcuts, payment flows, and troubleshooting.
+- **Overhauled Camera Barcode Scanner (Dual-Region Engine)** — Enhanced camera scanning engine resolves aspect ratio and canvas distortion issues using an offscreen dual-pass decoding pipeline (70% center-reticle crop + full-frame fallback) with `HybridBinarizer` and `GlobalHistogramBinarizer` for instant retail barcode recognition.
+- **Dynamic Camera Hotplug & Mirroring** — Automatically detects newly connected USB webcams or wireless smartphone cameras via `devicechange` events without restarting the application. Includes a one-click video flip/mirror toggle.
+- **Smartphone Camera Support (Zero Hardware Cost)** — Turn any Android or iPhone into a high-resolution barcode scanner without purchasing expensive equipment using free streaming apps (*Iriun Webcam*, *DroidCam*, or Android 14 USB Webcam).
+- **Wi-Fi Scanner App Latency Tolerance (120ms Burst Window)** — Expanded keyboard wedge burst window accommodates network packet jitter from wireless phone scanner apps (such as *Barcode to PC*), ensuring barcodes typed over Wi-Fi are never dropped or cut off.
+- **Multi-Unit Barcode Matching** — Scanning now searches both master product barcodes and unit-level barcodes (`product_units.barcode`), enabling instant recognition of boxes, packs, or individual tingi items.
+- **Manual Barcode Fallback Input** — An integrated manual entry field right inside the scanner modal lets cashiers quickly type in damaged, scratched, or unreadable retail barcodes.
+- **Audio Beep & Smart Debounce** — Synthesizes an audible 920Hz confirmation tone on every successful scan, with a 1.5-second duplicate protection debounce window.
+- **Hardware USB Scanner 100% Preserved** — Physical handheld USB scanners remain fully active in parallel with zero driver setup.
 
 ## What's New in v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
 
