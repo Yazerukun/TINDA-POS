@@ -114,6 +114,38 @@ describe('Universal Barcode Scanner Burst Listener', () => {
     expect(onScan).not.toHaveBeenCalled()
   })
 
+  it('supports wireless phone scanner app bursts (e.g. 70-90ms interval)', () => {
+    const onScan = vi.fn()
+    const listener = createScannerListener({
+      minBarcodeLength: 3,
+      onScan
+    })
+
+    let currentTime = 1000
+    vi.spyOn(Date, 'now').mockImplementation(() => currentTime)
+
+    const simulateKey = (key: string, advanceMs: number) => {
+      currentTime += advanceMs
+      const event = {
+        key,
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn()
+      } as unknown as KeyboardEvent
+      listener(event)
+      return event
+    }
+
+    // Wireless phone scanner: 80ms interval
+    simulateKey('4', 0)
+    simulateKey('8', 80)
+    simulateKey('0', 75)
+    simulateKey('0', 85)
+    simulateKey('1', 80)
+    simulateKey('Enter', 80)
+
+    expect(onScan).toHaveBeenCalledWith('48001')
+  })
+
   it('checks isUsbScannerSupported without throwing', () => {
     expect(typeof isUsbScannerSupported()).toBe('boolean')
   })

@@ -80,9 +80,10 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
   const where: string[] = []
   const params: unknown[] = []
   if (q && q.trim()) {
-    where.push(`(p.name LIKE ? OR p.sku LIKE ? OR p.barcode = ? COLLATE NOCASE)`)
-    const like = `%${q.trim()}%`
-    params.push(like, like, q.trim())
+    const trimmed = q.trim()
+    where.push(`(p.name LIKE ? OR p.sku LIKE ? OR p.barcode = ? COLLATE NOCASE OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND pu.barcode = ? COLLATE NOCASE))`)
+    const like = `%${trimmed}%`
+    params.push(like, like, trimmed, trimmed)
   }
   if (category_id) {
     where.push('p.category_id = ?')

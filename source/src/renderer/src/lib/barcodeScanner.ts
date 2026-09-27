@@ -14,7 +14,7 @@ export interface ScannerListenerOptions {
 }
 
 export function createScannerListener(options: ScannerListenerOptions): (e: KeyboardEvent) => void {
-  const maxInterval = options.maxIntervalMs ?? 50
+  const maxInterval = options.maxIntervalMs ?? 120
   const minLength = options.minBarcodeLength ?? 3
   let buffer = ''
   let lastKeyTime = 0
@@ -26,9 +26,9 @@ export function createScannerListener(options: ScannerListenerOptions): (e: Keyb
     const elapsed = now - lastKeyTime
     lastKeyTime = now
 
-    // If key is Enter, check if accumulated buffer qualifies as a scanner burst
-    if (e.key === 'Enter') {
-      if (buffer.length >= minLength && elapsed <= maxInterval * 2) {
+    // If key is Enter or Tab, check if accumulated buffer qualifies as a scanner burst
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      if (buffer.length >= minLength && elapsed <= Math.max(maxInterval * 3, 350)) {
         const scannedCode = buffer.trim()
         buffer = ''
         if (scannedCode) {

@@ -196,15 +196,17 @@ export function POS(): React.JSX.Element {
 
   const handleScan = async (scannedBarcode: string) => {
     try {
-      const res = await window.api.products.search(scannedBarcode, { status: 'ACTIVE', limit: 10 })
-      const target = scannedBarcode.toLowerCase()
+      const code = scannedBarcode.trim()
+      if (!code) return
+      const res = await window.api.products.search(code, { status: 'ACTIVE', limit: 10 })
+      const target = code.toLowerCase()
       const found =
         res.rows.find(
           (p) =>
             p.barcode?.toLowerCase() === target ||
             p.sku?.toLowerCase() === target ||
             p.units?.some((u) => u.barcode?.toLowerCase() === target)
-        ) ?? res.rows[0]
+        ) ?? (res.rows.length > 0 ? res.rows[0] : null)
 
       if (found) {
         if (saleStock(found) < 1) {
@@ -215,7 +217,7 @@ export function POS(): React.JSX.Element {
           setQ('')
         }
       } else {
-        toastError(`No product found for barcode: ${scannedBarcode}`)
+        toastError(`No product found for barcode: ${code}`)
       }
     } catch (err) {
       toastError(`Barcode scan failed: ${String((err as Error)?.message || err)}`)
@@ -250,6 +252,12 @@ export function POS(): React.JSX.Element {
             <input
               value={q}
               onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && q.trim()) {
+                  e.preventDefault()
+                  void handleScan(q.trim())
+                }
+              }}
               placeholder="Search product by name or barcode…"
               className="input h-11 w-full pl-9 !text-base"
               autoFocus

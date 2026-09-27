@@ -1,6 +1,24 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { BrowserMultiFormatReader } from '@zxing/library'
-import { Camera, Smartphone, RefreshCw, CheckCircle2, AlertCircle, VideoOff } from 'lucide-react'
+import {
+  MultiFormatReader,
+  BarcodeFormat,
+  DecodeHintType,
+  HTMLCanvasElementLuminanceSource,
+  HybridBinarizer,
+  GlobalHistogramBinarizer,
+  BinaryBitmap
+} from '@zxing/library'
+import {
+  Camera,
+  Smartphone,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  VideoOff,
+  FlipHorizontal,
+  CornerDownLeft,
+  Sparkles
+} from 'lucide-react'
 import { Modal } from './ui/Modal'
 
 interface CameraScannerModalProps {
@@ -17,12 +35,12 @@ function playBeep(): void {
     const gain = ctx.createGain()
     osc.type = 'sine'
     osc.frequency.setValueAtTime(920, ctx.currentTime)
-    gain.gain.setValueAtTime(0.2, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09)
+    gain.gain.setValueAtTime(0.25, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
     osc.connect(gain)
     gain.connect(ctx.destination)
     osc.start()
-    osc.stop(ctx.currentTime + 0.09)
+    osc.stop(ctx.currentTime + 0.1)
   } catch {
     // Non-blocking audio
   }
@@ -34,11 +52,36 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('')
   const [cameraActive, setCameraActive] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [mirrored, setMirrored] = useState(false)
   const [lastScanned, setLastScanned] = useState<string | null>(null)
+  const [manualCode, setManualCode] = useState('')
+
+  const lastScannedRef = useRef<string | null>(null)
   const lastScanTimeRef = useRef<number>(0)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const fullCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const cropCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const scanLoopRef = useRef<number | null>(null)
 
-  const reader = useMemo(() => new BrowserMultiFormatReader(), [])
+  // Configure ZXing reader with TRY_HARDER and explicit retail 1D/2D formats
+  const reader = useMemo(() => {
+    const hints = new Map()
+    hints.set(DecodeHintType.TRY_HARDER, true)
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.ITF,
+      BarcodeFormat.QR_CODE
+    ])
+    const r = new MultiFormatReader()
+    r.setHints(hints)
+    return r
+  }, [])
 
   // Load available camera devices
   const loadDevices = async () => {
@@ -47,101 +90,223 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
         setCameraError('Camera API is not supported on this device.')
         return
       }
-      // Request initial stream to grant permission so device labels are visible
+
+      // Request brief initial stream to grant permission so camera names are visible
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-        stream.getTracks().forEach((t) => t.stop())
+        const testStream = await navigator.mediaDevices.getUserMedia({ video: true })
+        testStream.getTracks().forEach((t) => t.stop())
       } catch {
-        // Continue to enumerate even if permission was already determined
+        // Continue even if already permitted
       }
 
       const allDevices = await navigator.mediaDevices.enumerateDevices()
       const videoInputs = allDevices.filter((d) => d.kind === 'videoinput')
       setDevices(videoInputs)
-      if (videoInputs.length > 0 && !selectedDeviceId) {
-        // Prioritize back camera or external webcam / phone cam if present
-        const phoneOrBack = videoInputs.find(
+
+      if (videoInputs.length > 0) {
+        // Look for phone apps (Iriun, DroidCam) or back camera
+        const preferred = videoInputs.find(
           (d) =>
-            d.label.toLowerCase().includes('back') ||
             d.label.toLowerCase().includes('iriun') ||
             d.label.toLowerCase().includes('droidcam') ||
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('rear') ||
             d.label.toLowerCase().includes('phone')
         )
-        setSelectedDeviceId(phoneOrBack?.deviceId || videoInputs[0]?.deviceId || '')
+        if (!selectedDeviceId || !videoInputs.some((d) => d.deviceId === selectedDeviceId)) {
+          setSelectedDeviceId(preferred?.deviceId || videoInputs[0]?.deviceId || '')
+        }
       }
     } catch (err) {
       setCameraError(String((err as Error)?.message || err))
     }
   }
 
+  // Listen for device plug/unplug (e.g. when Iriun or DroidCam connects)
   useEffect(() => {
-    if (open) {
+    if (!open) return
+    void loadDevices()
+
+    const onDeviceChange = () => {
       void loadDevices()
-    } else {
-      stopCamera()
+    }
+
+    navigator.mediaDevices?.addEventListener('devicechange', onDeviceChange)
+    return () => {
+      navigator.mediaDevices?.removeEventListener('devicechange', onDeviceChange)
     }
   }, [open])
 
-  const stopCamera = () => {
-    try {
-      reader.reset()
-    } catch {
-      // Ignore reset errors
+  const stopActiveStream = () => {
+    if (scanLoopRef.current) {
+      window.clearTimeout(scanLoopRef.current)
+      scanLoopRef.current = null
     }
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream
-      stream.getTracks().forEach((track) => track.stop())
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current) {
       videoRef.current.srcObject = null
     }
     setCameraActive(false)
   }
 
-  // Start continuous camera decoding
+  // Start robust camera stream and continuous scan loop
   useEffect(() => {
-    if (!open || tab !== 'camera' || !selectedDeviceId || !videoRef.current) return
+    if (!open || tab !== 'camera') {
+      stopActiveStream()
+      return
+    }
 
-    let cancelled = false
+    let isCancelled = false
     setCameraError(null)
 
-    const startScanning = async () => {
-      stopCamera()
+    const startCamera = async () => {
+      stopActiveStream()
+
       try {
-        setCameraActive(true)
-        await reader.decodeFromVideoDevice(
-          selectedDeviceId,
-          videoRef.current,
-          (result, err) => {
-            if (cancelled || !result) return
-            const scannedText = result.getText()?.trim()
-            if (!scannedText) return
-
-            const now = Date.now()
-            // Debounce identical scans within 1.5 seconds
-            if (scannedText === lastScanned && now - lastScanTimeRef.current < 1500) {
-              return
-            }
-
-            lastScanTimeRef.current = now
-            setLastScanned(scannedText)
-            playBeep()
-            onScan(scannedText)
+        const constraints: MediaStreamConstraints = {
+          video: {
+            deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+            width: { ideal: 1280, min: 640 },
+            height: { ideal: 720, min: 480 },
+            facingMode: selectedDeviceId ? undefined : { ideal: 'environment' }
           }
-        )
-      } catch (e) {
-        if (!cancelled) {
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        if (isCancelled) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
+
+        streamRef.current = stream
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          await videoRef.current.play()
+          setCameraActive(true)
+        }
+
+        // Initialize offscreen canvas elements
+        if (!fullCanvasRef.current) {
+          fullCanvasRef.current = document.createElement('canvas')
+        }
+        if (!cropCanvasRef.current) {
+          cropCanvasRef.current = document.createElement('canvas')
+        }
+
+        // Continuous Scanning Frame Loop
+        const scanTick = () => {
+          if (isCancelled) return
+
+          const video = videoRef.current
+          if (video && video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+            const vw = video.videoWidth
+            const vh = video.videoHeight
+
+            try {
+              let detectedText: string | null = null
+
+              // 1. Try Center Reticle Crop (Focus Box)
+              // Retail barcodes on cans, boxes, and pouches are easiest to decode without surrounding clutter
+              const cropW = Math.max(100, Math.round(vw * 0.70))
+              const cropH = Math.max(80, Math.round(vh * 0.55))
+              const cropX = Math.round((vw - cropW) / 2)
+              const cropY = Math.round((vh - cropH) / 2)
+
+              const cropCanvas = cropCanvasRef.current!
+              cropCanvas.width = cropW
+              cropCanvas.height = cropH
+              const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true })
+
+              if (cropCtx) {
+                cropCtx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH)
+                const cropLum = new HTMLCanvasElementLuminanceSource(cropCanvas, false)
+                try {
+                  const result = reader.decode(new BinaryBitmap(new HybridBinarizer(cropLum)))
+                  detectedText = result.getText()?.trim() || null
+                } catch {
+                  try {
+                    const fallback = reader.decode(new BinaryBitmap(new GlobalHistogramBinarizer(cropLum)))
+                    detectedText = fallback.getText()?.trim() || null
+                  } catch {
+                    // Not in center crop
+                  }
+                }
+              }
+
+              // 2. If center crop didn't find anything, try full video frame
+              if (!detectedText) {
+                const fullCanvas = fullCanvasRef.current!
+                fullCanvas.width = vw
+                fullCanvas.height = vh
+                const fullCtx = fullCanvas.getContext('2d', { willReadFrequently: true })
+                if (fullCtx) {
+                  fullCtx.drawImage(video, 0, 0, vw, vh)
+                  const fullLum = new HTMLCanvasElementLuminanceSource(fullCanvas, false)
+                  try {
+                    const result = reader.decode(new BinaryBitmap(new HybridBinarizer(fullLum)))
+                    detectedText = result.getText()?.trim() || null
+                  } catch {
+                    try {
+                      const fallback = reader.decode(new BinaryBitmap(new GlobalHistogramBinarizer(fullLum)))
+                      detectedText = fallback.getText()?.trim() || null
+                    } catch {
+                      // No barcode in this frame
+                    }
+                  }
+                }
+              }
+
+              // Handle successful scan with smart debounce
+              if (detectedText) {
+                const now = Date.now()
+                if (detectedText !== lastScannedRef.current || now - lastScanTimeRef.current > 1800) {
+                  lastScannedRef.current = detectedText
+                  lastScanTimeRef.current = now
+                  setLastScanned(detectedText)
+                  playBeep()
+                  onScan(detectedText)
+                }
+              }
+            } catch {
+              // Frame decoding error, continue loop
+            }
+          }
+
+          // Schedule next frame in 120ms (approx 8-10 scans/second)
+          scanLoopRef.current = window.setTimeout(scanTick, 120)
+        }
+
+        // Start scanning loop after video is playing
+        scanLoopRef.current = window.setTimeout(scanTick, 150)
+      } catch (err) {
+        if (!isCancelled) {
           setCameraActive(false)
-          setCameraError(`Camera error: ${String((e as Error)?.message || e)}`)
+          setCameraError(`Camera connection failed: ${String((err as Error)?.message || err)}. Please verify the camera is not used by another application.`)
         }
       }
     }
 
-    void startScanning()
+    void startCamera()
 
     return () => {
-      cancelled = true
-      stopCamera()
+      isCancelled = true
+      stopActiveStream()
     }
   }, [open, tab, selectedDeviceId])
+
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = manualCode.trim()
+    if (!trimmed) return
+    playBeep()
+    setLastScanned(trimmed)
+    onScan(trimmed)
+    setManualCode('')
+  }
 
   if (!open) return null
 
@@ -178,7 +343,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
 
         {tab === 'camera' && (
           <div className="space-y-3">
-            {/* Camera Selector Toolbar */}
+            {/* Camera Toolbar */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1">
                 <label className="mb-1 block text-xs font-medium text-slate-400">Selected Camera Device</label>
@@ -188,7 +353,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                   className="input h-9 w-full text-xs"
                   disabled={devices.length === 0}
                 >
-                  {devices.length === 0 && <option value="">No camera detected</option>}
+                  {devices.length === 0 && <option value="">No camera detected (connect webcam or phone)</option>}
                   {devices.map((device, idx) => (
                     <option key={device.deviceId || idx} value={device.deviceId}>
                       {device.label || `Camera ${idx + 1}`}
@@ -196,6 +361,16 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                   ))}
                 </select>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setMirrored((m) => !m)}
+                className={`btn-secondary mt-5 h-9 px-3 text-xs ${mirrored ? 'border-brand-500 text-brand-300' : ''}`}
+                title="Mirror / Flip Video (Useful for front webcams)"
+              >
+                <FlipHorizontal className="h-3.5 w-3.5" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => void loadDevices()}
@@ -210,7 +385,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
             <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-ink-line bg-black">
               <video
                 ref={videoRef}
-                className="h-full w-full object-cover"
+                className={`h-full w-full object-cover transition-transform ${mirrored ? '-scale-x-100' : ''}`}
                 autoPlay
                 playsInline
                 muted
@@ -233,7 +408,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
 
               {/* Camera Error / Offline Overlay */}
               {cameraError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 p-4 text-center">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/90 p-4 text-center">
                   <AlertCircle className="mb-2 h-8 w-8 text-rose-400" />
                   <p className="text-sm font-semibold text-rose-300">Camera Unavailable</p>
                   <p className="mt-1 max-w-sm text-xs text-slate-400">{cameraError}</p>
@@ -243,25 +418,44 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
               {!cameraActive && !cameraError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink-950/80 p-4 text-center">
                   <VideoOff className="mb-2 h-8 w-8 text-slate-500" />
-                  <p className="text-xs text-slate-400">Starting camera preview…</p>
+                  <p className="text-xs text-slate-400">Connecting to camera feed…</p>
                 </div>
               )}
 
               {/* Last Scanned Tag */}
               {lastScanned && (
-                <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between rounded-lg bg-emerald-950/90 px-3 py-1.5 text-xs text-emerald-200 border border-emerald-500/40 backdrop-blur-sm">
+                <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between rounded-lg bg-emerald-950/95 px-3 py-1.5 text-xs text-emerald-200 border border-emerald-500/50 backdrop-blur-sm shadow-lg">
                   <span className="flex items-center gap-1.5 font-medium">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                    Scanned: {lastScanned}
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span className="truncate">Scanned: {lastScanned}</span>
                   </span>
-                  <span className="text-[10px] text-emerald-400/80">Added to Cart</span>
+                  <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">Added to Cart</span>
                 </div>
               )}
             </div>
 
             <p className="text-center text-xs text-slate-400">
-              Hold the barcode (EAN-13, UPC, Code 128, QR) steady inside the green frame.
+              Hold the barcode (EAN-13, UPC, Code 128, QR) steady inside the green reticle box.
             </p>
+
+            {/* Quick Manual Entry for Damaged / Faded Barcodes */}
+            <form onSubmit={handleManualSubmit} className="flex items-center gap-2 pt-1 border-t border-ink-line">
+              <input
+                type="text"
+                value={manualCode}
+                onChange={(e) => setManualCode(e.target.value)}
+                placeholder="Can't scan? Type barcode number here…"
+                className="input h-9 flex-1 text-xs font-mono"
+              />
+              <button
+                type="submit"
+                disabled={!manualCode.trim()}
+                className="btn-primary h-9 px-3 text-xs flex items-center gap-1 font-semibold"
+              >
+                <span>Add</span>
+                <CornerDownLeft className="h-3 w-3" />
+              </button>
+            </form>
           </div>
         )}
 
