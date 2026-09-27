@@ -1,11 +1,19 @@
-# TINDA POS v1.0.30 User Manual
+# TINDA POS v1.0.31 User Manual
 
-**TINDA POS v1.0.30** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.31** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.30), na nagdadala ng **Universal Hardware Barcode Scanner Engine (Driver-Free Plug-and-Play)**, **Global Keystroke Burst Interceptor**, **🟢 Scanner Ready HUD Status Indicator**, at **Multi-Terminal LAN Architecture & VPS Remote Database Blueprint**, kasama ang **Simple POS JSON Backup Import** (v1.0.29) at **Utang Credit Sale Item-Level Breakdown** (v1.0.28).
+Ang guide na ito ay para sa release (v1.0.31), na nagdadala ng **Built-in Camera & Smartphone Barcode Scanner Engine (@zxing/library)**, **Live Viewfinder & Camera Device Selector**, **Smartphone Wireless Scanner Guide**, kasama ang **Universal Hardware Barcode Scanner Engine** (v1.0.30) ug **Simple POS JSON Backup Import** (v1.0.29).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
+
+- **Built-in Camera Barcode Scanner** — Maaari nang gamitin ang anumang nakakabit na webcam o laptop camera upang mag-scan ng mga produkto. I-click lamang ang **"📷 Camera / Phone"** button sa itaas ng POS screen upang buksan ang live scanner modal na may built-in targeting reticle.
+- **Suporta sa Cellphone Camera (Libreng Scanner)** — Hindi na kailangang bumili ng mamahaling hardware scanner. Gamit ang libreng apps tulad ng *Iriun Webcam* o *DroidCam*, maaaring gamitin ang high-resolution camera ng iyong Android o iPhone nang direkta sa TINDA POS.
+- **Pure-Client Offline Decoding (@zxing/library)** — 100% offline ang pag-decode ng EAN-13, UPC, Code 128, at QR codes sa pamamagitan ng client-side video processing nang walang internet o cloud API.
+- **Audio Beep & Smart Debounce** — Awtomatikong nagpapatunog ng malinaw na audio beep sa bawat matagumpay na scan, at may 1.5-segundong debounce upang hindi dumoble ang pagpasok ng item sa cart habang hawak ang produkto.
+- **Physical USB Scanner 100% Preserved** — Ang dating physical USB hardware scanner ay nananatiling aktibo at laging handa sa background nang walang anumang pagbabago.
 
 ## Bago sa v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
 

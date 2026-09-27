@@ -15,9 +15,11 @@ import {
   Loader2,
   ChevronDown,
   AlertTriangle,
-  Barcode
+  Barcode,
+  Camera
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
+import { CameraScannerModal } from '../components/CameraScannerModal'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
@@ -108,6 +110,7 @@ export function POS(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
   const categoryMenuRef = useRef<HTMLDivElement>(null)
+  const [cameraScannerOpen, setCameraScannerOpen] = useState(false)
   const cartItems = usePosCart((state) => state.items)
 
   useEffect(() => {
@@ -189,35 +192,35 @@ export function POS(): React.JSX.Element {
     }
   }, [categoryMenuOpen])
 
-  useEffect(() => {
-    const handleScan = async (scannedBarcode: string) => {
-      try {
-        const res = await window.api.products.search(scannedBarcode, { status: 'ACTIVE', limit: 10 })
-        const target = scannedBarcode.toLowerCase()
-        const found =
-          res.rows.find(
-            (p) =>
-              p.barcode?.toLowerCase() === target ||
-              p.sku?.toLowerCase() === target ||
-              p.units?.some((u) => u.barcode?.toLowerCase() === target)
-          ) ?? res.rows[0]
+  const handleScan = async (scannedBarcode: string) => {
+    try {
+      const res = await window.api.products.search(scannedBarcode, { status: 'ACTIVE', limit: 10 })
+      const target = scannedBarcode.toLowerCase()
+      const found =
+        res.rows.find(
+          (p) =>
+            p.barcode?.toLowerCase() === target ||
+            p.sku?.toLowerCase() === target ||
+            p.units?.some((u) => u.barcode?.toLowerCase() === target)
+        ) ?? res.rows[0]
 
-        if (found) {
-          if (saleStock(found) < 1) {
-            toastError(`"${found.name}" is out of stock!`)
-          } else {
-            usePosCart.getState().add(found)
-            toastSuccess(`Scanned: ${found.name}`)
-            setQ('')
-          }
+      if (found) {
+        if (saleStock(found) < 1) {
+          toastError(`"${found.name}" is out of stock!`)
         } else {
-          toastError(`No product found for barcode: ${scannedBarcode}`)
+          usePosCart.getState().add(found)
+          toastSuccess(`Scanned: ${found.name}`)
+          setQ('')
         }
-      } catch (err) {
-        toastError(`Barcode scan failed: ${String((err as Error)?.message || err)}`)
+      } else {
+        toastError(`No product found for barcode: ${scannedBarcode}`)
       }
+    } catch (err) {
+      toastError(`Barcode scan failed: ${String((err as Error)?.message || err)}`)
     }
+  }
 
+  useEffect(() => {
     const scannerListener = createScannerListener({
       onScan: (code) => {
         void handleScan(code)
@@ -299,6 +302,15 @@ export function POS(): React.JSX.Element {
               <Barcode className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Scanner Ready</span>
             </div>
+            <button
+              type="button"
+              onClick={() => setCameraScannerOpen(true)}
+              className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
+              title="Scan Barcode using Laptop Webcam or Smartphone Camera"
+            >
+              <Camera className="h-3.5 w-3.5 text-brand-400" />
+              <span className="hidden sm:inline">Camera / Phone</span>
+            </button>
             <div className="flex items-center gap-1 text-xs text-slate-500">
               <Plus className="h-3.5 w-3.5" /> add
               <span className="text-slate-600">·</span>
@@ -358,6 +370,12 @@ export function POS(): React.JSX.Element {
       </div>
 
       <CartPanel />
+
+      <CameraScannerModal
+        open={cameraScannerOpen}
+        onClose={() => setCameraScannerOpen(false)}
+        onScan={(code) => void handleScan(code)}
+      />
     </div>
   )
 }

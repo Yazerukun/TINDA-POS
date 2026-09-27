@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.30-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.31-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-302%2F302_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,21 @@
 
 <br />
 
-[⬇️ Download v1.0.30 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.30/TindaPOS-Setup-1.0.30.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.30/TindaPOS-Portable-1.0.30.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.30/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.31 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-Setup-1.0.31.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-Portable-1.0.31.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.31/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+---
+
+## ✨ What's New in v1.0.31 (Built-in Camera & Smartphone Barcode Scanner)
+
+> **Built-in Camera Scanner Engine (@zxing/library), Smartphone Wireless Scanner Guide & Zero Hardware Cost Scanning**
+
+- 📷 **Built-in Camera Barcode Scanner** — scan barcodes using any connected webcam or laptop camera directly inside TINDA POS via the **"📷 Camera / Phone"** button in the POS header.
+- 📱 **Smartphone Camera Support (Zero Hardware Cost)** — use your Android or iPhone high-res camera as a wireless barcode scanner using free wireless webcam drivers (Iriun Webcam, DroidCam, or Android 14 USB webcam) with step-by-step setup guides inside the app.
+- ⚡ **Pure-Client Offline Decoding (@zxing/library)** — 100% offline barcode decoding for EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, and QR codes with zero cloud calls.
+- 🔊 **Web Audio Beep & Smart Debounce** — crisp 920Hz audio feedback on every scan with 1.5s duplicate protection.
+- 🔌 **Physical USB Scanner 100% Preserved** — the high-speed physical USB hardware scanner continues running simultaneously in the background.
 
 ---
 
@@ -59,6 +71,7 @@
 
 | Version | Highlights |
 |---|---|
+| **v1.0.31** | Built-in Camera & Smartphone Barcode Scanner (@zxing/library), live video reticle, smartphone setup guide, physical scanner parallel mode |
 | **v1.0.30** | Universal USB barcode scanner engine (driver-free keyboard wedge), global burst interceptor, Scanner Ready HUD badge, Multi-PC LAN Hub & VPS remote sync blueprint |
 | **v1.0.29** | Simple POS JSON backup ingest, unified Import Products / Backup modal, auto-SKU generation, pre-import safety backup, auth isolation |
 | **v1.0.28** | Utang credit sale item-level breakdown (📦 package icon), direct receipt reprint from Utang ledger |
