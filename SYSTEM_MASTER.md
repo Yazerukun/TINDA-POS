@@ -52,13 +52,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.33 to v1.0.34 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.34 to v1.0.35 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.34.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.34.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.35.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.35.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.34.exe` (Zero-install portable runtime)
-  - `TindaPOS-User-Guide.pdf` (31-page official documentation)
+  - `TindaPOS-Portable-1.0.35.exe` (Zero-install portable runtime)
+  - `TindaPOS-User-Guide.pdf` (33-page official documentation)
 
 ---
 
@@ -182,6 +182,20 @@
     - **POS Checkout Cart:** 2500ms identical-barcode debounce.
 * **Phone Scanner Visual Confirmation Flash:**
   - The phone camera reticle triggers a prominent green border and laser pulse (`.reticle.scanned`) upon confirmed transmission, providing instant visual feedback alongside haptic vibration and Web Audio beeps.
+
+---
+
+## 14. Hands-Free Counter Camera & Zero-Click Background Scanning Architecture (v1.0.35)
+* **In-Cart Docked Counter Camera (`CounterCameraScanner.tsx`):**
+  - **Hands-Free Checkout Invariant:** Eliminates the operational bottleneck of having to click buttons or open modal windows to scan merchandise. The counter camera is integrated directly into the POS layout above the active cart (`CartPanel`).
+  - **Streamline UI / Collapsible Drawer:** Cashiers can collapse or expand the live camera preview via a single toggle or hide it completely. Minimization and hardware device selections are persisted across restarts in `localStorage`.
+  - **Direct Barcode Stream:** Barcodes read by the camera are decoded via off-screen canvas analysis, verified against GS1 / retail barcode checksum constraints, and directly invoke `onScan` in the parent POS container, adding items immediately to the active sale.
+* **Always-Armed Wireless Phone Companion Scanner:**
+  - **Modal Independence:** Once a smartphone is paired with the POS terminal (via 1-click QR code), cashiers can freely close the desktop pairing modal. The WebSocket / HTTP event listener (`window.api.phoneScanner.onScan`) remains permanently active in the background.
+  - **Header Connectivity Badges:** High-visibility indicators (`🟢 Phone Ready` / `📱 Pair Phone`) in the POS top navigation bar keep the cashier continuously informed of mobile scanner link status without occupying screen space.
+* **Multi-Input Hardware Concurrency:**
+  - Physical USB handheld scanners (via hardware keyboard wedge bursts), docked counter cameras (via live ZXing video streams), and wireless mobile devices (via encrypted local WebSocket packets) feed into the unified POS cart dispatcher simultaneously with zero collisions or mode-switching delays.
+
 
 
 
