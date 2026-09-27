@@ -201,8 +201,10 @@ const api: TindaApi = {
     getStatus: () => invoke<{
       running: boolean
       port: number
+      httpsPort: number
       ip: string
       url: string
+      httpsUrl: string
       connected: boolean
       device?: string
     }>('phoneScanner:getStatus'),

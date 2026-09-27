@@ -63,18 +63,23 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   const [manualCode, setManualCode] = useState('')
 
   // Phone QR Scanner State
+  const [phoneMode, setPhoneMode] = useState<'https' | 'http'>('https')
   const [phoneStatus, setPhoneStatus] = useState<{
     running: boolean
     port: number
+    httpsPort: number
     ip: string
     url: string
+    httpsUrl: string
     connected: boolean
     device?: string
   }>({
     running: false,
     port: 3112,
+    httpsPort: 3113,
     ip: '127.0.0.1',
     url: '',
+    httpsUrl: '',
     connected: false
   })
 
@@ -132,19 +137,21 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
     }
   }, [open, onScan])
 
+  const activePhoneUrl = phoneMode === 'https' ? (phoneStatus.httpsUrl || phoneStatus.url) : phoneStatus.url
+
   // Render QR Code SVG whenever phone scanner URL is available
   useEffect(() => {
-    if (tab === 'phone' && phoneStatus.url && qrContainerRef.current) {
+    if (tab === 'phone' && activePhoneUrl && qrContainerRef.current) {
       try {
         const writer = new BrowserQRCodeSvgWriter()
-        const svg = writer.write(phoneStatus.url, 240, 240)
+        const svg = writer.write(activePhoneUrl, 240, 240)
         svg.setAttribute('style', 'display:block;border-radius:12px;background:#ffffff;padding:12px;')
         qrContainerRef.current.replaceChildren(svg)
       } catch (err) {
         console.error('Failed to generate companion QR code:', err)
       }
     }
-  }, [tab, phoneStatus.url])
+  }, [tab, activePhoneUrl])
 
   // Load available camera devices for local webcam tab
   const loadDevices = async () => {
@@ -424,10 +431,38 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
         {/* TAB 1: 1-Click Phone QR Scanner (Instant, Zero App Install) */}
         {tab === 'phone' && (
           <div className="space-y-4">
+            {/* Mode Selector Toggle */}
+            <div className="flex items-center gap-2 p-1 bg-ink-950 rounded-lg border border-ink-line">
+              <button
+                type="button"
+                onClick={() => setPhoneMode('https')}
+                className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+                  phoneMode === 'https'
+                    ? 'bg-brand-500 text-ink-950 shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                ⚡ Live Video Scanner (Recommended)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPhoneMode('http')}
+                className={`flex-1 py-1.5 px-3 rounded-md text-xs font-semibold transition-all ${
+                  phoneMode === 'http'
+                    ? 'bg-brand-500 text-ink-950 shadow-sm font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                📸 Direct Snap Scanner (Zero Setup)
+              </button>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center gap-5 rounded-xl border border-brand-500/30 bg-ink-900/90 p-4">
               <div className="flex flex-col items-center shrink-0">
                 <div ref={qrContainerRef} className="rounded-xl overflow-hidden shadow-pop bg-white p-2 border border-slate-200" />
-                <span className="mt-2 text-[10px] uppercase font-bold tracking-wider text-brand-300">Scan with Phone Camera</span>
+                <span className="mt-2 text-[10px] uppercase font-bold tracking-wider text-brand-300">
+                  {phoneMode === 'https' ? 'Scan for Live Video' : 'Scan for Instant Snap'}
+                </span>
               </div>
 
               <div className="space-y-2.5 flex-1 min-w-0">
@@ -446,16 +481,28 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                   </div>
                 </div>
 
-                <h4 className="font-bold text-white text-sm">Turn Your Phone Into a Wireless Scanner</h4>
-                <ol className="list-decimal pl-4 space-y-1.5 text-xs text-slate-300">
-                  <li>Connect your phone to the same Wi-Fi as this computer.</li>
-                  <li>Open your phone's camera (iPhone Camera or Android Google Lens).</li>
-                  <li>Scan the QR code and tap the link to open the scanner.</li>
-                  <li>Point your phone at product barcodes — items are added to your POS cart automatically!</li>
-                </ol>
+                <h4 className="font-bold text-white text-sm">
+                  {phoneMode === 'https' ? 'Continuous Live Video Scanner' : 'Direct Photo Snapshot Scanner'}
+                </h4>
+
+                {phoneMode === 'https' ? (
+                  <ol className="list-decimal pl-4 space-y-1.5 text-xs text-slate-300">
+                    <li>Connect phone to the same Wi-Fi as this PC.</li>
+                    <li>Scan the QR code with phone camera and open the link.</li>
+                    <li><strong className="text-amber-300">First time connect:</strong> When the browser shows a security notice, tap <em>Advanced</em> &rarr; <em>Proceed to site</em> to allow camera.</li>
+                    <li>Continuous 60 FPS live video scanning activates automatically!</li>
+                  </ol>
+                ) : (
+                  <ol className="list-decimal pl-4 space-y-1.5 text-xs text-slate-300">
+                    <li>Connect phone to the same Wi-Fi as this PC.</li>
+                    <li>Scan the QR code — opens instantly with zero browser warnings!</li>
+                    <li>Tap the big green <strong>"📸 Tap to Snap Barcode Photo"</strong> button.</li>
+                    <li>Snap a photo of the product barcode — items are added to your POS cart!</li>
+                  </ol>
+                )}
 
                 <div className="rounded-lg bg-ink-950 p-2.5 text-[11px] text-slate-400 border border-ink-line flex items-center justify-between">
-                  <span className="truncate">URL: <code className="text-brand-300 font-mono">{phoneStatus.url || 'Generating…'}</code></span>
+                  <span className="truncate">URL: <code className="text-brand-300 font-mono">{activePhoneUrl || 'Generating…'}</code></span>
                   <button
                     type="button"
                     onClick={() => void window.api.phoneScanner?.restart().then(() => window.api.phoneScanner.getStatus().then(setPhoneStatus))}

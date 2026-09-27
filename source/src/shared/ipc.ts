@@ -392,8 +392,10 @@ export interface TindaApi {
     getStatus: () => Promise<{
       running: boolean
       port: number
+      httpsPort: number
       ip: string
       url: string
+      httpsUrl: string
       connected: boolean
       device?: string
     }>

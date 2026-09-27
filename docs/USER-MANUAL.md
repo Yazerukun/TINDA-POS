@@ -1,10 +1,18 @@
-# TINDA POS v1.0.32 User Manual
+# TINDA POS v1.0.33 User Manual
 
-**TINDA POS v1.0.32** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.33** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.32**, introducing the **1-Click Phone QR Companion Scanner (Scan-to-Connect)**, **Scanner Precision & GS1 Modulo-10 Checksum Engine**, **High-Sensitivity 25 FPS Decoding**, **100% English Update Pop-ups**, alongside the **In-System Store Handbook** (v1.0.31) and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
+This guide covers release **v1.0.33**, introducing the **Dual-Mode Secure Phone Scanner (HTTPS Live Video + Zero-Warning Photo Snap Fallback)**, **W3C Secure Context Architecture**, alongside the **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.33 (Dual-Mode Secure Phone Scanner)
+
+- **Dual-Mode Phone Companion Scanner (HTTPS + HTTP):**
+  - **⚡ Live Video Scanner (Recommended, HTTPS on port 3113):** Bundles a secure 100-year SSL certificate in the Electron main process to satisfy modern mobile browser W3C security policies (`isSecureContext === true`). Fixes the `getUserMedia` undefined camera restriction on Android Chrome and iOS Safari. On first connect, simply tap "Advanced" &rarr; "Proceed" to unlock continuous 60 FPS live video scanning with animated laser reticle and auto-scan.
+  - **📸 Direct Snap Scanner (Zero Setup, HTTP on port 3112):** Provides a zero-warning native camera photo snapshot mode powered by `<input type="file" capture="environment">`. Works instantly on 100% of mobile browsers without certificate warnings or permission prompts. Tap the big green **"📸 Tap to Snap Barcode Photo"** button to snap barcodes straight into the active checkout cart.
+- **Adaptive Mobile Web Interface:** Companion web app detects device capabilities and presents a 1-tap switcher between Live Video (HTTPS) and Direct Snap (HTTP).
+- **Scanner Modal Toggle:** The desktop **Phone / Camera** dialog now features an intuitive toggle between **⚡ Live Video Scanner** and **📸 Direct Snap Scanner** with tailored instructions and active QR codes.
 
 ## What's New in v1.0.32 (1-Click Phone QR Scanner & Precision Barcode Engine)
 
