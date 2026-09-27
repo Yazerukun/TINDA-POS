@@ -51,12 +51,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28 to v1.0.29 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28/v1.0.29 to v1.0.30 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.29.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.29.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.30.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.30.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.29.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.30.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (29-page official documentation)
 
 ---
@@ -73,8 +73,35 @@
 ---
 
 ## 8. Quality Assurance & Distribution Verification Protocols
-1. **Automated Test Gate:** 100% pass mandate across all 43 test suites (297/297 Vitest tests) before pushing any release branch or tag.
+1. **Automated Test Gate:** 100% pass mandate across all 44 test suites (302/302 Vitest tests) before pushing any release branch or tag.
 2. **User Manual Sync:** `USER-MANUAL.md` must be updated with matching release notes; `TindaPOS-User-Guide.pdf` must be compiled via Electron headless renderer (`gen_user_guide.mjs`) ensuring correct page count and EOF validation.
 3. **Release Integrity Check:** All 5 canonical assets (`Setup.exe`, `Portable.exe`, `.blockmap`, `latest.yml`, `User-Guide.pdf`) must be uploaded and verified against SHA-512 and SHA-256 manifests on GitHub Releases.
+
+---
+
+## 9. Universal Hardware Barcode Scanner Engine (v1.0.30+)
+* **Driver-Free Plug-and-Play:** 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic Chinese USB/2.4G scanners) operate as standard **USB HID Keyboard Wedges**. They require zero driver installation on Windows 10/11.
+* **Global Keystroke Burst Interceptor (`barcodeScanner.ts`):**
+  - **Burst Detection Threshold:** Characters received with inter-character delays under `50ms` are identified as hardware scanner input rather than manual keyboard entry.
+  - **Focus-Independent Scanning:** Intercepts scans globally across the POS window without requiring cashiers to manually focus or click inside the search input box.
+  - **Immediate Cart Addition:** Validated barcodes query `products` and `product_units` for exact matches, instantly incrementing cart quantity and emitting auditory/visual toast confirmations (`Scanned: [Product Name]`).
+  - **Out-of-Stock Protection:** Blocks cart insertion with distinct alert toasts if scanned item sellable stock is 0.
+  - **Visual Indicator:** Persistent `🟢 Scanner Ready` badge displayed in the POS terminal header to provide immediate cashier feedback.
+
+---
+
+## 10. Multi-Terminal LAN Architecture & VPS Remote Database Blueprint
+### A. The Multi-PC Shared Database Reality (Offline LAN Master/Satellite)
+* **CRITICAL INVARIANT:** Never share a raw SQLite `.db` file across Windows Network Shares (SMB / mapped drive). Doing so causes locking starvation (`SQLITE_BUSY`), disk cache incoherence, and index corruption when multiple terminals write concurrently.
+* **Master-Satellite LAN Topology:**
+  1. **Master Terminal (Cashier 1 / Server PC):** Hosts the local SQLite database and runs the local TINDA POS REST/IPC service bound to the store's Local Area Network IP (e.g. `192.168.1.100:3111`).
+  2. **Satellite Terminals (Cashier 2, Cashier 3, Stockroom PC):** Run TINDA POS in Satellite Client mode configured with the Master's IP. All transactions, cart checkouts, and inventory adjustments route over high-speed local HTTP/WebSocket calls.
+  3. **Zero Internet Requirement:** Functions 100% offline via local Wi-Fi router or unmanaged Ethernet switch.
+
+### B. VPS Remote Hosting & Cloud Mirroring Architecture
+* **Self-Hosting on VPS:** Store owners who want remote owner dashboards or multi-branch consolidation can deploy TINDA POS Cloud Hub on any Linux/Windows VPS ($5/mo digitalocean, linode, etc.):
+  - **Option 1: Headless TINDA Node Daemon on VPS:** Exposes authenticated endpoints over TLS/HTTPS with a PostgreSQL or checkpointed SQLite backend.
+  - **Option 2: Offline-First Async Replication (Recommended):** Each retail branch runs a local Master Terminal with zero-latency local checkouts. Transactions stream asynchronously to the VPS via Litestream SQLite replication or JSON event logs. If internet fails, store sales never stall.
+
 
 

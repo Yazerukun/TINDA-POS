@@ -1,11 +1,18 @@
-# TINDA POS v1.0.29 User Manual
+# TINDA POS v1.0.30 User Manual
 
-**TINDA POS v1.0.29** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.30** - Gabay para sa may-ari at cashier.
 
-Ang guide na ito ay para sa release (v1.0.29), na nagdadala ng **Simple POS JSON Backup Import**, **Unified Import Modal (CSV & Simple POS Backup)**, **Deterministic Auto-SKU & Data Sanitization Engine**, **Strict Non-Destructive User & Auth Lockout Protection**, at ang **Utang Credit Sale Item-Level Breakdown & Direct Reprint** (v1.0.28).
+Ang guide na ito ay para sa release (v1.0.30), na nagdadala ng **Universal Hardware Barcode Scanner Engine (Driver-Free Plug-and-Play)**, **Global Keystroke Burst Interceptor**, **🟢 Scanner Ready HUD Status Indicator**, at **Multi-Terminal LAN Architecture & VPS Remote Database Blueprint**, kasama ang **Simple POS JSON Backup Import** (v1.0.29) at **Utang Credit Sale Item-Level Breakdown** (v1.0.28).
 
 Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
 shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+
+## Bago sa v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
+
+- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Gumagana na ngayon ang lahat ng karaniwang USB at 2.4GHz wireless barcode scanner (Zebra, Honeywell, Netum, Eyoyo, generic Chinese USB HID keyboard wedges) nang walang kinakailangang driver installation sa Windows 10/11.
+- **Global Keystroke Burst Interceptor** — Hindi na kailangang i-click pa ng cashier ang search bar bago mag-scan. Kahit saan nakatutok ang cursor sa POS, awtomatikong nahuhuli ng system ang mabilis na barcode burst (< 50ms) at agarang idinaragdag ang produkto sa cart.
+- **🟢 Scanner Ready Visual Status** — May bagong pulsing green indicator sa itaas ng POS screen na nagbibigay-kumpirmasyon na aktibo at handang tumanggap ng scans ang barcode engine nang walang aberya.
+- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Kumpletong blueprint at gabay para sa paggamit ng iisang database sa maraming computer (Master-Satellite LAN setup) nang walang database corruption, at opsyon para sa remote VPS mirroring gamit ang offline-first replication.
 
 ## Bago sa v1.0.29 (Simple POS Backup Import & Database Safety)
 
