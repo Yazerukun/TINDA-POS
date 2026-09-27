@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -12,7 +13,8 @@ import {
   Users,
   LogOut,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Crown
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -40,6 +42,11 @@ export function Sidebar(): React.JSX.Element {
   const { page, setPage } = useNav()
   const { user, logout } = useAuth()
   const { settings } = useSettings()
+  const [isVip, setIsVip] = useState(false)
+
+  useEffect(() => {
+    window.api?.license?.getStatus().then((s) => setIsVip(s.isVip)).catch(() => {})
+  }, [page])
 
   const visible = NAV.filter((n) => (user ? (!n.permission || hasPermission(user.roles, n.permission)) : false))
 
@@ -105,6 +112,25 @@ export function Sidebar(): React.JSX.Element {
           <LogOut className="h-4 w-4" />
           Logout
         </button>
+
+        {isVip ? (
+          <div className="mt-2 text-center">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+              <Crown className="h-3 w-3" /> VIP Pro Active
+            </span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPage('settings')}
+            className="mt-2 flex w-full items-center justify-center gap-1.5 text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1.5 rounded-lg border border-amber-500/30 transition shadow-sm active:scale-95"
+            title="Upgrade to VIP Pro for ₱500 Lifetime"
+          >
+            <Crown className="h-3.5 w-3.5 animate-pulse text-amber-400" />
+            <span>Upgrade VIP (₱500)</span>
+          </button>
+        )}
+
         <p className="dev-signature signature-reveal mt-3 text-center text-xs italic text-slate-600">by Dev Francis</p>
       </div>
     </aside>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -7,6 +7,7 @@ import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
+import { VipUpgradeModal } from '../components/VipUpgradeModal'
 
 type UtangTab = 'WITH_BALANCE' | 'SETTLED' | 'ALL'
 
@@ -418,22 +419,93 @@ function LedgerEntryRow({ entry }: { entry: CreditLedgerEntry }): React.JSX.Elem
 // ─── Ledger Modal ────────────────────────────────────────────────────────────
 
 function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer; entries: CreditLedgerEntry[]; onClose: () => void; onPay: () => void }): React.JSX.Element {
+  const [vipModalOpen, setVipModalOpen] = useState(false)
+
+  const sukiRating = useMemo(() => {
+    if (entries.length === 0) return { stars: 5, label: 'New Suki Customer' }
+    const payments = entries.filter((e) => e.amount_c < 0).length
+    const credits = entries.filter((e) => e.amount_c > 0).length
+    if (customer.balance_c > customer.credit_limit_c && customer.credit_limit_c > 0) {
+      return { stars: 2, label: 'Over Limit — High Risk' }
+    }
+    if (payments >= credits || customer.balance_c === 0) {
+      return { stars: 5, label: 'Trusted Suki — Prompt Repayment' }
+    }
+    if (payments > 0) {
+      return { stars: 4, label: 'Reliable Suki — Regular Payer' }
+    }
+    return { stars: 3, label: 'Pending Initial Payment' }
+  }, [customer, entries])
+
+  const copySmsReminder = async () => {
+    try {
+      const status = await window.api.license.getStatus()
+      if (!status.isVip) {
+        setVipModalOpen(true)
+        return
+      }
+      const settings = await window.api.settings.get()
+      const storeName = settings.store_name || 'Our Store'
+      const amountStr = money(customer.balance_c)
+      const msg = `Good day ${customer.full_name}, gentle reminder from ${storeName} regarding your outstanding credit balance of ${amountStr}. Thank you for your continued patronage!`
+      await navigator.clipboard.writeText(msg)
+      toastSuccess('Polite reminder copied to clipboard! Ready to paste into SMS or Messenger.')
+    } catch (e) {
+      toastError('Failed to format reminder', String(e))
+    }
+  }
+
   return (
-    <Modal open onClose={onClose} title={customer.full_name} maxWidth="max-w-lg" footer={
-      <button onClick={onPay} className="btn-primary flex items-center gap-2"><HandCoins className="h-4 w-4" /> Collect Payment</button>
-    }>
-      <div className="mb-3 grid grid-cols-3 gap-2">
-        <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Balance</p><p className="text-sm font-black text-amber-400">{money(customer.balance_c)}</p></div>
-        <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Limit</p><p className="text-sm font-black text-slate-200">{money(customer.credit_limit_c)}</p></div>
-        <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Available</p><p className="text-sm font-black text-emerald-400">{money(Math.max(0, customer.credit_limit_c - customer.balance_c))}</p></div>
-      </div>
-      <div className="max-h-80 space-y-1 overflow-y-auto">
-        {entries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
-        {entries.map((e) => (
-          <LedgerEntryRow key={e.id} entry={e} />
-        ))}
-      </div>
-    </Modal>
+    <>
+      <Modal open onClose={onClose} title={customer.full_name} maxWidth="max-w-lg" footer={
+        <div className="flex items-center justify-between w-full">
+          <button
+            type="button"
+            onClick={() => void copySmsReminder()}
+            className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+            title="Generate polite collection SMS/Messenger reminder"
+          >
+            <Crown className="h-3.5 w-3.5 text-amber-400" />
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>VIP SMS Reminder</span>
+          </button>
+          <button onClick={onPay} className="btn-primary flex items-center gap-2"><HandCoins className="h-4 w-4" /> Collect Payment</button>
+        </div>
+      }>
+        <div className="mb-3 grid grid-cols-3 gap-2">
+          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Balance</p><p className="text-sm font-black text-amber-400">{money(customer.balance_c)}</p></div>
+          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Limit</p><p className="text-sm font-black text-slate-200">{money(customer.credit_limit_c)}</p></div>
+          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Available</p><p className="text-sm font-black text-emerald-400">{money(Math.max(0, customer.credit_limit_c - customer.balance_c))}</p></div>
+        </div>
+
+        {/* VIP Suki Trust Scorecard */}
+        <div className="mb-3 flex items-center justify-between p-2.5 rounded-xl bg-ink-950 border border-amber-500/20 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="flex text-amber-400">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-3.5 w-3.5 ${i < sukiRating.stars ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`}
+                />
+              ))}
+            </div>
+            <span className="font-semibold text-slate-200">{sukiRating.label}</span>
+          </div>
+          <span className="text-[10px] uppercase font-bold text-amber-400/80 tracking-wider">
+            Suki Score
+          </span>
+        </div>
+
+        <div className="max-h-80 space-y-1 overflow-y-auto">
+          {entries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
+          {entries.map((e) => (
+            <LedgerEntryRow key={e.id} entry={e} />
+          ))}
+        </div>
+      </Modal>
+
+      <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} />
+    </>
   )
 }
 

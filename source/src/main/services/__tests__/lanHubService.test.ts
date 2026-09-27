@@ -95,7 +95,7 @@ describe('LanHubService', () => {
 
     const status = getLanStatus()
     expect(status.clientDevices.length).toBeGreaterThan(0)
-    expect(status.clientDevices[0].name).toBe('Counter 2 Cashier')
+    expect(status.clientDevices[0]?.name).toBe('Counter 2 Cashier')
   })
 
   it('rejects RPC call with missing or invalid token with HTTP 401', async () => {
@@ -191,7 +191,7 @@ describe('LanHubService', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.ok).toBe(true)
-    expect(res.body.data.rows[0].name).toBe('Coke Sakto')
+    expect(res.body.data.rows[0]?.name).toBe('Coke Sakto')
   })
 
   it('stops Master Server cleanly', () => {

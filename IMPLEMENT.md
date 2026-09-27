@@ -26,3 +26,25 @@
   - TypeScript typecheck: 0 errors across `tsconfig.node.json` and `tsconfig.web.json`.
   - Vitest test suite: 47/47 suites passing, **323/323 tests passing** (including all 8 new tests in `lanHubService.test.ts`).
 
+## 2026-09-27: v1.0.37 Cryptographic Anti-Theft Licensing & VIP Pro Architecture
+
+- **Trigger:** Protecting developer intellectual property and implementing a sustainable ₱500 one-time lifetime license model.
+- **Decision 1 (Anti-Tamper & Anti-Crack Protection):**
+  - Built offline hardware scraping engine in `licenseService.ts` targeting Motherboard UUID, Baseboard Serial, CPU ID, Windows Machine GUID, and network MAC.
+  - Deterministic HMAC-SHA256 signature format: `TNDA-XXXX-XXXX-XXXX-XXXX` with obfuscated runtime XOR-masked secret pepper.
+  - License files (`tinda_license.json`) are cryptographically guarded; modifying store name, Machine ID, or tier invalidates the HMAC and reverts to Community Edition.
+  - Keys generated for one machine mathematically fail on any other machine.
+- **Decision 2 (VIP Pro vs Community Edition Separation):**
+  - **Free Community Edition:** 50-product catalog limit, single-counter mode, standard watermark on thermal receipts.
+  - **VIP Pro Edition (₱500 Lifetime):** Unlimited products, Multi-PC LAN Hub Master/Satellite, Suki Utang Credit Trust Rating (⭐⭐⭐⭐⭐), 1-Click SMS Collection Reminders, custom thermal receipt branding.
+- **Decision 3 (Developer Automation & Workflow):**
+  - Created standalone developer keygen CLI `tools/keygen.mjs` (private repository only).
+  - Created Omarchy Linux system shortcut `~/.local/bin/tinda-keygen` with Wayland clipboard integration (`wl-copy`) for instant copy-pasting into Facebook Messenger.
+  - Centered Settings UI with sliding upgrade banner and 1-click Machine ID copy.
+- **Decision 4 (Workspace Organization & Pruning):**
+  - Pruned over 4.4GB of dead intermediate build artifacts and old .exe files.
+  - Consolidated historical release docs into `docs/archive/` and historical blockmaps/checksums into `installers/archive/`.
+- **Verification Gates:**
+  - TypeScript typecheck: 0 errors across Node and Web.
+  - Vitest test suite: 49/49 suites passing, **332/332 tests passing** (including 8 license service tests and Settings VIP test).
+

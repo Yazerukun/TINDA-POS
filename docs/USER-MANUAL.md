@@ -976,7 +976,7 @@ Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
 ## Multi-Computer & VPS Cloud Setup
 
-For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](file:///home/ian/Work/TINDA-POS-v1.0.4/docs/MULTI_PC_AND_VPS_GUIDE.md).
+For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](./MULTI_PC_AND_VPS_GUIDE.md).
 
 ## Download
 

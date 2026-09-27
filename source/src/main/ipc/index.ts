@@ -40,6 +40,7 @@ import { startupSetting } from '../services/startup'
 import * as priceRefRepo from '../repositories/priceReferences'
 import * as priceRefSvc from '../services/priceReferenceService'
 import * as lanHubSvc from '../services/lanHubService'
+import { licenseService } from '../services/licenseService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -107,6 +108,12 @@ handle('app:isOnline', async () => {
   )
 
   return results.some(Boolean)
+})
+handle('app:openExternal', (_e: IpcMainInvokeEvent, targetUrl: string) => {
+  if (typeof targetUrl === 'string' && (targetUrl.startsWith('https://') || targetUrl.startsWith('http://'))) {
+    return shell.openExternal(targetUrl)
+  }
+  return Promise.resolve()
 })
 
 // ---- Auth ----
@@ -180,6 +187,13 @@ handle('products:search', (_e: IpcMainInvokeEvent, q: string, opts?: unknown) =>
 handle('products:get', (_e: IpcMainInvokeEvent, id: number) => prodRepo.getProduct(db(), id))
 handle('products:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    const activeCount = prodRepo.productCount(db(), 'ACTIVE')
+    if (activeCount >= 50) {
+      throw new Error('Product limit reached (50 items max on Free Community Edition). Upgrade to VIP Pro (₱500 Lifetime) for unlimited items.')
+    }
+  }
   const product = prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [product.id] })
   return product
@@ -826,6 +840,10 @@ handle('phoneScanner:restart', () => {
 handle('lan:getStatus', () => lanHubSvc.getLanStatus())
 handle('lan:setMode', (_e: IpcMainInvokeEvent, mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => {
   sessionSvc.requirePermission('settings:manage')
+  const isVip = licenseService.getStatus().isVip
+  if (mode !== 'standalone' && !isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('Multi-PC LAN Hub is an exclusive VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to connect multiple cashiers on one database.')
+  }
   return lanHubSvc.setLanMode(mode, config)
 })
 handle('lan:generatePin', () => {
@@ -844,6 +862,18 @@ handle('lan:triggerVpsSync', () => {
   sessionSvc.requirePermission('settings:manage')
   return lanHubSvc.triggerVpsSync()
 })
+
+// ---- Machine-Locked VIP Licensing ----
+handle('license:getStatus', () => licenseService.getStatus())
+handle('license:activate', (_e: IpcMainInvokeEvent, key: string, customerName?: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return licenseService.activate(key, customerName)
+})
+handle('license:deactivate', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return licenseService.deactivate()
+})
+handle('license:copyMachineId', () => licenseService.getMachineId())
 
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load

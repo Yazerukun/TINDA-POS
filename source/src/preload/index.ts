@@ -13,7 +13,8 @@ const api: TindaApi = {
     databaseFile: () => invoke<string>('app:databaseFile'),
     openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
-    isOnline: () => invoke<boolean>('app:isOnline')
+    isOnline: () => invoke<boolean>('app:isOnline'),
+    openExternal: (url: string) => invoke<void>('app:openExternal', url)
   },
   update: {
     state: () => invoke<UpdateStatusEvent>('update:state'),
@@ -238,6 +239,12 @@ const api: TindaApi = {
         ipcRenderer.removeListener('lan:status', listener)
       }
     }
+  },
+  license: {
+    getStatus: () => invoke<import('@shared/types').LicenseStatus>('license:getStatus'),
+    activate: (key, customerName) => invoke<{ ok: boolean; message: string; status: import('@shared/types').LicenseStatus }>('license:activate', key, customerName),
+    deactivate: () => invoke<{ ok: boolean; message: string }>('license:deactivate'),
+    copyMachineId: () => invoke<string>('license:copyMachineId')
   }
 }
 

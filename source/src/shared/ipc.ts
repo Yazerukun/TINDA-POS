@@ -26,7 +26,8 @@ import type {
   Shift,
   StoreSettings,
   Supplier,
-  User
+  User,
+  LicenseStatus
 } from './types'
 
 export type PaymentInput = {
@@ -134,6 +135,7 @@ export interface TindaApi {
       openDataDir: () => Promise<void>
       checkIntegrity: () => Promise<{ ok: boolean; message: string }>
       isOnline: () => Promise<boolean>
+      openExternal: (url: string) => Promise<void>
   }
 
   update: {
@@ -411,6 +413,12 @@ export interface TindaApi {
     testVps: (url: string, token: string) => Promise<{ ok: boolean; message: string }>
     triggerVpsSync: () => Promise<{ ok: boolean; syncedCount: number; message: string }>
     onStatus: (cb: (status: import('@shared/types').LanStatus) => void) => () => void
+  }
+  license: {
+    getStatus: () => Promise<LicenseStatus>
+    activate: (key: string, customerName?: string) => Promise<{ ok: boolean; message: string; status: LicenseStatus }>
+    deactivate: () => Promise<{ ok: boolean; message: string }>
+    copyMachineId: () => Promise<string>
   }
 }
 
