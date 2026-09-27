@@ -11,7 +11,8 @@ import {
   Settings,
   Users,
   LogOut,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -20,7 +21,7 @@ import { useSettings } from '../../stores/settings'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 
-const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission: Permission }[] = [
+const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission?: Permission }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
   { key: 'pos', label: 'POS', icon: <ShoppingCart className="h-4 w-4" />, permission: 'pos:use' },
   { key: 'inventory', label: 'Inventory', icon: <Boxes className="h-4 w-4" />, permission: 'products:manage' },
@@ -31,7 +32,8 @@ const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission: Per
   { key: 'transactions', label: 'Transactions', icon: <ListOrdered className="h-4 w-4" />, permission: 'transactions:view' },
   { key: 'reports', label: 'Reports', icon: <BarChart3 className="h-4 w-4" />, permission: 'reports:view' },
   { key: 'backup', label: 'Backup', icon: <HardDriveDownload className="h-4 w-4" />, permission: 'backup:manage' },
-  { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' }
+  { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
+  { key: 'handbook', label: 'Store Handbook', icon: <BookOpen className="h-4 w-4 text-amber-400" /> }
 ]
 
 export function Sidebar(): React.JSX.Element {
@@ -39,7 +41,7 @@ export function Sidebar(): React.JSX.Element {
   const { user, logout } = useAuth()
   const { settings } = useSettings()
 
-  const visible = NAV.filter((n) => (user ? hasPermission(user.roles, n.permission) : false))
+  const visible = NAV.filter((n) => (user ? (!n.permission || hasPermission(user.roles, n.permission)) : false))
 
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-ink-line bg-ink-900">

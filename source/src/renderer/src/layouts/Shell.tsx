@@ -16,6 +16,7 @@ import { Transactions } from '../pages/Transactions'
 import { Reports } from '../pages/Reports'
 import { Backup } from '../pages/Backup'
 import { Settings } from '../pages/Settings'
+import { Handbook } from '../pages/Handbook'
 import { ExpirationAlerts } from '../components/Expiration'
 import { HelpGuideModal } from '../components/HelpGuideModal'
 
@@ -45,6 +46,7 @@ export function Shell(): React.JSX.Element {
         {user && page === 'reports' && <Reports />}
         {user && page === 'backup' && <Backup />}
         {user && page === 'settings' && <Settings />}
+        {user && page === 'handbook' && <Handbook />}
         </div>
       </main>
       <ToastHost />
