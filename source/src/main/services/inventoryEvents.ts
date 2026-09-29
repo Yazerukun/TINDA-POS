@@ -12,3 +12,14 @@ export function emitInventoryChanged(event: InventoryChangedEvent): void {
     // Non-fatal
   }
 }
+
+export function emitTransactionsChanged(payload?: unknown): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) window.webContents.send('transactions:changed', payload)
+  }
+  try {
+    broadcastLanEvent({ type: 'transactions:changed', payload })
+  } catch {
+    // Non-fatal
+  }
+}

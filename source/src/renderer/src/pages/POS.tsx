@@ -297,6 +297,41 @@ export function POS(): React.JSX.Element {
     }
   }, [])
 
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const handlePosHotkeys = (e: KeyboardEvent) => {
+      if (e.key === 'F1') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+        return
+      }
+      if (e.key === '/') {
+        const tag = (document.activeElement?.tagName || '').toLowerCase()
+        if (tag !== 'input' && tag !== 'textarea') {
+          e.preventDefault()
+          searchInputRef.current?.focus()
+          searchInputRef.current?.select()
+          return
+        }
+      }
+      if (e.key === 'Escape') {
+        if (categoryMenuOpen) {
+          setCategoryMenuOpen(false)
+          return
+        }
+        if (q) {
+          setQ('')
+          searchInputRef.current?.blur()
+          void search('', catFilter === 'ALL' ? null : catFilter)
+        }
+      }
+    }
+    window.addEventListener('keydown', handlePosHotkeys)
+    return () => window.removeEventListener('keydown', handlePosHotkeys)
+  }, [categoryMenuOpen, q, catFilter])
+
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
     setCategoryMenuOpen(false)
@@ -310,6 +345,7 @@ export function POS(): React.JSX.Element {
           <div className="relative min-w-[160px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
+              ref={searchInputRef}
               value={q}
               onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
               onKeyDown={(e) => {
@@ -318,7 +354,7 @@ export function POS(): React.JSX.Element {
                   void handleScan(q.trim())
                 }
               }}
-              placeholder="Search product by name or barcode…"
+              placeholder="Search product by name or barcode… (F1 or /)"
               className="input h-11 w-full pl-9 !text-base"
               autoFocus
             />
@@ -532,10 +568,13 @@ function CartPanel({
 }): React.JSX.Element {
   const { items, discount_pesos, customer_name } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutMethod, setCheckoutMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
   const [customerOpen, setCustomerOpen] = useState(false)
   const [heldOpen, setHeldOpen] = useState(false)
   const [heldSales, setHeldSales] = useState<HeldSale[]>([])
   const [holdBusy, setHoldBusy] = useState(false)
+  const discountInputRef = useRef<HTMLInputElement>(null)
+  const lastQtyInputRef = useRef<HTMLInputElement>(null)
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + i.unit_price_c * i.qty, 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
@@ -580,6 +619,57 @@ function CartPanel({
       setHoldBusy(false)
     }
   }
+
+  useEffect(() => {
+    const handleCartHotkeys = (e: KeyboardEvent) => {
+      if (checkoutOpen || customerOpen || heldOpen) return
+
+      if (e.key === 'F2') {
+        if (items.length > 0) {
+          e.preventDefault()
+          lastQtyInputRef.current?.focus()
+          lastQtyInputRef.current?.select()
+        }
+        return
+      }
+
+      if (e.key === 'F4') {
+        e.preventDefault()
+        discountInputRef.current?.focus()
+        discountInputRef.current?.select()
+        return
+      }
+
+      if (e.key === 'F8') {
+        if (items.length > 0 && !holdBusy) {
+          e.preventDefault()
+          void holdCurrentSale()
+        }
+        return
+      }
+
+      if (e.key === 'F9') {
+        if (items.length > 0 && !stockConflict) {
+          e.preventDefault()
+          setCheckoutMethod('CASH')
+          setCheckoutOpen(true)
+        }
+        return
+      }
+
+      if (e.key === 'F10') {
+        if (items.length > 0 && !stockConflict) {
+          e.preventDefault()
+          setCheckoutMethod('GCASH')
+          setCheckoutOpen(true)
+        }
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleCartHotkeys)
+    return () => window.removeEventListener('keydown', handleCartHotkeys)
+  }, [checkoutOpen, customerOpen, heldOpen, items, holdBusy, stockConflict])
 
   const resumeHeldSale = async (id: number) => {
     if (items.length && !confirm('Replace the current cart with this held sale?')) return
@@ -658,7 +748,7 @@ function CartPanel({
             Tap a product to add it.
           </p>
         )}
-        {items.map((i) => (
+        {items.map((i, idx) => (
           <div key={i.product_id} className="rounded-lg border border-ink-line bg-ink-800/50 p-2.5">
             <div className="flex items-start justify-between gap-2">
               <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
@@ -670,9 +760,11 @@ function CartPanel({
               <div className="flex items-center gap-1">
                 <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty - 1)} className="btn-ghost-2 h-10 w-10 rounded-lg" title="Decrease quantity"><Minus className="h-3.5 w-3.5" /></button>
                 <input
+                  ref={idx === items.length - 1 ? lastQtyInputRef : undefined}
                   value={i.qty}
                   onChange={(e) => usePosCart.getState().setQty(i.product_id, parseInt(e.target.value || '0', 10))}
                   aria-label={`Quantity for ${i.name}`} className="h-10 w-14 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-base font-bold text-white"
+                  title="Press F2 to focus quantity"
                 />
                 <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-10 w-10 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
               </div>
@@ -700,8 +792,9 @@ function CartPanel({
           <span>Subtotal</span><span className="text-slate-200">{money(subtotal)}</span>
         </div>
         <div className="flex items-center justify-between text-slate-400">
-          <span>Discount (₱)</span>
+          <span>Discount (₱) <span className="text-[10px] text-slate-500 font-mono">[F4]</span></span>
           <input
+            ref={discountInputRef}
             type="number"
             min={0}
             value={discount_pesos ? discount_pesos / 100 : ''}
@@ -721,8 +814,9 @@ function CartPanel({
           disabled={items.length === 0}
           onClick={() => void holdCurrentSale()}
           className="btn-ghost flex flex-col items-center gap-0.5 py-2 text-xs disabled:opacity-40"
+          title="Hold Current Sale (F8)"
         >
-          {holdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />} Hold
+          {holdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />} Hold (F8)
         </button>
         <button
           disabled={items.length === 0}
@@ -733,14 +827,26 @@ function CartPanel({
         </button>
         <button
           disabled={items.length === 0 || stockConflict}
-          onClick={() => !items.length ? undefined : setCheckoutOpen(true)}
-          className="btn-primary col-span-2 min-h-12 py-3 !text-base disabled:opacity-40"
+          onClick={() => {
+            if (!items.length) return
+            setCheckoutMethod('CASH')
+            setCheckoutOpen(true)
+          }}
+          className="btn-primary col-span-2 min-h-12 py-3 !text-base disabled:opacity-40 flex items-center justify-center gap-2"
         >
-          CHECKOUT
+          <span>CHECKOUT</span>
+          <span className="text-xs font-normal opacity-80">(F9 Cash / F10 GCash)</span>
         </button>
       </div>
 
-      {checkoutOpen && <CheckoutModal subtotal={subtotal} total={total} onClose={() => setCheckoutOpen(false)} />}
+      {checkoutOpen && (
+        <CheckoutModal
+          subtotal={subtotal}
+          total={total}
+          initialMethod={checkoutMethod}
+          onClose={() => setCheckoutOpen(false)}
+        />
+      )}
       {customerOpen && <CustomerPicker onClose={() => setCustomerOpen(false)} />}
       {heldOpen && (
         <Modal open onClose={() => setHeldOpen(false)} title="Held Sales" maxWidth="max-w-lg">
@@ -765,9 +871,19 @@ function CartPanel({
   )
 }
 
-function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: number; onClose: () => void }): React.JSX.Element {
+function CheckoutModal({
+  subtotal,
+  total,
+  initialMethod = 'CASH',
+  onClose
+}: {
+  subtotal: number
+  total: number
+  initialMethod?: 'CASH' | 'GCASH' | 'MAYA' | 'UTANG'
+  onClose: () => void
+}): React.JSX.Element {
   const { items, customer_id, customer_name, discount_pesos } = usePosCart()
-  const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
+  const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>(initialMethod)
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -775,6 +891,9 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   const [done, setDone] = useState<{ sale: Sale; receipt: string[]; print: PrintResult } | null>(null)
   const [printing, setPrinting] = useState(false)
   const setPage = useNav((state) => state.setPage)
+
+  const cashInputRef = useRef<HTMLInputElement>(null)
+  const refInputRef = useRef<HTMLInputElement>(null)
 
   const cashC = Math.round((parseFloat(cash) || 0) * 100)
   const change = cashC - total
@@ -789,6 +908,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   useEffect(() => { void openShift() }, [])
 
   const doCheckout = async () => {
+    if (submitting) return
     if (method === 'UTANG' && customer_id === null) {
       setPickerOpen(true)
       toastError('Customer required', 'Please select the customer for this Utang.')
@@ -834,6 +954,44 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
     }
   }
 
+  useEffect(() => {
+    const handleCheckoutHotkeys = (e: KeyboardEvent) => {
+      if (done || pickerOpen) return
+
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+        return
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        void doCheckout()
+        return
+      }
+      if (e.key === 'F9') {
+        e.preventDefault()
+        setMethod('CASH')
+        setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
+        return
+      }
+      if (e.key === 'F10') {
+        e.preventDefault()
+        setMethod('GCASH')
+        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+        return
+      }
+      if (e.key === 'F11') {
+        e.preventDefault()
+        setMethod('MAYA')
+        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleCheckoutHotkeys)
+    return () => window.removeEventListener('keydown', handleCheckoutHotkeys)
+  }, [done, pickerOpen, method, cash, reference, items, customer_id, total, submitting])
+
   if (done) {
     const retryPrint = async () => {
       setPrinting(true)
@@ -863,20 +1021,20 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
     )
   }
 
-  const methods: { key: typeof method; label: string; icon: React.ReactNode }[] = [
-    { key: 'CASH', label: 'Cash', icon: <Banknote className="h-4 w-4" /> },
-    { key: 'GCASH', label: 'GCash', icon: <Smartphone className="h-4 w-4" /> },
-    { key: 'MAYA', label: 'Maya', icon: <Smartphone className="h-4 w-4" /> },
-    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" /> }
+  const methods: { key: typeof method; label: string; icon: React.ReactNode; shortcut: string }[] = [
+    { key: 'CASH', label: 'Cash', icon: <Banknote className="h-4 w-4" />, shortcut: 'F9' },
+    { key: 'GCASH', label: 'GCash', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F10' },
+    { key: 'MAYA', label: 'Maya', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F11' },
+    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" />, shortcut: '' }
   ]
 
   return (
     <Modal open onClose={onClose} title="Checkout" maxWidth="max-w-md" footer={
       <>
-        <button onClick={onClose} className="btn-ghost">Cancel</button>
+        <button onClick={onClose} className="btn-ghost">Cancel (Esc)</button>
         <button onClick={doCheckout} disabled={submitting} className="btn-primary flex items-center gap-2">
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          Charge {money(total)}
+          Charge {money(total)} (Enter)
         </button>
       </>
     }>
@@ -892,10 +1050,11 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
             <button
               key={m.key}
               onClick={() => setMethod(m.key)}
-              className={`btn-ghost flex flex-col items-center gap-1 py-2 text-xs ${method === m.key ? '!border-brand-500 !text-brand-400' : ''}`}
+              className={`btn-ghost flex flex-col items-center gap-1 py-2 text-xs ${method === m.key ? '!border-brand-500 !text-brand-400 font-semibold' : ''}`}
             >
               {m.icon}
-              {m.label}
+              <span>{m.label}</span>
+              {m.shortcut && <span className="text-[10px] text-slate-500 font-mono">[{m.shortcut}]</span>}
             </button>
           ))}
         </div>
@@ -904,6 +1063,7 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
           <div>
             <label className="mb-1 block text-xs text-slate-400">Cash Received</label>
             <input
+              ref={cashInputRef}
               type="number"
               value={cash}
               onChange={(e) => setCash(e.target.value)}
@@ -922,7 +1082,14 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
         {(method === 'GCASH' || method === 'MAYA') && (
           <div>
             <label className="mb-1 block text-xs text-slate-400">Reference No.</label>
-            <input value={reference} onChange={(e) => setReference(e.target.value)} className="input w-full" placeholder="e.g. 1234-5678" />
+            <input
+              ref={refInputRef}
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className="input w-full"
+              placeholder="e.g. 1234-5678"
+              autoFocus
+            />
           </div>
         )}
 

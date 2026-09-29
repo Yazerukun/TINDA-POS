@@ -28,6 +28,7 @@ export type Permission =
   | 'transactions:view'
   | 'transactions:void'
   | 'transactions:refund'
+  | 'transactions:delete'
   | 'shifts:manage'
   | 'shifts:view-all'
   | 'reports:view'
@@ -46,7 +47,7 @@ const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     'inventory:receive', 'inventory:adjust', 'inventory:count',
     'customers:manage', 'customers:delete', 'utang:adjust', 'utang:approve-overlimit',
     'expenses:manage', 'expenses:delete', 'suppliers:manage', 'purchases:manage',
-    'transactions:view', 'transactions:void', 'transactions:refund',
+    'transactions:view', 'transactions:void', 'transactions:refund', 'transactions:delete',
     'shifts:manage', 'shifts:view-all',
     'reports:view', 'reports:export',
     'dashboard:view', 'users:manage', 'settings:manage', 'backup:manage', 'audit:view'

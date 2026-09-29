@@ -31,7 +31,7 @@ import * as readSvc from '../services/readReports'
 import { importWindowsBackup, exportWindowsBackup } from '../services/tindaBackupWindows'
 import * as cashCountRepo from '../repositories/cashCounts'
 import { cashCountLines } from '@shared/cashCount'
-import { emitInventoryChanged } from '../services/inventoryEvents'
+import { emitInventoryChanged, emitTransactionsChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { beginCriticalOperation } from '../services/operationGuard'
@@ -423,6 +423,7 @@ handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
     const v = require('../validation/schemas').validateCheckout(payload)
     const completed = checkoutSvc.checkout(v)
     emitInventoryChanged({ reason: 'SALE', product_ids: completed.sale.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    emitTransactionsChanged({ reason: 'SALE', sale_id: completed.sale.id })
     const settings = settingRepo.getSettings(db())
     return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
   } finally {
@@ -492,6 +493,7 @@ handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
   try {
     const result = txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
     emitInventoryChanged({ reason: 'REFUND', product_ids: [...new Set(result.items.map((item) => item.product_id))] })
+    emitTransactionsChanged({ reason: 'REFUND', sale_id: result.sale_id })
     return result
   } finally {
     release()
@@ -502,6 +504,18 @@ handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
   try {
     const result = txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
     emitInventoryChanged({ reason: 'VOID', product_ids: result.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    emitTransactionsChanged({ reason: 'VOID', sale_id: result.id })
+    return result
+  } finally {
+    release()
+  }
+})
+handle('transactions:delete', (_e: IpcMainInvokeEvent, saleId: number, options?: { restoreStock?: boolean }) => {
+  const release = beginCriticalOperation('DELETE_TRANSACTION')
+  try {
+    const result = txSvc.deleteTransaction(saleId, options)
+    emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: result.product_ids })
+    emitTransactionsChanged({ reason: 'DELETE', sale_id: saleId })
     return result
   } finally {
     release()

@@ -116,6 +116,7 @@ const FORBIDDEN_REMOTE_CHANNELS = new Set([
 
 // Channels that satellite terminals should proxy to the Master PC
 const PROXIED_CHANNELS = new Set([
+  // Products
   'products:search',
   'products:get',
   'products:create',
@@ -123,73 +124,123 @@ const PROXIED_CHANNELS = new Set([
   'products:archive',
   'products:restore',
   'products:count',
+  'products:saveImage',
+  'products:deleteImage',
+  'products:getImageData',
+  'products:csvTemplate',
+  'products:previewCsv',
+  'products:importCsv',
+  'products:previewSimplePos',
+  'products:importSimplePos',
+
+  // Inventory
   'inventory:expiration',
   'inventory:batchDate',
   'inventory:movements',
   'inventory:receiving',
   'inventory:receive',
+  'inventory:restock',
   'inventory:adjust',
   'inventory:movement',
   'inventory:count',
-  'inventory:restock',
   'inventory:withdraw',
+
+  // Categories
   'categories:list',
   'categories:create',
   'categories:remove',
+
+  // Suppliers
   'suppliers:list',
   'suppliers:create',
   'suppliers:update',
   'suppliers:products',
   'suppliers:purchases',
+
+  // Customers
   'customers:list',
   'customers:get',
   'customers:create',
   'customers:update',
-  'customers:payments',
-  'customers:addPayment',
-  'customers:history',
-  'sales:list',
-  'sales:get',
-  'checkout:process',
-  'checkout:refund',
-  'checkout:void',
-  'checkout:paymentMethods',
-  'heldSales:list',
-  'heldSales:save',
-  'heldSales:delete',
-  'heldSales:get',
-  'shifts:current',
-  'shifts:open',
-  'shifts:close',
-  'shifts:status',
-  'shifts:history',
-  'cashCounts:get',
-  'cashCounts:save',
-  'cashCounts:history',
-  'readReports:preview',
-  'readReports:generate',
-  'readReports:history',
-  'readReports:get',
-  'reports:dailySummary',
-  'reports:salesTrends',
-  'reports:topProducts',
-  'reports:utangSummary',
-  'reports:categoryBreakdown',
+  'customers:ledger',
+  'customers:pay',
+  'customers:adjust',
+  'customers:revoke',
+  'customers:approveOverlimit',
+
+  // POS & Checkout
+  'pos:searchProducts',
+  'pos:checkout',
+  'pos:hold',
+  'pos:held',
+  'pos:resumeHeld',
+  'pos:deleteHeld',
+  'pos:reprint',
+
+  // Transactions
+  'transactions:list',
+  'transactions:get',
+  'transactions:refund',
+  'transactions:void',
+  'transactions:delete',
+
+  // Expenses
+  'expenses:categories',
+  'expenses:createCategory',
   'expenses:list',
   'expenses:create',
   'expenses:update',
-  'expenses:delete',
+  'expenses:remove',
+
+  // Shifts
+  'shifts:current',
+  'shifts:open',
+  'shifts:close',
+  'shifts:cashMovement',
+  'shifts:list',
+  'shifts:summary',
+
+  // Reports
+  'reports:sales',
+  'reports:inventory',
+  'reports:utang',
+  'reports:cashier',
+  'reports:shifts',
+  'reports:exportCsv',
+  'reports:xRead',
+  'reports:cashCountExpected',
+  'reports:cashCount',
+  'reports:cashCounts',
+  'reports:cashCountPrint',
+  'reports:printXRead',
+  'reports:finalizeZ',
+  'reports:zHistory',
+  'reports:printZRead',
+
+  // Price references
   'priceReferences:search',
   'priceReferences:get',
-  'priceReferences:count',
+  'priceReferences:getByProduct',
+  'priceReferences:getByBarcode',
+  'priceReferences:matchForProduct',
+  'priceReferences:link',
+  'priceReferences:unlink',
+  'priceReferences:sync',
   'priceReferences:status',
   'priceReferences:compare',
+
+  // Users & Auth
   'users:list',
+  'users:create',
+  'users:update',
   'users:roles',
+  'auth:status',
   'auth:login',
   'auth:loginPin',
-  'auth:status',
-  'auth:logout'
+  'auth:logout',
+
+  // Settings
+  'settings:get'
 ])
 
 export function isSatellite(): boolean {
@@ -494,6 +545,13 @@ function connectSatelliteSse(ip: string, port: number, token: string): void {
               for (const win of wins) {
                 if (!win.isDestroyed()) {
                   win.webContents.send('inventory:changed', ev.payload)
+                }
+              }
+            } else if (ev.type === 'transactions:changed') {
+              const wins = BrowserWindow.getAllWindows()
+              for (const win of wins) {
+                if (!win.isDestroyed()) {
+                  win.webContents.send('transactions:changed', ev.payload)
                 }
               }
             }

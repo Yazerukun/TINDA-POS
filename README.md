@@ -20,6 +20,24 @@
 
 </div>
 
+## ✨ What's New in v1.0.39 (Multi-Terminal LAN Visibility, Stock Withdrawal Search, Audited Transaction Deletion & Rapid Hotkeys)
+
+> **Real-Time LAN Sales Parity, Instant Withdraw Search, Permanent Audited Sale Deletion & High-Speed POS Shortcuts**
+
+- 🔄 **Real-Time Multi-PC LAN Sales Parity**: Satellite terminals now seamlessly execute checkouts (`pos:checkout`), query transactions (`transactions:list`), process refunds, and view live cashier shifts through the Master Server. Server-Sent Events (`transactions:changed`) ensure real-time screen updates across all computers with zero manual page refreshes.
+- 🔍 **Instant Search in Withdraw Stocks Modal**: Easily search and filter through hundreds of inventory products by name, SKU, or barcode when recording damaged, expired, or spoiled goods.
+- 🗑️ **Permanent Audited Transaction Deletion**: Store managers can permanently delete voided or erroneous transactions with an optional one-click physical inventory restock, automatic Utang ledger reversal, cashier shift recalculation, and a strict safety confirmation prompt (`DELETE`).
+- ⌨️ **Rapid-Fire POS Keyboard Shortcuts (Hotkeys)**:
+  - **`F1` or `/`**: Instantly focuses and selects the product search bar.
+  - **`F2`**: Quick focus and select the quantity of the last item in the cart.
+  - **`F4`**: Quick focus the cart Discount (₱) input.
+  - **`F8`**: 1-key hold current sale.
+  - **`F9`**: Quick Cash Checkout (opens modal pre-selected to Cash).
+  - **`F10`**: Quick GCash Checkout (opens modal pre-selected to GCash).
+  - **`Enter`**: Instant charge / submit checkout.
+  - **`Esc`**: Dismiss modal, clear search, or close menu.
+- 🛡️ **Zero License Disruption Guarantee**: Existing VIP Pro licenses remain 100% active. Cryptographic machine bindings and licenses stored in `%USERPROFILE%\.tindapos` carry over automatically without requiring re-activation.
+
 ---
 
 ## ✨ What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)

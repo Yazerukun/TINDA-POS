@@ -127,7 +127,14 @@ const api: TindaApi = {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),
     get: (id) => invoke<import('@shared/types').Sale>('transactions:get', id),
     refund: (payload: RefundPayload) => invoke<import('@shared/types').Refund>('transactions:refund', payload),
-    void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload)
+    void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload),
+    delete: (saleId: number, options?: { restoreStock?: boolean }) =>
+      invoke<{ ok: boolean; transaction_no: string }>('transactions:delete', saleId, options),
+    onChanged: (handler: (payload: unknown) => void) => {
+      const sub = (_e: Electron.IpcRendererEvent, data: unknown) => handler(data)
+      ipcRenderer.on('transactions:changed', sub)
+      return () => ipcRenderer.removeListener('transactions:changed', sub)
+    }
   },
   expenses: {
     categories: () => invoke<import('@shared/types').ExpenseCategory[]>('expenses:categories'),
