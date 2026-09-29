@@ -299,4 +299,45 @@
     3. Keyboard `Escape` listener (`useEffect` global event).
     4. Backdrop overlay click-to-dismiss (`onMouseDown` targeting `currentTarget`).
 
+---
+
+## 18. Multi-Terminal LAN Synchronization, Inventory Search, Audit Deletion & POS Hotkeys Engine (v1.0.39)
+* **Problem Addressed & User Feedback:**
+  1. *LAN Visibility Parity:* Sales and transactions conducted on Satellite PCs were not appearing in real time on the Master PC, and Master sales were not visible on Satellites due to outdated IPC channel mappings in the network hub proxy.
+  2. *Inventory Stock Withdrawal Filter:* Managing hundreds of items in the "Withdraw Stocks" modal required manual scrolling without search capabilities.
+  3. *Audited Transaction Deletion:* Store owners needed the ability to permanently delete erroneous or voided transactions while properly reversing stock movements and recalculating cashier shift summaries.
+  4. *Rapid-Fire POS Keyboard Shortcuts:* Cashiers operating in high-volume environments required hands-free keyboard shortcuts for searching products, modifying quantities, applying discounts, holding sales, and executing quick checkouts.
+  5. *Zero License Disruption Guarantee:* Store owners with existing VIP Pro licenses must never be asked to re-activate upon updating to v1.0.39.
+
+* **Key Architectural Implementations:**
+  - **Multi-Terminal Bidirectional IPC Parity (`lanHubService.ts`, `inventoryEvents.ts`, `ipc/index.ts`):**
+    - Replaced obsolete proxy channel mappings with real production channels (`pos:checkout`, `transactions:list`, `transactions:get`, `transactions:refund`, `transactions:void`, `transactions:delete`, `shifts:*`, `reports:*`, `dashboard:*`).
+    - Added real-time Server-Sent Events (SSE) event forwarding for `transactions:changed`.
+    - Automatically emits `transactions:changed` across all terminals on checkout, refund, void, and deletion events, ensuring live synchronization without manual refresh.
+  - **Withdraw Stocks Modal Product Filter (`Inventory.tsx`):**
+    - Integrated real-time regex search filtering (`productSearch`, `filteredProducts` memo) in `WithdrawModal`.
+    - Instant auto-filtering by product name, SKU, or barcode with a quick-clear button.
+  - **Permanent Audited Transaction Deletion Engine (`transaction.ts`, `roles.ts`, `Transactions.tsx`):**
+    - Admin-guarded permission `transactions:delete` ensures only authorized managers can perform deletions.
+    - Transactional database execution:
+      - Optionally restores physical stock counts and removes corresponding stock ledger movements.
+      - Automatically reverses customer Utang debt ledger entries.
+      - Purges cascading child records (refunds, payments, sale items).
+      - Recalculates associated cashier shift totals (`cash_sales_c`, `non_cash_c`, etc.).
+      - Records an immutable audit log entry: `TRANSACTION_DELETED`.
+    - Safety UI modal requires explicit typing of `"DELETE"` to prevent accidental data erasure.
+  - **Rapid-Fire POS Keyboard Hotkeys Interceptor (`POS.tsx`):**
+    - `F1` or `/`: Instantly focuses and selects the product search bar from anywhere on the POS screen.
+    - `F2`: Automatically focuses and selects the quantity input of the most recently added cart item.
+    - `F4`: Instantly focuses the cart Discount (₱) input.
+    - `F8`: Performs a 1-key hold on the current cart.
+    - `F9`: One-key Cash Checkout (opens modal pre-selected to Cash with cash received input focused).
+    - `F10`: One-key GCash Checkout (opens modal pre-selected to GCash with reference number input focused).
+    - `Enter`: Instant transaction submission / charge in modal.
+    - `Escape`: Closes modals, resets open menus, or clears the active search bar.
+  - **100% License Persistence Invariant:**
+    - Cryptographic activation files reside persistently in `%USERPROFILE%\.tindapos\tinda_license.json`.
+    - Hardware UUID, CPU ID, Baseboard Serial hash routines, and internal pepper strings remain 100% identical. Existing active licenses carry over without any user intervention.
+
+
 

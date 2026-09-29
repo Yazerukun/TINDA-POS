@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.38-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.39-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-332%2F332_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/License-Community_%26_VIP_Pro-f59e0b?style=for-the-badge" alt="License">
+<img src="https://img.shields.io/badge/Tests-323%2F323_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
 
@@ -16,23 +16,39 @@
 
 <br />
 
-[⬇️ Download v1.0.38 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-Setup-1.0.38.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-Portable-1.0.38.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.38/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.39 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-Setup-1.0.39.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-Portable-1.0.39.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
+## ✨ What's New in v1.0.39 (Multi-Terminal LAN Visibility, Stock Withdrawal Search, Audited Transaction Deletion & Rapid Hotkeys)
+
+> **Real-Time LAN Sales Parity, Instant Withdraw Search, Permanent Audited Sale Deletion & High-Speed POS Shortcuts**
+
+- 🔄 **Real-Time Multi-PC LAN Sales Parity**: Satellite terminals now seamlessly execute checkouts (`pos:checkout`), query transactions (`transactions:list`), process refunds, and view live cashier shifts through the Master Server. Server-Sent Events (`transactions:changed`) ensure real-time screen updates across all computers with zero manual page refreshes.
+- 🔍 **Instant Search in Withdraw Stocks Modal**: Easily search and filter through hundreds of inventory products by name, SKU, or barcode when recording damaged, expired, or spoiled goods.
+- 🗑️ **Permanent Audited Transaction Deletion**: Store managers can permanently delete voided or erroneous transactions with an optional one-click physical inventory restock, automatic Utang ledger reversal, cashier shift recalculation, and a strict safety confirmation prompt (`DELETE`).
+- ⌨️ **Rapid-Fire POS Keyboard Shortcuts (Hotkeys)**:
+  - **`F1` or `/`**: Instantly focuses and selects the product search bar.
+  - **`F2`**: Quick focus and select the quantity of the last item in the cart.
+  - **`F4`**: Quick focus the cart Discount (₱) input.
+  - **`F8`**: 1-key hold current sale.
+  - **`F9`**: Quick Cash Checkout (opens modal pre-selected to Cash).
+  - **`F10`**: Quick GCash Checkout (opens modal pre-selected to GCash).
+  - **`Enter`**: Instant charge / submit checkout.
+  - **`Esc`**: Dismiss modal, clear search, or close menu.
+- 🛡️ **Zero License Disruption Guarantee**: Existing VIP Pro licenses remain 100% active. Cryptographic machine bindings and licenses stored in `%USERPROFILE%\.tindapos` carry over automatically without requiring re-activation.
+
 ---
 
-## ✨ What's New in v1.0.38 (UI Scaling Hotfix & Modal Accessibility)
+## ✨ What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)
 
-> **Compact Responsive VIP Pro Modal, Sticky Header with Permanent Close Buttons, Multi-Path Dismiss & Display Scaling Fixes**
+> **Multi-Computer Local LAN Hub, Zero-Internet Shared Database, 6-Digit PIN Pairing & Self-Hosted VPS Mirroring**
 
-- 📐 **Strict Viewport Containment (`max-h-[88vh]`)**: The VIP Pro modal is now strictly constrained to prevent vertical overflow on compact 1366x768 screens or laptops with 125%/150% Windows display scaling.
-- ❌ **Prominent Sticky Header & Permanent Close Button**: The modal header remains permanently fixed at the top with a high-contrast `[ X Close ]` button that never scrolls off-screen.
-- ⚡ **Quadruple-Action Dismiss**: Easily close the modal via top sticky Close button, bottom footer Close button, pressing the `Escape` key, or clicking outside on the backdrop.
-- 📱 **1-Click Polite SMS & Messenger Debt Reminders**: Instant 1-click clipboard generator formatted with gentle, polite Taglish/English payment reminders to recover credit 3x faster without awkward confrontations.
-- ⭐ **Suki Utang Credit Trust Scoring**: Real-time 5-star customer reliability indicator (⭐⭐⭐⭐⭐) to evaluate credit risk.
-- 📜 **Interactive Privacy Policy & Terms of Service**: In-app legal transparency dialogs guaranteeing 100% offline data sovereignty.
-- 💎 **TINDA POS VIP Pro Edition (₱500 Lifetime)**: Optional one-time lifetime license unlocking Multi-PC LAN Hub, QR receipts, and branding.
+- 🖥️ **Local Multi-Computer LAN Hub (100% Offline)**: Run 2 or more cashier computers in the store sharing a single unified database without requiring internet. Includes **Master Server Mode (Host)** and **Satellite Terminal Mode (Client)** with real-time bidirectional product search, cart checkout, and customer utang updates.
+- 🔐 **6-Digit Security Pairing PIN & HMAC Session Tokens**: Protects your store against unauthorized Wi-Fi access. Satellite terminals must be paired using an on-screen PIN generated by the Master PC.
+- 🛡️ **Role-Based Satellite Lockdown**: Satellite computers are locked to cashier checkout operations. Destructive actions (**Reset Database**, **Restore Backup**, and **Raw File Exports**) remain strictly locked to the physical Master console.
+- ⚡ **Real-Time Inventory Broadcast (SSE)**: Sales ringing up on any terminal immediately update stock badges across all connected screens via live Server-Sent Events with zero screen refresh required.
+- ☁️ **Self-Hosted VPS Cloud Mirroring Bridge**: Store owners running their own Linux VPS ($4-$5/mo) can connect for remote sales viewing from a phone while keeping physical store checkout 100% offline-first. Complete setup instructions provided in [`docs/MULTI_PC_AND_VPS_GUIDE.md`](docs/MULTI_PC_AND_VPS_GUIDE.md).
 
 ---
 
