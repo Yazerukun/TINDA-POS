@@ -46,7 +46,9 @@ export function StatusBadge({ status }: { status: string }): React.JSX.Element {
     ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     ARCHIVED: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
     OPENED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    CLOSED: 'bg-slate-500/10 text-slate-400 border-slate-500/30'
+    CLOSED: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+    EXPIRED: 'bg-red-500/10 text-red-400 border-red-500/30',
+    EXPIRING_SOON: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
   }
   return <span className={`badge border ${map[status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{status.replace(/_/g, ' ')}</span>
 }

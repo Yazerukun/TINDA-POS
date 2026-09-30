@@ -48,6 +48,8 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     purchase_cost_c: row.purchase_cost_c as number,
     default_price_c: row.default_price_c as number,
     srp_c: (row.srp_c as number | null) ?? null,
+    wholesale_price_c: (row.wholesale_price_c as number | null) ?? null,
+    wholesale_min_qty: (row.wholesale_min_qty as number | null) ?? null,
     stock,
     low_stock_threshold: row.low_stock_threshold as number,
     supplier_id: (row.supplier_id as number | null) ?? null,
@@ -159,6 +161,8 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   if (input.default_price_c < 0) throw new Error('Selling price cannot be negative.')
   if (input.purchase_cost_c < 0) throw new Error('Purchase cost cannot be negative.')
   if (input.srp_c !== undefined && input.srp_c !== null && input.srp_c < 0) throw new Error('Suggested retail price cannot be negative.')
+  if (input.wholesale_price_c !== undefined && input.wholesale_price_c !== null && input.wholesale_price_c < 0) throw new Error('Wholesale price cannot be negative.')
+  if (input.wholesale_min_qty !== undefined && input.wholesale_min_qty !== null && input.wholesale_min_qty < 1) throw new Error('Minimum wholesale quantity must be at least 1.')
   if ((input.low_stock_threshold ?? 0) < 0) throw new Error('Low stock threshold cannot be negative.')
   const ex = excludeId ? 'AND id != ?' : ''
   const trimmedSku = input.sku?.trim() || ''
@@ -199,15 +203,47 @@ function hasSrpColumn(db: Database.Database): boolean {
   return cols.some((c) => c.name === 'srp_c')
 }
 
+function hasWholesaleColumns(db: Database.Database): boolean {
+  const cols = db.pragma('table_info(products)') as { name: string }[]
+  return cols.some((c) => c.name === 'wholesale_price_c')
+}
+
 export function createProduct(db: Database.Database, input: ProductInput, userId: number): Product {
   if (!input.sku || !input.sku.trim()) {
     input.sku = generateSku(db)
   }
   validateProductInput(db, input)
   const threshold = input.low_stock_threshold ?? defaultLowStock(db)
+  const hasWholesale = hasWholesaleColumns(db)
   const hasSrp = hasSrpColumn(db)
   const txn = db.transaction(() => {
-    const info = hasSrp
+    const info = hasWholesale
+      ? db
+          .prepare(
+            `INSERT INTO products
+             (category_id, name, sku, barcode, description, base_unit, purchase_cost_c, default_price_c, srp_c,
+              wholesale_price_c, wholesale_min_qty, low_stock_threshold, supplier_id, has_expiration, image_path, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          .run(
+            input.category_id,
+            input.name.trim(),
+            input.sku.trim(),
+            input.barcode?.trim() || null,
+            input.description?.trim() || null,
+            input.base_unit.trim(),
+            input.purchase_cost_c,
+            input.default_price_c,
+            input.srp_c ?? null,
+            input.wholesale_price_c ?? null,
+            input.wholesale_min_qty ?? null,
+            threshold,
+            input.supplier_id,
+            input.has_expiration ? 1 : 0,
+            input.image_path?.trim() || null,
+            input.notes?.trim() || null
+          )
+      : hasSrp
       ? db
           .prepare(
             `INSERT INTO products
@@ -287,6 +323,8 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
     purchase_cost_c: input.purchase_cost_c ?? cur.purchase_cost_c,
     default_price_c: input.default_price_c ?? cur.default_price_c,
     srp_c: input.srp_c !== undefined ? input.srp_c : cur.srp_c,
+    wholesale_price_c: input.wholesale_price_c !== undefined ? input.wholesale_price_c : cur.wholesale_price_c,
+    wholesale_min_qty: input.wholesale_min_qty !== undefined ? input.wholesale_min_qty : cur.wholesale_min_qty,
     low_stock_threshold: input.low_stock_threshold ?? cur.low_stock_threshold,
     supplier_id: input.supplier_id !== undefined ? input.supplier_id : cur.supplier_id,
     has_expiration: input.has_expiration !== undefined ? input.has_expiration : cur.has_expiration,
@@ -297,10 +335,36 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
     units: input.units ?? cur.units
   }
   validateProductInput(db, merged, id)
+  const hasWholesale = hasWholesaleColumns(db)
   const hasSrp = hasSrpColumn(db)
   const txn = db.transaction(() => {
     if (input.expiration_mode !== undefined || input.expiration_date !== undefined) configureExpiration(db, id, merged.expiration_mode ?? 'NONE', merged.expiration_date ?? null, userId)
-    if (hasSrp) {
+    if (hasWholesale) {
+      db.prepare(
+        `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
+         purchase_cost_c = ?, default_price_c = ?, srp_c = ?, wholesale_price_c = ?, wholesale_min_qty = ?,
+         low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,
+         image_path = ?, notes = ?, updated_at = datetime('now','localtime') WHERE id = ?`
+      ).run(
+        merged.category_id,
+        merged.name.trim(),
+        merged.sku.trim(),
+        merged.barcode?.trim() || null,
+        merged.description?.trim() || null,
+        merged.base_unit.trim(),
+        merged.purchase_cost_c,
+        merged.default_price_c,
+        merged.srp_c ?? null,
+        merged.wholesale_price_c ?? null,
+        merged.wholesale_min_qty ?? null,
+        merged.low_stock_threshold,
+        merged.supplier_id,
+        merged.expiration_mode !== 'NONE' ? 1 : input.expiration_mode !== undefined ? 0 : (merged.has_expiration ? 1 : 0),
+        merged.image_path?.trim() || null,
+        merged.notes?.trim() || null,
+        id
+      )
+    } else if (hasSrp) {
       db.prepare(
         `UPDATE products SET category_id = ?, name = ?, sku = ?, barcode = ?, description = ?, base_unit = ?,
          purchase_cost_c = ?, default_price_c = ?, srp_c = ?, low_stock_threshold = ?, supplier_id = ?, has_expiration = ?,

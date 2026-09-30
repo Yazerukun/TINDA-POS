@@ -20,7 +20,8 @@ import {
   HelpCircle,
   Server,
   Laptop,
-  Receipt
+  Receipt,
+  Monitor
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
@@ -34,11 +35,23 @@ import { ReceiptPaper } from '../components/ReceiptPaper'
 import type { PaymentInput } from '@shared/ipc'
 import type { PrintResult } from '@shared/ipc'
 import { ProductImage } from '../components/ui/ProductImage'
-import { toastSuccess, toastError } from '../stores/toast'
+import { toastSuccess, toastError, toastWarning } from '../stores/toast'
 import { useNav } from '../stores/nav'
 import { cashInputFromCents } from '../lib/payment'
-import { availableBase, cartHasStockConflict, maxQuantity, reservedBase } from '../lib/cartStock'
-import { localDate } from '@shared/expiration'
+import { availableBase, cartHasStockConflict, maxQuantity, reservedBase, calculateItemUnitPrice } from '../lib/cartStock'
+import { localDate, productExpirationStatus } from '@shared/expiration'
+
+function warnIfNearExpiry(p: Product): void {
+  const status = productExpirationStatus(p)
+  if (status === 'SOON' || status === 'NEAR') {
+    const detail = p.expiration_mode === 'BATCH'
+      ? 'Batch stock expiring soon'
+      : p.expiration_date
+        ? `Expires on ${p.expiration_date}`
+        : 'Expiring soon'
+    toastWarning(`⚠️ Near Expiry: "${p.name}"`, `${detail} (${status === 'SOON' ? 'within 7 days' : 'within 30 days'})`)
+  }
+}
 
 const saleStock = (p: Product): number => p.expiration_mode === 'ITEM' && (!p.expiration_date || p.expiration_date < localDate()) ? 0
   : p.expiration_mode === 'BATCH' ? (p.batches ?? []).reduce((n, b) => n + (b.expiration_date && b.expiration_date >= localDate() ? b.quantity : 0), 0)
@@ -50,6 +63,10 @@ interface CartItem {
   unit_name: string
   qty: number
   unit_price_c: number
+  base_price_c?: number
+  wholesale_price_c?: number | null
+  wholesale_min_qty?: number | null
+  is_wholesale?: boolean
   cost_base_c: number
   stock_base: number
   conversion_to_base: number
@@ -80,31 +97,108 @@ export const usePosCart = create<CartState>((set) => ({
       const stock = saleStock(p)
       const ex = s.items.find((i) => i.product_id === p.id)
       if (stock < 1) return s
-      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: stock, qty: Math.min(i.qty + 1, maxQuantity(stock, i.conversion_to_base)) } : i)) }
+      if (ex) {
+        const nextQty = Math.min(ex.qty + 1, maxQuantity(stock, ex.conversion_to_base))
+        const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+          ex.base_price_c ?? ex.unit_price_c,
+          nextQty,
+          ex.wholesale_price_c,
+          ex.wholesale_min_qty
+        )
+        return {
+          items: s.items.map((i) =>
+            i === ex
+              ? {
+                  ...i,
+                  stock_base: stock,
+                  qty: nextQty,
+                  unit_price_c: unitPriceC,
+                  is_wholesale: isWholesale
+                }
+              : i
+          )
+        }
+      }
+      const basePrice = p.default_price_c
+      const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+        basePrice,
+        1,
+        p.wholesale_price_c,
+        p.wholesale_min_qty
+      )
       return {
-        items: [...s.items, {
-          product_id: p.id,
-          name: p.name,
-          unit_name: p.base_unit,
-          qty: 1,
-          unit_price_c: p.default_price_c,
-          cost_base_c: p.purchase_cost_c,
-          stock_base: stock,
-          conversion_to_base: 1
-        }]
+        items: [
+          ...s.items,
+          {
+            product_id: p.id,
+            name: p.name,
+            unit_name: p.base_unit,
+            qty: 1,
+            unit_price_c: unitPriceC,
+            base_price_c: basePrice,
+            wholesale_price_c: p.wholesale_price_c,
+            wholesale_min_qty: p.wholesale_min_qty,
+            is_wholesale: isWholesale,
+            cost_base_c: p.purchase_cost_c,
+            stock_base: stock,
+            conversion_to_base: 1
+          }
+        ]
       }
     }),
   setQty: (product_id, qty) =>
-    set((s) => ({ items: s.items.map((i) => (i.product_id === product_id ? { ...i, qty: Math.min(Math.max(0, Number.isFinite(qty) ? qty : 0), maxQuantity(i.stock_base, i.conversion_to_base)) } : i)).filter((i) => i.qty > 0) })),
+    set((s) => ({
+      items: s.items
+        .map((i) => {
+          if (i.product_id !== product_id) return i
+          const nextQty = Math.min(
+            Math.max(0, Number.isFinite(qty) ? qty : 0),
+            maxQuantity(i.stock_base, i.conversion_to_base)
+          )
+          const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+            i.base_price_c ?? i.unit_price_c,
+            nextQty,
+            i.wholesale_price_c,
+            i.wholesale_min_qty
+          )
+          return {
+            ...i,
+            qty: nextQty,
+            unit_price_c: unitPriceC,
+            is_wholesale: isWholesale
+          }
+        })
+        .filter((i) => i.qty > 0)
+    })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
   clear: () => set({ items: [], customer_id: null, customer_name: null, discount_pesos: 0 }),
   setCustomer: (id, name) => set({ customer_id: id, customer_name: id === null ? null : name ?? null }),
   setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
-  replace: (items, discount_pesos) => set({ items, customer_id: null, customer_name: null, discount_pesos }),
-  syncStocks: (products) => set((s) => {
-    const stocks = new Map(products.map(p => [p.id, saleStock(p)]))
-    return { items: s.items.map(item => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
-  })
+  replace: (items, discount_pesos) =>
+    set({
+      items: items.map((item) => {
+        const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+          item.base_price_c ?? item.unit_price_c,
+          item.qty,
+          item.wholesale_price_c,
+          item.wholesale_min_qty
+        )
+        return {
+          ...item,
+          base_price_c: item.base_price_c ?? item.unit_price_c,
+          unit_price_c: unitPriceC,
+          is_wholesale: isWholesale
+        }
+      }),
+      customer_id: null,
+      customer_name: null,
+      discount_pesos
+    }),
+  syncStocks: (products) =>
+    set((s) => {
+      const stocks = new Map(products.map((p) => [p.id, saleStock(p)]))
+      return { items: s.items.map((item) => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
+    })
 }))
 
 export function POS(): React.JSX.Element {
@@ -147,6 +241,30 @@ export function POS(): React.JSX.Element {
   }, [])
 
   const cartItems = usePosCart((state) => state.items)
+  const cartDiscount = usePosCart((state) => state.discount_pesos)
+  const cartCustomer = usePosCart((state) => state.customer_name)
+
+  useEffect(() => {
+    const items = cartItems.map((i) => ({
+      id: i.product_id,
+      name: i.name,
+      qty: i.qty,
+      unit_name: i.unit_name,
+      price_c: i.unit_price_c,
+      subtotal_c: i.qty * i.unit_price_c
+    }))
+    const subtotal_c = items.reduce((sum, x) => sum + x.subtotal_c, 0)
+    const discount_c = cartDiscount
+    const total_c = Math.max(0, subtotal_c - discount_c)
+    void window.api.phoneScanner?.updateCfd({
+      status: items.length > 0 ? 'ACTIVE' : 'IDLE',
+      items,
+      subtotal_c,
+      discount_c,
+      total_c,
+      customerName: cartCustomer ?? undefined
+    }).catch(() => {})
+  }, [cartItems, cartDiscount, cartCustomer])
 
   useEffect(() => {
     let alive = true
@@ -257,6 +375,7 @@ export function POS(): React.JSX.Element {
         } else {
           usePosCart.getState().add(found)
           toastSuccess(`Scanned: ${found.name}`)
+          warnIfNearExpiry(found)
           setQ('')
         }
       } else {
@@ -268,6 +387,7 @@ export function POS(): React.JSX.Element {
   }
 
   const [phoneConnected, setPhoneConnected] = useState(false)
+  const [cameraScannerInitialTab, setCameraScannerInitialTab] = useState<'phone' | 'camera' | 'guide' | 'cfd'>('phone')
 
   useEffect(() => {
     const scannerListener = createScannerListener({
@@ -474,7 +594,10 @@ export function POS(): React.JSX.Element {
             ) : (
               <button
                 type="button"
-                onClick={() => setCameraScannerOpen(true)}
+                onClick={() => {
+                  setCameraScannerInitialTab('phone')
+                  setCameraScannerOpen(true)
+                }}
                 className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
                 title="Pair Phone via QR Code or Open Fullscreen Scanner"
               >
@@ -482,6 +605,19 @@ export function POS(): React.JSX.Element {
                 <span className="hidden sm:inline">Pair Phone</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setCameraScannerInitialTab('cfd')
+                setCameraScannerOpen(true)
+              }}
+              className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-sky-500/50 hover:bg-ink-700 hover:text-sky-300 transition-colors"
+              title="Customer Facing Display (CFD) & Dynamic QR — Pair customer tablet or secondary screen"
+            >
+              <Monitor className="h-3.5 w-3.5 text-sky-400" />
+              <span className="hidden sm:inline">Customer Screen</span>
+            </button>
 
             <button
               type="button"
@@ -525,7 +661,14 @@ export function POS(): React.JSX.Element {
             return (
               <button
                 key={p.id}
-                onClick={() => out ? toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`) : usePosCart.getState().add(p)}
+                onClick={() => {
+                  if (out) {
+                    toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`)
+                  } else {
+                    usePosCart.getState().add(p)
+                    warnIfNearExpiry(p)
+                  }
+                }}
                 aria-disabled={out}
                 className="card group flex h-40 min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
@@ -543,7 +686,14 @@ export function POS(): React.JSX.Element {
                   </div>
                 </div>
                 <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
-                  <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
+                  <div>
+                    <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
+                    {p.wholesale_price_c != null && p.wholesale_min_qty != null && (
+                      <p className="text-[10px] font-semibold text-emerald-400">
+                        WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
+                      </p>
+                    )}
+                  </div>
                   {p.srp_c != null ? (
                     <span className="text-[11px] text-slate-400 font-normal" title="Suggested Retail Price">
                       SRP: {money(p.srp_c)}
@@ -568,6 +718,7 @@ export function POS(): React.JSX.Element {
 
       <CameraScannerModal
         open={cameraScannerOpen}
+        initialTab={cameraScannerInitialTab}
         onClose={() => setCameraScannerOpen(false)}
         onScan={(code) => void handleScan(code)}
       />
@@ -774,7 +925,14 @@ function CartPanel({
         {items.map((i, idx) => (
           <div key={i.product_id} className="rounded-lg border border-ink-line bg-ink-800/50 p-2.5">
             <div className="flex items-start justify-between gap-2">
-              <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
+              <div className="min-w-0">
+                <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
+                {i.is_wholesale && (
+                  <span className="inline-flex items-center gap-1 mt-0.5 rounded bg-emerald-500/10 px-1.5 py-0.5 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
+                    🏷️ Wholesale Tier
+                  </span>
+                )}
+              </div>
               <button onClick={() => usePosCart.getState().remove(i.product_id)} className="shrink-0 text-slate-600 hover:text-danger-400" title="Remove">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -793,7 +951,14 @@ function CartPanel({
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold text-white">{money(i.unit_price_c * i.qty)}</p>
-                <p className="text-sm text-slate-400">@{money(i.unit_price_c)} / {i.unit_name}</p>
+                <p className="text-sm text-slate-400">
+                  @{money(i.unit_price_c)} / {i.unit_name}
+                  {i.is_wholesale && i.base_price_c && i.base_price_c > i.unit_price_c && (
+                    <span className="line-through text-xs text-slate-500 ml-1">
+                      {money(i.base_price_c)}
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
             <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {availableBase(i.stock_base, i)} base units / {i.stock_base}</p>
@@ -930,6 +1095,23 @@ function CheckoutModal({
 
   useEffect(() => { void openShift() }, [])
 
+  useEffect(() => {
+    let qrPayload: string | undefined = undefined
+    if (method === 'GCASH' || method === 'MAYA') {
+      const storeName = 'TINDA POS'
+      const pesos = (total / 100).toFixed(2)
+      qrPayload = `${method.toLowerCase()}://pay?amount=${pesos}&store=${encodeURIComponent(storeName)}&ref=${Date.now()}`
+    }
+    void window.api.phoneScanner?.updateCfd({
+      status: 'PAYMENT',
+      paymentMethod: method,
+      total_c: total,
+      amount_tendered_c: method === 'CASH' ? cashC : total,
+      change_c: method === 'CASH' ? Math.max(0, change) : 0,
+      qrCodeUrl: qrPayload
+    }).catch(() => {})
+  }, [method, total, cashC, change])
+
   const doCheckout = async () => {
     if (submitting) return
     if (method === 'UTANG' && customer_id === null) {
@@ -968,6 +1150,13 @@ function CheckoutModal({
       const res = await window.api.pos.checkout(payload)
       setDone(res)
       usePosCart.getState().clear()
+      void window.api.phoneScanner?.updateCfd({
+        status: 'COMPLETED',
+        total_c: res.sale.total_c,
+        amount_tendered_c: method === 'CASH' ? cashC : res.sale.total_c,
+        change_c: method === 'CASH' ? Math.max(0, change) : 0,
+        paymentMethod: method
+      }).catch(() => {})
       if (res.print.ok || res.print.code === 'DISABLED') toastSuccess('Sale completed successfully', res.sale.transaction_no)
       else toastError('Sale completed successfully', res.print.message)
     } catch (e) {

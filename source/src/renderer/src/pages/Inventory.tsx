@@ -8,6 +8,7 @@ import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
+import { expirationStatus, productExpirationStatus } from '@shared/expiration'
 import { ProductImage } from '../components/ui/ProductImage'
 import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
 import { PriceGuideModal } from '../components/PriceGuideModal'
@@ -28,7 +29,7 @@ export function Inventory(): React.JSX.Element {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [q, setQ] = useState('')
-  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT'>('ALL')
+  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON'>('ALL')
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<ProductFormData | null>(null)
@@ -100,9 +101,13 @@ export function Inventory(): React.JSX.Element {
       ? 'Low stock'
       : catFilter === 'OUT'
         ? 'Out of stock'
-        : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+        : catFilter === 'EXPIRED'
+          ? '🔴 Expired items'
+          : catFilter === 'EXPIRING_SOON'
+            ? '🟠 Expiring soon (<30d)'
+            : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
 
-  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT') => {
+  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON') => {
     setCatFilter(filter)
     setFilterMenuOpen(false)
   }
@@ -112,7 +117,16 @@ export function Inventory(): React.JSX.Element {
     if (q) list = list.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || (p.barcode || '').toLowerCase().includes(q.toLowerCase()) || p.sku.toLowerCase().includes(q.toLowerCase()))
     if (catFilter === 'LOW') list = list.filter((p) => p.stock > 0 && p.stock <= p.low_stock_threshold)
     else if (catFilter === 'OUT') list = list.filter((p) => p.stock <= 0)
-    else if (catFilter !== 'ALL') list = list.filter((p) => p.category_id === catFilter)
+    else if (catFilter === 'EXPIRED') {
+      list = list.filter((p) => productExpirationStatus(p) === 'EXPIRED')
+    } else if (catFilter === 'EXPIRING_SOON') {
+      list = list.filter((p) => {
+        const s = productExpirationStatus(p)
+        return s === 'SOON' || s === 'NEAR'
+      })
+    } else if (catFilter !== 'ALL') {
+      list = list.filter((p) => p.category_id === catFilter)
+    }
     return list
   }, [products, q, catFilter])
 
@@ -271,7 +285,9 @@ export function Inventory(): React.JSX.Element {
                 { value: 'ALL' as const, label: 'All categories' },
                 ...categories.map((category) => ({ value: category.id, label: category.name })),
                 { value: 'LOW' as const, label: 'Low stock' },
-                { value: 'OUT' as const, label: 'Out of stock' }
+                { value: 'OUT' as const, label: 'Out of stock' },
+                { value: 'EXPIRED' as const, label: '🔴 Expired items' },
+                { value: 'EXPIRING_SOON' as const, label: '🟠 Expiring soon (<30 days)' }
               ]).map((item) => (
                 <button
                   key={item.value}
@@ -318,6 +334,11 @@ export function Inventory(): React.JSX.Element {
                       {p.srp_c != null && (
                         <span className="text-[11px] text-slate-400" title="Suggested Retail Price">
                           SRP: {money(p.srp_c)}
+                        </span>
+                      )}
+                      {p.wholesale_price_c != null && p.wholesale_min_qty != null && (
+                        <span className="text-[11px] text-emerald-400 font-medium" title="Wholesale Volume Discount">
+                          WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
                         </span>
                       )}
                     </div>
@@ -1287,6 +1308,39 @@ function ProductModal({
             <input type="number" min={0} value={f.initial_stock_base} onChange={(e) => set({ initial_stock_base: parseInt(e.target.value || '0', 10) })} className="input w-full" />
           </div>
         )}
+
+        {/* Wholesale Tier Pricing */}
+        <div className="col-span-2 rounded-lg border border-ink-line bg-ink-900/30 p-2.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300">🏷️ Wholesale / Volume Discount (Optional)</span>
+            <span className="text-[11px] text-slate-500">Auto-applies at POS when quantity threshold is met</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Wholesale Price (₱)</label>
+              <input
+                type="number"
+                min={0}
+                placeholder="None"
+                value={f.wholesale_price_c != null ? f.wholesale_price_c / 100 : ''}
+                onChange={(e) => set({ wholesale_price_c: e.target.value ? Math.round(parseFloat(e.target.value) * 100) : null })}
+                className="input w-full"
+              />
+            </div>
+            <div>
+              <label className="label">Min. Qty for Wholesale</label>
+              <input
+                type="number"
+                min={1}
+                placeholder="e.g. 6 or 12"
+                value={f.wholesale_min_qty ?? ''}
+                onChange={(e) => set({ wholesale_min_qty: e.target.value ? parseInt(e.target.value, 10) : null })}
+                className="input w-full"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="col-span-2">
           <label className="label" htmlFor="expiration-mode">Expiration Tracking</label>
           <select id="expiration-mode" className="input w-full" value={f.expiration_mode ?? 'NONE'} onChange={(e) => set({ expiration_mode: e.target.value as Product['expiration_mode'], expiration_date: null })}>

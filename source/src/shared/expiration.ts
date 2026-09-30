@@ -16,3 +16,34 @@ export function expirationStatus(date: string | null, today = localDate()): 'EXP
   if (days <= 30) return 'NEAR'
   return 'OK'
 }
+
+export function productExpirationStatus(
+  p: {
+    expiration_mode?: string
+    expiration_date?: string | null
+    batches?: Array<{ expiration_date?: string | null; quantity?: number }>
+  },
+  today = localDate()
+): 'EXPIRED' | 'SOON' | 'NEAR' | 'OK' | 'UNKNOWN' {
+  if (p.expiration_mode === 'ITEM') {
+    return expirationStatus(p.expiration_date ?? null, today)
+  }
+  if (p.expiration_mode === 'BATCH' && p.batches && p.batches.length > 0) {
+    let hasSoon = false
+    let hasNear = false
+    let hasOk = false
+    for (const b of p.batches) {
+      if (b.quantity !== undefined && b.quantity <= 0) continue
+      const st = expirationStatus(b.expiration_date ?? null, today)
+      if (st === 'EXPIRED') return 'EXPIRED'
+      if (st === 'SOON') hasSoon = true
+      if (st === 'NEAR') hasNear = true
+      if (st === 'OK') hasOk = true
+    }
+    if (hasSoon) return 'SOON'
+    if (hasNear) return 'NEAR'
+    if (hasOk) return 'OK'
+    return 'UNKNOWN'
+  }
+  return 'OK'
+}

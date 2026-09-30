@@ -98,6 +98,92 @@ export function getScannerHttpsUrl(): string {
   return `https://${ip}:${currentHttpsPort}/scanner?session=${sessionToken}`
 }
 
+export function getCfdUrl(): string {
+  const ip = getLocalIpAddress()
+  return `http://${ip}:${currentPort}/cfd`
+}
+
+export function getCfdHttpsUrl(): string {
+  const ip = getLocalIpAddress()
+  return `https://${ip}:${currentHttpsPort}/cfd`
+}
+
+export interface CfdCartItem {
+  id: number
+  name: string
+  qty: number
+  unit_name: string
+  price_c: number
+  subtotal_c: number
+}
+
+export interface CfdState {
+  storeName: string
+  status: 'IDLE' | 'ACTIVE' | 'PAYMENT' | 'COMPLETED'
+  items: CfdCartItem[]
+  subtotal_c: number
+  discount_c: number
+  total_c: number
+  amount_tendered_c?: number
+  change_c?: number
+  paymentMethod?: string
+  qrCodeUrl?: string
+  qrSvg?: string
+  customerName?: string
+  updatedAt: number
+}
+
+let cfdState: CfdState = {
+  storeName: 'TINDA POS',
+  status: 'IDLE',
+  items: [],
+  subtotal_c: 0,
+  discount_c: 0,
+  total_c: 0,
+  updatedAt: Date.now()
+}
+
+export function getCfdState(): CfdState {
+  return cfdState
+}
+
+export function generateQrSvg(text: string, size = 260): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { QRCodeWriter, BarcodeFormat } = require('@zxing/library')
+    const writer = new QRCodeWriter()
+    const matrix = writer.encode(text, BarcodeFormat.QR_CODE, 0, 0, new Map())
+    const width = matrix.getWidth()
+    const height = matrix.getHeight()
+    let paths = ''
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (matrix.get(x, y)) {
+          paths += `M${x},${y}h1v1h-1z `
+        }
+      }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${size}" height="${size}" shape-rendering="crispEdges"><rect width="${width}" height="${height}" fill="#ffffff"/><path d="${paths}" fill="#000000"/></svg>`
+  } catch (err) {
+    console.error('[cfd] Failed to generate QR SVG:', err)
+    return ''
+  }
+}
+
+export function updateCfdState(partial: Partial<CfdState>): CfdState {
+  let qrSvg: string | undefined = partial.qrSvg
+  if (partial.qrCodeUrl && !partial.qrSvg) {
+    qrSvg = generateQrSvg(partial.qrCodeUrl, 240)
+  }
+  cfdState = {
+    ...cfdState,
+    ...partial,
+    qrSvg: qrSvg !== undefined ? qrSvg : partial.qrCodeUrl ? cfdState.qrSvg : undefined,
+    updatedAt: Date.now()
+  }
+  return cfdState
+}
+
 export function getPhoneScannerStatus(): PhoneScannerStatus {
   const isConnected = (!!httpServer || !!httpsServer) && Date.now() - lastClientPing < 8000
   return {
@@ -987,9 +1073,486 @@ function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse):
     return
   }
 
+  if (pathname === '/cfd' || pathname === '/display') {
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    })
+    res.end(generateCfdHtml())
+    return
+  }
+
+  if (pathname === '/api/cfd') {
+    if (req.method === 'POST') {
+      let body = ''
+      req.on('data', (chunk) => {
+        body += chunk
+        if (body.length > 50000) req.destroy()
+      })
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body)
+          const updated = updateCfdState(data)
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(updated))
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: 'Invalid JSON' }))
+        }
+      })
+      return
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify(getCfdState()))
+    return
+  }
+
+  if (pathname === '/api/qr') {
+    const text = url.searchParams.get('text') || ''
+    const size = parseInt(url.searchParams.get('size') || '260', 10)
+    const svg = generateQrSvg(text, size)
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8' })
+    res.end(svg)
+    return
+  }
+
   res.writeHead(404)
   res.end('Not Found')
 }
+
+export function generateCfdHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TINDA POS — Customer Facing Display</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    header {
+      background: #0e1526;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .store-info { display: flex; align-items: center; gap: 12px; }
+    .store-badge {
+      background: #10b981;
+      color: #042f2e;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+    }
+    .store-name { font-size: 20px; font-weight: 700; color: #ffffff; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 5px 12px;
+      border-radius: 9999px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+    main { flex: 1; display: flex; flex-direction: column; padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+    /* IDLE VIEW */
+    .view-idle {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .welcome-card {
+      background: #101827;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 48px 36px;
+      max-width: 520px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .welcome-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .welcome-title { font-size: 28px; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
+    .welcome-sub { font-size: 15px; color: #94a3b8; line-height: 1.5; }
+
+    /* ACTIVE CART VIEW */
+    .view-active {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 768px) {
+      .view-active { grid-template-columns: 1fr; }
+    }
+    .cart-box {
+      background: #101827;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .cart-header {
+      padding: 14px 20px;
+      background: #0f172a;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 60vh;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #172033;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.04);
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .item-info { min-width: 0; flex: 1; padding-right: 12px; }
+    .item-name { font-size: 16px; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-meta { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+    .item-subtotal { font-size: 17px; font-weight: 700; color: #34d399; }
+
+    .summary-box {
+      background: #101827;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: fit-content;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    .summary-row.discount { color: #f59e0b; }
+    .total-box {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 16px;
+      margin-top: 12px;
+    }
+    .total-label { font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .total-amount { font-size: 44px; font-weight: 900; color: #10b981; margin-top: 4px; line-height: 1; }
+
+    /* PAYMENT VIEW */
+    .view-payment {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .qr-card {
+      background: #101827;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    }
+    .qr-wrapper {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 16px;
+      display: inline-block;
+      margin: 16px auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .qr-wrapper svg { display: block; max-width: 220px; height: auto; }
+    .payment-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .badge-gcash { background: #007dfe; color: #ffffff; }
+    .badge-maya { background: #000000; color: #22c55e; border: 1px solid #22c55e; }
+    .badge-cash { background: #10b981; color: #042f2e; }
+
+    /* COMPLETED VIEW */
+    .view-completed {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .check-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="store-info">
+      <span class="store-badge">TINDA</span>
+      <h1 id="store-name" class="store-name">TINDA POS</h1>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span id="conn-text">LIVE COUNTER</span>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="view-idle">
+      <div class="welcome-card">
+        <div class="welcome-icon">
+          <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+        </div>
+        <h2 class="welcome-title">Maligayang Pagdating!</h2>
+        <p class="welcome-sub">Please present your items at the counter.<br>Items will appear here in real time as they are scanned.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function fmtMoney(c) {
+      return '₱' + (Math.max(0, c || 0) / 100).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    let lastUpdated = 0;
+    const mainEl = document.getElementById('main-content');
+    const storeNameEl = document.getElementById('store-name');
+
+    async function poll() {
+      try {
+        const res = await fetch('/api/cfd');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.updatedAt !== lastUpdated) {
+          lastUpdated = data.updatedAt;
+          render(data);
+        }
+      } catch (e) {
+        // retry
+      } finally {
+        setTimeout(poll, 600);
+      }
+    }
+
+    function render(data) {
+      if (data.storeName && storeNameEl) storeNameEl.textContent = data.storeName;
+
+      if (data.status === 'COMPLETED') {
+        mainEl.innerHTML = \`
+          <div class="view-completed">
+            <div class="welcome-card">
+              <div class="check-icon">
+                <svg width="44" height="44" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 class="welcome-title" style="color: #34d399;">Salamat sa Pagpamalit!</h2>
+              <p class="welcome-sub" style="margin-bottom: 24px;">Thank you for your purchase!</p>
+              <div style="background: #172033; padding: 16px 20px; border-radius: 12px; text-align: left; margin-top: 12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 15px; color: #cbd5e1;">
+                  <span>Total Amount:</span>
+                  <strong style="color: #ffffff;">\${fmtMoney(data.total_c)}</strong>
+                </div>
+                \${data.amount_tendered_c ? \`
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #94a3b8;">
+                    <span>Amount Paid:</span>
+                    <span>\${fmtMoney(data.amount_tendered_c)}</span>
+                  </div>
+                \` : ''}
+                \${data.change_c !== undefined ? \`
+                  <div style="display:flex; justify-content:space-between; font-size: 16px; color: #34d399; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+                    <span>Change:</span>
+                    <span>\${fmtMoney(data.change_c)}</span>
+                  </div>
+                \` : ''}
+              </div>
+            </div>
+          </div>
+        \`;
+        return;
+      }
+
+      if (data.status === 'PAYMENT') {
+        const isGcash = (data.paymentMethod || '').toUpperCase() === 'GCASH';
+        const isMaya = (data.paymentMethod || '').toUpperCase() === 'MAYA';
+        const badgeClass = isGcash ? 'badge-gcash' : isMaya ? 'badge-maya' : 'badge-cash';
+
+        mainEl.innerHTML = \`
+          <div class="view-payment">
+            <div class="qr-card">
+              <span class="payment-badge \${badgeClass}">\${data.paymentMethod || 'PAYMENT'}</span>
+              <div style="margin: 8px 0 16px;">
+                <p style="font-size: 14px; color: #94a3b8; text-transform: uppercase;">Total Amount to Pay</p>
+                <p style="font-size: 40px; font-weight: 900; color: #10b981; line-height: 1.1;">\${fmtMoney(data.total_c)}</p>
+              </div>
+              \${data.qrSvg ? \`
+                <div class="qr-wrapper">
+                  \${data.qrSvg}
+                </div>
+                <p style="font-size: 15px; color: #f1f5f9; font-weight: 600;">Scan with your \${isGcash ? 'GCash' : isMaya ? 'Maya' : 'e-Wallet'} App</p>
+                <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Dynamic QR generated for exact amount</p>
+              \` : \`
+                <div style="background: #172033; padding: 24px; border-radius: 16px; margin: 16px 0;">
+                  <p style="font-size: 16px; color: #e2e8f0;">Please proceed with cash payment at the counter.</p>
+                  \${data.amount_tendered_c ? \`
+                    <p style="font-size: 14px; color: #94a3b8; margin-top: 8px;">Tendered: \${fmtMoney(data.amount_tendered_c)}</p>
+                  \` : ''}
+                </div>
+              \`}
+            </div>
+          </div>
+        \`;
+        return;
+      }
+
+      if (!data.items || data.items.length === 0) {
+        mainEl.innerHTML = \`
+          <div class="view-idle">
+            <div class="welcome-card">
+              <div class="welcome-icon">
+                <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <h2 class="welcome-title">Maligayang Pagdating!</h2>
+              <p class="welcome-sub">Please present your items at the counter.<br>Items will appear here in real time as they are scanned.</p>
+            </div>
+          </div>
+        \`;
+        return;
+      }
+
+      let itemsHtml = '';
+      for (const item of data.items) {
+        itemsHtml += \`
+          <div class="cart-item">
+            <div class="item-info">
+              <div class="item-name" title="\${item.name}">\${item.name}</div>
+              <div class="item-meta">\${item.qty} \${item.unit_name || 'pc'} × \${fmtMoney(item.price_c)}</div>
+            </div>
+            <div class="item-subtotal">\${fmtMoney(item.subtotal_c)}</div>
+          </div>
+        \`;
+      }
+
+      mainEl.innerHTML = \`
+        <div class="view-active">
+          <div class="cart-box">
+            <div class="cart-header">Items in Cart (\${data.items.length})</div>
+            <div class="cart-items" id="cart-list">\${itemsHtml}</div>
+          </div>
+          <div class="summary-box">
+            <div>
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <strong>\${fmtMoney(data.subtotal_c)}</strong>
+              </div>
+              \${data.discount_c > 0 ? \`
+                <div class="summary-row discount">
+                  <span>Discount</span>
+                  <strong>-\${fmtMoney(data.discount_c)}</strong>
+                </div>
+              \` : ''}
+              \${data.customerName ? \`
+                <div class="summary-row" style="color: #38bdf8;">
+                  <span>Customer</span>
+                  <span>\${data.customerName}</span>
+                </div>
+              \` : ''}
+            </div>
+            <div class="total-box">
+              <div class="total-label">Total to Pay</div>
+              <div class="total-amount">\${fmtMoney(data.total_c)}</div>
+            </div>
+          </div>
+        </div>
+      \`;
+
+      const list = document.getElementById('cart-list');
+      if (list) list.scrollTop = list.scrollHeight;
+    }
+
+    if ('wakeLock' in navigator) {
+      try { navigator.wakeLock.request('screen'); } catch(e) {}
+    }
+
+    poll();
+  </script>
+</body>
+</html>`
+}
+
 
 function startHttpsServerHelper(port: number, attempt = 0): void {
   if (attempt >= 5) {

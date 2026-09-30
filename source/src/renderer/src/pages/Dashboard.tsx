@@ -19,6 +19,7 @@ import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyStat
 import { Modal } from '../components/ui/Modal'
 import type { Product, Sale, ReportSummary } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
+import { productExpirationStatus } from '@shared/expiration'
 import { useUpdate } from '../stores/update'
 
 function StatCard({
@@ -61,6 +62,7 @@ export function Dashboard(): React.JSX.Element | null {
   const [updateBusy, setUpdateBusy] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [modalDismissed, setModalDismissed] = useState(false)
+  const [expiryAlerts, setExpiryAlerts] = useState<{ expired: Product[]; soon: Product[] }>({ expired: [], soon: [] })
 
   const { event, download, install, dismiss } = useUpdate()
 
@@ -84,6 +86,12 @@ export function Dashboard(): React.JSX.Element | null {
         setRecent(tx.rows)
         const alerts = prods.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)
         setAlertProducts(alerts)
+        const expired = prods.rows.filter((p) => productExpirationStatus(p) === 'EXPIRED')
+        const soon = prods.rows.filter((p) => {
+          const st = productExpirationStatus(p)
+          return st === 'SOON' || st === 'NEAR'
+        })
+        setExpiryAlerts({ expired, soon })
         setUtang(u.total_outstanding_c)
       } catch (e) {
         if (alive && request === generation) setError(String((e as Error)?.message || e))
@@ -415,26 +423,67 @@ export function Dashboard(): React.JSX.Element | null {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SectionCard title="LOW / OUT OF STOCK" action={<span className="text-xs text-slate-500">{out.length} out · {low.length} low</span>}>
-          {alertProducts.length === 0 ? (
-            <p className="text-sm text-slate-400">All products in stock.</p>
-          ) : (
-            <div className="space-y-2">
-              {alertProducts.map((p) => (
-                <div key={p.id} className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${p.stock <= 0 ? 'text-red-400' : 'text-amber-400'}`} />
-                    <span className="truncate text-sm text-slate-200">{p.name}</span>
+        <div className="space-y-4">
+          <SectionCard title="LOW / OUT OF STOCK" action={<span className="text-xs text-slate-500">{out.length} out · {low.length} low</span>}>
+            {alertProducts.length === 0 ? (
+              <p className="text-sm text-slate-400">All products in stock.</p>
+            ) : (
+              <div className="space-y-2">
+                {alertProducts.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${p.stock <= 0 ? 'text-red-400' : 'text-amber-400'}`} />
+                      <span className="truncate text-sm text-slate-200">{p.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">{p.stock} {p.base_unit}</span>
+                      <StatusBadge status={p.stock <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK'} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">{p.stock} {p.base_unit}</span>
-                    <StatusBadge status={p.stock <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK'} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+
+          {((expiryAlerts?.expired?.length ?? 0) > 0 || (expiryAlerts?.soon?.length ?? 0) > 0) && (
+            <SectionCard
+              title="EXPIRATION & SPOILAGE ALERTS"
+              action={
+                <span className="text-xs">
+                  {(expiryAlerts?.expired?.length ?? 0) > 0 && (
+                    <span className="text-red-400 font-bold mr-2">{expiryAlerts?.expired?.length} expired</span>
+                  )}
+                  {(expiryAlerts?.soon?.length ?? 0) > 0 && (
+                    <span className="text-amber-400 font-bold">{expiryAlerts?.soon?.length} expiring soon</span>
+                  )}
+                </span>
+              }
+            >
+              <div className="space-y-2">
+                {[...(expiryAlerts?.expired ?? []), ...(expiryAlerts?.soon ?? [])].slice(0, 8).map((p) => {
+                  const st = productExpirationStatus(p)
+                  const isExp = st === 'EXPIRED'
+                  return (
+                    <div key={p.id} className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${isExp ? 'text-red-400' : 'text-amber-400'}`} />
+                        <span className="truncate text-sm text-slate-200">{p.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400">
+                          {p.expiration_mode === 'BATCH'
+                            ? `${p.batches?.length ?? 0} batches`
+                            : p.expiration_date || 'No date'}
+                        </span>
+                        <StatusBadge status={isExp ? 'EXPIRED' : 'EXPIRING_SOON'} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </SectionCard>
           )}
-        </SectionCard>
+        </div>
 
         <SectionCard title="RECENT TRANSACTIONS" action={<span className="text-xs text-slate-500">{recent.length} shown</span>}>
           {recent.length === 0 ? (

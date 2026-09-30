@@ -89,6 +89,8 @@ export interface Product {
   purchase_cost_c: number
   default_price_c: number
   srp_c?: number | null
+  wholesale_price_c?: number | null
+  wholesale_min_qty?: number | null
   stock: number
   low_stock_threshold: number
   supplier_id: number | null
@@ -116,6 +118,8 @@ export interface ProductInput {
   purchase_cost_c: number
   default_price_c: number
   srp_c?: number | null
+  wholesale_price_c?: number | null
+  wholesale_min_qty?: number | null
   low_stock_threshold?: number
   supplier_id: number | null
   has_expiration: boolean

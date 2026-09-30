@@ -21,7 +21,10 @@ import {
   CornerDownLeft,
   Wifi,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Monitor,
+  Copy,
+  Check
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 
@@ -32,6 +35,7 @@ interface CameraScannerModalProps {
   title?: string
   actionLabel?: string
   zIndex?: string
+  initialTab?: 'phone' | 'camera' | 'guide' | 'cfd'
 }
 
 function playBeep(): void {
@@ -61,9 +65,10 @@ export function CameraScannerModal({
   onScan,
   title = 'Universal Barcode Scanner (Phone & Camera)',
   actionLabel = 'Added to Cart',
-  zIndex = 'z-[70]'
+  zIndex = 'z-[70]',
+  initialTab
 }: CameraScannerModalProps): React.JSX.Element | null {
-  const [tab, setTab] = useState<'phone' | 'camera' | 'guide'>('phone')
+  const [tab, setTab] = useState<'phone' | 'camera' | 'guide' | 'cfd'>(initialTab ?? 'phone')
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('')
   const [cameraActive, setCameraActive] = useState(false)
@@ -71,6 +76,8 @@ export function CameraScannerModal({
   const [mirrored, setMirrored] = useState(false)
   const [lastScanned, setLastScanned] = useState<string | null>(null)
   const [manualCode, setManualCode] = useState('')
+  const [cfdCopied, setCfdCopied] = useState(false)
+  const cfdQrContainerRef = useRef<HTMLDivElement>(null)
 
   // Phone QR Scanner State
   const [phoneMode, setPhoneMode] = useState<'https' | 'http'>('https')
@@ -149,6 +156,9 @@ export function CameraScannerModal({
   }, [open, onScan])
 
   const activePhoneUrl = phoneMode === 'https' ? (phoneStatus.httpsUrl || phoneStatus.url) : phoneStatus.url
+  const activeCfdUrl = phoneMode === 'https'
+    ? (phoneStatus.httpsUrl ? phoneStatus.httpsUrl.replace(/\/scanner\?session=.*$/, '/cfd') : `https://${phoneStatus.ip}:${phoneStatus.httpsPort}/cfd`)
+    : `http://${phoneStatus.ip}:${phoneStatus.port}/cfd`
 
   // Render QR Code SVG whenever phone scanner URL is available
   useEffect(() => {
@@ -162,7 +172,17 @@ export function CameraScannerModal({
         console.error('Failed to generate companion QR code:', err)
       }
     }
-  }, [tab, activePhoneUrl])
+    if (tab === 'cfd' && activeCfdUrl && cfdQrContainerRef.current) {
+      try {
+        const writer = new BrowserQRCodeSvgWriter()
+        const svg = writer.write(activeCfdUrl, 240, 240)
+        svg.setAttribute('style', 'display:block;border-radius:12px;background:#ffffff;padding:12px;')
+        cfdQrContainerRef.current.replaceChildren(svg)
+      } catch (err) {
+        console.error('Failed to generate CFD QR code:', err)
+      }
+    }
+  }, [tab, activePhoneUrl, activeCfdUrl])
 
   // Load available camera devices for local webcam tab
   const loadDevices = async () => {
@@ -448,6 +468,18 @@ export function CameraScannerModal({
           >
             <Sparkles className="h-4 w-4" />
             Setup Guide &amp; Tips
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('cfd')}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'cfd'
+                ? 'border-brand-500 text-brand-400'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Monitor className="h-4 w-4" />
+            Customer Screen (CFD)
           </button>
         </div>
 
@@ -752,6 +784,60 @@ export function CameraScannerModal({
                 <p className="mt-1 text-slate-400">
                   You can plug in any standard USB or 2.4GHz wireless barcode scanner gun at any time. It operates in parallel with zero configuration needed.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: Customer Facing Display (CFD) & Dynamic QR */}
+        {tab === 'cfd' && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3.5 text-xs text-sky-200 flex items-start gap-2.5">
+              <Monitor className="h-5 w-5 shrink-0 text-sky-400 mt-0.5" />
+              <div>
+                <strong className="text-white block mb-1">Wireless Customer Screen (CFD) &amp; Dynamic QR</strong>
+                Open this URL on an old tablet, iPad, Android phone, or secondary monitor on your counter. Your customer will see items, totals, and dynamic GCash / Maya QR codes live as you ring up sales!
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center justify-center p-6 bg-ink-950 rounded-xl border border-ink-line">
+              <div ref={cfdQrContainerRef} className="w-[240px] h-[240px] flex items-center justify-center bg-white rounded-xl shadow-lg mb-4">
+                <span className="text-slate-400 text-xs">Generating Display QR...</span>
+              </div>
+              <p className="text-sm font-medium text-white mb-1">Scan with Customer Tablet / Phone</p>
+              <p className="text-xs text-slate-400 mb-4 text-center max-w-sm">
+                No app required. The customer screen opens in Chrome/Safari and stays on continuously.
+              </p>
+
+              <div className="flex items-center gap-2 w-full max-w-md">
+                <input
+                  type="text"
+                  readOnly
+                  value={activeCfdUrl}
+                  className="input text-xs font-mono flex-1 bg-ink-900 border-ink-line text-slate-300 py-2"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(activeCfdUrl)
+                    setCfdCopied(true)
+                    setTimeout(() => setCfdCopied(false), 2000)
+                  }}
+                  className="btn-ghost flex items-center gap-1.5 text-xs py-2 px-3"
+                  title="Copy CFD Link"
+                >
+                  {cfdCopied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {cfdCopied ? 'Copied' : 'Copy'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.open(activeCfdUrl, '_blank')}
+                  className="btn-primary flex items-center gap-1.5 text-xs py-2 px-3"
+                  title="Open Customer Screen in Browser"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Open Display
+                </button>
               </div>
             </div>
           </div>

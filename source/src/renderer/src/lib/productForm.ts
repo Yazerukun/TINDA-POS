@@ -25,6 +25,8 @@ export interface ProductFormData {
   purchase_cost_c: number
   default_price_c: number
   srp_c: number | null
+  wholesale_price_c?: number | null
+  wholesale_min_qty?: number | null
   low_stock_threshold: number
   initial_stock_base: number
   description: string | null
@@ -62,6 +64,8 @@ export function newProductForm(defaultLowStock = 5): ProductFormData {
     purchase_cost_c: 0,
     default_price_c: 0,
     srp_c: null,
+    wholesale_price_c: null,
+    wholesale_min_qty: null,
     low_stock_threshold: defaultLowStock,
     initial_stock_base: 0,
     description: null,
@@ -87,6 +91,8 @@ export function editProductForm(product: Product): ProductFormData {
     purchase_cost_c: product.purchase_cost_c,
     default_price_c: product.default_price_c,
     srp_c: product.srp_c ?? null,
+    wholesale_price_c: product.wholesale_price_c ?? null,
+    wholesale_min_qty: product.wholesale_min_qty ?? null,
     low_stock_threshold: product.low_stock_threshold,
     initial_stock_base: 0,
     description: product.description,
@@ -129,6 +135,8 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
     srp_c: form.srp_c,
+    wholesale_price_c: form.wholesale_price_c,
+    wholesale_min_qty: form.wholesale_min_qty,
     low_stock_threshold: form.low_stock_threshold,
     description: form.description,
     supplier_id: form.supplier_id,
@@ -154,6 +162,8 @@ export function createProductInput(form: ProductFormData): ProductInput {
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
     srp_c: form.srp_c,
+    wholesale_price_c: form.wholesale_price_c,
+    wholesale_min_qty: form.wholesale_min_qty,
     low_stock_threshold: form.low_stock_threshold,
     initial_stock_base: form.initial_stock_base,
     description: form.description,
@@ -166,3 +176,4 @@ export function createProductInput(form: ProductFormData): ProductInput {
     units
   }
 }
+

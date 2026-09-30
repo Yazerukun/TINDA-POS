@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { availableBase, cartHasStockConflict, hasStockConflict, maxQuantity, reservedBase } from './cartStock'
+import { availableBase, cartHasStockConflict, hasStockConflict, maxQuantity, reservedBase, calculateItemUnitPrice } from './cartStock'
 
 describe('v1.0.5 realtime cart availability', () => {
   it('adds, decreases, removes and clears only temporary availability', () => {
@@ -29,5 +29,17 @@ describe('v1.0.5 realtime cart availability', () => {
     expect(availableBase(48, box)).toBe(24)
     expect(maxQuantity(48, 24)).toBe(2)
     expect(availableBase(48, { qty: 2, conversion_to_base: 24 })).toBe(0)
+  })
+
+  it('calculates wholesale pricing correctly based on min quantity thresholds', () => {
+    // No wholesale defined
+    expect(calculateItemUnitPrice(1000, 5, null, null)).toEqual({ unitPriceC: 1000, isWholesale: false })
+    // Wholesale defined (₱8.00 min 10 pcs, base ₱10.00)
+    // Less than threshold -> base price
+    expect(calculateItemUnitPrice(1000, 9, 800, 10)).toEqual({ unitPriceC: 1000, isWholesale: false })
+    // At threshold -> wholesale price
+    expect(calculateItemUnitPrice(1000, 10, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true })
+    // Above threshold -> wholesale price
+    expect(calculateItemUnitPrice(1000, 50, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true })
   })
 })

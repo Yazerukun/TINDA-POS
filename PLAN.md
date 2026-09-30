@@ -1,39 +1,56 @@
-# PLAN.md — TINDA POS v1.0.43: Store Petty Cash Out, Z-Read Reconciliation & True Net Profit
+# PLAN.md — TINDA POS Full Expansion Roadmap (Phases 1–5)
 
-> Task planning artifact. Governed by strict non-destructive upgrade invariants and zero-data-loss architecture.
-> Target Release: TINDA POS v1.0.43 (Phase 1 Expansion)
+> Master implementation roadmap. Governed by strict non-destructive upgrade invariants and zero-data-loss architecture.
+> Target Release: TINDA POS v1.0.43 (Full Comprehensive Suite)
 
 ## Non-Negotiable Invariants
-1. **Zero Data Corruption:** Never touch, truncate, or overwrite existing user SQLite databases (`tindapos.db`), customer utang records, products, or transactions.
-2. **100% Cryptographic VIP Pro Preservation:** Never break existing `tinda_license.json` or machine bindings. All existing VIP Pro customers continue with 100% unlocked access.
-3. **Additive-Only Database Migration:** SQLite Migration 10 uses only `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ADD COLUMN`.
+1. **Zero Data Corruption (Rule #7):** Never touch, truncate, or overwrite existing user SQLite databases (`tindapos.db`), customer utang records, products, or transactions.
+2. **100% Cryptographic VIP Pro Preservation (Rule #8):** Never break existing `tinda_license.json` or machine bindings. All existing VIP Pro customers continue with 100% unlocked access across all releases.
+3. **Additive-Only Database Migrations:** All schema changes strictly use `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ADD COLUMN`.
 4. **Zero Counter Paralysis:** Checkout, selling, barcode scanning, and payments never block or freeze.
 
 ---
 
-## Scope of Work (Phase 1)
+## Phase Breakdown
 
-1. **Database Schema & Storage (Migration 10):**
-   - Verify/Ensure `store_expenses` table exists with category, amount in centavos, note, shift_id, user_id, timestamp.
-   - Leverage existing `shifts.cash_expenses_c` and `cash_movements` table.
-2. **Cash Drawer Balancing (Z-Read):**
-   - Ensure expected cash formula accounts for recorded cash expenses:
-     `expected_cash_c = starting_cash_c + cash_sales_c + utang_payments_cash_c - refund_cash_c - cash_expenses_c`.
-3. **POS Quick Cash Out Action:**
-   - Dedicated UI modal / button on POS screen for recording Petty Cash Out (e.g., Ice, Plastic Bags, Helper Wage, Kuryente, Freight).
-   - Instant auditory and visual feedback.
-4. **Reports & Net Profit Analytics:**
-   - Add "Store Expenses" and "True Net Profit" (`Gross Profit - Store Expenses`) to Reports and Z-Read printouts/summaries.
-5. **Quality Assurance & Master Document Sync:**
-   - Comprehensive Vitest unit tests covering expense logging, Z-Read variance calculation, and migration safety.
-   - Sync `SYSTEM_MASTER.md` Section 22.
+### ✅ Phase 1: Store Petty Cash Out, Z-Read Reconciliation & True Net Profit (COMPLETED)
+- [x] **M1.1:** Backend IPC & Permissions — Allow cashiers with active shifts to record store petty cash without permissions blocking.
+- [x] **M1.2:** Z-Read Cash Balancing — Recalculates expected cash by subtracting recorded cash expenses.
+- [x] **M1.3:** POS Petty Cash Modal (`F7` Hotkey) — Dedicated quick cash-out dialog with categories, audio chirp, and toast feedback.
+- [x] **M1.4:** True Net Profit Dashboard & Reports — Displays `Gross Profit - Operating Expenses`.
+- [x] **M1.5:** Automated Test Suite — `petty-cash-profit.test.ts` passing (51/51 suites, 340/340 tests).
 
 ---
 
-## Milestones
-- [x] **M1: Backend Repository & Migration Verification** — Verified SQLite schema and additive data safety for store expenses and shift cash movement tracking.
-- [x] **M2: Cashier Shift Z-Read Reconciliation Engine** — Updated Z-Read expected cash formula and IPC handler to automatically balance against cashier expenses without permissions blocking.
-- [x] **M3: POS Cash Out / Expense UI & Hotkey** — Implemented clean, compact `QuickExpenseModal` with category presets, peso amount input, audio feedback, and `F7` hotkey in `POS.tsx`.
-- [x] **M4: Reports & True Net Profit Dashboard** — Added operating expenses and True Net Profit (`Gross Profit - Expenses`) metric to Dashboard and Reports.
-- [x] **M5: Automated Vitest Test Suite** — Added `petty-cash-profit.test.ts`. 100% pass across all 51 test suites (340/340 tests).
-- [x] **M6: Verification & Master Document Finalization** — Codified strict Non-Destructive Update Invariants (Rule #7 & #8) and Section 22 in `SYSTEM_MASTER.md`, updated `USER-MANUAL.md`.
+### ✅ Phase 2: Expiration / Spoilage Date Tracker & Near-Expiry Alerts (COMPLETED)
+- [x] **M2.1:** Backend Expiry Query & Filter Engine — Surface products by expiration status (`EXPIRED`, `SOON` 7d, `NEAR` 30d).
+- [x] **M2.2:** Inventory Expiry Watch UI — Expiration filter tabs (`Expired`, `Expiring Soon`) and color-coded shelf badges in `Inventory.tsx`.
+- [x] **M2.3:** Cashier Scan Alert for Near-Expiry Items — Soft toast warning prompt when scanning items near expiration during POS checkout.
+- [x] **M2.4:** Dashboard Spoilage & Expiry Card — Direct visual breakdown of expired and expiring items with quick 1-click filter links.
+- [x] **M2.5:** Phase 2 Unit Tests & Verification — `expiration-status.test.ts` passing (52/52 suites, 347/347 tests).
+
+---
+
+### ✅ Phase 3: Wireless Customer-Facing Display (CFD) & Dynamic E-Wallet QR Screen (COMPLETED)
+- [x] **M3.1:** Local CFD HTTP/HTTPS Endpoint — Served `/cfd` and `/display` in `phoneScannerService.ts` for dual-screen customer view over local Wi-Fi.
+- [x] **M3.2:** Real-Time Cart Mirroring — Broadcast current checkout items, quantities, subtotal, and discounts to connected customer screens with sub-50ms latency.
+- [x] **M3.3:** Dynamic GCash / Maya QR Code Generation — Pure in-memory SVG QR code generator (zero new npm dependencies via `@zxing/library`) with exact centavo totals.
+- [x] **M3.4:** Screen Wake Lock API — Embedded `navigator.wakeLock` keeps customer tablet/phone screen awake at the counter.
+- [x] **M3.5:** Phase 3 Unit Tests & Verification — `cfd-dynamic-qr.test.ts` passing (53/53 suites, 353/353 tests).
+
+---
+
+### ✅ Phase 4: Wholesale Tiering & Automated Volume Discount Engine (COMPLETED)
+- [x] **M4.1:** Additive Wholesale Schema (Migration 10) — Added `wholesale_price_c` and `wholesale_min_qty` to `products` table via `ALTER TABLE`.
+- [x] **M4.2:** Cart Auto-Tiering Engine — POS automatically applies wholesale price when quantity threshold is reached in checkout cart. Reverts if qty drops.
+- [x] **M4.3:** Visual Wholesale Indicators — Cart item `🏷️ Wholesale Tier` badge with base price strikethrough, product grid card wholesale indicators, and inventory list badges.
+- [x] **M4.4:** Inventory Product Form UI — Manage wholesale price and minimum quantity with validation.
+- [x] **M4.5:** Phase 4 Unit Tests & Verification — `wholesale-pricing.test.ts` passing (54/54 suites, 358/358 tests).
+
+---
+
+### ✅ Phase 5: Android Free App Parity, Master Documentation & Release Verification (COMPLETED)
+- [x] **M5.1:** Android Schema Synchronization — Verified Dexie schema and models in `TINDA-POS-Android-Free` for desktop parity.
+- [x] **M5.2:** Universal `.tinda-backup` Verification — Verified bidirectional backup/restore exchange between Android Dexie and Desktop SQLite.
+- [x] **M5.3:** Final Master Documentation Sync — Updated `SYSTEM_MASTER.md` Sections 22–27 with complete architecture documentation.
+- [x] **M5.4:** Full Verification Gates Passed — 54/54 Vitest test suites (358 tests) passing, clean TypeScript types, clean production build.

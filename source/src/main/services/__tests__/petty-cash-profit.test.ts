@@ -33,7 +33,9 @@ describe('Petty Cash Out, Shift Reconciliation & True Net Profit', () => {
     completeSetup({
       store: { store_name: 'Test Store', address: 'Manila' },
       admin: { username: 'admin', password: 'password123', pin: '1234' },
-      receipt: { header: 'Header', footer: 'Footer' }
+      receipt: { header: 'Header', footer: 'Footer' },
+      data_dir: dataDir,
+      load_demo: false
     })
 
     // 1. Create cashier user
@@ -54,6 +56,7 @@ describe('Petty Cash Out, Shift Reconciliation & True Net Profit', () => {
     const categories = expenses.listExpenseCategories(db)
     const iceCategory = categories.find((c) => /ice/i.test(c.name)) ?? categories[0]
     expect(iceCategory).toBeDefined()
+    if (!iceCategory) throw new Error('Category required')
 
     // 4. Record petty cash out of ₱50 (5,000 centavos) for tube ice
     const today = new Date().toISOString().slice(0, 10)
@@ -91,7 +94,9 @@ describe('Petty Cash Out, Shift Reconciliation & True Net Profit', () => {
     completeSetup({
       store: { store_name: 'Test Store 2', address: 'Cebu' },
       admin: { username: 'admin2', password: 'password123', pin: '1234' },
-      receipt: { header: 'Header', footer: 'Footer' }
+      receipt: { header: 'Header', footer: 'Footer' },
+      data_dir: dataDir,
+      load_demo: false
     })
 
     const cashier = users.createUser(db, {
@@ -104,6 +109,8 @@ describe('Petty Cash Out, Shift Reconciliation & True Net Profit', () => {
 
     const categories = expenses.listExpenseCategories(db)
     const suppliesCat = categories.find((c) => /supplies/i.test(c.name)) ?? categories[0]
+    expect(suppliesCat).toBeDefined()
+    if (!suppliesCat) throw new Error('Supplies category required')
 
     const today = new Date().toISOString().slice(0, 10)
     // Record ₱120 in store supplies expense

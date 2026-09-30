@@ -540,5 +540,14 @@ BEGIN
   );
 END;
 `
+  },
+  {
+    version: 10,
+    name: 'wholesale_tiering',
+    sql: `
+ALTER TABLE products ADD COLUMN wholesale_price_c INTEGER;
+ALTER TABLE products ADD COLUMN wholesale_min_qty INTEGER;
+`
   }
 ]
+

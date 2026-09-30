@@ -25,3 +25,22 @@ export function hasStockConflict(item: StockAwareCartItem): boolean {
 export function cartHasStockConflict(items: StockAwareCartItem[]): boolean {
   return items.some(hasStockConflict)
 }
+
+export function calculateItemUnitPrice(
+  basePriceC: number,
+  qty: number,
+  wholesalePriceC?: number | null,
+  wholesaleMinQty?: number | null
+): { unitPriceC: number; isWholesale: boolean } {
+  if (
+    wholesalePriceC != null &&
+    wholesalePriceC > 0 &&
+    wholesaleMinQty != null &&
+    wholesaleMinQty > 0 &&
+    qty >= wholesaleMinQty
+  ) {
+    return { unitPriceC: wholesalePriceC, isWholesale: true }
+  }
+  return { unitPriceC: basePriceC, isWholesale: false }
+}
+

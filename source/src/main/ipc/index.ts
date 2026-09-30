@@ -880,6 +880,21 @@ handle('phoneScanner:restart', () => {
   return startPhoneScannerService()
 })
 
+handle('phoneScanner:getCfdState', () => {
+  const { getCfdState } = require('../services/phoneScannerService')
+  return getCfdState()
+})
+
+handle('phoneScanner:updateCfd', (_e: IpcMainInvokeEvent, partial: Record<string, unknown>) => {
+  const { updateCfdState } = require('../services/phoneScannerService')
+  return updateCfdState(partial)
+})
+
+handle('phoneScanner:getCfdUrl', () => {
+  const { getCfdUrl, getCfdHttpsUrl } = require('../services/phoneScannerService')
+  return { url: getCfdUrl(), httpsUrl: getCfdHttpsUrl() }
+})
+
 // ---- LAN Hub & VPS Sync ----
 handle('lan:getStatus', () => lanHubSvc.getLanStatus())
 handle('lan:setMode', (_e: IpcMainInvokeEvent, mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => {
