@@ -52,12 +52,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.37 to v1.0.38 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.39 to v1.0.40 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.38.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.38.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.40.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.40.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.38.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.40.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
@@ -338,6 +338,39 @@
   - **100% License Persistence Invariant:**
     - Cryptographic activation files reside persistently in `%USERPROFILE%\.tindapos\tinda_license.json`.
     - Hardware UUID, CPU ID, Baseboard Serial hash routines, and internal pepper strings remain 100% identical. Existing active licenses carry over without any user intervention.
+
+---
+
+## 19. Startup Single-Instance Concurrency, Port Hardening & Crash Dialog Elimination Architecture (v1.0.40)
+* **Problem Addressed & User Feedback:**
+  - *Startup Race Condition:* On Windows boot with auto-start enabled, TINDA POS launched in the background. Users clicking the desktop icon spawned a second instance. Because `app.quit()` did not synchronously terminate the process (`process.exit(0)` was missing), the duplicate instance executed `whenReady()`, triggering database write conflicts and port binding collisions.
+  - *Port Collision on TCP 5040:* In attempting to bind auxiliary HTTP/HTTPS servers (`lanHubService.ts` on 3111, `phoneScannerService.ts` on 3112/3113), the secondary instance encountered `EADDRINUSE`. The unconstrained retry loop continuously incremented port numbers (`port++`) until reaching port `5040`, which is permanently occupied by Windows `CDPSvc` (Connected Devices Platform Service in `svchost.exe`).
+  - *Missing Error Listener & Unhandled Exception:* The fallback `httpsServer` did not attach an `.on('error')` listener before calling `.listen()`, causing Node.js to throw an `Uncaught Exception: listen EADDRINUSE 0.0.0.0:5040`. With no global exception handler in the Electron main process, a native JavaScript crash dialog was presented to the user.
+
+* **Key Architectural Implementations:**
+  - **Synchronous Duplicate Process Termination (`main/index.ts`):**
+    - Enforced immediate synchronous exit:
+      ```ts
+      const gotSingleInstanceLock = app.requestSingleInstanceLock()
+      if (!gotSingleInstanceLock) {
+        app.quit()
+        process.exit(0)
+      }
+      ```
+    - Prevents duplicate instances from ever executing initialization hooks, accessing SQLite files, or attempting port allocations.
+  - **Bounded Port Allocation & Ceiling Protection (`phoneScannerService.ts`, `lanHubService.ts`):**
+    - Implemented strict 5-attempt ceilings (ports 3111–3116 for LAN Hub, 3112–3117 for Phone Scanner HTTP/HTTPS).
+    - Under no circumstances will port probing escalate into dynamic system port ranges or Windows-reserved services (such as 5040).
+    - Every fallback server instance attaches comprehensive `.on('error')` listeners before initiating `.listen()`.
+    - Safe `.close()` calls wrapped to eliminate `ERR_SERVER_NOT_RUNNING` exceptions.
+  - **Non-Fatal Graceful Degradation:**
+    - If local auxiliary networking fails due to OS firewall rules or third-party interference, the service logs a non-fatal warning and safely disables itself. The primary POS retail terminal and cashier checkout flow continue operating with 100% uptime.
+  - **Global Main Process Exception Shields (`main/index.ts`):**
+    - Registered `process.on('uncaughtException')` and `process.on('unhandledRejection')` in the Electron main entry point.
+    - Captures unexpected low-level networking anomalies and logs them to stderr/log files without exposing unhandled modal crash dialogues to cashiers.
+  - **100% Backward Compatibility:**
+    - Full retention of existing SQLite database schemas, audit logs, transactions, and hardware-locked VIP Pro licenses.
+
 
 
 
