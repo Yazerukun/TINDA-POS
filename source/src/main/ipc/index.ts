@@ -537,8 +537,16 @@ handle('expenses:categories', () => { user(); return expRepo.listExpenseCategori
 handle('expenses:createCategory', (_e: IpcMainInvokeEvent, name: string) => { user(); return expRepo.createExpenseCategory(db(), name) })
 handle('expenses:list', (_e: IpcMainInvokeEvent, opts: unknown) => expRepo.listExpenses(db(), (opts ?? {}) as object))
 handle('expenses:create', (_e: IpcMainInvokeEvent, input: unknown) => {
-  sessionSvc.requirePermission('expenses:manage')
-  return expRepo.createExpense(db(), input as Parameters<typeof expRepo.createExpense>[1], user().id)
+  const u = user()
+  const activeShift = shiftRepo.currentShiftFor(db(), u.id)
+  if (!activeShift) {
+    sessionSvc.requirePermission('expenses:manage')
+  }
+  const exp = expRepo.createExpense(db(), input as Parameters<typeof expRepo.createExpense>[1], u.id)
+  if (activeShift) {
+    shiftRepo.updateShiftTotals(db(), activeShift.id)
+  }
+  return exp
 })
 handle('expenses:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
   sessionSvc.requirePermission('expenses:manage')

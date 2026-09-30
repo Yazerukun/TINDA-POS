@@ -578,6 +578,7 @@ export interface ReportSummary {
   discount_c: number
   refunds_c: number
   expenses_c: number
+  net_profit_c?: number
 }
 
 export interface ExportResult {

@@ -79,6 +79,7 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
     )
     .get(opts.from, opts.to) as { c: number }
   summary.expenses_c = expenses.c
+  summary.net_profit_c = summary.profit_c - summary.expenses_c
 
   const costBySale = new Map<number, number>()
   for (const r of db

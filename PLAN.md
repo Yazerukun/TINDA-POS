@@ -1,27 +1,39 @@
-# PLAN.md — TINDA POS v1.0.37: Cryptographic Hardware Licensing & VIP Pro Architecture
+# PLAN.md — TINDA POS v1.0.43: Store Petty Cash Out, Z-Read Reconciliation & True Net Profit
 
-> Task planning artifact. Governed by strict security invariants and zero-data-loss architecture.
-> Target Release: TINDA POS v1.0.37
+> Task planning artifact. Governed by strict non-destructive upgrade invariants and zero-data-loss architecture.
+> Target Release: TINDA POS v1.0.43 (Phase 1 Expansion)
 
-## Task
+## Non-Negotiable Invariants
+1. **Zero Data Corruption:** Never touch, truncate, or overwrite existing user SQLite databases (`tindapos.db`), customer utang records, products, or transactions.
+2. **100% Cryptographic VIP Pro Preservation:** Never break existing `tinda_license.json` or machine bindings. All existing VIP Pro customers continue with 100% unlocked access.
+3. **Additive-Only Database Migration:** SQLite Migration 10 uses only `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ADD COLUMN`.
+4. **Zero Counter Paralysis:** Checkout, selling, barcode scanning, and payments never block or freeze.
 
-Design, implement, test, and release **TINDA POS v1.0.37** featuring:
-1. **Offline Hardware-Locked Licensing System:** 100% offline HMAC-SHA256 license verification binding PC Motherboard, CPU, Machine GUID, and network MAC.
-2. **₱500 VIP Pro Lifetime Edition:** Unlimited catalog items, Multi-PC LAN Hub host/satellite mode, Suki Utang Trust Rating (⭐⭐⭐⭐⭐), 1-Click SMS Collection Reminder generator, paperless QR receipts, and custom store branding.
-3. **Free Community Edition Safeguards:** 50-product catalog limit, single-PC standalone mode, standard receipt watermark.
-4. **Developer Keygen Tooling:** Omarchy Linux CLI command (`tinda-keygen`) with Wayland clipboard integration (`wl-copy`) and private repo generator (`tools/keygen.mjs`).
-5. **Centered & Animated Settings UI:** Balanced `max-w-4xl mx-auto` Settings tabs, sliding VIP banner, and VIP modal with 1-click Machine ID copy and Maya / Facebook contact info.
-6. **Project Workspace Organization:** Pruning obsolete build artifacts, archiving old docs/checksums, and establishing streamlined developer workflows.
+---
+
+## Scope of Work (Phase 1)
+
+1. **Database Schema & Storage (Migration 10):**
+   - Verify/Ensure `store_expenses` table exists with category, amount in centavos, note, shift_id, user_id, timestamp.
+   - Leverage existing `shifts.cash_expenses_c` and `cash_movements` table.
+2. **Cash Drawer Balancing (Z-Read):**
+   - Ensure expected cash formula accounts for recorded cash expenses:
+     `expected_cash_c = starting_cash_c + cash_sales_c + utang_payments_cash_c - refund_cash_c - cash_expenses_c`.
+3. **POS Quick Cash Out Action:**
+   - Dedicated UI modal / button on POS screen for recording Petty Cash Out (e.g., Ice, Plastic Bags, Helper Wage, Kuryente, Freight).
+   - Instant auditory and visual feedback.
+4. **Reports & Net Profit Analytics:**
+   - Add "Store Expenses" and "True Net Profit" (`Gross Profit - Store Expenses`) to Reports and Z-Read printouts/summaries.
+5. **Quality Assurance & Master Document Sync:**
+   - Comprehensive Vitest unit tests covering expense logging, Z-Read variance calculation, and migration safety.
+   - Sync `SYSTEM_MASTER.md` Section 22.
 
 ---
 
 ## Milestones
-
-- [x] **M1: Cryptographic License Engine (`licenseService.ts`)** — Multi-hardware anchor scraping, deterministic obfuscated HMAC-SHA256 verification, tamper-proof file integrity guard.
-- [x] **M2: Developer Keygen Tooling** — Created `tools/keygen.mjs` and Omarchy CLI tool `~/.local/bin/tinda-keygen` with `wl-copy` automatic clipboard support.
-- [x] **M3: Feature Gates & Community Boundaries** — Enforced 50-item catalog limit for free tier, Multi-PC LAN Hub VIP gate, and thermal receipt watermark.
-- [x] **M4: Centered Settings UI & Animated VIP Modal** — Redesigned Settings with centered navigation, sliding upgrade CTA, and 1-click Maya / Facebook launchers.
-- [x] **M5: Suki Credit Trust Rating & 1-Click SMS Reminder** — Added 5-star customer trust scoring and instant SMS collection reminder formatter.
-- [x] **M6: Verification Testing & Type Safety** — Added `license-service.test.ts` and `settings-vip.test.ts`. 100% pass rate (49/49 test files, 332/332 tests).
-- [x] **M7: Workspace Organization & Cleanup** — Pruned 4.4GB of dead build outputs, archived legacy release docs and checksums into `docs/archive/` and `installers/archive/`.
-- [ ] **M8: Production Windows Build & Release Packaging** — Compile `TindaPOS-Setup-1.0.37.exe` and `TindaPOS-Portable-1.0.37.exe`, generate checksums, and update documentation.
+- [x] **M1: Backend Repository & Migration Verification** — Verified SQLite schema and additive data safety for store expenses and shift cash movement tracking.
+- [x] **M2: Cashier Shift Z-Read Reconciliation Engine** — Updated Z-Read expected cash formula and IPC handler to automatically balance against cashier expenses without permissions blocking.
+- [x] **M3: POS Cash Out / Expense UI & Hotkey** — Implemented clean, compact `QuickExpenseModal` with category presets, peso amount input, audio feedback, and `F7` hotkey in `POS.tsx`.
+- [x] **M4: Reports & True Net Profit Dashboard** — Added operating expenses and True Net Profit (`Gross Profit - Expenses`) metric to Dashboard and Reports.
+- [x] **M5: Automated Vitest Test Suite** — Added `petty-cash-profit.test.ts`. 100% pass across all 51 test suites (340/340 tests).
+- [x] **M6: Verification & Master Document Finalization** — Codified strict Non-Destructive Update Invariants (Rule #7 & #8) and Section 22 in `SYSTEM_MASTER.md`, updated `USER-MANUAL.md`.

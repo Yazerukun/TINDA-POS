@@ -389,9 +389,9 @@ export function Dashboard(): React.JSX.Element | null {
           iconClass="bg-emerald-500/10 text-emerald-400"
         />
         <StatCard
-          label="Estimated Profit"
-          value={money(summary.profit_c)}
-          sub={`${summary.items_sold} items sold`}
+          label="True Net Profit"
+          value={money(summary.net_profit_c ?? (summary.profit_c - summary.expenses_c))}
+          sub={`Gross: ${money(summary.profit_c)} · Exp: ${money(summary.expenses_c)}`}
           icon={<Banknote className="h-5 w-5" />}
           valueColor="text-teal-400"
           iconClass="bg-teal-500/10 text-teal-400"
@@ -405,9 +405,9 @@ export function Dashboard(): React.JSX.Element | null {
           iconClass="bg-rose-500/10 text-rose-400"
         />
         <StatCard
-          label="Expenses"
+          label="Operating Expenses"
           value={money(summary.expenses_c)}
-          sub="this period"
+          sub="disbursed from store"
           icon={<Receipt className="h-5 w-5" />}
           valueColor="text-amber-400"
           iconClass="bg-amber-500/10 text-amber-400"

@@ -37,6 +37,8 @@
 4. ❌ Never mutate, overwrite, or drop existing user credentials, authentication hashes, or active sessions during third-party data imports.
 5. ❌ Never execute multi-record external imports outside of an atomic SQLite transaction (`db.transaction`).
 6. ❌ Never push, merge, or track proprietary source code (`source/`, `tools/`) to the public distribution repository (`Yazerukun/TINDA-POS`). All application source code must strictly reside in the private repository (`Yazerukun/TINDA-POS-Source`).
+7. ❌ Never overwrite, clear, truncate, or delete existing user database tables (`tindapos.db`), customer credit/utang balances, transactions, or license records (`tinda_license.json`) during application updates. All database migrations must be 100% additive (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ADD COLUMN`).
+8. ❌ Never alter, rotate secret salts for, or invalidate existing VIP Pro cryptographic signatures or machine keys. Existing customer licenses must remain 100% permanently valid and active across all future versions.
 
 ---
 
@@ -428,3 +430,24 @@
       - If barcode is uncatalogued: plays confirmation chime and automatically opens the `New Product` modal with the scanned barcode already pre-filled.
   - **Store Handbook Modernization (`Handbook.tsx`):**
     - Chapter 4 completely upgraded to standard professional English detailing plug-and-play USB scanner guns, 1-Click Wi-Fi smartphone companion setup, and instant inventory auto-capture workflows.
+
+---
+
+## 22. Permanent Non-Destructive Update, VIP Preservation & Store Expense Architecture (v1.0.43+)
+* **Mandatory Non-Destructive Invariant (Strict Rule #7 & #8):**
+  - **Zero Data Loss Guarantee:** User application databases (`tindapos.db`), customer credit (utang) ledgers, sales history, inventory counts, and license records (`tinda_license.json`) are permanently isolated in Windows `%APPDATA%\TINDA POS\` (`app.getPath('userData')`).
+  - **In-Place Seamless Upgrades:** Software updates replace executable binaries and static assets only. User data directories are NEVER cleaned, deleted, or overwritten during NSIS Setup execution, Portable launches, or `electron-updater` background patching.
+  - **Additive-Only Migrations:** All future SQLite database migrations strictly utilize `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE ADD COLUMN`. Destructive operations (`DROP TABLE`, `DELETE FROM`, column renaming with data truncation) are strictly prohibited.
+  - **100% Cryptographic VIP Pro Preservation:** The HMAC-SHA256 license derivation algorithm, secret pepper bytes (`PEPPER_BYTES`), and machine entropy anchors are permanently immutable. Any machine license activated on v1.0.37–v1.0.42 remains 100% permanently valid and automatically unlocks all current and future VIP Pro features.
+
+* **Store Expense Tracking & "True Net Profit" Engine (v1.0.43):**
+  - **Petty Cash Out Module:**
+    - Cashiers and store owners can record operational store cash disbursements directly from the POS counter (e.g. Store Supplies, Utility Bills, Helper Wage, Freight/Delivery, Owner Drawings).
+    - Links disbursements to the active cashier shift (`shifts.id`) and records who logged it.
+  - **Cash Drawer Reconciliation Formula (Z-Read):**
+    - Cash drawer variance auditing incorporates cash disbursements:
+      $$\text{Expected Cash} = \text{Opening Float} + \text{Cash Sales} + \text{Utang Repayments} - \text{Cash Refunds} - \text{Cash Expenses}$$
+    - Eliminates false cash drawer shortages caused by unrecorded store expenses.
+  - **True Net Profit Intelligence:**
+    - Comprehensive financial reporting calculating:
+      $$\text{True Net Profit} = \text{Gross Sales} - \text{COGS (Cost of Goods Sold)} - \text{Operating Expenses}$$

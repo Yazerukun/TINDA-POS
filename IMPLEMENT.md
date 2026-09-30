@@ -48,3 +48,14 @@
   - TypeScript typecheck: 0 errors across Node and Web.
   - Vitest test suite: 49/49 suites passing, **332/332 tests passing** (including 8 license service tests and Settings VIP test).
 
+## 2026-09-30: v1.0.43 Phase 1 — Non-Destructive Update Protocol, VIP Preservation & Store Expenses
+- **Trigger:** Ian's strategic feature roadmap directive: execute strictly phase by phase, update `SYSTEM_MASTER.md` permanently, and guarantee zero data corruption or VIP license loss for existing users upon updating.
+- **Decision 1 (Strict Non-Destructive Invariant):**
+  - Codified Rule #7 & #8 in `SYSTEM_MASTER.md` and Section 22.
+  - User application data in Windows `%APPDATA%\TINDA POS\` (`tindapos.db`, `tinda_license.json`) is never touched, truncated, or overwritten by updates.
+  - All future migrations strictly additive (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ADD COLUMN`).
+  - Cryptographic HMAC key derivation algorithm, hardware entropy, and pepper bytes are frozen permanently to guarantee 100% license validity for all existing and future VIP Pro customers.
+- **Decision 2 (Store Petty Cash Out & Shift Balancing):**
+  - Implement full store expense logging and Z-Read cash drawer reconciliation to resolve cashier cash shortages caused by unrecorded store expenses (ice, plastic bags, utilities, helper wage).
+  - Add True Net Profit financial reporting: `Gross Profit - Operating Expenses`.
+

@@ -178,11 +178,12 @@ export function Reports(): React.JSX.Element {
 
           {loading ? <div className="h-40 animate-pulse card" /> : data ? (
             <>
-              <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-5">
+              <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-6">
                 <Stat label="Sales" v={money(data.summary.sales_total_c)} />
-                <Stat label="Profit" v={money(data.summary.profit_c)} />
+                <Stat label="Gross Profit" v={money(data.summary.profit_c)} />
+                <Stat label="Expenses" v={money(data.summary.expenses_c)} />
+                <Stat label="True Net Profit" v={money(data.summary.net_profit_c ?? (data.summary.profit_c - data.summary.expenses_c))} />
                 <Stat label="Cost" v={money(data.summary.cost_c)} />
-                <Stat label="Discounts" v={money(data.summary.discount_c)} />
                 <Stat label="Transactions" v={String(data.summary.transactions)} />
               </div>
               <div className="card mb-4 table-container">

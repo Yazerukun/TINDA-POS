@@ -19,11 +19,13 @@ import {
   Camera,
   HelpCircle,
   Server,
-  Laptop
+  Laptop,
+  Receipt
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
 import { CounterCameraScanner } from '../components/CounterCameraScanner'
+import { QuickExpenseModal } from '../components/QuickExpenseModal'
 import { useGuide } from '../stores/guide'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money } from '@shared/format'
@@ -116,6 +118,7 @@ export function POS(): React.JSX.Element {
   const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
   const categoryMenuRef = useRef<HTMLDivElement>(null)
   const [cameraScannerOpen, setCameraScannerOpen] = useState(false)
+  const [expenseModalOpen, setExpenseModalOpen] = useState(false)
   const [counterCameraEnabled, setCounterCameraEnabled] = useState(() => {
     return localStorage.getItem('tinda_counter_camera_enabled') === 'true'
   })
@@ -307,6 +310,11 @@ export function POS(): React.JSX.Element {
         searchInputRef.current?.select()
         return
       }
+      if (e.key === 'F7') {
+        e.preventDefault()
+        setExpenseModalOpen(true)
+        return
+      }
       if (e.key === '/') {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag !== 'input' && tag !== 'textarea') {
@@ -477,6 +485,16 @@ export function POS(): React.JSX.Element {
 
             <button
               type="button"
+              onClick={() => setExpenseModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:border-amber-500/50 hover:bg-amber-500/20 transition-colors shadow-sm"
+              title="Record Store Petty Cash / Cash Out (F7)"
+            >
+              <Receipt className="h-3.5 w-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Petty Cash (F7)</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => useGuide.getState().openGuide('pos')}
               className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:border-amber-500/50 hover:bg-amber-500/20 transition-colors shadow-sm"
               title="Open Cashier & POS Instructions Guide"
@@ -552,6 +570,11 @@ export function POS(): React.JSX.Element {
         open={cameraScannerOpen}
         onClose={() => setCameraScannerOpen(false)}
         onScan={(code) => void handleScan(code)}
+      />
+
+      <QuickExpenseModal
+        open={expenseModalOpen}
+        onClose={() => setExpenseModalOpen(false)}
       />
     </div>
   )
