@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.39-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.40-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-323%2F323_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-332%2F332_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,9 +16,20 @@
 
 <br />
 
-[⬇️ Download v1.0.39 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-Setup-1.0.39.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-Portable-1.0.39.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.39/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.40 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.40/TindaPOS-Setup-1.0.40.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.40/TindaPOS-Portable-1.0.40.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.40/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.40 (Startup Single-Instance Lock & Port Collision Hardening)
+
+> **PC Startup Double-Instance Immunity, Bounded Port Fallback & Crash Dialog Elimination**
+
+- ⚡ **Synchronous Single-Instance Lock Protection**: Eliminates race conditions when the app auto-launches on Windows PC startup while the cashier also manually clicks the desktop shortcut. Secondary instances immediately exit synchronously (`process.exit(0)`), focusing the primary window and preventing port collision conflicts.
+- 🛡️ **Bounded Port Allocation with Windows Service Immunity**: Fixed auto-incrementing retry loops that previously collided with Windows system services like `CDPSvc` (TCP port `5040`). Phone Scanner and LAN Hub now enforce a strict ceiling (maximum 5 port attempts) with full `.on('error')` listeners on both HTTP and HTTPS fallback instances.
+- 🧘 **Non-Fatal Graceful Server Degradation**: If auxiliary network services encounter firewall or occupied port blocks, the application logs a non-fatal warning and allows POS cashier sales to continue running smoothly with 0% downtime.
+- 🛡️ **Global Process Exception Protection**: Integrated global `uncaughtException` and `unhandledRejection` guards in the Electron main process to prevent unexpected network/port errors from triggering raw JavaScript crash popups for end users.
+
+---
 
 ## ✨ What's New in v1.0.39 (Multi-Terminal LAN Visibility, Stock Withdrawal Search, Audited Transaction Deletion & Rapid Hotkeys)
 
