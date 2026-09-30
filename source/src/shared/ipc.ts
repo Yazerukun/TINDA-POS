@@ -26,7 +26,8 @@ import type {
   Shift,
   StoreSettings,
   Supplier,
-  User
+  User,
+  LicenseStatus
 } from './types'
 
 export type PaymentInput = {
@@ -134,6 +135,7 @@ export interface TindaApi {
       openDataDir: () => Promise<void>
       checkIntegrity: () => Promise<{ ok: boolean; message: string }>
       isOnline: () => Promise<boolean>
+      openExternal: (url: string) => Promise<void>
   }
 
   update: {
@@ -292,6 +294,8 @@ export interface TindaApi {
     get: (id: number) => Promise<import('./types').Sale>
     refund: (payload: RefundPayload) => Promise<Refund>
     void: (payload: VoidPayload) => Promise<import('./types').Sale>
+    delete: (saleId: number, options?: { restoreStock?: boolean }) => Promise<{ ok: boolean; transaction_no: string }>
+    onChanged: (handler: (payload: unknown) => void) => () => void
   }
 
   expenses: {
@@ -387,6 +391,36 @@ export interface TindaApi {
       sources: { source_name: string; count: number }[]
     }>
     compare: (retailPriceC: number, reference: PriceReference | null) => Promise<PriceComparisonStatus>
+  }
+  phoneScanner: {
+    getStatus: () => Promise<{
+      running: boolean
+      port: number
+      httpsPort: number
+      ip: string
+      url: string
+      httpsUrl: string
+      connected: boolean
+      device?: string
+    }>
+    restart: () => Promise<number>
+    onScan: (cb: (barcode: string) => void) => () => void
+    onStatus: (cb: (status: { connected: boolean; device?: string }) => void) => () => void
+  }
+  lan: {
+    getStatus: () => Promise<import('@shared/types').LanStatus>
+    setMode: (mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => Promise<import('@shared/types').LanStatus>
+    generatePin: () => Promise<string>
+    pair: (masterIp: string, pin: string, deviceName?: string) => Promise<{ ok: boolean; error?: string; storeName?: string }>
+    testVps: (url: string, token: string) => Promise<{ ok: boolean; message: string }>
+    triggerVpsSync: () => Promise<{ ok: boolean; syncedCount: number; message: string }>
+    onStatus: (cb: (status: import('@shared/types').LanStatus) => void) => () => void
+  }
+  license: {
+    getStatus: () => Promise<LicenseStatus>
+    activate: (key: string, customerName?: string) => Promise<{ ok: boolean; message: string; status: LicenseStatus }>
+    deactivate: () => Promise<{ ok: boolean; message: string }>
+    copyMachineId: () => Promise<string>
   }
 }
 

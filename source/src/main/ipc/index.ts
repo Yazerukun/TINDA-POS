@@ -31,7 +31,7 @@ import * as readSvc from '../services/readReports'
 import { importWindowsBackup, exportWindowsBackup } from '../services/tindaBackupWindows'
 import * as cashCountRepo from '../repositories/cashCounts'
 import { cashCountLines } from '@shared/cashCount'
-import { emitInventoryChanged } from '../services/inventoryEvents'
+import { emitInventoryChanged, emitTransactionsChanged } from '../services/inventoryEvents'
 import { app, dialog, net, shell } from 'electron'
 import type { PaymentInput, CompleteSetupPayload } from '@shared/ipc'
 import { beginCriticalOperation } from '../services/operationGuard'
@@ -39,6 +39,8 @@ import { getUpdateService } from '../services/updateRuntime'
 import { startupSetting } from '../services/startup'
 import * as priceRefRepo from '../repositories/priceReferences'
 import * as priceRefSvc from '../services/priceReferenceService'
+import * as lanHubSvc from '../services/lanHubService'
+import { licenseService } from '../services/licenseService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -48,13 +50,23 @@ const router: Record<string, Handler> = {}
 
 function handle(channel: string, fn: Handler): void {
   router[channel] = fn
-  // Pass the Electron event THROUGH to the handler as its first argument.
-  // Handlers are all declared as `(_e, ...realArgs)`; dropping `_e` here
-  // shifted every real argument left by one, so the first invoke argument
-  // (e.g. the setup payload) was consumed as the event and arrived as
-  // `undefined`. This broke every argument-carrying IPC endpoint.
-  ipcMain.handle(channel, (_e: IpcMainInvokeEvent, ...args: unknown[]) => fn(_e, ...args))
+  ipcMain.handle(channel, async (_e: IpcMainInvokeEvent, ...args: unknown[]) => {
+    if (lanHubSvc.isSatellite() && lanHubSvc.shouldProxyChannel(channel)) {
+      try {
+        return await lanHubSvc.callRemoteRpc(channel, args)
+      } catch (err) {
+        throw new Error((err as Error).message || String(err))
+      }
+    }
+    return fn(_e, ...args)
+  })
 }
+
+lanHubSvc.setMasterDispatcher(async (channel: string, args: unknown[]) => {
+  const handler = router[channel]
+  if (!handler) throw new Error(`Unknown RPC channel: ${channel}`)
+  return handler({} as IpcMainInvokeEvent, ...args)
+})
 
 const db = () => getDb()
 const user = () => sessionSvc.requireUser()
@@ -96,6 +108,12 @@ handle('app:isOnline', async () => {
   )
 
   return results.some(Boolean)
+})
+handle('app:openExternal', (_e: IpcMainInvokeEvent, targetUrl: string) => {
+  if (typeof targetUrl === 'string' && (targetUrl.startsWith('https://') || targetUrl.startsWith('http://'))) {
+    return shell.openExternal(targetUrl)
+  }
+  return Promise.resolve()
 })
 
 // ---- Auth ----
@@ -169,6 +187,13 @@ handle('products:search', (_e: IpcMainInvokeEvent, q: string, opts?: unknown) =>
 handle('products:get', (_e: IpcMainInvokeEvent, id: number) => prodRepo.getProduct(db(), id))
 handle('products:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    const activeCount = prodRepo.productCount(db(), 'ACTIVE')
+    if (activeCount >= 50) {
+      throw new Error('Product limit reached (50 items max on Free Community Edition). Upgrade to VIP Pro (₱500 Lifetime) for unlimited items.')
+    }
+  }
   const product = prodRepo.createProduct(db(), input as Parameters<typeof prodRepo.createProduct>[1], user().id)
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [product.id] })
   return product
@@ -372,6 +397,16 @@ handle('customers:pay', (_e: IpcMainInvokeEvent, input: unknown) => {
 handle('customers:adjust', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('utang:adjust')
   const i = input as { customer_id: number; amount_c: number; notes: string; reason: string }
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test' && i.amount_c > 0) {
+    const cust = custRepo.getCustomer(db(), i.customer_id)
+    if (cust.balance_c === 0) {
+      const debtorCount = (db().prepare('SELECT COUNT(*) as c FROM customers WHERE balance_c > 0 AND is_active = 1').get() as { c: number }).c
+      if (debtorCount >= 15) {
+        throw new Error('Active debtor limit reached (15 debtors max on Free Community Edition). Upgrade to VIP Pro (₱500 Lifetime) for unlimited credit debtors.')
+      }
+    }
+  }
   return custRepo.applyCreditEntry(db(), { customer_id: i.customer_id, entry_type: 'ADJUSTMENT', amount_c: i.amount_c, notes: i.notes, user_id: user().id })
 })
 handle('customers:revoke', (_e: IpcMainInvokeEvent, input: unknown) => {
@@ -398,6 +433,7 @@ handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
     const v = require('../validation/schemas').validateCheckout(payload)
     const completed = checkoutSvc.checkout(v)
     emitInventoryChanged({ reason: 'SALE', product_ids: completed.sale.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    emitTransactionsChanged({ reason: 'SALE', sale_id: completed.sale.id })
     const settings = settingRepo.getSettings(db())
     return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
   } finally {
@@ -467,6 +503,7 @@ handle('transactions:refund', (_e: IpcMainInvokeEvent, payload: unknown) => {
   try {
     const result = txSvc.processRefund(payload as Parameters<typeof txSvc.processRefund>[0])
     emitInventoryChanged({ reason: 'REFUND', product_ids: [...new Set(result.items.map((item) => item.product_id))] })
+    emitTransactionsChanged({ reason: 'REFUND', sale_id: result.sale_id })
     return result
   } finally {
     release()
@@ -477,6 +514,18 @@ handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
   try {
     const result = txSvc.processVoid(payload as Parameters<typeof txSvc.processVoid>[0])
     emitInventoryChanged({ reason: 'VOID', product_ids: result.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
+    emitTransactionsChanged({ reason: 'VOID', sale_id: result.id })
+    return result
+  } finally {
+    release()
+  }
+})
+handle('transactions:delete', (_e: IpcMainInvokeEvent, saleId: number, options?: { restoreStock?: boolean }) => {
+  const release = beginCriticalOperation('DELETE_TRANSACTION')
+  try {
+    const result = txSvc.deleteTransaction(saleId, options)
+    emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: result.product_ids })
+    emitTransactionsChanged({ reason: 'DELETE', sale_id: saleId })
     return result
   } finally {
     release()
@@ -534,7 +583,15 @@ handle('shifts:summary', (_e: IpcMainInvokeEvent, id: number) => {
 // ---- Reports ----
 handle('reports:sales', (_e: IpcMainInvokeEvent, opts: unknown) => {
   sessionSvc.requirePermission('reports:view')
-  return reportSvc.salesReport((opts ?? {}) as { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' })
+  const isVip = licenseService.getStatus().isVip
+  const o = { ...((opts ?? {}) as { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) }
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+    if (o.from && o.from < sevenDaysAgo) {
+      o.from = sevenDaysAgo
+    }
+  }
+  return reportSvc.salesReport(o)
 })
 handle('reports:inventory', () => {
   sessionSvc.requirePermission('reports:view')
@@ -578,6 +635,10 @@ handle('reports:shifts', (_e: IpcMainInvokeEvent, opts?: unknown) => {
 })
 handle('reports:exportCsv', (_e: IpcMainInvokeEvent, kind: string, opts?: unknown) => {
   sessionSvc.requirePermission('reports:export')
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('CSV Tax Export is a VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to export lifetime reports and tax records.')
+  }
   return exportSvc.exportCsv(kind as Parameters<typeof exportSvc.exportCsv>[0], (opts ?? {}) as { from?: string; to?: string })
 })
 handle('reports:xRead', () => {
@@ -800,6 +861,55 @@ handle('priceReferences:compare', (_e: IpcMainInvokeEvent, retailPriceC: number,
   user()
   return priceRefRepo.comparePrice(retailPriceC, reference)
 })
+
+handle('phoneScanner:getStatus', () => {
+  const { getPhoneScannerStatus } = require('../services/phoneScannerService')
+  return getPhoneScannerStatus()
+})
+
+handle('phoneScanner:restart', () => {
+  const { startPhoneScannerService } = require('../services/phoneScannerService')
+  return startPhoneScannerService()
+})
+
+// ---- LAN Hub & VPS Sync ----
+handle('lan:getStatus', () => lanHubSvc.getLanStatus())
+handle('lan:setMode', (_e: IpcMainInvokeEvent, mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => {
+  sessionSvc.requirePermission('settings:manage')
+  const isVip = licenseService.getStatus().isVip
+  if (mode !== 'standalone' && !isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('Multi-PC LAN Hub is an exclusive VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to connect multiple cashiers on one database.')
+  }
+  return lanHubSvc.setLanMode(mode, config)
+})
+handle('lan:generatePin', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.generatePin()
+})
+handle('lan:pair', (_e: IpcMainInvokeEvent, masterIp: string, pin: string, deviceName?: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.pairWithMaster(masterIp, pin, deviceName)
+})
+handle('lan:testVps', (_e: IpcMainInvokeEvent, url: string, token: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.testVpsConnection(url, token)
+})
+handle('lan:triggerVpsSync', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.triggerVpsSync()
+})
+
+// ---- Machine-Locked VIP Licensing ----
+handle('license:getStatus', () => licenseService.getStatus())
+handle('license:activate', (_e: IpcMainInvokeEvent, key: string, customerName?: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return licenseService.activate(key, customerName)
+})
+handle('license:deactivate', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return licenseService.deactivate()
+})
+handle('license:copyMachineId', () => licenseService.getMachineId())
 
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load

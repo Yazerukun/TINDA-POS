@@ -149,7 +149,9 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     // Brand/header block (before the first separator) is centered; transaction
     // info, cashier, customer, payment method lines, footer stay left-aligned.
-    const cls = seenSeparator ? 'tp-row' : `tp-row tp-center${i === 0 ? ' tp-heading' : ''}`
+    // Community branding tag [ Powered by TINDA POS Free Community ] is centered.
+    const isCommunityTag = trimmed.startsWith('[') && trimmed.endsWith(']')
+    const cls = isCommunityTag ? 'tp-row tp-center tp-community-tag' : (seenSeparator ? 'tp-row' : `tp-row tp-center${i === 0 ? ' tp-heading' : ''}`)
     pushRow(`<div class="${cls}">${escapeHtml(raw)}</div>`)
   }
   return out.join('\n')
@@ -158,6 +160,7 @@ function rowsToHtml(lines: string[], currency: string): string {
 const baseCss = `
   .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; }
   .tp-sheet * { box-sizing: border-box; }
+  .tp-community-tag { font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; margin-top: 0.4em; }
   .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.38; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
   .tp-row { font-size: 1em; }
   .tp-center { text-align: center; }

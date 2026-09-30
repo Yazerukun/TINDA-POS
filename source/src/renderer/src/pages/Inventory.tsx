@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useGuide } from '../stores/guide'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import { ProductImage } from '../components/ui/ProductImage'
 import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
 import { PriceGuideModal } from '../components/PriceGuideModal'
+import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import {
   createProductInput,
   editProductForm,
@@ -37,6 +39,8 @@ export function Inventory(): React.JSX.Element {
   const [defaultThreshold, setDefaultThreshold] = useState(5)
   const [expirationOpen, setExpirationOpen] = useState(false)
   const [priceGuideOpen, setPriceGuideOpen] = useState(false)
+  const [isVip, setIsVip] = useState(true)
+  const [vipModalOpen, setVipModalOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
   const loadState = useRef({ sequence: 0 })
 
@@ -44,15 +48,17 @@ export function Inventory(): React.JSX.Element {
     const request = ++loadState.current.sequence
     if (showLoading) setLoading(true)
     try {
-      const [p, c, settings] = await Promise.all([
+      const [p, c, settings, lic] = await Promise.all([
         window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
         window.api.categories.list(),
-        window.api.settings.get()
+        window.api.settings.get(),
+        window.api.license?.getStatus?.().catch(() => ({ isVip: true }))
       ])
       if (request !== loadState.current.sequence) return
       setProducts(p.rows)
       setCategories(c)
       setDefaultThreshold(settings.default_low_stock)
+      if (lic) setIsVip(lic.isVip)
     } catch (e) {
       if (request === loadState.current.sequence && showLoading) toastError('Failed to load inventory', String((e as Error)?.message || e))
     } finally {
@@ -144,6 +150,7 @@ export function Inventory(): React.JSX.Element {
         title="Inventory"
         subtitle={`${products.length} active products · stock value ${money(totalValue)}`}
         actions={<div className="flex flex-wrap gap-2">
+          <button onClick={() => useGuide.getState().openGuide('inventory')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"><HelpCircle className="h-4 w-4 text-amber-400" /> Guide</button>
           <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
           <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
@@ -156,6 +163,42 @@ export function Inventory(): React.JSX.Element {
           </button>
         </div>}
       />
+
+      {!isVip && (
+        <div className="mb-4 rounded-xl border border-ink-line bg-ink-850/80 p-3.5 shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${products.length >= 50 ? 'bg-danger-500/20 text-danger-400' : products.length >= 40 ? 'bg-amber-500/20 text-amber-400' : 'bg-brand-500/20 text-brand-400'}`}>
+                <Boxes className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-white">Free Community Edition: Product Capacity</span>
+                  <span className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded ${products.length >= 50 ? 'bg-danger-500/20 text-danger-300' : products.length >= 40 ? 'bg-amber-500/20 text-amber-300' : 'bg-ink-700 text-slate-300'}`}>
+                    {products.length} / 50 items
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  {products.length >= 50 ? 'Product catalog limit reached. Upgrade to VIP Pro to add unlimited items.' : `${50 - products.length} product slot(s) remaining on Free Edition.`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setVipModalOpen(true)}
+              className="btn-ghost flex items-center gap-1.5 text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+            >
+              <Crown className="h-3.5 w-3.5 text-amber-400" />
+              Upgrade to VIP Pro (₱500 Lifetime)
+            </button>
+          </div>
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
+            <div
+              className={`h-full transition-all duration-300 ${products.length >= 50 ? 'bg-danger-500' : products.length >= 40 ? 'bg-amber-500' : 'bg-brand-500'}`}
+              style={{ width: `${Math.min(100, (products.length / 50) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-52">
@@ -258,6 +301,7 @@ export function Inventory(): React.JSX.Element {
       {withdrawing && <WithdrawModal products={products} initial={withdrawing === true ? null : withdrawing} onDone={() => { setWithdrawing(null); void load() }} onClose={() => setWithdrawing(null)} />}
       {viewingMovements && <StockHistoryView products={products} onClose={() => setViewingMovements(false)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
+      <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => void load()} />
     </div>
   )
 }
@@ -571,6 +615,7 @@ function RestockModal({ products, initial, onDone, onClose }: { products: Produc
 }
 
 function WithdrawModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
+  const [productSearch, setProductSearch] = useState('')
   const [batchId, setBatchId] = useState<number | undefined>()
   const [productId, setProductId] = useState(initial?.id ?? products[0]?.id ?? 0)
   const [quantity, setQuantity] = useState('')
@@ -578,6 +623,17 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
   const [reason, setReason] = useState<WithdrawalReason>('TAKEN')
   const [notes, setNotes] = useState('')
   const [busy, setBusy] = useState(false)
+
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products
+    const term = productSearch.toLowerCase().trim()
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(term) ||
+      (p.sku && p.sku.toLowerCase().includes(term)) ||
+      (p.barcode && p.barcode.toLowerCase().includes(term))
+    )
+  }, [products, productSearch])
+
   const product = products.find((p) => p.id === productId)
   const selectedUnit = product?.units.find((u) => u.name === unit) ?? product?.units[0]
   const qty = Number(quantity)
@@ -594,7 +650,60 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
   }
   return <Modal open onClose={onClose} title="Withdraw Stock" maxWidth="max-w-lg" footer={<><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" disabled={busy || !product || !(qty > 0) || newStock < 0} onClick={() => void save()}>Save Withdrawal</button></>}>
     <div className="space-y-3">
-      <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={(e) => { const id = Number(e.target.value); setProductId(id); const p = products.find((x) => x.id === id); setUnit(p?.units[0]?.name ?? p?.base_unit ?? '') }}>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+      <div>
+        <label className="label">Search Product</label>
+        <div className="relative mb-2">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input
+            value={productSearch}
+            onChange={(e) => {
+              const val = e.target.value
+              setProductSearch(val)
+              const term = val.toLowerCase().trim()
+              const matched = products.filter((p) =>
+                p.name.toLowerCase().includes(term) ||
+                (p.sku && p.sku.toLowerCase().includes(term)) ||
+                (p.barcode && p.barcode.toLowerCase().includes(term))
+              )
+              if (matched.length > 0 && !matched.some((p) => p.id === productId)) {
+                const first = matched[0]
+                if (first) {
+                  setProductId(first.id)
+                  setUnit(first.units[0]?.name ?? first.base_unit ?? '')
+                }
+              }
+            }}
+            placeholder="Search by name, SKU, or barcode…"
+            className="input w-full pl-9 !text-sm"
+            autoFocus
+          />
+        </div>
+        <select
+          aria-label="Select product to withdraw"
+          className="input w-full"
+          value={productId}
+          onChange={(e) => {
+            const id = Number(e.target.value)
+            setProductId(id)
+            const p = products.find((x) => x.id === id)
+            setUnit(p?.units[0]?.name ?? p?.base_unit ?? '')
+          }}
+        >
+          {filteredProducts.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name} ({p.stock} {p.base_unit} left){p.barcode ? ` · [${p.barcode}]` : ''}
+            </option>
+          ))}
+          {filteredProducts.length === 0 && (
+            <option disabled value="">No matching products found</option>
+          )}
+        </select>
+        {filteredProducts.length > 0 && (
+          <p className="mt-1 text-xs text-slate-400">
+            {filteredProducts.length} of {products.length} products available
+          </p>
+        )}
+      </div>
       <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div>
       {product?.expiration_mode === 'BATCH' && <div><label className="label">Batch *</label><select aria-label="Withdrawal batch" className="input w-full" value={batchId ?? ''} onChange={(e) => setBatchId(e.target.value ? Number(e.target.value) : undefined)}><option value="">Select batch</option>{product.batches?.map((b) => <option key={b.id} value={b.id}>#{b.id} {b.label} / {b.expiration_date ?? 'Undated'} / {b.quantity} {product.base_unit}</option>)}</select></div>}
       <div className="grid grid-cols-2 gap-3">
@@ -888,7 +997,7 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
         </div>
         <div>
           <label className="label">SKU</label>
-          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" />
+          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" placeholder="Auto-generated if blank" />
         </div>
         <div>
           <label className="label">Barcode</label>

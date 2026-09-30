@@ -498,5 +498,47 @@ CREATE INDEX idx_price_refs_product ON price_references(product_id);
 CREATE INDEX idx_price_refs_barcode ON price_references(barcode);
 CREATE INDEX idx_price_refs_name ON price_references(product_name, brand);
 `
+  },
+  {
+    version: 9,
+    name: 'epoch_41_anti_downgrade',
+    sql: `
+CREATE TABLE IF NOT EXISTS app_session_auth (
+  id INTEGER PRIMARY KEY CHECK(id = 1),
+  epoch INTEGER NOT NULL,
+  session_token TEXT NOT NULL,
+  last_heartbeat TEXT NOT NULL,
+  device_hash TEXT NOT NULL
+);
+INSERT OR IGNORE INTO app_session_auth (id, epoch, session_token, last_heartbeat, device_hash)
+VALUES (1, 41, 'EPOCH_41_INITIALIZED', datetime('now','localtime'), 'LOCAL_HARDWARE_LOCK');
+
+CREATE TRIGGER IF NOT EXISTS trg_anti_downgrade_sales
+BEFORE INSERT ON sales
+BEGIN
+  SELECT RAISE(ABORT, 'EPOCH_DOWNGRADE_LOCKED: Legacy runtime cannot write to Epoch 41 database')
+  WHERE NOT EXISTS (
+    SELECT 1 FROM app_session_auth WHERE id = 1 AND epoch >= 41
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_anti_downgrade_shifts
+BEFORE INSERT ON shifts
+BEGIN
+  SELECT RAISE(ABORT, 'EPOCH_DOWNGRADE_LOCKED: Legacy runtime cannot write to Epoch 41 database')
+  WHERE NOT EXISTS (
+    SELECT 1 FROM app_session_auth WHERE id = 1 AND epoch >= 41
+  );
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_anti_downgrade_products
+BEFORE INSERT ON products
+BEGIN
+  SELECT RAISE(ABORT, 'EPOCH_DOWNGRADE_LOCKED: Legacy runtime cannot write to Epoch 41 database')
+  WHERE NOT EXISTS (
+    SELECT 1 FROM app_session_auth WHERE id = 1 AND epoch >= 41
+  );
+END;
+`
   }
 ]

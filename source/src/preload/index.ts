@@ -13,7 +13,8 @@ const api: TindaApi = {
     databaseFile: () => invoke<string>('app:databaseFile'),
     openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
-    isOnline: () => invoke<boolean>('app:isOnline')
+    isOnline: () => invoke<boolean>('app:isOnline'),
+    openExternal: (url: string) => invoke<void>('app:openExternal', url)
   },
   update: {
     state: () => invoke<UpdateStatusEvent>('update:state'),
@@ -126,7 +127,14 @@ const api: TindaApi = {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),
     get: (id) => invoke<import('@shared/types').Sale>('transactions:get', id),
     refund: (payload: RefundPayload) => invoke<import('@shared/types').Refund>('transactions:refund', payload),
-    void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload)
+    void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload),
+    delete: (saleId: number, options?: { restoreStock?: boolean }) =>
+      invoke<{ ok: boolean; transaction_no: string }>('transactions:delete', saleId, options),
+    onChanged: (handler: (payload: unknown) => void) => {
+      const sub = (_e: Electron.IpcRendererEvent, data: unknown) => handler(data)
+      ipcRenderer.on('transactions:changed', sub)
+      return () => ipcRenderer.removeListener('transactions:changed', sub)
+    }
   },
   expenses: {
     categories: () => invoke<import('@shared/types').ExpenseCategory[]>('expenses:categories'),
@@ -196,6 +204,54 @@ const api: TindaApi = {
       sources: { source_name: string; count: number }[]
     }>('priceReferences:status'),
     compare: (retailPriceC, reference) => invoke<import('@shared/types').PriceComparisonStatus>('priceReferences:compare', retailPriceC, reference)
+  },
+  phoneScanner: {
+    getStatus: () => invoke<{
+      running: boolean
+      port: number
+      httpsPort: number
+      ip: string
+      url: string
+      httpsUrl: string
+      connected: boolean
+      device?: string
+    }>('phoneScanner:getStatus'),
+    restart: () => invoke<number>('phoneScanner:restart'),
+    onScan: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: { barcode: string }): void => cb(data.barcode)
+      ipcRenderer.on('phoneScanner:scan', listener)
+      return () => {
+        ipcRenderer.removeListener('phoneScanner:scan', listener)
+      }
+    },
+    onStatus: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: { connected: boolean; device?: string }): void => cb(data)
+      ipcRenderer.on('phoneScanner:status', listener)
+      return () => {
+        ipcRenderer.removeListener('phoneScanner:status', listener)
+      }
+    }
+  },
+  lan: {
+    getStatus: () => invoke<import('@shared/types').LanStatus>('lan:getStatus'),
+    setMode: (mode, config) => invoke<import('@shared/types').LanStatus>('lan:setMode', mode, config),
+    generatePin: () => invoke<string>('lan:generatePin'),
+    pair: (masterIp, pin, deviceName) => invoke<{ ok: boolean; error?: string; storeName?: string }>('lan:pair', masterIp, pin, deviceName),
+    testVps: (url, token) => invoke<{ ok: boolean; message: string }>('lan:testVps', url, token),
+    triggerVpsSync: () => invoke<{ ok: boolean; syncedCount: number; message: string }>('lan:triggerVpsSync'),
+    onStatus: (cb) => {
+      const listener = (_e: IpcRendererEvent, data: import('@shared/types').LanStatus): void => cb(data)
+      ipcRenderer.on('lan:status', listener)
+      return () => {
+        ipcRenderer.removeListener('lan:status', listener)
+      }
+    }
+  },
+  license: {
+    getStatus: () => invoke<import('@shared/types').LicenseStatus>('license:getStatus'),
+    activate: (key, customerName) => invoke<{ ok: boolean; message: string; status: import('@shared/types').LicenseStatus }>('license:activate', key, customerName),
+    deactivate: () => invoke<{ ok: boolean; message: string }>('license:deactivate'),
+    copyMachineId: () => invoke<string>('license:copyMachineId')
   }
 }
 

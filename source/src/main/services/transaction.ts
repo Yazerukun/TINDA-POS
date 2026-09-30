@@ -150,3 +150,82 @@ export function processVoid(payload: VoidPayload): import('@shared/types').Sale 
   })
   return tx()
 }
+
+export function deleteTransaction(saleId: number, options?: { restoreStock?: boolean }): { ok: boolean; transaction_no: string; product_ids: number[] } {
+  const db = getDb()
+  const tx = db.transaction(() => {
+    const user = requireUser()
+    requirePermission('transactions:delete')
+    const sale = getSale(db, saleId)
+
+    // 1. If sale was completed and restoreStock is true (default true), return inventory
+    const shouldRestore = options?.restoreStock ?? (sale.status === 'COMPLETED')
+    if (shouldRestore && sale.status !== 'VOIDED') {
+      for (const it of sale.items) {
+        if (it.product_id) {
+          adjustStock(
+            db,
+            it.product_id,
+            it.qty_base,
+            'RETURN',
+            `Delete sale ${sale.transaction_no}`,
+            user.id,
+            sale.transaction_no,
+            { return_reference: sale.transaction_no, sale_item_id: it.id }
+          )
+        }
+      }
+    }
+
+    // 2. Reverse customer utang ledger if applicable
+    if (sale.customer_id && sale.payments.some((p) => p.method === 'UTANG')) {
+      const utangAmt = sale.payments.filter((p) => p.method === 'UTANG').reduce((s, p) => s + p.amount_c, 0)
+      if (utangAmt > 0) {
+        const customer = getCustomer(db, sale.customer_id)
+        const ledgerAmount = Math.min(utangAmt, customer.balance_c)
+        if (ledgerAmount > 0) {
+          applyCreditEntry(db, {
+            customer_id: sale.customer_id,
+            entry_type: 'REVERSAL',
+            amount_c: ledgerAmount,
+            reference_type: 'SALE',
+            reference_id: sale.id,
+            notes: `Deleted transaction ${sale.transaction_no}`,
+            user_id: user.id
+          })
+        }
+      }
+    }
+
+    // 3. Remove refunds if any
+    const refundRows = db.prepare('SELECT id FROM refunds WHERE sale_id = ?').all(sale.id) as { id: number }[]
+    for (const r of refundRows) {
+      db.prepare('DELETE FROM refund_items WHERE refund_id = ?').run(r.id)
+    }
+    db.prepare('DELETE FROM refunds WHERE sale_id = ?').run(sale.id)
+
+    // 4. Remove sale items & payments
+    db.prepare('DELETE FROM sale_items WHERE sale_id = ?').run(sale.id)
+    db.prepare('DELETE FROM payments WHERE sale_id = ?').run(sale.id)
+
+    // 5. Delete sale record
+    db.prepare('DELETE FROM sales WHERE id = ?').run(sale.id)
+
+    // 6. Update shift totals
+    if (sale.shift_id) updateShiftTotals(db, sale.shift_id)
+
+    // 7. Audit log
+    audit(db, {
+      action: 'DELETE_SALE',
+      user_id: user.id,
+      entity_type: 'SALE',
+      entity_id: sale.id,
+      reason: `Permanently deleted transaction ${sale.transaction_no}`
+    })
+
+    const product_ids = sale.items.flatMap((item) => item.product_id ? [item.product_id] : [])
+
+    return { ok: true, transaction_no: sale.transaction_no, product_ids }
+  })
+  return tx()
+}

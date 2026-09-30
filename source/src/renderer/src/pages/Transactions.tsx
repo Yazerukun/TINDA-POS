@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
-import { Search, Eye, RotateCcw, Ban, ListOrdered, ReceiptText, Printer, ChevronDown, ChevronUp } from 'lucide-react'
+import { Search, Eye, RotateCcw, Ban, Trash2, ListOrdered, ReceiptText, Printer, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -18,6 +18,7 @@ export function Transactions(): React.JSX.Element {
   const [view, setView] = useState<Sale | null>(null)
   const [refund, setRefund] = useState<Sale | null>(null)
   const [voider, setVoider] = useState<Sale | null>(null)
+  const [deleter, setDeleter] = useState<Sale | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
   const load = async () => {
@@ -37,9 +38,16 @@ export function Transactions(): React.JSX.Element {
       setLoading(false)
     }
   }
-  // Mount-only load; load() reads current filters and is re-invoked on demand after changes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void load() }, [])
+  // Mount-only load; auto-refreshes when transactions or inventory change on any terminal.
+  useEffect(() => {
+    void load()
+    const cleanTx = window.api.transactions?.onChanged?.(() => { void load() })
+    const cleanInv = window.api.inventory?.onChanged?.(() => { void load() })
+    return () => {
+      cleanTx?.()
+      cleanInv?.()
+    }
+  }, [])
 
   const total = rows.filter((s) => s.status !== 'VOIDED').reduce((s, x) => s + x.total_c, 0)
 
@@ -132,6 +140,13 @@ export function Transactions(): React.JSX.Element {
                             {s.status === 'COMPLETED' && (
                               <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-1.5 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
                             )}
+                            <button
+                              onClick={() => setDeleter(s)}
+                              className="btn-ghost-2 rounded-lg p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                              title="Delete Transaction"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -212,6 +227,7 @@ export function Transactions(): React.JSX.Element {
       {view && <ViewSale sale={view} onClose={() => setView(null)} />}
       {refund && <RefundModal sale={refund} onClose={() => setRefund(null)} onDone={() => { setRefund(null); void load() }} />}
       {voider && <VoidModal sale={voider} onClose={() => setVoider(null)} onDone={() => { setVoider(null); void load() }} />}
+      {deleter && <DeleteTransactionModal sale={deleter} onClose={() => setDeleter(null)} onDone={() => { setDeleter(null); void load() }} />}
     </div>
   )
 }
@@ -364,6 +380,105 @@ function VoidModal({ sale, onClose, onDone }: { sale: Sale; onClose: () => void;
       <div className="space-y-3">
         <div><label className="label">Reason *</label><input value={reason} onChange={(e) => setReason(e.target.value)} className="input w-full" /></div>
         <div><label className="label">Type VOID to confirm</label><input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} className="input w-full" /></div>
+      </div>
+    </Modal>
+  )
+}
+
+function DeleteTransactionModal({ sale, onClose, onDone }: { sale: Sale; onClose: () => void; onDone: () => void }): React.JSX.Element {
+  const [restoreStock, setRestoreStock] = useState(sale.status !== 'VOIDED')
+  const [confirmText, setConfirmText] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const isConfirmed = confirmText.trim().toLowerCase() === 'delete'
+
+  const submit = async () => {
+    if (!isConfirmed) return
+    setSubmitting(true)
+    try {
+      await window.api.transactions.delete(sale.id, { restoreStock })
+      toastSuccess('Transaction deleted', `${sale.transaction_no} has been permanently deleted.`)
+      onDone()
+    } catch (e) {
+      toastError('Delete failed', String((e as Error)?.message || e))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Delete Transaction — ${sale.transaction_no}`}
+      maxWidth="max-w-md"
+      footer={
+        <>
+          <button className="btn-ghost" onClick={onClose} disabled={submitting}>
+            Cancel
+          </button>
+          <button
+            onClick={() => void submit()}
+            disabled={!isConfirmed || submitting}
+            className="btn-danger"
+          >
+            {submitting ? 'Deleting…' : 'Permanently Delete'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-3 text-sm text-slate-300">
+        <p className="text-rose-400 font-semibold text-xs">
+          ⚠️ Warning: This will permanently delete this transaction record from the database. This action is irreversible.
+        </p>
+
+        <div className="rounded-lg border border-ink-line bg-ink-950 p-3 space-y-1.5 text-xs">
+          <div className="flex justify-between">
+            <span className="text-slate-400">Receipt No:</span>
+            <span className="font-mono font-bold text-white">{sale.transaction_no}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Total Amount:</span>
+            <span className="font-mono text-brand-400 font-bold">{money(sale.total_c)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Status:</span>
+            <span className="font-semibold text-slate-200">{sale.status}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Date:</span>
+            <span className="text-slate-300">{shortDateTime(sale.created_at)}</span>
+          </div>
+          {sale.customer_name && (
+            <div className="flex justify-between">
+              <span className="text-slate-400">Customer:</span>
+              <span className="text-slate-200">{sale.customer_name}</span>
+            </div>
+          )}
+        </div>
+
+        {sale.status !== 'VOIDED' && (
+          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={restoreStock}
+              onChange={(e) => setRestoreStock(e.target.checked)}
+              className="rounded border-ink-line bg-ink-900 text-brand-500"
+            />
+            <span>Return sold items back into inventory stock</span>
+          </label>
+        )}
+
+        <div className="pt-1">
+          <label className="label text-xs">Type DELETE to confirm</label>
+          <input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="DELETE"
+            className="input w-full font-mono text-xs"
+            autoFocus
+          />
+        </div>
       </div>
     </Modal>
   )

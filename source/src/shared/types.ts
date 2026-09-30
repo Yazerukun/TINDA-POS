@@ -432,6 +432,43 @@ export interface StoreSettings {
   receipt_copies: number
   theme: string
   data_dir: string
+  lan_network_mode: 'standalone' | 'master' | 'satellite'
+  lan_master_ip: string
+  lan_master_port: number
+  lan_pairing_pin: string
+  vps_sync_enabled: boolean
+  vps_server_url: string
+  vps_api_token: string
+  vps_sync_interval_mins: number
+}
+
+export type LanRole = 'standalone' | 'master' | 'satellite'
+
+export interface LanDevice {
+  id: string
+  name: string
+  ip: string
+  connectedAt: string
+  lastSeen: string
+}
+
+export interface LanStatus {
+  role: LanRole
+  running: boolean
+  ip: string
+  port: number
+  pairingPin: string
+  connectedClients: number
+  clientDevices: LanDevice[]
+  masterUrl: string
+  satelliteConnected: boolean
+  vpsStatus: {
+    enabled: boolean
+    url: string
+    lastSyncAt: string | null
+    syncStatus: 'idle' | 'syncing' | 'error' | 'ok'
+    lastError?: string
+  }
 }
 
 export interface InventoryChangedEvent {
@@ -609,4 +646,16 @@ export interface PriceSyncResult {
   last_synced_at: string
   message: string
   is_offline?: boolean
+}
+
+export type LicenseTier = 'COMMUNITY' | 'VIP_PRO'
+
+export interface LicenseStatus {
+  tier: LicenseTier
+  isVip: boolean
+  machineId: string
+  activatedAt: string | null
+  customerName: string | null
+  licenseKey: string | null
+  statusMessage: string
 }

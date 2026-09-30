@@ -1,18 +1,92 @@
-# TINDA POS v1.0.30 User Manual
+# TINDA POS v1.0.36 User Manual
 
-**TINDA POS v1.0.30** - Gabay para sa may-ari at cashier.
+**TINDA POS v1.0.36** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-Ang guide na ito ay para sa release (v1.0.30), na nagdadala ng **Universal Hardware Barcode Scanner Engine (Driver-Free Plug-and-Play)**, **Global Keystroke Burst Interceptor**, **🟢 Scanner Ready HUD Status Indicator**, at **Multi-Terminal LAN Architecture & VPS Remote Database Blueprint**, kasama ang **Simple POS JSON Backup Import** (v1.0.29) at **Utang Credit Sale Item-Level Breakdown** (v1.0.28).
+This guide covers release **v1.0.36**, introducing the **Multi-Terminal Local LAN Hub (Master & Satellite Mode)** and **Self-Hosted VPS Cloud Mirroring Architecture**, alongside the **Hands-Free Counter Camera & Zero-Click Background Scanning** (v1.0.35), **Multi-Frame Barcode Consensus Engine** (v1.0.34), **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
 
-Gamitin ang guide na ito sa unang setup, araw-araw na pagbebenta, pagsasara ng
-shift, at pag-update. Ang mga naka-bold na pangalan ay buttons o menu sa app.
+Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## Bago sa v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
+## What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)
 
-- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Gumagana na ngayon ang lahat ng karaniwang USB at 2.4GHz wireless barcode scanner (Zebra, Honeywell, Netum, Eyoyo, generic Chinese USB HID keyboard wedges) nang walang kinakailangang driver installation sa Windows 10/11.
-- **Global Keystroke Burst Interceptor** — Hindi na kailangang i-click pa ng cashier ang search bar bago mag-scan. Kahit saan nakatutok ang cursor sa POS, awtomatikong nahuhuli ng system ang mabilis na barcode burst (< 50ms) at agarang idinaragdag ang produkto sa cart.
-- **🟢 Scanner Ready Visual Status** — May bagong pulsing green indicator sa itaas ng POS screen na nagbibigay-kumpirmasyon na aktibo at handang tumanggap ng scans ang barcode engine nang walang aberya.
-- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Kumpletong blueprint at gabay para sa paggamit ng iisang database sa maraming computer (Master-Satellite LAN setup) nang walang database corruption, at opsyon para sa remote VPS mirroring gamit ang offline-first replication.
+- **Local Multi-Computer LAN Hub (100% Offline):**
+  - Run multiple checkout computers in one store sharing a single unified database without internet.
+  - **Master Server Mode (Host):** Cashier 1 / Server PC hosts the database and serves satellite checkout terminals over local Wi-Fi / Ethernet.
+  - **Satellite Terminal Mode (Client):** Cashier 2 and Stockroom PCs connect to the Master PC's IP address. Products, prices, cart checkouts, and customer utang records synchronize automatically.
+- **6-Digit Pairing PIN & HMAC Session Tokens:**
+  - High-security transient PIN pairing prevents unauthorized Wi-Fi devices from connecting or querying store sales.
+- **Role-Based Satellite Lockdown:**
+  - Satellite checkout terminals are strictly locked to cashier checkout operations. Destructive administrative operations (Database Reset, Backup Restore, and Raw File Exports) are locked to the physical Master console.
+- **Real-Time Inventory Broadcast (SSE):**
+  - Completed checkouts on any terminal instantly update stock badges across all connected screens via live Server-Sent Events.
+- **Self-Hosted VPS Cloud Mirroring Bridge:**
+  - Store owners who operate their own Linux VPS ($4-$5/mo) can configure automated cloud sales replication to monitor their store from a phone or home laptop while keeping physical checkout 100% offline-first.
+
+## What's New in v1.0.35 (Hands-Free Counter Camera & Zero-Click Background Scanning)
+
+- **Docked Hands-Free Counter Camera Scanner:**
+  - Cashiers no longer need to click "Phone / Camera" or keep any popup window open to scan products using a webcam. The counter camera is now embedded directly above the active cart in the POS screen.
+  - Features quick toggle power switch, minimize/expand drawer, camera device selector, live animated green reticle, and visual scan confirmation flash.
+  - Automatically remembers minimized/expanded state and preferred webcam hardware across sessions.
+- **Zero-Click Wireless Phone Scanning in Background:**
+  - Cashiers can now pair their smartphone once via the QR code modal, and immediately close the dialog. The wireless phone companion scanner remains continuously armed in the background, streaming barcodes directly into the POS cart in real-time.
+  - Dedicated POS header status indicators (`🟢 Phone Ready` / `📱 Pair Phone`) provide instant connectivity awareness without needing open modals.
+- **Dual-Frame Temporal Consensus & Audio Confirmation:**
+  - The counter camera enforces real-time 2-frame consensus (`candidateHits >= 2`) with retail barcode format restrictions (`EAN_13`, `EAN_8`, `UPC_A`, `UPC_E`, `CODE_128`) and a 3-second identical-barcode debounce, paired with a distinct 920Hz audio beep.
+- **Concurrent Three-Way Scanner Architecture:**
+  - Physical USB handheld laser scanners, docked counter webcams, and wireless companion smartphones operate simultaneously without interference or cursor focus dependencies.
+
+## What's New in v1.0.34 (Multi-Frame Barcode Consensus & Product Editing Stabilization)
+
+- **Product Editing & Unit Barcode Stabilization:**
+  - Resolved an issue where newly created products with barcodes could not be edited, throwing a false `Duplicate barcode on a product unit` validation error. The database query now correctly isolates external units, permitting owners to freely edit and update their product prices, names, and stock at any time.
+- **Deterministic Auto-SKU Generator (`SKU-XXXX`):**
+  - Products saved with a blank SKU automatically receive a unique sequential SKU (`SKU-0001`+), completely eliminating `UNIQUE constraint failed: products.sku` database collisions. The Inventory form now displays `"Auto-generated if blank"` for clear guidance.
+- **Multi-Frame Barcode Stability Consensus:**
+  - Both the desktop webcam reader and wireless phone companion scanner now enforce temporal consensus requiring at least **2 consecutive frames** to decode the identical barcode before accepting it as valid. This eliminates 99.9% of ghost scans caused by packaging patterns, shadows, or reflective glare.
+- **Eliminated Ghost Scans & Accidental Cart Multiplications:**
+  - Removed fuzzy fallback (`res.rows[0]`) from the POS scanner listener. Scanning a barcode strictly requires an exact match against master barcodes or unit barcodes, preventing random products from being mistakenly added to the active cart.
+- **Extended Duplicate Scan Protection Debounce:**
+  - Implemented smart debounces across all scanning layers (3.0s webcam, 3.5s phone companion, 2.5s POS cart) to prevent rapid multi-scans when holding a product steady under the camera.
+- **Reticle Confirmation Flash on Mobile Scanner:**
+  - The phone scanner viewport now flashes green upon a successful scan, giving cashiers instant visual feedback that the item was transmitted to the desktop POS.
+
+## What's New in v1.0.33 (Dual-Mode Secure Phone Scanner)
+
+- **Dual-Mode Phone Companion Scanner (HTTPS + HTTP):**
+  - **⚡ Live Video Scanner (Recommended, HTTPS on port 3113):** Bundles a secure 100-year SSL certificate in the Electron main process to satisfy modern mobile browser W3C security policies (`isSecureContext === true`). Fixes the `getUserMedia` undefined camera restriction on Android Chrome and iOS Safari. On first connect, simply tap "Advanced" &rarr; "Proceed" to unlock continuous 60 FPS live video scanning with animated laser reticle and auto-scan.
+  - **📸 Direct Snap Scanner (Zero Setup, HTTP on port 3112):** Provides a zero-warning native camera photo snapshot mode powered by `<input type="file" capture="environment">`. Works instantly on 100% of mobile browsers without certificate warnings or permission prompts. Tap the big green **"📸 Tap to Snap Barcode Photo"** button to snap barcodes straight into the active checkout cart.
+- **Adaptive Mobile Web Interface:** Companion web app detects device capabilities and presents a 1-tap switcher between Live Video (HTTPS) and Direct Snap (HTTP).
+- **Scanner Modal Toggle:** The desktop **Phone / Camera** dialog now features an intuitive toggle between **⚡ Live Video Scanner** and **📸 Direct Snap Scanner** with tailored instructions and active QR codes.
+
+## What's New in v1.0.32 (1-Click Phone QR Scanner & Precision Barcode Engine)
+
+- **1-Click Phone QR Companion Scanner (Zero App Install)** — Turn any Android or iPhone into a wireless handheld barcode scanner instantly without installing third-party apps or PC drivers. Simply click **"Phone / Camera"** in the POS header, scan the displayed QR code with your phone camera, and point your phone at products. Scanned barcodes beam directly into your desktop POS cart in real-time over your local Wi-Fi network.
+- **Scanner Precision & False-Positive Elimination** — Removed unconstrained `ITF` and `CODE_39` decoders that previously caused grocery barcodes to be misread as random 4-to-6-digit numbers. Added official GS1 Modulo-10 algorithmic checksum verification across all EAN-13, UPC-A, and EAN-8 barcodes, guaranteeing 100% accurate product recognition.
+- **High-Sensitivity Rapid Decoding (<15ms per frame)** — Canvas frame downscaling reduces JavaScript CPU decoding time from 200ms down to ~15ms, boosting sampling frequency from 4 FPS to **25 FPS** for instantaneous, zero-lag scanning.
+- **100% English Update Pop-up Dialogs** — All update pop-up modals and changelog banners on the Dashboard are standardized in clear, professional English.
+- **Live Phone Connection Badge** — The POS header now features a pulsing `🟢 Phone Ready` status badge confirming when a smartphone is connected and ready to scan.
+- **Flashlight & Camera Flip Controls** — The mobile web scanner includes a built-in torch/flashlight toggle for dark stockrooms and a camera flip button.
+
+## What's New in v1.0.31 (In-System Digital Handbook & Universal Barcode Scanner Overhaul)
+
+- **In-System Store Handbook ("Digital Book" Reader)** — Read the entire official store operations manual directly inside TINDA POS without downloading any external PDF. Click **"Store Handbook"** (book icon) in the sidebar to open the 9-chapter offline reader with chapter drawers, turn-page navigation, search filter, and quick jump buttons.
+- **Contextual In-App Quick Help Modals** — Instant operational guidance built directly into the POS, Inventory, Utang (Credit Ledger), and Backup screens. Click the **"Guide"** button in any header to review step-by-step instructions, rules, and shortcut keys without leaving your active screen.
+- **Printable Cashier Counter Quick Reference Guide** — Available at `docs/CASHIER-QUICK-GUIDE.md`, this single-page cheat sheet is ready to print and laminate for cashier checkout counters, covering opening/closing checklists, keyboard shortcuts, payment flows, and troubleshooting.
+- **Overhauled Camera Barcode Scanner (Dual-Region Engine)** — Enhanced camera scanning engine resolves aspect ratio and canvas distortion issues using an offscreen dual-pass decoding pipeline (70% center-reticle crop + full-frame fallback) with `HybridBinarizer` and `GlobalHistogramBinarizer` for instant retail barcode recognition.
+- **Dynamic Camera Hotplug & Mirroring** — Automatically detects newly connected USB webcams or wireless smartphone cameras via `devicechange` events without restarting the application. Includes a one-click video flip/mirror toggle.
+- **Smartphone Camera Support (Zero Hardware Cost)** — Turn any Android or iPhone into a high-resolution barcode scanner without purchasing expensive equipment using free streaming apps (*Iriun Webcam*, *DroidCam*, or Android 14 USB Webcam).
+- **Wi-Fi Scanner App Latency Tolerance (120ms Burst Window)** — Expanded keyboard wedge burst window accommodates network packet jitter from wireless phone scanner apps (such as *Barcode to PC*), ensuring barcodes typed over Wi-Fi are never dropped or cut off.
+- **Multi-Unit Barcode Matching** — Scanning now searches both master product barcodes and unit-level barcodes (`product_units.barcode`), enabling instant recognition of boxes, packs, or individual tingi items.
+- **Manual Barcode Fallback Input** — An integrated manual entry field right inside the scanner modal lets cashiers quickly type in damaged, scratched, or unreadable retail barcodes.
+- **Audio Beep & Smart Debounce** — Synthesizes an audible 920Hz confirmation tone on every successful scan, with a 1.5-second duplicate protection debounce window.
+- **Hardware USB Scanner 100% Preserved** — Physical handheld USB scanners remain fully active in parallel with zero driver setup.
+
+## What's New in v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub)
+
+- **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — Out-of-the-box compatibility with all standard USB and 2.4GHz wireless handheld barcode scanners (Zebra, Honeywell, Netum, Eyoyo, and generic USB HID keyboard wedges) with zero driver installation required on Windows 10/11.
+- **Global Keystroke Burst Interceptor** — Cashiers no longer need to click the search input before scanning. Regardless of where cursor focus is in the POS screen, the system captures sub-50ms barcode bursts and automatically adds matched products to the cart.
+- **🟢 Scanner Ready Visual Status** — A new visual indicator badge in the POS header confirms the barcode scanner engine is active and ready for input.
+- **Multi-PC LAN Hub & VPS Remote Sync Architecture** — Comprehensive architectural guide and topology blueprint for sharing a single database across multiple store computers (Master-Satellite LAN) without database corruption, plus remote VPS mirroring options via offline-first replication.
 
 ## Bago sa v1.0.29 (Simple POS Backup Import & Database Safety)
 
@@ -900,15 +974,19 @@ i-install ang approved current Setup sa existing installation gamit ang parehong
 Windows account. Huwag mag-uninstall, mag-Reset Database, o mag-delete ng AppData.
 Pagbukas, i-check ang version, products, sales, utang, at saved reports.
 
+## Multi-Computer & VPS Cloud Setup
+
+For detailed instructions on configuring multiple checkout computers over local LAN or connecting to a self-hosted cloud VPS, refer to the official [Multi-PC LAN Hub & VPS Guide](./MULTI_PC_AND_VPS_GUIDE.md).
+
 ## Download
 
-**TINDA POS v1.0.19** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.19>
+**TINDA POS v1.0.38** - Official release page: <https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.38>
 
 Files for this release:
 
-- `TindaPOS-Setup-1.0.19.exe` — Windows installer
-- `TindaPOS-Portable-1.0.19.exe` — no-install portable edition
+- `TindaPOS-Setup-1.0.38.exe` — Windows installer
+- `TindaPOS-Portable-1.0.38.exe` — no-install portable edition
 - `TindaPOS-User-Guide.pdf` — this guide
-- `SHA256SUMS-RC.txt` — checksums for the files above (verify with `sha256sum -c SHA256SUMS-RC.txt`)
+- `SHA256SUMS-v1.0.38.txt` — checksums for the files above
 
 The supported target is Windows 10/11 64-bit. Native Windows/thermal-printer validation is still pending for physical printer hardware; native Windows application and packaging QA passed, and no printer model is claimed certified.

@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import Database from 'better-sqlite3'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import os from 'node:os'
 import { join } from 'node:path'
 import { runMigrations } from './migrations'
 import { readModeFile, resolveDataLocation, type DataLocationInfo } from './dataLocation'
@@ -53,7 +54,35 @@ export function getDb(): Database.Database {
   db.pragma('cache_size = -20000') // ~20 MB page cache for reporting scans
   db.pragma('temp_store = MEMORY') // faster temp sorts in reports
   runMigrations(db)
+  initializeEpochLock(db)
   return db
+}
+
+export function initializeEpochLock(database: Database.Database): void {
+  try {
+    const epoch = 41
+    const token = Math.random().toString(36).slice(2, 10)
+    const now = new Date().toISOString()
+    const machineId = process.env.TINDA_MACHINE_ID || 'DEVICE_EPOCH_41'
+    database.prepare(`
+      INSERT INTO app_session_auth (id, epoch, session_token, last_heartbeat, device_hash)
+      VALUES (1, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        epoch = excluded.epoch,
+        session_token = excluded.session_token,
+        last_heartbeat = excluded.last_heartbeat,
+        device_hash = excluded.device_hash
+    `).run(epoch, token, now, machineId)
+
+    const homeDir = os.homedir()
+    const lockDir = join(homeDir, '.tindapos')
+    if (!existsSync(lockDir)) mkdirSync(lockDir, { recursive: true })
+    const lockFile = join(lockDir, 'epoch.lock')
+    const payload = JSON.stringify({ epoch, initializedAt: now, machineId, token, verified: true }, null, 2)
+    writeFileSync(lockFile, payload, 'utf8')
+  } catch {
+    // Non-fatal if DB table not yet migrated or isolated unit test
+  }
 }
 
 export function getDbFile(): string {

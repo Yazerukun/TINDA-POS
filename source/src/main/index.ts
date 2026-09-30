@@ -23,11 +23,20 @@ protocol.registerSchemesAsPrivileged([
 
 let mainWindow: BrowserWindow | null = null
 
+// Gracefully catch unexpected main process errors to prevent modal crash dialogs
+process.on('uncaughtException', (err) => {
+  console.error('[TINDA POS] Uncaught Exception in main process:', err)
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('[TINDA POS] Unhandled Rejection in main process:', reason)
+})
+
 // Single-instance lock: a second launch must not open a second writer against
 // the same SQLite file. If we don't hold the lock, quit immediately.
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   app.quit()
+  process.exit(0)
 } else {
   app.on('second-instance', () => {
     if (mainWindow) {
@@ -123,6 +132,10 @@ app.whenReady().then(() => {
   )
   createWindow()
   startAutoUpdateCheck()
+  const { startPhoneScannerService, stopPhoneScannerService } = require('./services/phoneScannerService')
+  void startPhoneScannerService()
+  const { initializeLanHub, stopMasterServer } = require('./services/lanHubService')
+  initializeLanHub()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
@@ -134,6 +147,18 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  try {
+    const { stopPhoneScannerService } = require('./services/phoneScannerService')
+    stopPhoneScannerService()
+  } catch {
+    // Non-fatal
+  }
+  try {
+    const { stopMasterServer } = require('./services/lanHubService')
+    stopMasterServer()
+  } catch {
+    // Non-fatal
+  }
   const settings = getSettings(getDb())
   if (settings.auto_backup_enabled && settings.auto_backup_on_exit) {
     try {

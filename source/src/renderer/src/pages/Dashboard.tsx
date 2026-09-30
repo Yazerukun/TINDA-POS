@@ -339,12 +339,12 @@ export function Dashboard(): React.JSX.Element | null {
             </div>
             <div>
               <p className="font-semibold text-white text-sm">
-                Adunay bag-ong bersyon sa TINDA POS nga magamit!
+                A new version of TINDA POS is available!
               </p>
               <p className="mt-0.5 text-xs text-slate-300">
                 {event?.portable
-                  ? 'Naka-portable mode ang imong TINDA POS. I-download ang bag-ong portable EXE aron magamit ang bag-ong mga features.'
-                  : 'Ang imong mga data (sales, inventory, utang) luwas ug awtomatikong i-backup sa dili pa mag-update.'}
+                  ? 'TINDA POS is running in portable mode. Download the latest portable release to get new features and improvements.'
+                  : 'Your store sales, inventory, and customer credit ledger data are safe and will be backed up automatically before updating.'}
               </p>
             </div>
           </div>
@@ -352,7 +352,7 @@ export function Dashboard(): React.JSX.Element | null {
           {updateStatus === 'DOWNLOADING' && event?.progress && (
             <div className="rounded-lg border border-ink-line bg-ink-900 p-3">
               <div className="flex items-center justify-between text-xs text-slate-300 mb-1.5 font-medium">
-                <span>Nag-download sa update…</span>
+                <span>Downloading update…</span>
                 <span>{event.progress.percent}%</span>
               </div>
               <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-950">
@@ -367,7 +367,7 @@ export function Dashboard(): React.JSX.Element | null {
           {event?.available?.releaseNotes && (
             <div className="space-y-1.5">
               <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Unsay Bago sa Bersyon v{event.available.version}:
+                What&apos;s New in Version v{event.available.version}:
               </p>
               <div className="max-h-56 overflow-y-auto rounded-lg border border-ink-line bg-ink-950 p-3 text-xs text-slate-300 leading-relaxed">
                 <pre className="whitespace-pre-wrap font-sans text-slate-300">
