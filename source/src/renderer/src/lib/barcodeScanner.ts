@@ -64,6 +64,28 @@ export function isUsbScannerSupported(): boolean {
 }
 
 /**
+ * Universal Web Audio Synthesizer Beep for barcode scanner auditory feedback.
+ */
+export function playScanBeep(freq = 1050, durationSec = 0.08): void {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const ctx = new AudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(freq, ctx.currentTime)
+    gain.gain.setValueAtTime(0.25, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + durationSec)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + durationSec)
+  } catch {
+    // Non-blocking
+  }
+}
+
+/**
  * Official GS1 Modulo-10 Checksum Validation for retail barcodes.
  * Works universally across EAN-13, UPC-A, EAN-8, and GTIN-14.
  * Prevents false-positive partial matches and corrupted frame decodes.

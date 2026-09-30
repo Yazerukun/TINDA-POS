@@ -29,6 +29,9 @@ interface CameraScannerModalProps {
   open: boolean
   onClose: () => void
   onScan: (barcode: string) => void
+  title?: string
+  actionLabel?: string
+  zIndex?: string
 }
 
 function playBeep(): void {
@@ -52,7 +55,14 @@ function playBeep(): void {
 
 import { isValidBarcode } from '../lib/barcodeScanner'
 
-export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModalProps): React.JSX.Element | null {
+export function CameraScannerModal({
+  open,
+  onClose,
+  onScan,
+  title = 'Universal Barcode Scanner (Phone & Camera)',
+  actionLabel = 'Added to Cart',
+  zIndex = 'z-[70]'
+}: CameraScannerModalProps): React.JSX.Element | null {
   const [tab, setTab] = useState<'phone' | 'camera' | 'guide'>('phone')
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('')
@@ -399,7 +409,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
   if (!open) return null
 
   return (
-    <Modal open onClose={onClose} title="Universal Barcode Scanner (Phone & Camera)" maxWidth="max-w-xl">
+    <Modal open onClose={onClose} title={title} maxWidth="max-w-xl" zIndex={zIndex}>
       <div className="space-y-4">
         {/* Navigation Tabs */}
         <div className="flex border-b border-ink-line">
@@ -543,7 +553,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                   <span className="truncate">Scanned from Phone: <strong>{lastScanned}</strong></span>
                 </span>
-                <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">Added to Cart</span>
+                <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">{actionLabel}</span>
               </div>
             )}
 
@@ -669,7 +679,7 @@ export function CameraScannerModal({ open, onClose, onScan }: CameraScannerModal
                     <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                     <span className="truncate">Scanned: {lastScanned}</span>
                   </span>
-                  <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">Added to Cart</span>
+                  <span className="text-[10px] uppercase font-bold text-emerald-300 shrink-0">{actionLabel}</span>
                 </div>
               )}
             </div>

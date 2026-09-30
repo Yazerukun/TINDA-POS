@@ -8,9 +8,10 @@ interface ModalProps {
   children: React.ReactNode
   maxWidth?: string
   footer?: React.ReactNode
+  zIndex?: string
 }
 
-export function Modal({ open, onClose, title, children, maxWidth = 'max-w-lg', footer }: ModalProps): React.JSX.Element | null {
+export function Modal({ open, onClose, title, children, maxWidth = 'max-w-lg', footer, zIndex = 'z-50' }: ModalProps): React.JSX.Element | null {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -22,7 +23,7 @@ export function Modal({ open, onClose, title, children, maxWidth = 'max-w-lg', f
 
   if (!open) return null
   return (
-    <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={`modal-overlay ${zIndex}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal-panel ${maxWidth}`}>
         <div className="mb-4 flex items-center justify-between">
           {title && <h2 className="text-lg font-bold text-white">{title}</h2>}

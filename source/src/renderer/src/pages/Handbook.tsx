@@ -217,8 +217,8 @@ export function Handbook(): React.JSX.Element {
     {
       id: 'scanner',
       number: 4,
-      title: 'Barcode Scanning: Hardware & Smartphone',
-      subtitle: 'USB plug-and-play scanners and turning your phone into a camera scanner',
+      title: 'Barcode Scanning: Hardware, Smartphones & Auto-Capture',
+      subtitle: 'Instant hardware barcode auto-capture, zero-install phone companion, and POS checkout',
       icon: <Barcode className="h-4 w-4" />,
       readTime: '4 min read',
       relatedPage: 'pos',
@@ -228,36 +228,70 @@ export function Handbook(): React.JSX.Element {
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
             <h3 className="text-base font-bold text-emerald-300 flex items-center gap-2">
               <Barcode className="h-5 w-5" />
-              Universal Dual Barcode Engine
+              Universal Dual Barcode Engine &amp; Instant Auto-Capture
             </h3>
             <p className="mt-1 text-xs text-slate-300">
-              TINDA POS v1.0.31 includes support for both dedicated USB handheld scanners and free smartphone camera scanners operating simultaneously!
+              TINDA POS provides a zero-configuration barcode architecture supporting dedicated physical USB / wireless handheld scanners, built-in wireless smartphone companion cameras, and PC webcams working simultaneously.
             </p>
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-              <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">OPTION 1 (FASTEST)</span>
-              <h4 className="mt-1.5 font-semibold text-white">Physical USB Handheld Barcode Scanner</h4>
+            {/* FEATURE 1: Instant Auto-Capture in Inventory */}
+            <div className="rounded-lg border border-brand-500/30 bg-ink-900 p-4">
+              <span className="rounded bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300">
+                NEW IN v1.0.42 · INVENTORY SPEED ENCODING
+              </span>
+              <h4 className="mt-1.5 font-semibold text-white">Instant Barcode Auto-Capture (Zero Manual Typing)</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Any standard USB or 2.4GHz wireless retail barcode scanner (Honeywell, Zebra, Netum, Eyoyo, generic USB) connects with <strong>zero driver installation</strong>.
+                Encoding products with long 12- or 13-digit EAN/UPC barcodes is now completely effortless:
               </p>
-              <div className="mt-3 rounded bg-ink-950 p-3 text-xs text-emerald-300 border border-emerald-500/20">
-                <strong>💡 Global Burst Interceptor:</strong> You do NOT have to click into the search box first! Cashiers can scan products from anywhere in the POS window. Sub-50ms keystrokes are automatically intercepted and added directly to the cart.
+              <ul className="mt-2 space-y-1.5 text-xs text-slate-300 list-disc pl-4">
+                <li>
+                  <strong>Inside Product Form:</strong> Simply scan the physical product with your USB barcode gun or smartphone companion camera. The barcode number is immediately populated into the Barcode field with an audible confirmation tone and a green auto-capture indicator.
+                </li>
+                <li>
+                  <strong>Active Input Contamination Sanitizer:</strong> You do not need to click into the Barcode field before scanning. Even if your cursor is focused inside the product Name or Cost field, the high-speed scanner burst is intercepted, stripped from the active input, and routed cleanly into the Barcode slot without accidental form submissions.
+                </li>
+                <li>
+                  <strong>Multi-Unit (Tingi) Barcodes:</strong> Add distinct barcodes for individual retail pieces and wholesale cartons by clicking the camera icon or focusing the unit barcode field.
+                </li>
+                <li>
+                  <strong>Proactive Duplicate Alert:</strong> The system automatically verifies that the scanned barcode is not already assigned to another product in your catalog, preventing cashier checkout confusion.
+                </li>
+                <li>
+                  <strong>Direct Inventory Fast-Track:</strong> When browsing the Inventory list, scanning any uncataloged barcode immediately opens the New Product creation window with that barcode pre-filled, ready for you to enter the name and price!
+                </li>
+              </ul>
+            </div>
+
+            {/* HARDWARE SCANNERS */}
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                HARDWARE · PLUG &amp; PLAY
+              </span>
+              <h4 className="mt-1.5 font-semibold text-white">Physical USB &amp; 2.4GHz Wireless Barcode Scanners</h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Any standard USB or 2.4GHz wireless retail barcode scanner gun (Honeywell, Zebra, Netum, Eyoyo, Datalogic, generic USB) connects with <strong>zero driver installation</strong>.
+              </p>
+              <div className="mt-2.5 rounded bg-ink-950 p-2.5 text-xs text-emerald-300 border border-emerald-500/20">
+                <strong>💡 Global Burst Interceptor in POS:</strong> Cashiers can scan items from anywhere in the POS checkout screen. High-speed keystrokes are automatically recognized and items are immediately added to the customer's cart.
               </div>
             </div>
 
+            {/* SMARTPHONE COMPANION */}
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-              <span className="rounded bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300">OPTION 2 (ZERO COST)</span>
-              <h4 className="mt-1.5 font-semibold text-white">Use Your Smartphone Camera as a Scanner</h4>
+              <span className="rounded bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-300">
+                WIRELESS · ZERO APP INSTALL
+              </span>
+              <h4 className="mt-1.5 font-semibold text-white">1-Click Smartphone Companion QR Scanner</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Turn any Android or iPhone into a high-definition wireless barcode scanner:
+                Transform any Android phone or iPhone into a high-speed wireless barcode scanner over your local Wi-Fi:
               </p>
               <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-xs text-slate-400">
-                <li>Download the free <strong>Iriun Webcam</strong> or <strong>DroidCam</strong> app from Google Play or the App Store.</li>
-                <li>Install the matching free Windows driver on your PC.</li>
-                <li>Connect your phone and PC to the same Wi-Fi or plug in via phone USB cable.</li>
-                <li>In TINDA POS, click <strong>"📷 Camera / Phone"</strong> in the POS header. Pick your phone camera in the dropdown, and point the camera at any barcode!</li>
+                <li>Click <strong>"📷 Camera / Phone"</strong> in the POS header or inside the Product Inventory modal.</li>
+                <li>Connect your smartphone to the same Wi-Fi router as your computer.</li>
+                <li>Scan the displayed QR code with your phone camera to launch the web scanner interface.</li>
+                <li>Point your phone camera at product barcodes — scanned barcodes are beamed directly to your desktop POS or Inventory form in real time!</li>
               </ol>
             </div>
           </div>
