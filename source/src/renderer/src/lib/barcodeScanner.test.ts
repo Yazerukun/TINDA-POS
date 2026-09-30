@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createScannerListener, isUsbScannerSupported, isValidBarcode } from './barcodeScanner'
+import { createScannerListener, isUsbScannerSupported, isValidBarcode, playScanBeep } from './barcodeScanner'
 
 describe('Universal Barcode Scanner Burst Listener', () => {
   it('triggers onScan when rapid keystrokes (<50ms) are followed by Enter', () => {
@@ -176,5 +176,9 @@ describe('Universal Barcode Scanner Burst Listener', () => {
     expect(isValidBarcode('A')).toBe(false)
     // Code 128 / general barcodes with min length 3
     expect(isValidBarcode('BOX-01')).toBe(true)
+  })
+
+  it('runs playScanBeep without throwing even if AudioContext is not initialized', () => {
+    expect(() => playScanBeep()).not.toThrow()
   })
 })

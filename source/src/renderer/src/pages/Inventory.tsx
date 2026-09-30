@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -12,6 +12,8 @@ import { ProductImage } from '../components/ui/ProductImage'
 import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
 import { PriceGuideModal } from '../components/PriceGuideModal'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
+import { CameraScannerModal } from '../components/CameraScannerModal'
+import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
   createProductInput,
   editProductForm,
@@ -143,6 +145,53 @@ export function Inventory(): React.JSX.Element {
       void load()
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) }
   }
+
+  // Instant Hardware & Phone Barcode Scanner Detection in Inventory View
+  useEffect(() => {
+    // Only intercept when no modal or dialog is open
+    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen) {
+      return
+    }
+
+    const handleInventoryScan = (scannedBarcode: string) => {
+      const code = scannedBarcode.trim()
+      if (!code) return
+
+      const target = code.toLowerCase()
+      const found = products.find(
+        (p) =>
+          p.barcode?.toLowerCase() === target ||
+          p.sku?.toLowerCase() === target ||
+          p.units?.some((u) => u.barcode?.toLowerCase() === target)
+      )
+
+      playScanBeep()
+      if (found) {
+        setQ(code)
+        toastSuccess(`Product found: ${found.name}`)
+      } else {
+        toastSuccess(`New barcode detected (${code}) — Opening New Product form`)
+        const form = newProductForm(defaultThreshold)
+        form.barcode = code
+        setEditing(form)
+      }
+    }
+
+    const scannerListener = createScannerListener({
+      onScan: handleInventoryScan
+    })
+
+    window.addEventListener('keydown', scannerListener)
+
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
+      handleInventoryScan(code)
+    })
+
+    return () => {
+      window.removeEventListener('keydown', scannerListener)
+      cleanupPhoneScan?.()
+    }
+  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, products, defaultThreshold])
 
   return (
     <div className="p-6">
@@ -292,7 +341,7 @@ export function Inventory(): React.JSX.Element {
         </div>
       )}
 
-      {editing && <ProductModal form={editing} categories={categories} onSave={saveProduct} onClose={() => setEditing(null)} />}
+      {editing && <ProductModal form={editing} categories={categories} products={products} onSave={saveProduct} onClose={() => setEditing(null)} />}
       {expirationOpen && <ExpirationList onClose={() => setExpirationOpen(false)} />}
       {priceGuideOpen && <PriceGuideModal open={priceGuideOpen} onClose={() => setPriceGuideOpen(false)} products={products} onProductsChanged={() => void load()} />}
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
@@ -828,7 +877,19 @@ function StockBadge({ status }: { status: string }): React.JSX.Element {
   return <span className={`badge shrink-0 border ${map[status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{status.replace(/_/g, ' ')}</span>
 }
 
-function ProductModal({ form, categories, onSave, onClose }: { form: ProductFormData; categories: Category[]; onSave: (f: ProductFormData) => Promise<void>; onClose: () => void }): React.JSX.Element {
+function ProductModal({
+  form,
+  categories,
+  products,
+  onSave,
+  onClose
+}: {
+  form: ProductFormData
+  categories: Category[]
+  products: Product[]
+  onSave: (f: ProductFormData) => Promise<void>
+  onClose: () => void
+}): React.JSX.Element {
   const [saving, setSaving] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -838,15 +899,81 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
   const [categoryBusy, setCategoryBusy] = useState(false)
   const [f, setF] = useState<ProductFormData>(form)
   const [priceRef, setPriceRef] = useState<PriceReference | null>(null)
+  const [cameraScanTarget, setCameraScanTarget] = useState<'main' | number | null>(null)
+  const [autoCapturedCode, setAutoCapturedCode] = useState<string | null>(null)
+  const [targetUnitIndex, setTargetUnitIndex] = useState<number | null>(null)
+
   const [rows, setRows] = useState<ProductUnitInput[]>(() => form.units.length > 0
     ? form.units
     : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: form.default_price_c, is_default: true }])
-  const set = (patch: Partial<ProductFormData>) => setF((prev) => ({ ...prev, ...patch }))
-  const setRow = (index: number, patch: Partial<ProductUnitInput>) => {
+  const set = useCallback((patch: Partial<ProductFormData>) => setF((prev) => ({ ...prev, ...patch })), [])
+  const setRow = useCallback((index: number, patch: Partial<ProductUnitInput>) => {
     setRows((prev) => prev.map((r, i) => i === index ? { ...r, ...patch } : r))
-  }
+  }, [])
   const addUnit = () => setRows((prev) => [...prev, { name: '', conversion_to_base: 1, barcode: null, selling_price_c: f.default_price_c, is_default: prev.length === 0 }])
   const removeUnit = (index: number) => setRows((prev) => prev.filter((_, i) => i !== index))
+
+  const applyScannedBarcode = useCallback((code: string, unitIndex?: number | null) => {
+    const clean = code.trim()
+    if (!clean) return
+    playScanBeep()
+    if (unitIndex != null && unitIndex >= 0) {
+      setRow(unitIndex, { barcode: clean })
+      setAutoCapturedCode(`Unit ${unitIndex + 1}: ${clean}`)
+    } else {
+      set({ barcode: clean })
+      setAutoCapturedCode(clean)
+    }
+  }, [set, setRow])
+
+  useEffect(() => {
+    const handleScannerBurst = (scannedCode: string) => {
+      // Contamination guard: strip burst keystrokes from active element
+      const activeEl = document.activeElement
+      if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) {
+        const currentVal = activeEl.value
+        if (currentVal.endsWith(scannedCode)) {
+          const cleanedVal = currentVal.slice(0, currentVal.length - scannedCode.length).trimEnd()
+          activeEl.value = cleanedVal
+          activeEl.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+      }
+      applyScannedBarcode(scannedCode, targetUnitIndex)
+    }
+
+    const listener = createScannerListener({
+      onScan: handleScannerBurst
+    })
+
+    window.addEventListener('keydown', listener)
+
+    // Also support Wi-Fi companion phone camera scans while ProductModal is open
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
+      applyScannedBarcode(code, targetUnitIndex)
+    })
+
+    return () => {
+      window.removeEventListener('keydown', listener)
+      cleanupPhoneScan?.()
+    }
+  }, [applyScannedBarcode, targetUnitIndex])
+
+  useEffect(() => {
+    if (!autoCapturedCode) return
+    const timer = window.setTimeout(() => setAutoCapturedCode(null), 4000)
+    return () => window.clearTimeout(timer)
+  }, [autoCapturedCode])
+
+  const duplicateProduct = useMemo(() => {
+    if (!f.barcode || !f.barcode.trim()) return null
+    const bc = f.barcode.trim().toLowerCase()
+    return products.find(
+      (p) => p.id !== (f.id ?? 0) && (
+        p.barcode?.toLowerCase() === bc ||
+        p.units?.some((u) => u.barcode?.toLowerCase() === bc)
+      )
+    )
+  }, [f.barcode, f.id, products])
 
   useEffect(() => {
     let active = true
@@ -1000,8 +1127,58 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" placeholder="Auto-generated if blank" />
         </div>
         <div>
-          <label className="label">Barcode</label>
-          <input value={f.barcode} onChange={(e) => set({ barcode: e.target.value })} className="input w-full" />
+          <div className="flex items-center justify-between mb-1">
+            <label className="label mb-0 flex items-center gap-1.5">
+              <Barcode className="h-3.5 w-3.5 text-brand-400" />
+              <span>Barcode</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Auto-Capture
+              </span>
+              <button
+                type="button"
+                onClick={() => setCameraScanTarget('main')}
+                className="btn-ghost text-[11px] px-2 py-0.5 text-brand-400 hover:text-brand-300 flex items-center gap-1 border border-brand-500/30 rounded"
+                title="Scan using PC Camera or Phone"
+              >
+                <Camera className="h-3 w-3" />
+                <span>Camera / Phone</span>
+              </button>
+            </div>
+          </div>
+          <div className="relative">
+            <input
+              value={f.barcode ?? ''}
+              onChange={(e) => set({ barcode: e.target.value || '' })}
+              placeholder="Scan with barcode gun or type…"
+              className="input w-full pr-8 font-mono text-sm"
+              onFocus={() => setTargetUnitIndex(null)}
+            />
+            {f.barcode && (
+              <button
+                type="button"
+                onClick={() => set({ barcode: '' })}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
+                title="Clear barcode"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          {autoCapturedCode && !duplicateProduct && (
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
+              <CheckCircle2 className="h-3 w-3 shrink-0" />
+              <span>Auto-captured: <strong>{autoCapturedCode}</strong></span>
+            </p>
+          )}
+          {duplicateProduct && (
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              <span>Already used by <strong>{duplicateProduct.name}</strong> ({duplicateProduct.sku})</span>
+            </p>
+          )}
         </div>
         <div>
           <label className="label">Category</label>
@@ -1124,10 +1301,27 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           <label className="label">Selling Units (Tingi / Multi-unit)</label>
           <div className="space-y-2">
             {rows.map((r, i) => (
-              <div key={i} className="grid grid-cols-[1fr_76px_110px_28px] items-center gap-2">
+              <div key={i} className="grid grid-cols-[1fr_76px_110px_28px_28px] items-center gap-2">
                 <input placeholder={i === 0 ? 'Unit name (e.g. piece)' : 'Selling unit name'} value={r.name} onChange={(e) => setRow(i, { name: e.target.value })} className="input w-full" />
                 <input type="number" min={1} step={1} title={`1 ${f.base_unit || 'base unit'} × ${r.conversion_to_base}`} value={r.conversion_to_base} onChange={(e) => setRow(i, { conversion_to_base: Math.max(1, parseInt(e.target.value || '1', 10)) })} className="input w-full" />
-                <input placeholder="Barcode" value={r.barcode ?? ''} onChange={(e) => setRow(i, { barcode: e.target.value || null })} className="input w-full" />
+                <input
+                  placeholder="Barcode"
+                  value={r.barcode ?? ''}
+                  onChange={(e) => setRow(i, { barcode: e.target.value || null })}
+                  className="input w-full font-mono text-xs"
+                  onFocus={() => setTargetUnitIndex(i)}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetUnitIndex(i)
+                    setCameraScanTarget(i)
+                  }}
+                  className="btn-ghost-2 rounded-lg p-1.5 text-brand-400 hover:text-brand-300"
+                  title="Scan barcode with phone or camera for this unit"
+                >
+                  <Camera className="h-4 w-4" />
+                </button>
                 <button type="button" onClick={() => removeUnit(i)} disabled={rows.length <= 1} className="btn-ghost-2 rounded-lg p-2 text-danger-400 disabled:opacity-30" title="Remove selling unit"><Trash2 className="h-4 w-4" /></button>
               </div>
             ))}
@@ -1137,6 +1331,18 @@ function ProductModal({ form, categories, onSave, onClose }: { form: ProductForm
           <p className="mt-1 text-xs text-slate-500">Conversion is how many base units one selling unit equals. Example: 1 box = 24 sachets.</p>
         </div>
       </form>
+      {cameraScanTarget !== null && (
+        <CameraScannerModal
+          open={true}
+          title={cameraScanTarget === 'main' ? 'Scan Product Barcode (Phone & Camera)' : `Scan Unit Barcode: ${rows[cameraScanTarget]?.name || `Unit ${cameraScanTarget + 1}`}`}
+          actionLabel="Barcode Captured"
+          onClose={() => setCameraScanTarget(null)}
+          onScan={(code) => {
+            applyScannedBarcode(code, cameraScanTarget === 'main' ? null : cameraScanTarget)
+            setCameraScanTarget(null)
+          }}
+        />
+      )}
     </Modal>
   )
 }
