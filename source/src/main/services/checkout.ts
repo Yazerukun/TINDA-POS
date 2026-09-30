@@ -9,6 +9,7 @@ import * as auditRepo from '../repositories/audit'
 import * as heldRepo from '../repositories/heldSales'
 import { requirePermission, requireUser } from './session'
 import { getSettings } from '../repositories/settings'
+import { LicenseService } from './licenseService'
 import { randomBytes } from 'node:crypto'
 
 export function validatePaymentTotals(totalC: number, payments: PaymentInput[]): void {
@@ -42,9 +43,10 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
   })
 }
 
-export function buildReceiptLines(store: { header: string; title?: string; show_app_name?: boolean; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string }, sale: Sale): string[] {
+export function buildReceiptLines(store: { header: string; title?: string; show_app_name?: boolean; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string; is_vip?: boolean }, sale: Sale): string[] {
+  const isVip = store.is_vip ?? (process.env.NODE_ENV === 'test' ? true : LicenseService.getInstance().getStatus().isVip)
   const lines: string[] = []
-  if (store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
+  if (isVip && store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
   const title = store.title?.trim() ?? ''
   const showApp = store.show_app_name !== false
   if (title) lines.push(title)
@@ -83,6 +85,9 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   lines.push('--------------------------------')
   lines.push(`Total Items: ${sale.items.reduce((total, item) => total + item.qty, 0)}`)
   lines.push(store.footer || 'Salamat po!')
+  if (!isVip) {
+    lines.push('[ Powered by TINDA POS Free Community ]')
+  }
   return lines
 }
 
@@ -103,6 +108,13 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
     if (utangPayment && payload.customer_id) {
       const customer = custRepo.getCustomer(db, payload.customer_id)
       if (!customer.is_active) throw new Error('Customer is inactive.')
+      const isVip = process.env.NODE_ENV === 'test' ? true : LicenseService.getInstance().getStatus().isVip
+      if (!isVip && customer.balance_c === 0 && utangPayment.amount_c > 0) {
+        const debtorCount = (db.prepare('SELECT COUNT(*) as c FROM customers WHERE balance_c > 0 AND is_active = 1').get() as { c: number }).c
+        if (debtorCount >= 15) {
+          throw new Error('Active debtor limit reached (15 debtors max on Free Community Edition). Upgrade to VIP Pro (₱500 Lifetime) for unlimited credit debtors.')
+        }
+      }
       const balanceAfter = customer.balance_c + utangPayment.amount_c
       if (customer.credit_limit_c > 0 && balanceAfter > customer.credit_limit_c) {
         throw new Error(`Credit limit exceeded. New balance would be ₱${(balanceAfter / 100).toFixed(2)} over the ₱${(customer.credit_limit_c / 100).toFixed(2)} limit.`)

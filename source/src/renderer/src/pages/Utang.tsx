@@ -19,12 +19,18 @@ export function Utang(): React.JSX.Element {
   const [selected, setSelected] = useState<Customer | null>(null)
   const [ledger, setLedger] = useState<CreditLedgerEntry[]>([])
   const [action, setAction] = useState<null | { type: 'PAY' | 'ADJUST' | 'OVERLIMIT'; customer: Customer }>(null)
+  const [isVip, setIsVip] = useState(true)
+  const [vipModalOpen, setVipModalOpen] = useState(false)
 
   const load = async () => {
     setLoading(true)
     try {
-      const res = await window.api.customers.list({ status: 'ACTIVE', limit: 1000 })
+      const [res, lic] = await Promise.all([
+        window.api.customers.list({ status: 'ACTIVE', limit: 1000 }),
+        window.api.license?.getStatus?.().catch(() => ({ isVip: true }))
+      ])
       setRows(res.rows)
+      if (lic) setIsVip(lic.isVip)
     } catch (e) {
       toastError('Failed to load utang', String((e as Error)?.message || e))
     } finally {
@@ -106,6 +112,42 @@ export function Utang(): React.JSX.Element {
           <p className="mt-1 text-xs text-slate-500">Fully paid (₱0.00 balance)</p>
         </div>
       </div>
+
+      {!isVip && (
+        <div className="mb-4 rounded-xl border border-ink-line bg-ink-850/80 p-3.5 shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${withBalanceCount >= 15 ? 'bg-danger-500/20 text-danger-400' : withBalanceCount >= 12 ? 'bg-amber-500/20 text-amber-400' : 'bg-brand-500/20 text-brand-400'}`}>
+                <Wallet className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-white">Free Community Edition: Suki Debtors Capacity</span>
+                  <span className={`text-xs font-bold font-mono px-1.5 py-0.5 rounded ${withBalanceCount >= 15 ? 'bg-danger-500/20 text-danger-300' : withBalanceCount >= 12 ? 'bg-amber-500/20 text-amber-300' : 'bg-ink-700 text-slate-300'}`}>
+                    {withBalanceCount} / 15 Suki Debtors
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  {withBalanceCount >= 15 ? 'Active debtor limit reached. Upgrade to VIP Pro to extend credit to unlimited customers.' : `${15 - withBalanceCount} credit debtor slot(s) remaining on Free Edition.`}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setVipModalOpen(true)}
+              className="btn-ghost flex items-center gap-1.5 text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+            >
+              <Crown className="h-3.5 w-3.5 text-amber-400" />
+              Upgrade to VIP Pro (₱500 Lifetime)
+            </button>
+          </div>
+          <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
+            <div
+              className={`h-full transition-all duration-300 ${withBalanceCount >= 15 ? 'bg-danger-500' : withBalanceCount >= 12 ? 'bg-amber-500' : 'bg-brand-500'}`}
+              style={{ width: `${Math.min(100, (withBalanceCount / 15) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs & Search */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -300,6 +342,7 @@ export function Utang(): React.JSX.Element {
         />
       )}
       {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => void actionDone()} />}
+      <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => void load()} />
     </div>
   )
 }

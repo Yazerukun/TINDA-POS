@@ -1,2 +1,2 @@
-229e805790e239eb3e8bbd0a63a8ded8f9e031f13cf59b01c8cadd8517222d87  TindaPOS-Setup-1.0.40.exe
-3ad97f996edee6009c27a24e23335e4eb4de36b24e23a71ec0ef130bce5952d8  TindaPOS-Portable-1.0.40.exe
+8922ef843c91482dc4bb3e004c39cc762fcbde17ef2e58082e1ec9f5e3910f50  TindaPOS-Setup-1.0.41.exe
+66c635e79395f39e9ea5478eda01c6fee6da26972439b89cce6d7c8ef1cc1743  TindaPOS-Portable-1.0.41.exe

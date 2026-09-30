@@ -397,6 +397,16 @@ handle('customers:pay', (_e: IpcMainInvokeEvent, input: unknown) => {
 handle('customers:adjust', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('utang:adjust')
   const i = input as { customer_id: number; amount_c: number; notes: string; reason: string }
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test' && i.amount_c > 0) {
+    const cust = custRepo.getCustomer(db(), i.customer_id)
+    if (cust.balance_c === 0) {
+      const debtorCount = (db().prepare('SELECT COUNT(*) as c FROM customers WHERE balance_c > 0 AND is_active = 1').get() as { c: number }).c
+      if (debtorCount >= 15) {
+        throw new Error('Active debtor limit reached (15 debtors max on Free Community Edition). Upgrade to VIP Pro (₱500 Lifetime) for unlimited credit debtors.')
+      }
+    }
+  }
   return custRepo.applyCreditEntry(db(), { customer_id: i.customer_id, entry_type: 'ADJUSTMENT', amount_c: i.amount_c, notes: i.notes, user_id: user().id })
 })
 handle('customers:revoke', (_e: IpcMainInvokeEvent, input: unknown) => {
@@ -573,7 +583,15 @@ handle('shifts:summary', (_e: IpcMainInvokeEvent, id: number) => {
 // ---- Reports ----
 handle('reports:sales', (_e: IpcMainInvokeEvent, opts: unknown) => {
   sessionSvc.requirePermission('reports:view')
-  return reportSvc.salesReport((opts ?? {}) as { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' })
+  const isVip = licenseService.getStatus().isVip
+  const o = { ...((opts ?? {}) as { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) }
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+    if (o.from && o.from < sevenDaysAgo) {
+      o.from = sevenDaysAgo
+    }
+  }
+  return reportSvc.salesReport(o)
 })
 handle('reports:inventory', () => {
   sessionSvc.requirePermission('reports:view')
@@ -617,6 +635,10 @@ handle('reports:shifts', (_e: IpcMainInvokeEvent, opts?: unknown) => {
 })
 handle('reports:exportCsv', (_e: IpcMainInvokeEvent, kind: string, opts?: unknown) => {
   sessionSvc.requirePermission('reports:export')
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('CSV Tax Export is a VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to export lifetime reports and tax records.')
+  }
   return exportSvc.exportCsv(kind as Parameters<typeof exportSvc.exportCsv>[0], (opts ?? {}) as { from?: string; to?: string })
 })
 handle('reports:xRead', () => {

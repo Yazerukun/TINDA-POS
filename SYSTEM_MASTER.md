@@ -371,6 +371,32 @@
   - **100% Backward Compatibility:**
     - Full retention of existing SQLite database schemas, audit logs, transactions, and hardware-locked VIP Pro licenses.
 
+---
+
+## 20. Cryptographic Anti-Downgrade Lock (Epoch 41) & 5 Strategic Value Gating Pillars (v1.0.41)
+* **Problem Addressed:**
+  - *Database Rollback Vulnerability:* When users downgrade to older offline builds (v1.0.10–v1.0.40) or copy modern databases into obsolete binaries, schema mismatches corrupt transactional integrity and bypass newer security locks.
+  - *Monetization Conversion Funnel:* Need clear, high-value visual demarcation between Free Community Edition and ₱500 Lifetime VIP Pro without ever freezing the cashier or hindering daily retail transactions.
+
+* **Key Architectural Implementations:**
+  - **100% Offline Cryptographic Anti-Downgrade & Binary Epoch Lock (Epoch 41):**
+    - SQLite Migration 9 establishes the immutable `app_session_auth` singleton table and 3 native database triggers inside `tindapos.db`:
+      1. `trg_anti_downgrade_sales`: Blocks checkout transaction inserts without active epoch >= 41.
+      2. `trg_anti_downgrade_shifts`: Blocks shift creation without active epoch >= 41.
+      3. `trg_anti_downgrade_products`: Blocks inventory inserts without active epoch >= 41.
+    - Runtime session heartbeat in `connection.ts` manages active epoch timestamps and creates `%USERPROFILE%\.tindapos\epoch.lock` hardware binding.
+    - Legacy offline versions attempting to write to upgraded databases are immediately aborted by the SQLite engine with `EPOCH_DOWNGRADE_LOCKED`.
+  - **5 Strategic Value Gating Pillars (Free Community vs ₱500 VIP Pro):**
+    1. **Inventory:** 50-product capacity meter with dynamic color status (brand/amber/danger) and VIP upgrade modal trigger.
+    2. **Reports:** 7-day operational sales window for Free tier; lifetime sales history, CSV audit, and tax export locked to VIP Pro.
+    3. **Loss Prevention:** Automated Cash Drawer Variance Audit in Z-Read finalization (Shortage/Overage Guard vs Expected Cash) with live status badge.
+    4. **Utang:** 15 active credit debtors capacity meter & 1-Click polite SMS/Messenger reminder generator.
+    5. **Branding:** Clean `[ Powered by TINDA POS Free Community ]` receipt footer; VIP Pro unlocks custom store logo & DTI/BIR tax headers.
+  - **Compliance & Operational Invariants:**
+    - **Zero Counter Paralysis Invariant:** Basic daily selling, barcode scanning, cash payments, GCash payments, and change calculations never freeze or block.
+    - **100% Standard Professional English:** All UI labels, modals, loss prevention dialogs, and receipts follow clean, professional English.
+    - **Zero Disruption to Existing Licenses:** Existing VIP Pro licenses remain 100% valid and automatically unlock all gating pillars.
+
 
 
 

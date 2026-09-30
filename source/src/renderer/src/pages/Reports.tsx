@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw } from 'lucide-react'
+import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw, Crown } from 'lucide-react'
 import type { SalesReportRow, ReportSummary, ReadReport, ZRead, CashCountRecord } from '@shared/types'
 import { cashCountLines, CASH_COUNT_DENOMINATION_CENTS } from '@shared/cashCount'
 import { readReportLines } from '@shared/readReport'
@@ -11,6 +11,7 @@ import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useAuth } from '../stores/auth'
 import { useSettings } from '../stores/settings'
+import { VipUpgradeModal } from '../components/VipUpgradeModal'
 
 interface CompState {
   rows: SalesReportRow[]
@@ -31,6 +32,12 @@ export function Reports(): React.JSX.Element {
   const [history, setHistory] = useState<ZRead[]>([])
   const [readError, setReadError] = useState<string | null>(null)
   const [readRevision, setReadRevision] = useState(0)
+  const [isVip, setIsVip] = useState(true)
+  const [vipModalOpen, setVipModalOpen] = useState(false)
+
+  useEffect(() => {
+    window.api.license?.getStatus?.().then((s) => setIsVip(s.isVip)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (tab !== 'X') return
@@ -66,7 +73,15 @@ export function Reports(): React.JSX.Element {
   const loadSales = async () => {
     setLoading(true)
     try {
-      const res = await window.api.reports.sales({ from, to, groupBy })
+      let fromDate = from
+      if (!isVip) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+        if (fromDate < sevenDaysAgo) {
+          fromDate = sevenDaysAgo
+          setFrom(sevenDaysAgo)
+        }
+      }
+      const res = await window.api.reports.sales({ from: fromDate, to, groupBy })
       setData(res)
     } catch (e) { toastError('Failed to load report', String((e as Error)?.message || e)) } finally { setLoading(false) }
   }
@@ -86,6 +101,12 @@ export function Reports(): React.JSX.Element {
 
   const exportCsv = async () => {
     try {
+      const status = await window.api.license.getStatus()
+      if (!status.isVip) {
+        setVipModalOpen(true)
+        toastError('VIP Pro Feature', 'CSV Tax & Audit Export is a VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) for lifetime reports.')
+        return
+      }
       const kind = tab === 'SALES' ? 'SALES' : tab === 'INVENTORY' ? 'INVENTORY' : 'UTANG'
       const res = await window.api.reports.exportCsv(kind, { from, to })
       toastSuccess('Export saved', res.path)
@@ -96,7 +117,24 @@ export function Reports(): React.JSX.Element {
     <div className="p-6">
       <PageHeader
         title="Reports"
-        actions={(['SALES','INVENTORY','UTANG'] as const).includes(tab as 'SALES'|'INVENTORY'|'UTANG') ? <button onClick={() => void exportCsv()} className="btn-primary flex items-center gap-2"><FileDown className="h-4 w-4" /> Export CSV</button> : undefined}
+        actions={
+          <div className="flex items-center gap-2">
+            {!isVip && (
+              <button
+                onClick={() => setVipModalOpen(true)}
+                className="btn-ghost flex items-center gap-1.5 text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <Crown className="h-3.5 w-3.5 text-amber-400" />
+                Upgrade to VIP Pro
+              </button>
+            )}
+            {(['SALES','INVENTORY','UTANG'] as const).includes(tab as 'SALES'|'INVENTORY'|'UTANG') ? (
+              <button onClick={() => void exportCsv()} className="btn-primary flex items-center gap-2">
+                <FileDown className="h-4 w-4" /> Export CSV {!isVip && <Crown className="h-3.5 w-3.5 text-amber-400" />}
+              </button>
+            ) : undefined}
+          </div>
+        }
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -111,6 +149,22 @@ export function Reports(): React.JSX.Element {
 
       {tab === 'SALES' && (
         <>
+          {!isVip && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-line bg-ink-850/80 p-3.5 text-xs backdrop-blur">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white">Free Community Edition: 7-Day Operational Sales Window</span>
+                <span className="text-slate-400">· Lifetime sales history and tax records are available on VIP Pro.</span>
+              </div>
+              <button
+                onClick={() => setVipModalOpen(true)}
+                className="btn-ghost flex items-center gap-1.5 text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <Crown className="h-3.5 w-3.5 text-amber-400" />
+                Unlock Lifetime History (₱500)
+              </button>
+            </div>
+          )}
+
           <div className="mb-4 flex flex-wrap items-end gap-2">
             <div><label className="label">From</label><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input w-44" /></div>
             <div><label className="label">To</label><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input w-44" /></div>
@@ -268,6 +322,7 @@ export function Reports(): React.JSX.Element {
           </div>
         </>
       ) : null)}
+      <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => { setIsVip(true); void loadSales() }} />
     </div>
   )
 }
@@ -359,7 +414,7 @@ function ReadPanel({report,finalize,onFinalized,onCashCount,onUpdate,onRefresh}:
         setReminder(true)
       }
     } catch {
-      toastError('Hindi masuri ang Cash Count', 'Pakisubukan muli bago mag-Z-Read.')
+      toastError('Unable to verify Cash Count', 'Please try again before finalizing the Z-Read.')
     } finally {
       setBusy(false)
     }
@@ -393,14 +448,58 @@ function ReadPanel({report,finalize,onFinalized,onCashCount,onUpdate,onRefresh}:
         </div>)}
       </dl>
     </section>)}
-    {finalize && <div className="mt-4 flex flex-wrap gap-2">
-      <div><label className="label">Actual Cash (₱)</label><input className="input" type="number" min="0" value={actual} onChange={e=>setActual(e.target.value)}/></div>
-      <button className="btn-primary flex gap-2 self-end" disabled={busy} onClick={()=>void requestFinalize()}><LockKeyhole className="h-4 w-4"/>Finalize Z-Read</button>
-    </div>}
+    {finalize && (
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="label">Actual Cash Counted (₱)</label>
+            <input className="input" type="number" min="0" step="0.01" value={actual} onChange={e=>setActual(e.target.value)} placeholder="0.00" />
+          </div>
+          <button className="btn-primary flex gap-2" disabled={busy || !actual} onClick={()=>void requestFinalize()}>
+            <LockKeyhole className="h-4 w-4"/>Finalize Z-Read
+          </button>
+        </div>
+
+        {/* Pillar 3: Automated Cash Drawer Variance Audit (Shortage/Overage Guard vs Expected Cash) */}
+        {actual !== '' && !isNaN(Number(actual)) && (
+          (() => {
+            const actualC = Math.round(Number(actual) * 100)
+            const diffC = actualC - report.expected_cash_c
+            const isBalanced = diffC === 0
+            const isShort = diffC < 0
+            return (
+              <div className={`rounded-xl border p-3.5 text-xs backdrop-blur transition-all ${
+                isBalanced
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                  : isShort
+                    ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                    : 'border-blue-500/30 bg-blue-500/10 text-blue-300'
+              }`}>
+                <div className="flex items-center justify-between font-semibold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">Loss Prevention Cash Variance Audit:</span>
+                    <span>{isBalanced ? 'Balanced Drawer (Exact match)' : isShort ? 'Shortage Detected (Below Expected Cash)' : 'Overage Detected (Above Expected Cash)'}</span>
+                  </div>
+                  <span className="font-mono text-sm font-bold">
+                    {diffC > 0 ? `+${money(diffC)}` : diffC < 0 ? `-${money(Math.abs(diffC))}` : '₱0.00 (Balanced)'}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Expected Cash: <strong className="text-white">{money(report.expected_cash_c)}</strong></span>
+                  <span>Counted Cash: <strong className="text-white">{money(actualC)}</strong></span>
+                </div>
+              </div>
+            )
+          })()
+        )}
+      </div>
+    )}
     {finalize && <p className="mt-3 text-sm text-amber-300">Finalization closes this shift. Transactions, payments, stock history, expenses, and customer ledgers remain saved.</p>}
-    {reminder && <Modal open onClose={()=>setReminder(false)} title="Cash Count Required" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" onClick={()=>{setReminder(false);onCashCount()}}><Coins className="h-4 w-4"/>Pumunta sa Cash Count</button>}>
-      <p>Wala pang naka-save na Cash Count para sa shift na ito. I-save muna ang Cash Count bago mag-Z-Read at isara ang shift. Hindi pa maaaring magpatuloy sa Z-Read.</p>
-    </Modal>}
+    {reminder && (
+      <Modal open onClose={()=>setReminder(false)} title="Cash Count Required" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" onClick={()=>{setReminder(false);onCashCount()}}><Coins className="h-4 w-4"/>Proceed to Cash Count</button>}>
+        <p className="text-sm text-slate-300">No Cash Count record has been saved for this shift yet. Please complete and save a physical cash count before performing a Z-Read to close the shift.</p>
+      </Modal>
+    )}
     {preview && <Modal open onClose={()=>setPreview(null)} title="X-Read Print Preview" maxWidth="max-w-md" footer={<button className="btn-primary flex items-center gap-2" disabled={busy} onClick={()=>void print()}><Printer className="h-4 w-4"/>Print Latest X-Read</button>}>
       <ReceiptPaper lines={readReportLines(preview, undefined, undefined, settings?.store_name)}/>
     </Modal>}
