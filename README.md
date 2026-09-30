@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.41-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.42-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-337%2F337_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,11 +16,23 @@
 
 <br />
 
-[⬇️ Download v1.0.41 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.41/TindaPOS-Setup-1.0.41.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.41/TindaPOS-Portable-1.0.41.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.41/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.42 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Setup-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Portable-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.41 (Cryptographic Anti-Downgrade Lock & 5 Strategic Value Gating Pillars)
+## ✨ What's New in v1.0.42 (Instant Hardware Barcode Auto-Capture & Inventory Speed Cataloging)
+
+> **Zero-Typing Barcode Gun Auto-Capture, Active Input Contamination Sanitizer & Store Handbook Polish**
+
+- ⚡ **Instant Barcode Auto-Capture (Zero Manual Typing)**: When adding or editing products in Inventory, cashiers no longer need to type long 12- or 13-digit EAN/UPC barcodes. Simply scan the product package with any USB/2.4GHz barcode gun or wireless smartphone companion camera; the barcode is instantly auto-populated into the Barcode slot.
+- 🛡️ **Active Input Contamination Sanitizer**: Solves the common retail headache where scanning while focused on the product Name or Cost field would leak barcode digits into that field. High-speed keystroke bursts (<120ms) are intercepted, cleanly stripped from the focused field, and routed exclusively to the barcode slot without triggering premature form submissions.
+- 🔊 **Sub-Second Audio & Visual Feedback**: Emits an audible 1050 Hz confirmation chirp via the standard Web Audio API and displays a live pulsing status indicator (`● Auto-Capture`) alongside a green badge (`✓ Auto-captured: [code]`).
+- ⚠️ **Proactive Duplicate Barcode Detection**: Automatically cross-references the store catalog and warns if a scanned barcode is already assigned to another active item (`⚠️ Already used by [Product Name]`), preventing duplicate stock confusion.
+- 📸 **Camera & Smartphone Companion Integration**: Includes a 1-Click `"Camera / Phone"` trigger modal supporting wireless phone cameras and laptop webcams directly inside the product modal, plus individual barcode scan buttons for multi-unit (tingi) pack conversions.
+- 🔍 **Inventory List Fast-Track Scan Handler**: Scanning barcodes while browsing the main Inventory list immediately filters directly to that product if it exists, or automatically opens the "New Product" modal with the scanned barcode pre-filled if it's uncataloged.
+- 📖 **Store Handbook Modernization**: Fully upgraded Chapter 4 to standard professional English with comprehensive guides for hardware scanners, 1-Click smartphone companion pairing, and zero-typing inventory workflows.
+
+---
 
 > **100% Offline Binary Epoch 41 Lock, Database Trigger Safeguards & 5 VIP Value Pillars**
 

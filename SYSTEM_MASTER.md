@@ -397,6 +397,34 @@
     - **100% Standard Professional English:** All UI labels, modals, loss prevention dialogs, and receipts follow clean, professional English.
     - **Zero Disruption to Existing Licenses:** Existing VIP Pro licenses remain 100% valid and automatically unlock all gating pillars.
 
+---
 
+## 21. Instant Hardware Barcode Auto-Capture & Inventory Cataloging Engine (v1.0.42)
+* **Problem Addressed:**
+  - *Manual Encoding Friction:* When inventory managers or store owners add dozens of new grocery items, manually typing long 12- or 13-digit EAN/UPC barcode numbers into text boxes is slow, error-prone, and leads to barcode entry mistakes.
+  - *Active Element Keystroke Contamination:* When using physical USB/2.4GHz barcode scanner guns (keyboard wedge emulation), scanning an item while focused on another input (such as Product Name or Purchase Cost) would leak the barcode digits into that focused text field before the trailing Enter key, corrupting product metadata and causing accidental form submission.
+  - *Companion Scanner Disconnect:* While smartphone cameras and webcams could scan items during POS checkout, there was no direct integration for cataloging new items in Inventory without leaving the product creation modal.
 
-
+* **Key Architectural Implementations:**
+  - **Universal Hardware Barcode Auto-Capture (`ProductModal` in `Inventory.tsx`):**
+    - Intercepts high-speed (<120ms) USB/2.4GHz hardware scanner bursts globally within the product modal without requiring the user to click or focus the Barcode input first.
+    - Automatically isolates and populates the scanned barcode into the product's barcode slot instantaneously.
+  - **Active Input Contamination Sanitizer:**
+    - Detects if `document.activeElement` is an `HTMLInputElement` or `HTMLTextAreaElement` that captured the scanner keystroke burst.
+    - Automatically slices off the appended scanned barcode string, restores the clean text, and dispatches a synthetic `input` event to keep React state synchronized without accidental form submission or closing.
+  - **Sub-Second Auditory Feedback (`playScanBeep`):**
+    - Synthesizes an instant 1050 Hz sine-wave confirmation chirp via the standard Web Audio API, giving the cashier immediate tactile and auditory confirmation of a successful barcode capture.
+  - **Live Auto-Capture Badge & Clear Trigger:**
+    - Features a pulsing emerald status indicator (`● Auto-Capture`) and a transient green confirmation badge (`✓ Auto-captured: [code]`) that stays visible for 4 seconds.
+    - Inline clear button (`X`) enables 1-click barcode removal and immediate re-scanning.
+  - **Proactive Catalog Duplicate Detection Guard:**
+    - Real-time catalog cross-reference alerts the owner if a scanned barcode is already in use by another product in the store (`⚠️ Already used by [Product Name] (SKU: [SKU])`), preventing duplicate stock fragmentation.
+  - **Direct Camera & Smartphone Companion Integration:**
+    - Embedded `"Camera / Phone"` trigger modal within the product modal supports zero-install Wi-Fi smartphone camera scanning and laptop webcams.
+    - Supports individual camera scanning targets for multi-unit (tingi) pack conversions.
+  - **Inventory List Fast-Track Scan Handler:**
+    - When scanning barcodes while browsing the main Inventory list (no modal open):
+      - If barcode exists: immediately filters the table directly to that product and displays `Product found: [name]`.
+      - If barcode is uncatalogued: plays confirmation chime and automatically opens the `New Product` modal with the scanned barcode already pre-filled.
+  - **Store Handbook Modernization (`Handbook.tsx`):**
+    - Chapter 4 completely upgraded to standard professional English detailing plug-and-play USB scanner guns, 1-Click Wi-Fi smartphone companion setup, and instant inventory auto-capture workflows.
