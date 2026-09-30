@@ -418,23 +418,31 @@ export function broadcastLanEvent(event: { type: string; payload: unknown }): vo
   }
 }
 
-export function startMasterServer(port = 3111): Promise<number> {
+export function startMasterServer(port = 3111, attempts = 0): Promise<number> {
   return new Promise((resolve) => {
     if (lanServer) {
       resolve(currentPort)
       return
     }
+
+    if (attempts >= 5) {
+      console.warn('[LAN Hub] Could not bind Master Server after 5 attempts; LAN Hub disabled.')
+      resolve(0)
+      return
+    }
+
     currentPort = port
     lanServer = http.createServer(handleLanRequest)
 
     lanServer.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        currentPort++
-        lanServer?.close()
+      if (err.code === 'EADDRINUSE' && attempts < 5) {
+        try { lanServer?.close() } catch { /* ignore */ }
         lanServer = null
-        void startMasterServer(currentPort).then(resolve)
+        void startMasterServer(currentPort + 1, attempts + 1).then(resolve)
       } else {
-        console.error('[LAN Hub] Master Server error:', err)
+        console.error('[LAN Hub] Master Server error:', err.message)
+        try { lanServer?.close() } catch { /* ignore */ }
+        lanServer = null
         resolve(0)
       }
     })
@@ -454,7 +462,7 @@ export function stopMasterServer(): void {
   }
   sseConnections.clear()
   if (lanServer) {
-    lanServer.close()
+    try { lanServer.close() } catch { /* ignore */ }
     lanServer = null
   }
   notifyStatus()

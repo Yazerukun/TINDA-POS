@@ -991,10 +991,41 @@ function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse):
   res.end('Not Found')
 }
 
-export function startPhoneScannerService(preferredPort = 3112, preferredHttpsPort = 3113): Promise<number> {
+function startHttpsServerHelper(port: number, attempt = 0): void {
+  if (attempt >= 5) {
+    console.warn('[phoneScanner] Could not bind HTTPS server after 5 attempts; HTTPS scanner disabled.')
+    httpsServer = null
+    return
+  }
+  try {
+    const srv = https.createServer({ key: SSL_KEY, cert: SSL_CERT }, (req, res) => handleHttpRequest(req, res))
+    srv.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE' && attempt < 5) {
+        try { srv.close() } catch { /* ignore */ }
+        startHttpsServerHelper(port + 1, attempt + 1)
+      } else {
+        console.error('[phoneScanner] HTTPS Server error:', err.message)
+      }
+    })
+    srv.listen(port, '0.0.0.0', () => {
+      currentHttpsPort = port
+      httpsServer = srv
+    })
+  } catch (e) {
+    console.error('[phoneScanner] Failed to initialize HTTPS server:', e)
+  }
+}
+
+export function startPhoneScannerService(preferredPort = 3112, preferredHttpsPort = 3113, attempt = 0): Promise<number> {
   return new Promise((resolve) => {
     if (httpServer && httpsServer) {
       resolve(currentPort)
+      return
+    }
+
+    if (attempt >= 5) {
+      console.warn('[phoneScanner] Could not bind HTTP server after 5 attempts; phone scanner disabled.')
+      resolve(0)
       return
     }
 
@@ -1006,49 +1037,21 @@ export function startPhoneScannerService(preferredPort = 3112, preferredHttpsPor
     httpServer = http.createServer((req, res) => handleHttpRequest(req, res))
 
     httpServer.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE') {
-        currentPort++
-        httpServer?.close()
+      if (err.code === 'EADDRINUSE' && attempt < 5) {
+        try { httpServer?.close() } catch { /* ignore */ }
         httpServer = null
-        void startPhoneScannerService(currentPort, currentHttpsPort).then(resolve)
+        void startPhoneScannerService(preferredPort + 1, preferredHttpsPort + 1, attempt + 1).then(resolve)
       } else {
-        console.error('[phoneScanner] HTTP Server error:', err)
+        console.error('[phoneScanner] HTTP Server error:', err.message)
+        try { httpServer?.close() } catch { /* ignore */ }
+        httpServer = null
         resolve(0)
       }
     })
 
-    // 2. Create HTTPS Server for secure context (getUserMedia)
-    try {
-      httpsServer = https.createServer(
-        {
-          key: SSL_KEY,
-          cert: SSL_CERT
-        },
-        (req, res) => handleHttpRequest(req, res)
-      )
-
-      httpsServer.on('error', (err: NodeJS.ErrnoException) => {
-        if (err.code === 'EADDRINUSE') {
-          currentHttpsPort++
-          httpsServer?.close()
-          httpsServer = null
-          // Restart HTTPS on new port
-          try {
-            httpsServer = https.createServer({ key: SSL_KEY, cert: SSL_CERT }, (req, res) => handleHttpRequest(req, res))
-            httpsServer.listen(currentHttpsPort, '0.0.0.0')
-          } catch (e) {
-            console.error('[phoneScanner] HTTPS fallback error:', e)
-          }
-        } else {
-          console.error('[phoneScanner] HTTPS Server error:', err)
-        }
-      })
-
-      httpsServer.listen(currentHttpsPort, '0.0.0.0', () => {
-        // HTTPS running
-      })
-    } catch (e) {
-      console.error('[phoneScanner] Failed to initialize HTTPS server:', e)
+    // 2. Create HTTPS Server with safe helper and full error listeners
+    if (!httpsServer) {
+      startHttpsServerHelper(currentHttpsPort, 0)
     }
 
     httpServer.listen(currentPort, '0.0.0.0', () => {
@@ -1060,11 +1063,11 @@ export function startPhoneScannerService(preferredPort = 3112, preferredHttpsPor
 
 export function stopPhoneScannerService(): void {
   if (httpServer) {
-    httpServer.close()
+    try { httpServer.close() } catch { /* ignore */ }
     httpServer = null
   }
   if (httpsServer) {
-    httpsServer.close()
+    try { httpsServer.close() } catch { /* ignore */ }
     httpsServer = null
   }
 }
