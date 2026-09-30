@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.42-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.43-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,21 @@
 
 <br />
 
-[⬇️ Download v1.0.42 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Setup-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Portable-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.43 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-Setup-1.0.43.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-Portable-1.0.43.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.43 (Full 5-Phase Expansion Suite)
+
+> **Petty Cash Out & True Net Profit, Expiry Management, Wireless Customer Screen (CFD) with Dynamic QR, Wholesale Tiering & Cross-Platform Parity**
+
+- 💸 **Store Petty Cash Out & True Net Profit Intelligence (`F7` Hotkey)**: Cashiers can record operational expenses directly at the counter (store supplies, electricity bills, helper wages, delivery fees). Shift expected cash accounts for cash disbursements ($$\text{Expected} = \text{Float} + \text{Sales} + \text{Repayments} - \text{Refunds} - \text{Expenses}$$) eliminating false shortages, and Dashboard calculates True Net Profit ($$\text{Net} = \text{Sales} - \text{COGS} - \text{Expenses}$$).
+- 📦 **Expiration & Spoilage Prevention Engine**: Supports single-item and multi-batch FIFO tracking (`product_batches`). Point-of-Sale gives soft toast warnings when scanning items near expiration (`SOON` within 7 days, `NEAR` within 30 days) and automatically quarantines expired stock from sellable inventory.
+- 📱 **Wireless Customer Facing Display (CFD) with Dynamic Offline QR**: Turns any spare smartphone, tablet, or iPad into a live counter-top customer screen on local Wi-Fi via Port 3112/3113 (`/cfd` and `/display`). Features zero-install in-memory SVG QR codes for exact-centavo GCash & Maya scanning and automatic screen wake lock.
+- 🏷️ **Wholesale Tiering & Automated Volume Discounts**: Migration 10 adds volume tier pricing (`wholesale_price_c`, `wholesale_min_qty`). Cart automatically drops unit price to wholesale upon reaching minimum quantity threshold, complete with visual badges and price strikethroughs.
+- 🛡️ **100% Cryptographic VIP Pro Preservation & Non-Destructive Storage**: Guaranteed zero data loss across upgrades. Customer databases (`tindapos.db`), credit ledgers, and VIP Pro machine licenses remain 100% permanently active and valid.
+
+---
 
 ## ✨ What's New in v1.0.42 (Instant Hardware Barcode Auto-Capture & Inventory Speed Cataloging)
 
