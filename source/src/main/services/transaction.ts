@@ -30,9 +30,9 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
       if (!saleItem) throw new Error('Invalid sale item.')
       if (it.product_id !== saleItem.product_id) throw new Error('Refund product does not match the sale item.')
       const available = saleItem.qty_base - saleItem.refunded_qty_base
-      if (!Number.isInteger(it.qty_base) || it.qty_base <= 0 || it.qty_base > available)
+      if (!Number.isFinite(it.qty_base) || it.qty_base <= 0 || it.qty_base > available)
         throw new Error(`Cannot refund ${it.qty_base}. Only ${available} available.`)
-      const qty = Math.ceil(it.qty_base / (saleItem.unit_price_c === 0 ? 1 : 1)) // qty units derived if needed
+      const qty = it.qty_base / (saleItem.unit_price_c === 0 ? 1 : 1) // qty units derived if needed
       const amountC = Math.round((it.qty_base / saleItem.qty_base) * saleItem.subtotal_c)
       totalC += amountC
       return { ...it, amount_c: amountC, qty }

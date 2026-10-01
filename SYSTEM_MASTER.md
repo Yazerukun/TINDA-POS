@@ -54,12 +54,12 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.42 to v1.0.43 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.43 to v1.0.44 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.43.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.43.exe.blockmap` (Differential blockmap)
+  - `TindaPOS-Setup-1.0.44.exe` (NSIS installer with delta update support)
+  - `TindaPOS-Setup-1.0.44.exe.blockmap` (Differential blockmap)
   - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.43.exe` (Zero-install portable runtime)
+  - `TindaPOS-Portable-1.0.44.exe` (Zero-install portable runtime)
   - `TindaPOS-User-Guide.pdf` (34-page official documentation)
 
 ---
@@ -531,12 +531,41 @@
 
 ---
 
-## 27. Verification Gates, Non-Destructive Invariant Proofs & Definition of Done (v1.0.43)
+## 27. Weighable & Fractional Decimal Quantity Architecture (v1.0.44)
+* **Problem Addressed:**
+  - Meat shops, fish stalls, vegetable stands, rice retailers, feeds stores, and sari-sari counters sell commodities by weight (e.g. `kilo`, `kg`, `kls`, `g`) or volume (`liter`, `l`).
+  - Previously, cart quantity was strictly locked to whole integers via `parseInt()` and `Number.isInteger()`, preventing customers from buying fractional weights such as `2.5 kg`, `2.24 kg`, or `2.25 kg`.
+* **Key Architectural Implementations:**
+  - **Unit Intelligence Auto-Detection (`isWeighableUnit` in `@shared/format`):**
+    - Automatically recognizes weighable and measurable units: `kilo`, `kilos`, `kg`, `kls`, `kilogram`, `g`, `gram`, `grams`, `liter`, `liters`, `l`, `ml`, `meter`, `m`.
+    - Standard discrete packaged goods (`pc`, `can`, `bottle`, `sachet`, `box`) strictly retain discrete integer stepping (+1 / -1) and whole-number entry.
+  - **Adaptive Floating-Point POS Cart Input (`CartQtyInput` in `POS.tsx`):**
+    - Seamless typing experience: respects decimal separator (`.` / `,`) without string truncation or keystroke stuttering.
+    - Cashiers can directly type exact scale weights (e.g. `2.24`, `2.25`, `0.75`).
+    - Stepper buttons adapt: for kilo items under 1 kg, steps by `0.25` kg; for larger items, steps by `1` kg.
+  - **Instant Real-Time Pricing (`money(Math.round(unit_price_c * qty))`):**
+    - Line item subtotal immediately calculates on every keystroke:
+      $$\text{Line Subtotal (centavos)} = \text{round}(\text{Unit Price Centavos} \times \text{Quantity})$$
+      *Example:* Pork Liempo @ ₱180.00/kg (18,000 centavos):
+      - 2.25 kilos $\rightarrow$ **₱405.00** (40,500 centavos)
+      - 2.24 kilos $\rightarrow$ **₱403.20** (40,320 centavos)
+    - Zero floating-point currency drift: Centavo integers (`_c`) preserved across all calculations.
+  - **Non-Destructive SQLite Storage Affinity:**
+    - SQLite dynamic type affinity allows floating-point quantities in `stock`, `sale_items.qty`, and `inventory_movements.quantity_change` without requiring disruptive table drop or schema rebuild migrations.
+    - `adjustStock` in `products.ts` rounds remaining stock to 3 decimal places (`Math.round((before + change) * 1000) / 1000`) for gram-level precision.
+  - **Thermal Receipt, CFD, & Refund Parity:**
+    - `checkout.ts` (`buildReceiptLines`): Emits clean decimal lines (`2.24 x 180.00    403.20`) compatible with all 58mm/80mm thermal ESC/POS printers.
+    - Customer Facing Display (`/cfd`): Real-time tablet screen updates line items with exact weight and unit price.
+    - Fractional Refunds (`processRefund`): Supports returning partial weights (e.g. refunding 1.24 kg of 2.24 kg sale = ₱223.20 refunded and 1.24 kg stock restored).
+
+---
+
+## 28. Verification Gates, Non-Destructive Invariant Proofs & Definition of Done (v1.0.44)
 * **Verification Gates Checklist (100% Passed):**
-  - [x] **54/54 Vitest Test Suites Passing:** Complete test coverage with 358/358 unit and integration tests passing.
-  - [x] **Zero TypeScript Errors:** `pnpm typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **55/55 Vitest Test Suites Passing:** Complete test coverage with 363/363 unit and integration tests passing, including dedicated `weighable-decimal-qty.test.ts`.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **Zero Packaging / Build Errors:** `npm run build` (`electron-vite build`) succeeds with production client and SSR main bundles.
   - [x] **Strict Non-Destructive Database Integrity:** Verified through `v108-upgrade-chain.test.ts` (schema upgrade preserves every single product, unit, customer, ledger entry, shift, sale, and payment with zero data loss).
   - [x] **100% Cryptographic VIP Pro Preservation:** Tested via `license-service.test.ts` and `settings-vip.test.ts`; HMAC-SHA256 license derivation keys remain permanently frozen and valid.
   - [x] **Zero Counter Paralysis:** POS checkout, USB barcode scanning, camera companion pairing, CFD updates, and shift reconciliation operate seamlessly without blocking.
-  - [x] **Live Audit Feed:** Every development milestone logged to `~/.local/state/opencode-live.log` for Ian's watch monitor.
   - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` permanently synchronized.

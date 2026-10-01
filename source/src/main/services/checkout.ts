@@ -64,7 +64,8 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   lines.push('--------------------------------')
   for (const it of sale.items) {
     lines.push(`${it.product_name}`)
-    lines.push(`  ${it.qty} x ${(it.unit_price_c / 100).toFixed(2)}        ${(it.subtotal_c / 100).toFixed(2)}`)
+    const qtyStr = it.qty % 1 === 0 ? String(it.qty) : Number(it.qty.toFixed(3)).toString()
+    lines.push(`  ${qtyStr} x ${(it.unit_price_c / 100).toFixed(2)}        ${(it.subtotal_c / 100).toFixed(2)}`)
   }
   lines.push('--------------------------------')
   lines.push(`Subtotal      ${(sale.subtotal_c / 100).toFixed(2)}`)
@@ -83,7 +84,9 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
     lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
   lines.push('--------------------------------')
-  lines.push(`Total Items: ${sale.items.reduce((total, item) => total + item.qty, 0)}`)
+  const totalCount = sale.items.reduce((total, item) => total + item.qty, 0)
+  const totalCountStr = totalCount % 1 === 0 ? String(totalCount) : Number(totalCount.toFixed(3)).toString()
+  lines.push(`Total Items: ${totalCountStr}`)
   lines.push(store.footer || 'Salamat po!')
   if (!isVip) {
     lines.push('[ Powered by TINDA POS Free Community ]')

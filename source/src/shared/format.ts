@@ -57,3 +57,16 @@ export function quantityBreakdown(base: number, units: { name: string; conversio
   }
   return parts.join(' + ')
 }
+
+const WEIGHABLE_UNITS_REGEX = /^(kilo|kilos|kg|kls|kilogram|kilograms|g|gram|grams|l|liter|liters|litre|litres|ml|milliliter|milliliters|m|meter|meters)$/i
+
+export function isWeighableUnit(unitName: string | null | undefined): boolean {
+  if (!unitName) return false
+  return WEIGHABLE_UNITS_REGEX.test(unitName.trim())
+}
+
+export function formatQuantity(qty: number, unitName?: string | null): string {
+  if (!Number.isFinite(qty)) return '0'
+  const valStr = qty % 1 === 0 ? String(qty) : Number(qty.toFixed(3)).toString()
+  return unitName ? `${valStr} ${unitName}` : valStr
+}

@@ -301,7 +301,7 @@ handle('inventory:restock', (_e: IpcMainInvokeEvent, input: unknown) => {
   const unit = product.units.find((u) => u.name === i.unit_name)
   if (!unit) throw new Error('Select a valid product unit.')
   const qtyBase = i.quantity * unit.conversion_to_base
-  if (!Number.isInteger(qtyBase)) throw new Error('Restock must convert to a whole base unit.')
+  if (!Number.isFinite(qtyBase)) throw new Error('Restock must convert to a valid number.')
   const supplier = i.supplier_id ? supRepo.getSupplier(db(), i.supplier_id) : null
   const reason = [`Restock: ${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, supplier ? `Supplier: ${supplier.name}` : '', i.cost_c ? `Cost: ${i.cost_c}` : '', i.notes?.trim() || ''].filter(Boolean).join(' | ')
   db().transaction(() => prodRepo.adjustStock(db(), i.product_id, qtyBase, 'PURCHASE', reason, user().id, i.reference, {
@@ -352,7 +352,7 @@ handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
   const unit = product.units.find((u) => u.name === i.unit_name)
   if (!unit) throw new Error('Select a valid product unit.')
   const qtyBase = i.quantity * unit.conversion_to_base
-  if (!Number.isInteger(qtyBase)) throw new Error('Withdrawal must convert to a whole base unit.')
+  if (!Number.isFinite(qtyBase)) throw new Error('Withdrawal must convert to a valid number.')
   const reason = [`Withdrawal: ${i.reason}`, `${i.quantity} ${unit.name} x ${unit.conversion_to_base} = ${qtyBase} ${product.base_unit}`, i.notes?.trim() || ''].filter(Boolean).join(' | ')
   prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'WITHDRAWAL', reason, user().id, undefined, { batch_id: i.batch_id })
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]

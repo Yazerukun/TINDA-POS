@@ -443,9 +443,9 @@ export function adjustStock(
     | { id: number; stock: number; base_unit: string }
     | undefined
   if (!p) throw new Error('Product not found.')
-  if (!Number.isInteger(change)) throw new Error('Quantity must be a whole base unit.')
+  if (!Number.isFinite(change)) throw new Error('Quantity must be a valid number.')
   const before = p.stock
-  const after = before + change
+  const after = Math.round((before + change) * 1000) / 1000
   if (after < 0) throw new Error('Insufficient stock — cannot go negative.')
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
   const movement = db.prepare(

@@ -29,7 +29,7 @@ import { CounterCameraScanner } from '../components/CounterCameraScanner'
 import { QuickExpenseModal } from '../components/QuickExpenseModal'
 import { useGuide } from '../stores/guide'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
-import { money } from '@shared/format'
+import { money, isWeighableUnit, formatQuantity } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
 import { ReceiptPaper } from '../components/ReceiptPaper'
 import type { PaymentInput } from '@shared/ipc'
@@ -96,9 +96,10 @@ export const usePosCart = create<CartState>((set) => ({
     set((s) => {
       const stock = saleStock(p)
       const ex = s.items.find((i) => i.product_id === p.id)
-      if (stock < 1) return s
+      if (stock <= 0) return s
+      const weighable = isWeighableUnit(p.base_unit)
       if (ex) {
-        const nextQty = Math.min(ex.qty + 1, maxQuantity(stock, ex.conversion_to_base))
+        const nextQty = Math.min(ex.qty + 1, maxQuantity(stock, ex.conversion_to_base, weighable))
         const { unitPriceC, isWholesale } = calculateItemUnitPrice(
           ex.base_price_c ?? ex.unit_price_c,
           nextQty,
@@ -151,10 +152,10 @@ export const usePosCart = create<CartState>((set) => ({
       items: s.items
         .map((i) => {
           if (i.product_id !== product_id) return i
-          const nextQty = Math.min(
-            Math.max(0, Number.isFinite(qty) ? qty : 0),
-            maxQuantity(i.stock_base, i.conversion_to_base)
-          )
+          const weighable = isWeighableUnit(i.unit_name)
+          const safeQty = Number.isFinite(qty) ? (weighable ? Math.round(qty * 1000) / 1000 : Math.round(qty)) : 0
+          const maxQ = maxQuantity(i.stock_base, i.conversion_to_base, weighable)
+          const nextQty = Math.min(Math.max(0, safeQty), maxQ)
           const { unitPriceC, isWholesale } = calculateItemUnitPrice(
             i.base_price_c ?? i.unit_price_c,
             nextQty,
@@ -251,7 +252,7 @@ export function POS(): React.JSX.Element {
       qty: i.qty,
       unit_name: i.unit_name,
       price_c: i.unit_price_c,
-      subtotal_c: i.qty * i.unit_price_c
+      subtotal_c: Math.round(i.qty * i.unit_price_c)
     }))
     const subtotal_c = items.reduce((sum, x) => sum + x.subtotal_c, 0)
     const discount_c = cartDiscount
@@ -675,7 +676,7 @@ export function POS(): React.JSX.Element {
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
                   <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
-                    {blocked > 0 ? `Sellable: ${stock}` : cartItem ? `Available: ${available} / ${stock}` : `Stock: ${stock}`} {p.base_unit}
+                    {blocked > 0 ? `Sellable: ${formatQuantity(stock)}` : cartItem ? `Available: ${formatQuantity(available)} / ${formatQuantity(stock)}` : `Stock: ${formatQuantity(stock)}`} {p.base_unit}
                   </span>
                 </div>
                 <div className="flex items-start gap-2.5 min-w-0">
@@ -731,6 +732,75 @@ export function POS(): React.JSX.Element {
   )
 }
 
+function CartQtyInput({
+  item,
+  inputRef
+}: {
+  item: CartItem
+  inputRef?: React.RefObject<HTMLInputElement | null>
+}): React.JSX.Element {
+  const weighable = isWeighableUnit(item.unit_name)
+  const [val, setVal] = useState(String(item.qty))
+
+  useEffect(() => {
+    if (parseFloat(val) !== item.qty) {
+      setVal(String(item.qty))
+    }
+  }, [item.qty])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    if (weighable) {
+      if (!/^\d*\.?\d*$/.test(raw)) return
+      setVal(raw)
+      const parsed = parseFloat(raw)
+      if (!isNaN(parsed) && parsed > 0) {
+        usePosCart.getState().setQty(item.product_id, parsed)
+      }
+    } else {
+      const clean = raw.replace(/\D/g, '')
+      setVal(clean)
+      const parsed = parseInt(clean || '0', 10)
+      usePosCart.getState().setQty(item.product_id, parsed)
+    }
+  }
+
+  const handleBlur = () => {
+    const parsed = parseFloat(val)
+    if (isNaN(parsed) || parsed <= 0) {
+      if (parsed === 0) {
+        usePosCart.getState().remove(item.product_id)
+      } else {
+        setVal(String(item.qty))
+      }
+    } else {
+      usePosCart.getState().setQty(item.product_id, parsed)
+      setVal(String(item.qty))
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur()
+    }
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      inputMode={weighable ? 'decimal' : 'numeric'}
+      value={val}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      aria-label={`Quantity for ${item.name}`}
+      className={`h-10 ${weighable ? 'w-20' : 'w-14'} rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-base font-bold text-white focus:border-brand-500 focus:outline-none`}
+      title={weighable ? 'Enter weight/kilos (e.g. 2.5, 2.24). Press F2 to focus' : 'Press F2 to focus quantity'}
+    />
+  )
+}
+
 function CartPanel({
   counterCameraEnabled,
   onToggleCounterCamera,
@@ -750,7 +820,7 @@ function CartPanel({
   const discountInputRef = useRef<HTMLInputElement>(null)
   const lastQtyInputRef = useRef<HTMLInputElement>(null)
 
-  const subtotal = useMemo(() => items.reduce((s, i) => s + i.unit_price_c * i.qty, 0), [items])
+  const subtotal = useMemo(() => items.reduce((s, i) => s + Math.round(i.unit_price_c * i.qty), 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
   const stockConflict = cartHasStockConflict(items)
 
@@ -778,7 +848,7 @@ function CartPanel({
           unit_price_c: item.unit_price_c,
           cost_base_c: item.cost_base_c,
           stock_base: item.stock_base,
-          subtotal_c: item.unit_price_c * item.qty
+          subtotal_c: Math.round(item.unit_price_c * item.qty)
         })),
         discount_c: discount_pesos,
         customer_id: null,
@@ -939,18 +1009,33 @@ function CartPanel({
             </div>
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty - 1)} className="btn-ghost-2 h-10 w-10 rounded-lg" title="Decrease quantity"><Minus className="h-3.5 w-3.5" /></button>
-                <input
-                  ref={idx === items.length - 1 ? lastQtyInputRef : undefined}
-                  value={i.qty}
-                  onChange={(e) => usePosCart.getState().setQty(i.product_id, parseInt(e.target.value || '0', 10))}
-                  aria-label={`Quantity for ${i.name}`} className="h-10 w-14 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-base font-bold text-white"
-                  title="Press F2 to focus quantity"
-                />
-                <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-10 w-10 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
+                <button
+                  onClick={() => {
+                    const weighable = isWeighableUnit(i.unit_name)
+                    const step = weighable && i.qty <= 1 ? (i.qty > 0.25 ? 0.25 : i.qty) : 1
+                    usePosCart.getState().setQty(i.product_id, Math.max(0, Math.round((i.qty - step) * 1000) / 1000))
+                  }}
+                  className="btn-ghost-2 h-10 w-10 rounded-lg"
+                  title="Decrease quantity"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <CartQtyInput item={i} inputRef={idx === items.length - 1 ? lastQtyInputRef : undefined} />
+                <button
+                  disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name))}
+                  onClick={() => {
+                    const weighable = isWeighableUnit(i.unit_name)
+                    const step = weighable && i.qty < 1 ? 0.25 : 1
+                    usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000) / 1000)
+                  }}
+                  className="btn-ghost-2 h-10 w-10 rounded-lg disabled:opacity-30"
+                  title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name)) ? `Only ${formatQuantity(maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name)))} remaining` : 'Increase quantity'}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-white">{money(i.unit_price_c * i.qty)}</p>
+                <p className="text-lg font-bold text-white">{money(Math.round(i.unit_price_c * i.qty))}</p>
                 <p className="text-sm text-slate-400">
                   @{money(i.unit_price_c)} / {i.unit_name}
                   {i.is_wholesale && i.base_price_c && i.base_price_c > i.unit_price_c && (
@@ -961,7 +1046,7 @@ function CartPanel({
                 </p>
               </div>
             </div>
-            <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {availableBase(i.stock_base, i)} base units / {i.stock_base}</p>
+            <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {formatQuantity(availableBase(i.stock_base, i))} {i.unit_name} / {formatQuantity(i.stock_base)} {i.unit_name}</p>
           </div>
         ))}
       </div>
