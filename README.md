@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.43-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.44-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,11 +16,29 @@
 
 <br />
 
-[⬇️ Download v1.0.43 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-Setup-1.0.43.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-Portable-1.0.43.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.43/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.44 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-Setup-1.0.44.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-Portable-1.0.44.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.43 (Full 5-Phase Expansion Suite)
+## ✨ What's New in v1.0.44 (Weighable & Fractional Decimal Quantity Mode)
+
+> **Kilo & Scale Precision, Real-Time Peso Totaling, Fractional Inventory Deductions, Thermal Receipt & CFD Parity**
+
+- 🥩 **Weighable & Fractional Decimal Quantity Engine ("Kilo Mode")**: Tailored specifically for Philippine meat shops, fish vendors, vegetable stands, rice retailers, feeds stores, and sari-sari counters. Cashiers can now enter fractional weights directly into the POS cart (e.g. `2.5 kg`, `2.24 kg`, `2.25 kg`, `0.75 kg`) without integer truncation.
+- 🎯 **Intelligent Unit Detection (`isWeighableUnit`)**: Automatically recognizes weighable and measurable commodities (`kilo`, `kg`, `kls`, `kilogram`, `g`, `gram`, `liter`, `l`, `ml`, `m`). Packaged goods (`pc`, `bottle`, `can`, `sachet`, `box`) strictly retain whole-number stepping (+1 / -1) and discrete integer rules.
+- 🧮 **Instant Real-Time Peso Totaling**: Line subtotals dynamically compute on every keystroke:
+  $$\text{Subtotal} = \text{round}(\text{Unit Price} \times \text{Weight})$$
+  *Example:* Fresh Pork Liempo @ ₱180.00/kilo:
+  - `2.25 kg` $\rightarrow$ **₱405.00**
+  - `2.24 kg` $\rightarrow$ **₱403.20**
+  - `0.50 kg` $\rightarrow$ **₱90.00**
+  Centavo integer precision (`_c`) guarantees zero floating-point currency drift.
+- 🧾 **Thermal ESC/POS Receipt, CFD & Refund Parity**:
+  - Receipt printouts format clean lines (`2.24 x 180.00    403.20`) compatible with all 58mm/80mm thermal printers.
+  - Wireless Customer Facing Display (`/cfd`) presents live weight breakdown in real time.
+  - Partial weight returns supported via atomic inventory stock restoration (e.g. refunding 1.24 kg of 2.24 kg sale returns ₱223.20 to customer and restores 1.24 kg to stock).
+- 🛡️ **100% Cryptographic VIP Pro Preservation**: Existing customer VIP Pro licenses (`tinda_license.json`) remain 100% permanently valid and active across the upgrade with zero downtime or re-activation burden.
+- 🔄 **Seamless Auto-Update Compatibility**: Direct transition from v1.0.28–v1.0.43 to v1.0.44 via `electron-updater` and GitHub Releases.
 
 > **Petty Cash Out & True Net Profit, Expiry Management, Wireless Customer Screen (CFD) with Dynamic QR, Wholesale Tiering & Cross-Platform Parity**
 
