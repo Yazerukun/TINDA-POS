@@ -33,7 +33,13 @@ export const defaultSettings: StoreSettings = {
   vps_sync_enabled: false,
   vps_server_url: '',
   vps_api_token: '',
-  vps_sync_interval_mins: 5
+  vps_sync_interval_mins: 5,
+  cloud_sync_enabled: false,
+  cloud_api_url: 'https://tinda-sync.yomikaze-md.workers.dev',
+  cloud_store_id: '',
+  cloud_sync_key: '',
+  cloud_last_synced_at: null,
+  cloud_sync_pending: false
 }
 
 export function getSettings(db: Database.Database): StoreSettings {

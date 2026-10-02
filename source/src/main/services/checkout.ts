@@ -96,8 +96,8 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
 
 export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: string[] } {
   const db = getDb()
+  const u = requireUser()
   const saleId = db.transaction(() => {
-    const u = requireUser()
     requirePermission('pos:checkout')
     const lines = buildLines(db, payload.items)
     const subtotal = lines.reduce((s, l) => s + l.cart.subtotal_c, 0)
@@ -178,6 +178,36 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   try {
     const { broadcastSaleCompleted } = require('../index')
     broadcastSaleCompleted(sale)
+  } catch {}
+
+  try {
+    const { pushSaleToCloud } = require('./cloudSync')
+    const payments = (sale as any).payments || []
+    const getAmt = (m: string): number =>
+      payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
+    pushSaleToCloud(db, {
+      local_sale_id: sale.id,
+      transaction_no: sale.transaction_no,
+      cashier_name: u.full_name || u.username,
+      customer_name: (sale as any).customer_name || null,
+      subtotal_c: sale.subtotal_c,
+      discount_c: sale.discount_c,
+      total_c: sale.total_c,
+      status: sale.status,
+      cash_c: getAmt('CASH'),
+      gcash_c: getAmt('GCASH'),
+      maya_c: getAmt('MAYA'),
+      utang_c: getAmt('UTANG'),
+      local_shift_id: sale.shift_id,
+      sold_at: sale.created_at,
+      items: ((sale as any).items || []).map((it: any) => ({
+        product_name: it.product_name || it.name || 'Item',
+        unit_name: it.unit_name || 'pc',
+        qty: it.qty,
+        unit_price_c: it.unit_price_c,
+        subtotal_c: it.subtotal_c
+      }))
+    }).catch(() => {})
   } catch {}
   const settings = getSettings(db)
   const receipt = buildReceiptLines(

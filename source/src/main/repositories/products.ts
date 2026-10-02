@@ -478,6 +478,22 @@ export function adjustStock(
     }
   }
   applyExpirationStock(db, productId, change, movementType, movementId, receiving)
+  try {
+    const { pushStockToCloud } = require('../services/cloudSync')
+    const prodName = (db.prepare('SELECT name FROM products WHERE id=?').get(productId) as { name: string })?.name || 'Item'
+    pushStockToCloud(db, {
+      local_movement_id: movementId,
+      product_name: prodName,
+      movement_type: movementType,
+      quantity_change: change,
+      quantity_before: before,
+      quantity_after: after,
+      unit: p.base_unit,
+      reference: reference ?? null,
+      reason: reason ?? null,
+      moved_at: new Date().toISOString()
+    }).catch(() => {})
+  } catch {}
   })()
 }
 

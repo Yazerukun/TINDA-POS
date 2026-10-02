@@ -59,7 +59,29 @@ export function finalizeZ(db: Database.Database, shiftId: number, userId: number
     const reportNo = `ZR-${new Date().getFullYear()}-${String((db.prepare('SELECT COUNT(*) c FROM z_reads').get() as {c:number}).c + 1).padStart(6,'0')}`
     db.prepare('INSERT INTO z_reads(shift_id,report_no,snapshot_json,finalized_by) VALUES (?,?,?,?)').run(shiftId, reportNo, JSON.stringify(snapshot), userId)
     shifts.closeShift(db, shiftId, { actual_cash_c: actualCashC, closing_note: note || `Finalized by ${reportNo}` })
-    return getZ(db, Number((db.prepare('SELECT id FROM z_reads WHERE shift_id=?').get(shiftId) as {id:number}).id))
+    const z = getZ(db, Number((db.prepare('SELECT id FROM z_reads WHERE shift_id=?').get(shiftId) as {id:number}).id))
+    try {
+      const { pushShiftToCloud } = require('./cloudSync')
+      const snap = z.snapshot
+      pushShiftToCloud(db, {
+        local_shift_id: shiftId,
+        cashier_name: snap.cashier_name || 'Cashier',
+        shift_date: (snap.opened_at || new Date().toISOString()).slice(0, 10),
+        opened_at: snap.opened_at || '',
+        closed_at: snap.closed_at || new Date().toISOString(),
+        gross_sales_c: snap.gross_sales_c || 0,
+        cash_c: snap.cash_c || 0,
+        gcash_c: snap.gcash_c || 0,
+        maya_c: snap.maya_c || 0,
+        utang_c: snap.utang_c || 0,
+        refund_total_c: snap.refunds_c || 0,
+        void_count: snap.void_count || 0,
+        transaction_count: snap.transaction_count || 0,
+        expenses_c: snap.expenses_c || 0,
+        net_sales_c: snap.net_sales_c || 0
+      }).catch(() => {})
+    } catch {}
+    return z
   })()
 }
 

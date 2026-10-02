@@ -995,6 +995,26 @@ handle('license:deactivate', () => {
 })
 handle('license:copyMachineId', () => licenseService.getMachineId())
 
+// ---- VIP Pro Cloud Dashboard Sync ----
+handle('cloud:status', () => {
+  const isVip = licenseService.getStatus().isVip
+  const { ensureSyncCredentials } = require('../services/cloudSync')
+  const settings = ensureSyncCredentials(db())
+  return {
+    isVip,
+    settings
+  }
+})
+handle('cloud:syncNow', async () => {
+  sessionSvc.requirePermission('settings:manage')
+  const { syncNow } = require('../services/cloudSync')
+  return await syncNow(db())
+})
+handle('cloud:updateSettings', (_e: IpcMainInvokeEvent, patch: Record<string, unknown>) => {
+  sessionSvc.requirePermission('settings:manage')
+  return settingRepo.updateSettings(db(), patch as any)
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }

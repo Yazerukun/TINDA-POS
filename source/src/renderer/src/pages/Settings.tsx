@@ -26,7 +26,12 @@ import {
   ExternalLink,
   FolderOpen,
   HardDriveDownload,
-  Database
+  Database,
+  Cloud,
+  Eye,
+  EyeOff,
+  Globe,
+  BookOpen
 } from 'lucide-react'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
@@ -41,7 +46,7 @@ import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { VipUpgradeBanner } from '../components/VipUpgradeBanner'
 import { LegalModal, type LegalTab } from '../components/LegalModal'
 
-type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'VIP' | 'ABOUT'
+type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'CLOUD' | 'VIP' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
@@ -143,7 +148,15 @@ export function Settings(): React.JSX.Element {
               tab === 'NETWORK' ? '!border-brand-500 !text-brand-400 !bg-brand-500/10' : ''
             }`}
           >
-            <Network className="h-4 w-4" /> Multi-PC & Cloud
+            <Network className="h-4 w-4" /> Multi-PC Hub
+          </button>
+          <button
+            onClick={() => setTab('CLOUD')}
+            className={`btn-ghost flex items-center gap-2 text-xs md:text-sm px-3.5 py-2 ${
+              tab === 'CLOUD' ? '!border-sky-500 !text-sky-400 !bg-sky-500/10' : ''
+            }`}
+          >
+            <Cloud className="h-4 w-4 text-sky-400" /> Cloud Dashboard (VIP)
           </button>
           <button
             onClick={() => setTab('VIP')}
@@ -189,6 +202,11 @@ export function Settings(): React.JSX.Element {
           {tab === 'NETWORK' && (
             <div className="w-full max-w-3xl">
               <NetworkSettingsTab />
+            </div>
+          )}
+          {tab === 'CLOUD' && (
+            <div className="w-full max-w-3xl">
+              <CloudSettingsTab isVip={licenseStatus?.isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
             </div>
           )}
           {tab === 'VIP' && (
@@ -1109,6 +1127,314 @@ function ResetPinModal({ user, onClose }: { user: { id: number; full_name: strin
     }>
       <label className="label">New 4-digit PIN</label>
       <input value={pin} maxLength={4} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} className="input w-full text-2xl tracking-widest" autoFocus />
+    </Modal>
+  )
+}
+
+function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick: () => void }): React.JSX.Element {
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [settings, setSettings] = useState<import('@shared/types').StoreSettings | null>(null)
+  const [showKey, setShowKey] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+
+  const loadStatus = async (): Promise<void> => {
+    try {
+      const res = await window.api.cloud.status()
+      setSettings(res.settings)
+    } catch (e) {
+      toastError('Failed to load cloud status', String((e as Error)?.message || e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadStatus()
+  }, [])
+
+  const handleToggleSync = async (enabled: boolean): Promise<void> => {
+    if (!isVip && enabled) {
+      onUpgradeClick()
+      return
+    }
+    try {
+      const updated = await window.api.cloud.updateSettings({ cloud_sync_enabled: enabled })
+      setSettings(updated)
+      toastSuccess(enabled ? 'Cloud sync enabled' : 'Cloud sync disabled')
+    } catch (e) {
+      toastError('Failed to update sync setting', String((e as Error)?.message || e))
+    }
+  }
+
+  const handleSyncNow = async (): Promise<void> => {
+    setSyncing(true)
+    try {
+      const res = await window.api.cloud.syncNow()
+      if (res.ok) {
+        toastSuccess('Cloud Connected', res.message)
+      } else {
+        toastError('Sync Failed', res.message)
+      }
+      await loadStatus()
+    } catch (e) {
+      toastError('Connection error', String((e as Error)?.message || e))
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const copyText = (val: string, label: string): void => {
+    navigator.clipboard.writeText(val)
+    toastSuccess('Copied to Clipboard', `${label} copied`)
+  }
+
+  const openOwnerWebsite = (): void => {
+    void window.api.app.openExternal('https://tinda-owner-dashboard.pages.dev/')
+  }
+
+  if (loading) {
+    return <div className="card p-8 text-center text-slate-400">Loading Cloud Dashboard Status...</div>
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* VIP Status Card */}
+      <div className={`card p-6 border ${isVip ? 'border-sky-500/30 bg-gradient-to-br from-sky-500/5 via-ink-900 to-ink-900' : 'border-ink-line'}`}>
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isVip ? 'bg-sky-500/20 text-sky-400 border border-sky-500/40 shadow-lg shadow-sky-500/10' : 'bg-ink-800 text-slate-500 border border-ink-line'}`}>
+              <Cloud className="w-6 h-6 text-sky-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-100">Executive Cloud Owner Dashboard</h3>
+                {isVip ? (
+                  <span className="badge bg-sky-500/20 text-sky-300 border border-sky-500/40 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> VIP UNLOCKED
+                  </span>
+                ) : (
+                  <span className="badge bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    VIP PRO REQUIRED
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-1 max-w-xl">
+                Real-time remote store monitoring for business owners. Check daily sales revenue, stock levels, cashier shifts, and Z-read reports from your smartphone anywhere in the world.
+              </p>
+            </div>
+          </div>
+
+          {!isVip && (
+            <button
+              onClick={onUpgradeClick}
+              className="btn-primary flex items-center gap-2 text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-ink-950 border-0 shadow-md"
+            >
+              <Crown className="h-3.5 w-3.5" /> Unlock VIP Pro
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Cloud Sync Configuration Card */}
+      {settings && (
+        <div className="card p-6 border border-ink-line space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-ink-line">
+            <div>
+              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <Cloud className="w-5 h-5 text-sky-400" /> Live Cloud Sync Integration
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Automatically pushes sales and stock events to your Cloudflare Worker & Web Dashboard.
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span className="text-xs font-semibold text-slate-300">
+                {settings.cloud_sync_enabled ? 'Syncing Enabled' : 'Syncing Disabled'}
+              </span>
+              <input
+                type="checkbox"
+                checked={Boolean(settings.cloud_sync_enabled)}
+                onChange={(e) => void handleToggleSync(e.target.checked)}
+                className="w-5 h-5 accent-sky-500 rounded cursor-pointer"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Store ID (Branch UUID)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={settings.cloud_store_id || 'Generating...'}
+                  className="input w-full font-mono text-xs bg-ink-950 text-slate-300"
+                />
+                {settings.cloud_store_id && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(settings.cloud_store_id, 'Store ID')}
+                    className="btn-ghost px-3"
+                    title="Copy Store ID"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Enter this Store ID on your Owner Dashboard to pair this terminal.
+              </p>
+            </div>
+
+            <div>
+              <label className="label">Branch Sync Key (Secret Token)</label>
+              <div className="flex gap-2">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  readOnly
+                  value={settings.cloud_sync_key || '••••••••••••••••••••••••'}
+                  className="input w-full font-mono text-xs bg-ink-950 text-slate-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="btn-ghost px-3"
+                  title="Show/Hide Key"
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                {settings.cloud_sync_key && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(settings.cloud_sync_key, 'Sync Key')}
+                    className="btn-ghost px-3"
+                    title="Copy Sync Key"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Secret authentication token for your owner account. Never share publicly.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-ink-950/60 p-4 rounded-xl border border-ink-line/60 flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-xs text-slate-400">
+                Last Successful Sync:{' '}
+                <span className="text-slate-200 font-medium">
+                  {settings.cloud_last_synced_at
+                    ? new Date(settings.cloud_last_synced_at).toLocaleString()
+                    : 'Never synced yet'}
+                </span>
+              </div>
+              {settings.cloud_sync_pending && (
+                <div className="text-xs text-amber-400 font-semibold flex items-center gap-1">
+                  ⚠️ Offline queue pending — will retry on next transaction
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void handleSyncNow()}
+                disabled={syncing || !settings.cloud_sync_enabled}
+                className="btn-ghost flex items-center gap-2 text-xs"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Connecting...' : 'Sync Now'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGuide(true)}
+                className="btn-secondary flex items-center gap-1.5 text-xs text-sky-300 border-sky-500/30 hover:border-sky-500/60"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-sky-400" /> Setup Guide
+              </button>
+
+              <button
+                type="button"
+                onClick={openOwnerWebsite}
+                className="btn-primary flex items-center gap-2 text-xs bg-sky-600 hover:bg-sky-500 border-0 text-white"
+              >
+                <Globe className="w-3.5 h-3.5" /> Open Web Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGuide && <CloudGuideModal onClose={() => setShowGuide(false)} />}
+    </div>
+  )
+}
+
+function CloudGuideModal({ onClose }: { onClose: () => void }): React.JSX.Element {
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="Guide: Connecting to Owner Cloud Dashboard"
+      maxWidth="max-w-2xl"
+      footer={
+        <div className="flex justify-between items-center w-full">
+          <span className="text-xs text-slate-500">TINDA POS VIP Exclusive Feature</span>
+          <button onClick={onClose} className="btn-primary text-xs">
+            Got it, Close
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4 text-xs text-slate-300">
+        <div className="p-3 bg-brand-500/10 border border-brand-500/20 rounded-xl space-y-1">
+          <p className="font-semibold text-brand-300">
+            Monitor your store sales, cashiers, and stock anywhere in the world in real time from your mobile phone or laptop.
+          </p>
+          <p className="text-[11px] text-slate-400">
+            Web Dashboard URL:{' '}
+            <button
+              onClick={() => void window.api.app.openExternal('https://tinda-owner-dashboard.pages.dev/')}
+              className="text-sky-400 underline font-mono hover:text-sky-300"
+            >
+              https://tinda-owner-dashboard.pages.dev/
+            </button>
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-white text-sm">Step 1: Activate Cloud Sync on this POS Terminal</h4>
+          <ol className="list-decimal pl-5 space-y-1.5 text-slate-300">
+            <li>Ensure your VIP Pro license is active on this POS terminal.</li>
+            <li>Toggle <strong>Syncing Enabled</strong> to ON.</li>
+            <li>Your unique <strong>Store ID</strong> and secret <strong>Sync Key</strong> are automatically generated.</li>
+            <li>Click the copy icon to copy your <strong>Store ID</strong> and <strong>Sync Key</strong>.</li>
+          </ol>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-white text-sm">Step 2: Access Owner Dashboard</h4>
+          <ol className="list-decimal pl-5 space-y-1.5 text-slate-300">
+            <li>Open the website on your phone, tablet, or browser: <strong className="text-white">https://tinda-owner-dashboard.pages.dev</strong></li>
+            <li>If you are a new user, click <strong>Create Owner Account</strong> to create your username and password.</li>
+            <li>Log in with your owner credentials.</li>
+          </ol>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-white text-sm">Step 3: Connect this Store Branch</h4>
+          <ol className="list-decimal pl-5 space-y-1.5 text-slate-300">
+            <li>In the dashboard, navigate to <strong>Branches / Settings</strong> and click <strong>Add Branch</strong>.</li>
+            <li>Paste the <strong>Store ID</strong> and <strong>Sync Key</strong> from this POS terminal.</li>
+            <li>Enter your store branch name (e.g., Main Branch).</li>
+            <li>Click <strong>Connect Branch</strong>. All completed sales, stock movements, and shift Z-reads will automatically stream live to your phone dashboard!</li>
+          </ol>
+        </div>
+      </div>
     </Modal>
   )
 }

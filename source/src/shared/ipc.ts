@@ -440,6 +440,11 @@ export interface TindaApi {
     deactivate: () => Promise<{ ok: boolean; message: string }>
     copyMachineId: () => Promise<string>
   }
+  cloud: {
+    status: () => Promise<{ isVip: boolean; settings: import('@shared/types').StoreSettings }>
+    syncNow: () => Promise<{ ok: boolean; message: string }>
+    updateSettings: (patch: Partial<import('@shared/types').StoreSettings>) => Promise<import('@shared/types').StoreSettings>
+  }
 }
 
 export type SupplierInput = {

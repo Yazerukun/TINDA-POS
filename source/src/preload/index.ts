@@ -277,6 +277,11 @@ const api: TindaApi = {
     activate: (key, customerName) => invoke<{ ok: boolean; message: string; status: import('@shared/types').LicenseStatus }>('license:activate', key, customerName),
     deactivate: () => invoke<{ ok: boolean; message: string }>('license:deactivate'),
     copyMachineId: () => invoke<string>('license:copyMachineId')
+  },
+  cloud: {
+    status: () => invoke<{ isVip: boolean; settings: import('@shared/types').StoreSettings }>('cloud:status'),
+    syncNow: () => invoke<{ ok: boolean; message: string }>('cloud:syncNow'),
+    updateSettings: (patch) => invoke<import('@shared/types').StoreSettings>('cloud:updateSettings', patch)
   }
 }
 

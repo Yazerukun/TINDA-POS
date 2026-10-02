@@ -18,6 +18,8 @@ try {
 }
 
 // 2. Check Critical Feature Files
+const repoRoot = fs.existsSync(path.resolve('source')) ? path.resolve('.') : path.resolve('..')
+
 const criticalFiles = [
   'source/src/main/database/migrations.ts',
   'source/src/main/repositories/expiration.ts',
@@ -27,7 +29,7 @@ const criticalFiles = [
 ]
 
 for (const relPath of criticalFiles) {
-  const fullPath = path.resolve(relPath)
+  const fullPath = path.resolve(repoRoot, relPath)
   if (!fs.existsSync(fullPath)) {
     console.error(`❌ FATAL: Critical master feature file missing: ${relPath}. Build aborted!`)
     process.exit(1)
@@ -36,7 +38,7 @@ for (const relPath of criticalFiles) {
 console.log('[PASS] All critical feature files verified.')
 
 // 3. Check Migration Invariant
-const migrationContent = fs.readFileSync(path.resolve('source/src/main/database/migrations.ts'), 'utf-8')
+const migrationContent = fs.readFileSync(path.resolve(repoRoot, 'source/src/main/database/migrations.ts'), 'utf-8')
 if (!migrationContent.includes('epoch_41_anti_downgrade') || !migrationContent.includes('wholesale_tiering')) {
   console.error('❌ FATAL: Migrations are missing master schema versions (epoch_41 or wholesale_tiering)! Build aborted!')
   process.exit(1)
