@@ -84,7 +84,10 @@ async function postToCloud(
 
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+      },
       body: JSON.stringify(payload),
       signal: controller.signal
     })
@@ -177,6 +180,9 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
   try {
     // Ping cloud endpoint
     const pingRes = await fetch(`${apiUrl.replace(/\/+$/, '')}/`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+      },
       signal: AbortSignal.timeout(6000)
     })
     if (!pingRes.ok) {
