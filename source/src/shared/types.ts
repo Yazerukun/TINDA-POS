@@ -401,6 +401,17 @@ export interface StoreSettings {
   receipt_copies: number
   theme: string
   data_dir: string
+  // VIP Pro & Cloud Sync
+  vip_license_key: string
+  vip_license_email: string
+  vip_licensed_at: string
+  vip_expires_at: string
+  cloud_sync_enabled: boolean
+  cloud_api_url: string
+  cloud_store_id: string
+  cloud_sync_key: string
+  cloud_last_synced_at: string
+  cloud_sync_pending: boolean
 }
 
 export interface InventoryChangedEvent {
@@ -497,4 +508,65 @@ export interface ReportSummary {
 export interface ExportResult {
   path: string
   rows: number
+}
+
+// ---------------------------------------------------------------------------
+// Cloud Sync Types (VIP Pro)
+// ---------------------------------------------------------------------------
+
+export interface CloudSaleSyncItem {
+  product_name: string
+  unit_name: string
+  qty: number
+  unit_price_c: number
+  subtotal_c: number
+}
+
+export interface CloudSaleSyncPayload {
+  local_sale_id: number
+  transaction_no: string
+  cashier_name: string | null
+  customer_name: string | null
+  subtotal_c: number
+  discount_c: number
+  total_c: number
+  status: string
+  cash_c: number
+  gcash_c: number
+  maya_c: number
+  utang_c: number
+  local_shift_id: number | null
+  sold_at: string
+  items: CloudSaleSyncItem[]
+}
+
+export interface CloudStockSyncPayload {
+  local_movement_id: number
+  product_name: string
+  movement_type: string
+  quantity_change: number
+  quantity_before: number
+  quantity_after: number
+  unit: string
+  reference: string | null
+  reason: string | null
+  moved_at: string
+}
+
+export interface CloudShiftSyncPayload {
+  local_shift_id: number
+  cashier_name: string
+  shift_date: string
+  opened_at: string
+  closed_at: string
+  gross_sales_c: number
+  cash_c: number
+  gcash_c: number
+  maya_c: number
+  utang_c: number
+  refund_total_c: number
+  void_count: number
+  transaction_count: number
+  expenses_c: number
+  net_sales_c: number
 }

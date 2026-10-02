@@ -145,6 +145,21 @@ export interface TindaApi {
       openDataDir: () => Promise<void>
       checkIntegrity: () => Promise<{ ok: boolean; message: string }>
       isOnline: () => Promise<boolean>
+    toggleSalesMonitor: () => Promise<boolean>
+    salesMonitorSummary: () => Promise<{
+      store_name: string
+      currency: string
+      today: {
+        total_sales_c: number
+        total_transactions: number
+        cash_c: number
+        gcash_c: number
+        maya_c: number
+        utang_c: number
+      }
+      recent_sales: import('./types').Sale[]
+    }>
+    onSaleCompleted: (cb: (sale: import('./types').Sale) => void) => () => void
   }
 
   update: {
@@ -354,6 +369,13 @@ export interface TindaApi {
 
   audit: {
     list: (opts?: { limit?: number; offset?: number; action?: string }) => Promise<{ rows: AuditLog[]; total: number }>
+  }
+
+  cloud: {
+    status: () => Promise<{ isVip: boolean; settings: StoreSettings }>
+    syncNow: () => Promise<{ ok: boolean; message: string }>
+    activateLicense: (key: string, email?: string) => Promise<{ ok: boolean; message?: string; error?: string }>
+    updateSettings: (patch: Partial<StoreSettings>) => Promise<StoreSettings>
   }
 }
 

@@ -5,9 +5,15 @@ import { Splash } from './components/Splash'
 import { FirstRun } from './pages/FirstRun'
 import { Login } from './pages/Login'
 import { Shell } from './layouts/Shell'
+import { SalesMonitorScreen } from './pages/SalesMonitor'
 import { useConnectionNotifications } from './hooks/useOnlineStatus'
 
 export default function App(): React.JSX.Element {
+  const isSalesMonitor = typeof window !== 'undefined' && window.location.hash === '#sales-monitor'
+  if (isSalesMonitor) {
+    return <SalesMonitorScreen />
+  }
+
   useConnectionNotifications()
   const { user, ready, firstRun, bootstrap } = useAuth()
   const { init: initUpdate } = useUpdate()

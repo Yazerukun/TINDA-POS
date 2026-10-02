@@ -126,7 +126,31 @@ export function closeShift(
     `UPDATE shifts SET closed_at = datetime('now','localtime'), actual_cash_c = ?, difference_c = ?, closing_note = ?, status = 'CLOSED'
      WHERE id = ?`
   ).run(input.actual_cash_c, difference, finalNote, shiftId)
-  return getShift(db, shiftId)
+  const closedShift = getShift(db, shiftId)
+
+  // Non-blocking Cloud Sync (VIP Pro)
+  try {
+    const { pushShiftToCloud } = require('../services/cloudSync')
+    pushShiftToCloud(db, {
+      local_shift_id: closedShift.id,
+      cashier_name: closedShift.cashier_name,
+      shift_date: (closedShift.opened_at || '').slice(0, 10),
+      opened_at: closedShift.opened_at,
+      closed_at: closedShift.closed_at || new Date().toISOString(),
+      gross_sales_c: closedShift.cash_sales_c + closedShift.gcash_c + closedShift.maya_c + closedShift.utang_sold_c,
+      cash_c: closedShift.cash_sales_c,
+      gcash_c: closedShift.gcash_c,
+      maya_c: closedShift.maya_c,
+      utang_c: closedShift.utang_sold_c,
+      refund_total_c: closedShift.refund_cash_c,
+      void_count: 0,
+      transaction_count: closedShift.movement_count || 0,
+      expenses_c: closedShift.cash_expenses_c,
+      net_sales_c: (closedShift.cash_sales_c + closedShift.gcash_c + closedShift.maya_c + closedShift.utang_sold_c) - closedShift.refund_cash_c - closedShift.cash_expenses_c
+    }).catch(() => {})
+  } catch {}
+
+  return closedShift
 }
 
 export function insertCashMovement(

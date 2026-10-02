@@ -49,3 +49,16 @@ export function quantityBreakdown(base: number, units: { name: string; conversio
   }
   return parts.join(' + ')
 }
+
+const WEIGHABLE_UNITS = new Set([
+  'kilo', 'kilos', 'kg', 'kls', 'kilogram', 'kilograms',
+  'g', 'gram', 'grams',
+  'liter', 'liters', 'l',
+  'ml', 'milliliter', 'milliliters',
+  'meter', 'meters', 'm'
+])
+
+export function isWeighableUnit(unitName: string | null | undefined): boolean {
+  if (!unitName) return false
+  return WEIGHABLE_UNITS.has(unitName.trim().toLowerCase())
+}

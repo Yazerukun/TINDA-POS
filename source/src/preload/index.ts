@@ -12,7 +12,14 @@ const api: TindaApi = {
     databaseFile: () => invoke<string>('app:databaseFile'),
     openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
-    isOnline: () => invoke<boolean>('app:isOnline')
+    isOnline: () => invoke<boolean>('app:isOnline'),
+    toggleSalesMonitor: () => invoke<boolean>('app:toggleSalesMonitor'),
+    salesMonitorSummary: () => invoke('app:salesMonitorSummary'),
+    onSaleCompleted: (cb) => {
+      const listener = (_e: IpcRendererEvent, sale: import('@shared/types').Sale): void => cb(sale)
+      ipcRenderer.on('sales:completed', listener)
+      return () => ipcRenderer.removeListener('sales:completed', listener)
+    }
   },
   update: {
     state: () => invoke<UpdateStatusEvent>('update:state'),
@@ -137,7 +144,7 @@ const api: TindaApi = {
   },
   reports: {
     cashCount: (input) => invoke('reports:cashCount', input),
-    cashCounts: (opts) => invoke<unknown[]>('reports:cashCounts', opts),
+    cashCounts: (opts) => invoke<import('@shared/ipc').CashCountRecord[]>('reports:cashCounts', opts),
     cashCountGet: (id) => invoke<import('@shared/ipc').CashCountRecord>('reports:cashCountGet', id),
     cashCountLines: (id) => invoke<string[]>('reports:cashCountLines', id),
     printCashCount: (id) => invoke<import('@shared/ipc').PrintResult>('reports:printCashCount', id),
@@ -170,6 +177,12 @@ const api: TindaApi = {
   },
   audit: {
     list: (opts) => invoke<{ rows: import('@shared/types').AuditLog[]; total: number }>('audit:list', opts)
+  },
+  cloud: {
+    status: () => invoke<{ isVip: boolean; settings: import('@shared/types').StoreSettings }>('cloud:status'),
+    syncNow: () => invoke<{ ok: boolean; message: string }>('cloud:syncNow'),
+    activateLicense: (key, email) => invoke<{ ok: boolean; message?: string; error?: string }>('cloud:activateLicense', key, email),
+    updateSettings: (patch) => invoke<import('@shared/types').StoreSettings>('cloud:updateSettings', patch)
   }
 }
 

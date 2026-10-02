@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2, Download, Sparkles } from 'lucide-react'
+import { Save, Store, Receipt, Users, UserPlus, Pencil, KeyRound, Heart, Coffee, Copy, DatabaseZap, FolderOpen, HardDriveDownload, RotateCcw, Printer, Database, RefreshCw, Loader2, Download, Sparkles, Cloud, Key, Globe, Eye, EyeOff, ShieldCheck, BookOpen } from 'lucide-react'
 import type { BackupInfo, User } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel } from '@shared/printer'
@@ -10,7 +10,7 @@ import { toastSuccess, toastError } from '../stores/toast'
 import { useUpdate } from '../stores/update'
 import { ReceiptPaper } from '../components/ReceiptPaper'
 
-type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'ABOUT'
+type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'CLOUD' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
@@ -26,12 +26,14 @@ export function Settings(): React.JSX.Element {
         <button onClick={() => setTab('RECEIPT')} className={`btn-ghost flex items-center gap-2 ${tab === 'RECEIPT' ? '!border-brand-500 !text-brand-400' : ''}`}><Receipt className="h-4 w-4" /> Receipt</button>
         <button onClick={() => setTab('USERS')} className={`btn-ghost flex items-center gap-2 ${tab === 'USERS' ? '!border-brand-500 !text-brand-400' : ''}`}><Users className="h-4 w-4" /> Users</button>
         <button onClick={() => setTab('DATA')} className={`btn-ghost flex items-center gap-2 ${tab === 'DATA' ? '!border-brand-500 !text-brand-400' : ''}`}><DatabaseZap className="h-4 w-4" /> Data</button>
+        <button onClick={() => setTab('CLOUD')} className={`btn-ghost flex items-center gap-2 ${tab === 'CLOUD' ? '!border-amber-500 !text-amber-400 font-bold' : ''}`}><Cloud className="h-4 w-4 text-amber-400" /> Cloud Dashboard (VIP)</button>
         <button onClick={() => setTab('ABOUT')} className={`btn-ghost flex items-center gap-2 ${tab === 'ABOUT' ? '!border-brand-500 !text-brand-400' : ''}`}><Heart className="h-4 w-4" /> About</button>
       </div>
       {tab === 'HOME' && <StoreSettingsTab />}
       {tab === 'RECEIPT' && <ReceiptSettingsTab />}
       {tab === 'USERS' && <UsersTab />}
       {tab === 'DATA' && <DataTab />}
+      {tab === 'CLOUD' && <CloudDashboardTab />}
       {tab === 'ABOUT' && <AboutTab />}
     </div>
   )
@@ -556,6 +558,357 @@ function ResetPinModal({ user, onClose }: { user: { id: number; full_name: strin
     }>
       <label className="label">New 4-digit PIN</label>
       <input value={pin} maxLength={4} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} className="input w-full text-2xl tracking-widest" autoFocus />
+    </Modal>
+  )
+}
+
+function CloudDashboardTab(): React.JSX.Element {
+  const [loading, setLoading] = useState(true)
+  const [isVip, setIsVip] = useState(false)
+  const [licenseKeyInput, setLicenseKeyInput] = useState('')
+  const [activating, setActivating] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  const [showKey, setShowKey] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+  const [settings, setSettings] = useState<import('@shared/types').StoreSettings | null>(null)
+
+  const loadStatus = async () => {
+    try {
+      setLoading(true)
+      const res = await window.api.cloud.status()
+      setIsVip(res.isVip)
+      setSettings(res.settings)
+    } catch (e) {
+      toastError('Failed to load cloud status', String((e as Error)?.message || e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadStatus()
+  }, [])
+
+  const handleActivate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!licenseKeyInput.trim()) return
+    setActivating(true)
+    try {
+      const res = await window.api.cloud.activateLicense(licenseKeyInput.trim())
+      if (res.ok) {
+        toastSuccess('License Activated!', res.message)
+        await loadStatus()
+      } else {
+        toastError('Activation Failed', res.error || 'Invalid key')
+      }
+    } catch (e) {
+      toastError('Error activating license', String((e as Error)?.message || e))
+    } finally {
+      setActivating(false)
+    }
+  }
+
+  const handleToggleSync = async (enabled: boolean) => {
+    try {
+      const updated = await window.api.cloud.updateSettings({ cloud_sync_enabled: enabled })
+      setSettings(updated)
+      toastSuccess(enabled ? 'Cloud Sync Enabled' : 'Cloud Sync Disabled')
+    } catch (e) {
+      toastError('Failed to update sync setting', String((e as Error)?.message || e))
+    }
+  }
+
+  const handleSyncNow = async () => {
+    setSyncing(true)
+    try {
+      const res = await window.api.cloud.syncNow()
+      if (res.ok) {
+        toastSuccess('Synced', res.message)
+        await loadStatus()
+      } else {
+        toastError('Sync Failed', res.message)
+      }
+    } catch (e) {
+      toastError('Sync Error', String((e as Error)?.message || e))
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const copyText = (txt: string, label: string) => {
+    navigator.clipboard.writeText(txt)
+    toastSuccess('Copied', `${label} copied to clipboard`)
+  }
+
+  if (loading) {
+    return <div className="card p-8 text-center text-slate-400">Loading Cloud & VIP License Status...</div>
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* VIP License Status Card */}
+      <div className={`card p-6 border ${isVip ? 'border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-ink-900 to-ink-900' : 'border-ink-line'}`}>
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isVip ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-500/10' : 'bg-ink-800 text-slate-500 border border-ink-line'}`}>
+              👑
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-100">VIP Pro License</h3>
+                {isVip ? (
+                  <span className="badge bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> ACTIVE {settings?.vip_expires_at === 'lifetime' ? '(LIFETIME)' : ''}
+                  </span>
+                ) : (
+                  <span className="badge bg-slate-800 text-slate-400 border border-slate-700">
+                    FREE TIER
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-1 max-w-xl">
+                VIP Pro unlocks the <strong>Executive Cloud Owner Dashboard</strong>, allowing store owners to view live sales, stock movements, and cashier shifts from anywhere on phone or PC.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {!isVip ? (
+          <form onSubmit={handleActivate} className="mt-5 pt-5 border-t border-ink-line flex flex-wrap gap-3 items-end">
+            <div className="flex-1 min-w-[240px]">
+              <label className="label">Enter VIP License Key</label>
+              <input
+                type="text"
+                placeholder="TINDA-VIP-PRO-XXXX-XXXX"
+                value={licenseKeyInput}
+                onChange={(e) => setLicenseKeyInput(e.target.value)}
+                className="input w-full uppercase font-mono tracking-wider"
+                required
+              />
+            </div>
+            <button type="submit" disabled={activating} className="btn-primary flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 border-none text-black font-bold">
+              <Key className="w-4 h-4" /> {activating ? 'Verifying...' : 'Activate VIP Pro'}
+            </button>
+          </form>
+        ) : (
+          <div className="mt-4 pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between text-xs text-slate-400">
+            <div>License: <code className="text-amber-400 font-mono font-bold">{settings?.vip_license_key}</code></div>
+            <div>Status: <span className="text-emerald-400 font-medium">Licensed & Verified</span></div>
+          </div>
+        )}
+      </div>
+
+      {/* Cloud Sync Configuration Card (Only active when VIP is enabled) */}
+      {isVip && settings && (
+        <div className="card p-6 border border-ink-line space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-ink-line">
+            <div>
+              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
+                <Cloud className="w-5 h-5 text-brand-400" /> Cloud Sync Integration
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Automatically pushes sales and stock events to your remote Cloudflare Worker & Owner Dashboard.
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span className="text-xs font-semibold text-slate-300">
+                {settings.cloud_sync_enabled ? 'Syncing Enabled' : 'Syncing Disabled'}
+              </span>
+              <input
+                type="checkbox"
+                checked={settings.cloud_sync_enabled}
+                onChange={(e) => handleToggleSync(e.target.checked)}
+                className="w-5 h-5 accent-brand-500 rounded"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Store ID (Branch UUID)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={settings.cloud_store_id || 'Not generated yet (enable sync to generate)'}
+                  className="input w-full font-mono text-xs bg-ink-950 text-slate-300"
+                />
+                {settings.cloud_store_id && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(settings.cloud_store_id, 'Store ID')}
+                    className="btn-ghost px-3"
+                    title="Copy Store ID"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Enter this Store ID on your Owner Dashboard to connect this PC.
+              </p>
+            </div>
+
+            <div>
+              <label className="label">Branch Sync Key (Secret)</label>
+              <div className="flex gap-2">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  readOnly
+                  value={settings.cloud_sync_key || '••••••••••••••••••••••••'}
+                  className="input w-full font-mono text-xs bg-ink-950 text-slate-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="btn-ghost px-3"
+                  title="Show/Hide Key"
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+                {settings.cloud_sync_key && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(settings.cloud_sync_key, 'Sync Key')}
+                    className="btn-ghost px-3"
+                    title="Copy Sync Key"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Secret authentication token for your owner dashboard. Never share this publicly.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-ink-950/60 p-4 rounded-xl border border-ink-line/60 flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="text-xs text-slate-400">
+                Last Successful Sync:{' '}
+                <span className="text-slate-200 font-medium">
+                  {settings.cloud_last_synced_at
+                    ? new Date(settings.cloud_last_synced_at).toLocaleString()
+                    : 'Never synced'}
+                </span>
+              </div>
+              {settings.cloud_sync_pending && (
+                <div className="text-xs text-amber-400 font-semibold flex items-center gap-1">
+                  ⚠️ Offline queue pending — will retry on next transaction
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSyncNow}
+                disabled={syncing || !settings.cloud_sync_enabled}
+                className="btn-ghost flex items-center gap-2 text-xs"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Syncing...' : 'Sync Now'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowGuide(true)}
+                className="btn-secondary flex items-center gap-1.5 text-xs text-amber-300 border-amber-500/30 hover:border-amber-500/60"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-400" /> Gabay sa Paggamit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.open('https://tinda-owner-dashboard.pages.dev/', '_blank')
+                }}
+                className="btn-primary flex items-center gap-2 text-xs"
+              >
+                <Globe className="w-3.5 h-3.5" /> Open Owner Website
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGuide && <VipCloudGuideModal onClose={() => setShowGuide(false)} />}
+    </div>
+  )
+}
+
+function VipCloudGuideModal({ onClose }: { onClose: () => void }): React.JSX.Element {
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="📱 Gabay sa Paggamit ng Owner Cloud Dashboard (VIP Pro)"
+      maxWidth="max-w-2xl"
+      footer={
+        <div className="flex justify-between items-center w-full">
+          <span className="text-xs text-slate-500">TINDA POS VIP Exclusive Feature</span>
+          <button onClick={onClose} className="btn-primary text-xs">
+            Naintindihan Ko / Isara
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4 max-h-[68vh] overflow-y-auto pr-2 text-slate-200 text-xs leading-relaxed">
+        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200">
+          <strong>Para sa mga VIP Store Owners:</strong> Maaari mo nang makita ang live benta, stock history bawat produkto, at cashier shifts ng iyong tindahan sa iyong cellphone kahit saan ka magpunta!
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-slate-100 flex items-center gap-2 text-sm text-brand-400">
+            📍 Hakbang 1: Pag-activate sa Tindahan (Computer / POS)
+          </h4>
+          <ol className="list-decimal pl-5 space-y-1 text-slate-300">
+            <li>Pumunta sa <strong>Settings (⚙️) ➔ Cloud Dashboard (VIP)</strong>.</li>
+            <li>I-type ang iyong <strong>VIP License Key</strong> at pindutin ang <strong>Activate</strong>.</li>
+            <li>Siguraduhing naka-ON ang <strong>Syncing Enabled</strong>.</li>
+            <li>Kopyahin ang iyong <strong>Store ID</strong> at <strong>Sync Key</strong> (gamitin ang Copy icon).</li>
+          </ol>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-slate-100 flex items-center gap-2 text-sm text-brand-400">
+            📍 Hakbang 2: Pagbukas ng Website sa Cellphone
+          </h4>
+          <ol className="list-decimal pl-5 space-y-1 text-slate-300">
+            <li>Buksan ang browser sa iyong cellphone (Chrome / Safari):<br />
+              <code className="text-brand-300 select-all font-mono">https://tinda-owner-dashboard.pages.dev/</code>
+            </li>
+            <li>Pindutin ang <strong>"First time setup? Create Owner Account"</strong>.</li>
+            <li>Gumawa ng iyong personal na Username at Password (halimbawa: <em>bossfranz</em> at sariling password).</li>
+            <li>Mag-sign in sa website.</li>
+          </ol>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-slate-100 flex items-center gap-2 text-sm text-brand-400">
+            📍 Hakbang 3: Pag-konekta ng Tindahan sa Cellphone
+          </h4>
+          <ol className="list-decimal pl-5 space-y-1 text-slate-300">
+            <li>Sa loob ng website sa cellphone, pindutin ang <strong>"+ Link PC/Branch"</strong>.</li>
+            <li>I-paste ang kinopya mong <strong>Store ID</strong> at <strong>Sync Key</strong> mula sa Hakbang 1.</li>
+            <li>Pindutin ang <strong>"Link Branch"</strong>. Tapos na!</li>
+          </ol>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-bold text-slate-100 flex items-center gap-2 text-sm text-emerald-400">
+            📊 Mga Tampok na Makikita Mo Araw-araw:
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-slate-300">
+            <li><strong>Live Sales:</strong> Bawat benta ng kahera, pumapasok at lumalabas agad sa cellphone.</li>
+            <li><strong>Stock History:</strong> Makikita kung anong item ang nabawas at natitirang stock.</li>
+            <li><strong>Payment Breakdown:</strong> Malinaw na breakdown kung magkano ang Cash, GCash, Maya, at Pautang.</li>
+            <li><strong>Shift Summary:</strong> Makikita ang Z-Read closings at pera sa drawer pagka-close ng shift.</li>
+            <li><strong>Kahit Mawalan ng Internet:</strong> Patuloy pa rin ang benta sa tindahan (offline); kusa itong mag-aupload pagbalik ng internet!</li>
+          </ul>
+        </div>
+      </div>
     </Modal>
   )
 }

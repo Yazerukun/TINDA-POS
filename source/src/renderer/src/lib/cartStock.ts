@@ -13,9 +13,11 @@ export function availableBase(stockBase: number, item?: Pick<StockAwareCartItem,
   return stockBase - (item ? reservedBase(item) : 0)
 }
 
-export function maxQuantity(stockBase: number, conversionToBase: number): number {
-  if (!Number.isFinite(stockBase) || !Number.isInteger(conversionToBase) || conversionToBase < 1) return 0
-  return Math.max(0, Math.floor(stockBase / conversionToBase))
+export function maxQuantity(stockBase: number, conversionToBase: number, isWeighable = false): number {
+  if (!Number.isFinite(stockBase) || !Number.isFinite(conversionToBase) || conversionToBase <= 0) return 0
+  const max = stockBase / conversionToBase
+  if (isWeighable) return Math.max(0, Math.round(max * 1000) / 1000)
+  return Math.max(0, Math.floor(max))
 }
 
 export function hasStockConflict(item: StockAwareCartItem): boolean {

@@ -272,12 +272,12 @@ export function adjustStock(
     | { id: number; stock: number; base_unit: string; name: string }
     | undefined
   if (!p) throw new Error('Product not found.')
-  if (!Number.isInteger(change)) throw new Error('Quantity must be a whole base unit.')
+  if (typeof change !== 'number' || isNaN(change)) throw new Error('Quantity must be a valid number.')
   const before = p.stock
-  const after = before + change
+  const after = Math.round((before + change) * 1000) / 1000
   if (after < 0) throw new Error('Insufficient stock — cannot go negative.')
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
-  db.prepare(
+  const runRes = db.prepare(
     `INSERT INTO inventory_movements
      (product_id, product_name, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
       source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
@@ -285,6 +285,23 @@ export function adjustStock(
   ).run(productId, p.name, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
     receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
     receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
+
+  // Non-blocking Cloud Sync (VIP Pro)
+  try {
+    const { pushStockToCloud } = require('../services/cloudSync')
+    pushStockToCloud(db, {
+      local_movement_id: Number(runRes.lastInsertRowid),
+      product_name: p.name,
+      movement_type: movementType,
+      quantity_change: change,
+      quantity_before: before,
+      quantity_after: after,
+      unit: p.base_unit,
+      reference: reference ?? null,
+      reason: reason ?? null,
+      moved_at: new Date().toISOString()
+    }).catch(() => {})
+  } catch {}
 }
 
 export function listProductsBySupplier(db: Database.Database, supplierId: number): Product[] {

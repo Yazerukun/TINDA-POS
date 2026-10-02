@@ -2,14 +2,85 @@
 
 > Permanent project scratchpad — update this before and after every TINDA POS work session.
 
-## Current release
+---
 
-- Version: **1.0.4 (LOCAL RELEASE CANDIDATE ONLY — NOT RELEASED)**
-- Status: All 6 user-feedback items implemented, all gates + local functional QA + Wine Windows RC built. Public Latest remains **v1.0.3**. Nothing pushed/tagged/released.
-- Branch: `v1.0.4-user-feedback`
-- Repository root: this directory
-- Application source: `source/`
-- Windows installers: `installers/` / RC folder `installers/TINDA-POS-Windows-v1.0.4/`
+## 🚀 Current Release
+
+- **Published Latest:** v1.0.45 — Sales Monitor Display, Weighable Kilo Checkout Fix & VIP Cloud Dashboard
+- **GitHub:** https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.45
+- **Local Dev Source:** `D:\TINDA-POS-v1.0.7-dev\source\source\`
+- **Status:** Stable Release. Built, Packaged, Verified & Published to GitHub.
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ v1.0.45 — COMPLETED & PUBLISHED TO GITHUB:
+- 📺 **Dedicated Sales Monitor & Customer Display (Secondary Screen)**:
+  - Second-screen route `#sales-monitor` with F11 fullscreen support.
+  - Live KPI summary bar: Today's Total Sales, Transactions, Cash in Drawer, GCash/Maya, and Utang.
+  - Dual-pane layout: Left pane displays detailed breakdown & live payment receipt of latest completed sale. Right pane displays a continuous real-time feed recording every transaction ("Bawat Sales Summary").
+  - Instant IPC event broadcast (`sales:completed`) with Apple-style gentle audio chime.
+  - 1-click toggle buttons in POS Header and Sidebar navigation.
+- ⚖️ **Weighable / Decimal Kilo Checkout Fix**:
+  - Fixed `adjustStock` in `src/main/repositories/products.ts` to allow fractional decimal changes without whole-unit error.
+  - Fixed cart stepper & text input in `POS.tsx` to preserve decimal scale weights (e.g. `1.5 kg`, `0.75 kg`, `2.24 kg`).
+  - Fixed restock modal and cart stock validation for weighable units.
+  - 100% test coverage: 145/145 passing tests across 22 test suites.
+- ☁️ **Executive Owner Cloud Dashboard (VIP Pro Feature)**:
+  - Separate repo `tinda-sync` deployed on Cloudflare Workers + D1 (`https://tinda-sync.yomikaze-md.workers.dev`) and Cloudflare Pages (`https://tinda-owner-dashboard.pages.dev/`).
+  - Real-time HTTP push sync for checkouts, stock movements, and shift closings.
+  - Dedicated in-app Tagalog VIP User Guide modal under Settings → Cloud Dashboard (VIP).
+- 🛡️ **Zero Data Loss Guarantee**: Local SQLite database, customer utang ledger, and VIP machine licenses 100% preserved.
+
+### Release Checksums (v1.0.45)
+- `TindaPOS-Setup-1.0.45.exe`: `23f249cf0c080446f338751bd272224e73ddf667da98711d968ab67b4a144f4e`
+- `TindaPOS-Portable-1.0.45.exe`: `19ab6c853c00fa63b9844c75a1ddc0d3da4dfce85ee934a9722c99342e539cb0`
+- `TindaPOS-Setup-1.0.45.exe.blockmap`: `fe2616501e50626717df84302a520d245d637e43407c63d859113a30159d5317`
+- `latest.yml`: `a2fa6a341edc0f2da0de56800791cc022658cc49881490c994ec714349a5f6ca`
+- `TindaPOS-User-Guide.pdf`: `ec34a815be6ae539ce2dc4517a93d0955b57d598d2c4107cc56b526c25ccabac`
+
+### 🔲 Backlog
+- Multi-branch / franchise management
+- Weighable product cloud tracking
+- Receipt image sharing improvements
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Desktop App | Electron + React + TypeScript |
+| Database | SQLite (better-sqlite3) |
+| Sync Backend | Cloudflare Workers + Hono + D1 |
+| Dashboard | React + Vite → GitHub Pages |
+| Build | pnpm + electron-builder |
+| Testing | Vitest |
+
+---
+
+## 📁 Key Paths
+
+| What | Where |
+|---|---|
+| Source code | `D:\TINDA-POS-v1.0.7-dev\source\source\` |
+| DB schema | `src/main/database/migrations.ts` |
+| Shared types | `src/shared/types.ts` |
+| Settings repo | `src/main/repositories/settings.ts` |
+| IPC handlers | `src/main/ipc/index.ts` |
+| Renderer pages | `src/renderer/src/pages/` |
+| Android variant | `D:\TINDA-POS-Android-Free\` |
+
+---
+
+## 📓 Session Notes
+
+- **2026-10-02** — Planned v1.0.45 Owner Cloud Dashboard (VIP Pro feature). Full spec written. Separate repo `tinda-sync`. Phase 1 (Cloudflare Worker) → Phase 2 (TINDA-POS sync + VIP license) → Phase 3 (GitHub Pages dashboard). Approved by Boss. Awaiting execution start.
+- **2026-09-30** — v1.0.40 Fix: resolved startup race condition and EADDRINUSE port collision bug.
+- **2026-09-22** — v1.0.36 released: Partial Refund, PWD/Senior 20% discount, 2-level Subcategory.
+- **2026-09-25** — v1.0.28 auto-update fix (latest.yml + SHA-512), CI/CD pipeline implemented.
+
 
 ## Latest completed work
 

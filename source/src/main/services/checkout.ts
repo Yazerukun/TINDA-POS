@@ -154,6 +154,45 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   })()
 
   const sale = salesRepo.getSale(db, saleId)
+  
+  // Non-blocking Cloud Sync (VIP Pro)
+  try {
+    const { pushSaleToCloud } = require('./cloudSync')
+    const cash = sale.payments.filter((p) => p.method === 'CASH').reduce((s, p) => s + p.amount_c, 0)
+    const gcash = sale.payments.filter((p) => p.method === 'GCASH').reduce((s, p) => s + p.amount_c, 0)
+    const maya = sale.payments.filter((p) => p.method === 'MAYA').reduce((s, p) => s + p.amount_c, 0)
+    const utang = sale.payments.filter((p) => p.method === 'UTANG').reduce((s, p) => s + p.amount_c, 0)
+
+    pushSaleToCloud(db, {
+      local_sale_id: sale.id,
+      transaction_no: sale.transaction_no,
+      cashier_name: sale.cashier_name,
+      customer_name: sale.customer_name,
+      subtotal_c: sale.subtotal_c,
+      discount_c: sale.discount_c,
+      total_c: sale.total_c,
+      status: sale.status,
+      cash_c: cash,
+      gcash_c: gcash,
+      maya_c: maya,
+      utang_c: utang,
+      local_shift_id: sale.shift_id,
+      sold_at: sale.created_at,
+      items: sale.items.map((it) => ({
+        product_name: it.product_name,
+        unit_name: it.unit_name,
+        qty: it.qty,
+        unit_price_c: it.unit_price_c,
+        subtotal_c: it.subtotal_c
+      }))
+    }).catch(() => {})
+  } catch {}
+
+  try {
+    const { broadcastSaleCompleted } = require('../index')
+    broadcastSaleCompleted(sale)
+  } catch {}
+
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
     { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },

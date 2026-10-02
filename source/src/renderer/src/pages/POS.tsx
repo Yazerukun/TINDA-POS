@@ -13,10 +13,11 @@ import {
   Wallet,
   Pause,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Tv
 } from 'lucide-react'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
-import { money } from '@shared/format'
+import { money, isWeighableUnit } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
 import { ReceiptPaper } from '../components/ReceiptPaper'
 import { toastSuccess, toastError } from '../stores/toast'
@@ -57,15 +58,21 @@ export const usePosCart = create<CartState>((set) => ({
   discount_pesos: 0,
   add: (p) =>
     set((s) => {
+      const weighable = isWeighableUnit(p.base_unit)
       const ex = s.items.find((i) => i.product_id === p.id)
-      if (ex) return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: p.stock, qty: Math.min(i.qty + 1, maxQuantity(p.stock, i.conversion_to_base)) } : i)) }
-      if (p.stock < 1) return s
+      if (ex) {
+        const step = weighable ? (ex.qty < 1 ? 0.25 : 1) : 1
+        const max = maxQuantity(p.stock, ex.conversion_to_base, weighable)
+        return { items: s.items.map((i) => (i === ex ? { ...i, stock_base: p.stock, qty: Math.min(Math.round((i.qty + step) * 1000) / 1000, max) } : i)) }
+      }
+      if (p.stock <= 0) return s
+      const initialQty = weighable && p.stock < 1 ? p.stock : 1
       return {
         items: [...s.items, {
           product_id: p.id,
           name: p.name,
           unit_name: p.base_unit,
-          qty: 1,
+          qty: initialQty,
           unit_price_c: p.default_price_c,
           cost_base_c: p.purchase_cost_c,
           stock_base: p.stock,
@@ -74,7 +81,15 @@ export const usePosCart = create<CartState>((set) => ({
       }
     }),
   setQty: (product_id, qty) =>
-    set((s) => ({ items: s.items.map((i) => (i.product_id === product_id ? { ...i, qty: Math.min(Math.max(0, Number.isFinite(qty) ? qty : 0), maxQuantity(i.stock_base, i.conversion_to_base)) } : i)).filter((i) => i.qty > 0) })),
+    set((s) => ({
+      items: s.items.map((i) => {
+        if (i.product_id !== product_id) return i
+        const weighable = isWeighableUnit(i.unit_name)
+        const val = Number.isFinite(qty) ? (weighable ? Math.round(qty * 1000) / 1000 : Math.round(qty)) : 0
+        const max = maxQuantity(i.stock_base, i.conversion_to_base, weighable)
+        return { ...i, qty: Math.min(Math.max(0, val), max) }
+      }).filter((i) => i.qty > 0)
+    })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
   clear: () => set({ items: [], customer_id: null, discount_pesos: 0 }),
   setCustomer: (id) => set({ customer_id: id }),
@@ -204,6 +219,15 @@ export function POS(): React.JSX.Element {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => window.api.app.toggleSalesMonitor()}
+            title="Open / Toggle Sales Monitor Window"
+            className="flex items-center gap-1.5 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3 py-2 text-xs font-semibold text-brand-300 transition hover:bg-brand-500/20 active:scale-95"
+          >
+            <Tv className="h-4 w-4 text-brand-400" />
+            <span className="hidden sm:inline">Sales Monitor</span>
+          </button>
           <div className="flex items-center gap-1 text-xs text-slate-500">
             <Plus className="h-3.5 w-3.5" /> add
             <span className="text-slate-600">·</span>
@@ -379,13 +403,38 @@ function CartPanel(): React.JSX.Element {
             </div>
             <div className="mt-2 flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <button onClick={() => usePosCart.getState().setQty(i.product_id, i.qty - 1)} className="btn-ghost-2 h-7 w-7 rounded-lg"><Minus className="h-3.5 w-3.5" /></button>
+                <button
+                  onClick={() => {
+                    const weighable = isWeighableUnit(i.unit_name)
+                    const step = weighable ? (i.qty <= 1 ? 0.25 : 0.5) : 1
+                    usePosCart.getState().setQty(i.product_id, Math.round((i.qty - step) * 1000) / 1000)
+                  }}
+                  className="btn-ghost-2 h-7 w-7 rounded-lg"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
                 <input
+                  type="text"
                   value={i.qty}
-                  onChange={(e) => usePosCart.getState().setQty(i.product_id, parseInt(e.target.value || '0', 10))}
-                  className="w-11 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-sm font-bold text-white"
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/,/g, '.')
+                    const num = parseFloat(val)
+                    usePosCart.getState().setQty(i.product_id, isNaN(num) ? 0 : num)
+                  }}
+                  className="w-14 rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-sm font-bold text-white"
                 />
-                <button disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base)} onClick={() => usePosCart.getState().setQty(i.product_id, i.qty + 1)} className="btn-ghost-2 h-7 w-7 rounded-lg disabled:opacity-30" title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base)} remaining` : 'Increase quantity'}><Plus className="h-3.5 w-3.5" /></button>
+                <button
+                  disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name))}
+                  onClick={() => {
+                    const weighable = isWeighableUnit(i.unit_name)
+                    const step = weighable ? (i.qty < 1 ? 0.25 : 0.5) : 1
+                    usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000) / 1000)
+                  }}
+                  className="btn-ghost-2 h-7 w-7 rounded-lg disabled:opacity-30"
+                  title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name)) ? `Only ${maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name))} remaining` : 'Increase quantity'}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
               </div>
               <div className="text-right">
                 <p className="text-sm font-bold text-white">{money(i.unit_price_c * i.qty)}</p>

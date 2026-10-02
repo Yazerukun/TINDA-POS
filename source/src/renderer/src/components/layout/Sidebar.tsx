@@ -10,7 +10,8 @@ import {
   HardDriveDownload,
   Settings,
   Users,
-  LogOut
+  LogOut,
+  Tv
 } from 'lucide-react'
 import { useNav, type PageKey } from '../../stores/nav'
 import { useAuth } from '../../stores/auth'
@@ -71,6 +72,20 @@ export function Sidebar(): React.JSX.Element {
           </button>
         ))}
       </nav>
+
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => window.api.app.toggleSalesMonitor()}
+          title="Open / Toggle Sales Monitor & Customer Display"
+          className="flex w-full items-center justify-between rounded-lg border border-brand-500/30 bg-brand-500/10 px-3 py-2 text-xs font-semibold text-brand-300 transition hover:bg-brand-500/20 active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-2">
+            <Tv className="h-4 w-4 text-brand-400" />
+            <span>Sales Monitor</span>
+          </div>
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+        </button>
+      </div>
 
       <div className="border-t border-ink-line px-3 py-3">
         <div className="mb-2 flex items-center gap-2.5 px-1">

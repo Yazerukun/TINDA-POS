@@ -25,7 +25,18 @@ export const defaultSettings: StoreSettings = {
   receipt_paper_width: '80mm',
   receipt_copies: 1,
   theme: 'dark',
-  data_dir: ''
+  data_dir: '',
+  // VIP Pro & Cloud Sync defaults
+  vip_license_key: '',
+  vip_license_email: '',
+  vip_licensed_at: '',
+  vip_expires_at: '',
+  cloud_sync_enabled: false,
+  cloud_api_url: 'https://tinda-sync.yomikaze-md.workers.dev',
+  cloud_store_id: '',
+  cloud_sync_key: '',
+  cloud_last_synced_at: '',
+  cloud_sync_pending: false
 }
 
 export function getSettings(db: Database.Database): StoreSettings {
