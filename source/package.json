@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
+    "prebuild": "node ../tools/check_master_invariants.mjs",
+    "prebuild:win": "node ../tools/check_master_invariants.mjs",
     "build": "electron-vite build",
     "docs:pdf": "electron --no-sandbox ../tools/gen_user_guide.mjs",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
