@@ -176,3 +176,57 @@ if (process.platform === 'win32') {
 }
 
 appDirs()
+
+let salesMonitorWindow: BrowserWindow | null = null
+
+export function toggleSalesMonitorWindow(): boolean {
+  if (salesMonitorWindow && !salesMonitorWindow.isDestroyed()) {
+    if (salesMonitorWindow.isVisible()) {
+      salesMonitorWindow.hide()
+      return false
+    } else {
+      salesMonitorWindow.show()
+      salesMonitorWindow.focus()
+      return true
+    }
+  }
+
+  salesMonitorWindow = new BrowserWindow({
+    width: 1100,
+    height: 720,
+    minWidth: 800,
+    minHeight: 500,
+    show: true,
+    title: 'TINDA POS — Real-time Sales Monitor',
+    backgroundColor: '#050708',
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  })
+
+  salesMonitorWindow.on('closed', () => {
+    salesMonitorWindow = null
+  })
+
+  const hash = '#sales-monitor'
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
+    salesMonitorWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}${hash}`)
+  } else {
+    salesMonitorWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'sales-monitor' })
+  }
+
+  return true
+}
+
+export function broadcastSaleCompleted(sale: unknown): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send('sales:completed', sale)
+    }
+  }
+}
+

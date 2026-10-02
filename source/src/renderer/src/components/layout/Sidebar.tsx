@@ -14,7 +14,8 @@ import {
   LogOut,
   HelpCircle,
   BookOpen,
-  Crown
+  Crown,
+  Tv
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -84,6 +85,16 @@ export function Sidebar(): React.JSX.Element {
       </nav>
 
       <div className="border-t border-ink-line px-3 py-3">
+        <button
+          type="button"
+          onClick={() => void window.api.app.toggleSalesMonitor()}
+          className="mb-2 flex w-full items-center gap-2.5 rounded-lg border border-brand-500/30 bg-brand-500/10 px-3 py-2 text-xs font-semibold text-brand-300 hover:border-brand-500/50 hover:bg-brand-500/20 transition-colors shadow-sm"
+          title="Open / Toggle Live Sales Monitor & Customer Display"
+        >
+          <Tv className="h-4 w-4 text-brand-400 shrink-0" />
+          <span>Sales Monitor</span>
+        </button>
+
         <button
           type="button"
           onClick={() => useGuide.getState().openGuide('start')}

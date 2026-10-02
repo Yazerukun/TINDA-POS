@@ -4,20 +4,19 @@
 
 ## Current release
 
-- Version: **1.0.4 (LOCAL RELEASE CANDIDATE ONLY — NOT RELEASED)**
-- Status: All 6 user-feedback items implemented, all gates + local functional QA + Wine Windows RC built. Public Latest remains **v1.0.3**. Nothing pushed/tagged/released.
-- Branch: `v1.0.4-user-feedback`
-- Repository root: this directory
+- Version: **1.0.47 (STABLE RELEASE — PUBLISHED)**
+- Status: Full master features restored (v1.0.44 feature parity), decimal kilo checkout fixed, schema self-healing implemented (`inventory_movements`), secondary Live Sales Monitor screen added. Setup and Portable Windows binaries built, signed, and published to GitHub.
+- Tag: `v1.0.47`
+- Public GitHub Release: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.47`
 - Application source: `source/`
-- Windows installers: `installers/` / RC folder `installers/TINDA-POS-Windows-v1.0.4/`
+- Windows installers: `source/builds/`
 
-## Latest completed work
+## Latest completed work (v1.0.47)
 
-- Updated the Settings → About donation card to **Maya**.
-- Added “Buy me a coffee”, Maya logo, shimmer, green glow, logo motion, hover, and click feedback.
-- Added reduced-motion support.
-- Updated the User Guide PDF and PHCorner post donation details.
-- Rebuilt Setup and Portable v1.0.1 and updated SHA-256 checksums.
+- **Master Feature Restoration**: Restored 100% of all features from v1.0.44 (Wholesale Tiers, SRP Comparisons, DTI Catalog, Expiration Tracking, Anti-Downgrade Safeguard, Barcode Auto-Capture, Multi-Terminal LAN Sync).
+- **Decimal Weighable Checkout**: Fixed checkout validation to support decimal kilo items (`1.5 kg`, `0.75 kg`).
+- **Database Self-Healing**: Added dynamic column self-healing for `inventory_movements` on startup and in `adjustStock`, resolving any legacy SQLite column errors.
+- **Live Sales Monitor**: Integrated real-time Sales Monitor screen (`#sales-monitor`) with audio chimes and payment breakdown. Added toggle buttons in Sidebar and POS action bar.
 
 ## Verification status
 

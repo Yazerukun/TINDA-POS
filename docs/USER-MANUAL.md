@@ -1,12 +1,25 @@
-# TINDA POS v1.0.43 User Manual
+# TINDA POS v1.0.47 User Manual
 
-**TINDA POS v1.0.43** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.47** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.43**, introducing **Store Petty Cash Out (F7)**, **Shift Z-Read Cash Drawer Balancing**, and **True Net Profit Reporting**, alongside the **Instant Hardware Barcode Auto-Capture Engine** (v1.0.42), **Cryptographic Anti-Downgrade Epoch 41 Lock & 5 Strategic Value Gating Pillars** (v1.0.41), and **Startup Collision Lock & Port Hardening** (v1.0.40).
+This guide covers release **v1.0.47**, introducing **Master Feature Restoration (v1.0.44 Full Feature Parity)**, **Decimal Kilo Checkout Fix**, **Database Schema Auto-Healing (`inventory_movements`)**, and the **Secondary Live Sales Monitor Display Screen**, alongside Store Petty Cash Out (F7), Shift Z-Read Cash Drawer Balancing, True Net Profit Reporting, Instant Hardware Barcode Auto-Capture Engine, and Cryptographic Anti-Downgrade Safeguards.
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## What's New in v1.0.43 (Store Petty Cash Out, Z-Read Reconciliation & True Net Profit)
+## What's New in v1.0.47 (Master Feature Restoration, Decimal Kilo Checkout & Schema Auto-Heal)
+
+- **Complete Master Feature Restoration (v1.0.44 Parity Restored):**
+  - Fully restores all production features: Wholesale Pricing Tiers, SRP Comparison, DTI Price Catalog, Expiration Tracking & Near-Expiry Alerts, Anti-Downgrade Safeguard, Barcode Auto-Capture, and Multi-Terminal LAN Sync.
+  - Rebuilt directly from the true master codebase, eliminating all regressions.
+- **Decimal Weighable Checkout Fix:**
+  - Cashiers can now ring up and check out fractional quantities for weighable items (e.g. `1.5 kg`, `0.75 kg`, `0.25 kg`) smoothly with no validation errors.
+- **Database Schema Auto-Healing (`inventory_movements`):**
+  - Completely resolves and permanently eliminates the `table inventory_movements has no column named product_name` SqliteError.
+  - System automatically inspects and dynamically patches missing columns on startup and during stock adjustments.
+- **Secondary Live Sales Monitor Screen:**
+  - Real-time display screen accessible via `#sales-monitor` or the **"Sales Monitor"** toggle button in the Sidebar and POS screen.
+  - Provides instant sales totals, transaction counts, payment method breakdowns (Cash, GCash, Maya, Utang), and audio chimes for cashier or customer monitoring.
+
 
 - **1-Click Cashier Petty Cash Out Modal (`F7` Hotkey):**
   - Cashiers ringing up sales can directly record cash taken from the active cash drawer (e.g. ₱50 for tube ice, ₱35 for packaging plastic bags, staff lunch, delivery fees) by clicking **"Petty Cash (F7)"** or pressing `F7`.

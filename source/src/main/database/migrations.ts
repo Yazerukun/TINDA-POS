@@ -6,6 +6,44 @@ export interface Migration {
   sql: string
 }
 
+export function ensureSchemaColumns(db: Database.Database): void {
+  try {
+    const cols = new Set(
+      (db.prepare("PRAGMA table_info('inventory_movements')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (!cols.has('product_name')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN product_name TEXT')
+      cols.add('product_name')
+    }
+    if (!cols.has('source')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN source TEXT')
+      cols.add('source')
+    }
+    if (!cols.has('supplier_id')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL')
+      cols.add('supplier_id')
+    }
+    if (!cols.has('received_unit')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN received_unit TEXT')
+      cols.add('received_unit')
+    }
+    if (!cols.has('received_quantity')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN received_quantity INTEGER')
+      cols.add('received_quantity')
+    }
+    if (!cols.has('unit_cost_c')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN unit_cost_c INTEGER')
+      cols.add('unit_cost_c')
+    }
+    if (!cols.has('receiving_notes')) {
+      db.exec('ALTER TABLE inventory_movements ADD COLUMN receiving_notes TEXT')
+      cols.add('receiving_notes')
+    }
+  } catch (err) {
+    console.error('ensureSchemaColumns failed:', err)
+  }
+}
+
 export function runMigrations(db: Database.Database): void {
   db.exec(
     `CREATE TABLE IF NOT EXISTS app_migrations (
@@ -25,6 +63,7 @@ export function runMigrations(db: Database.Database): void {
     })
     txn()
   }
+  ensureSchemaColumns(db)
 }
 
 // All amounts are INTEGER centavos (peso * 100). All stock is INTEGER base units.

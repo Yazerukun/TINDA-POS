@@ -448,15 +448,36 @@ export function adjustStock(
   const after = Math.round((before + change) * 1000) / 1000
   if (after < 0) throw new Error('Insufficient stock — cannot go negative.')
   db.prepare("UPDATE products SET stock = ?, updated_at = datetime('now','localtime') WHERE id = ?").run(after, productId)
-  const movement = db.prepare(
-    `INSERT INTO inventory_movements
-     (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
-      source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
-    receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
-    receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
-  applyExpirationStock(db, productId, change, movementType, Number(movement.lastInsertRowid), receiving)
+  let movementId: number
+  try {
+    const movement = db.prepare(
+      `INSERT INTO inventory_movements
+       (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
+        source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
+      receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
+      receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
+    movementId = Number(movement.lastInsertRowid)
+  } catch (err: unknown) {
+    const errMsg = String((err as Error)?.message || err)
+    if (errMsg.includes('has no column named') || errMsg.includes('no such column')) {
+      const { ensureSchemaColumns } = require('../database/migrations')
+      ensureSchemaColumns(db)
+      const movement = db.prepare(
+        `INSERT INTO inventory_movements
+         (product_id, quantity_before, quantity_change, quantity_after, unit, movement_type, reason, reference, user_id,
+          source, supplier_id, received_unit, received_quantity, unit_cost_c, receiving_notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run(productId, before, change, after, p.base_unit, movementType, reason, reference ?? null, userId,
+        receiving?.source ?? null, receiving?.supplier_id ?? null, receiving?.received_unit ?? null,
+        receiving?.received_quantity ?? null, receiving?.unit_cost_c ?? null, receiving?.notes?.trim() || null)
+      movementId = Number(movement.lastInsertRowid)
+    } else {
+      throw err
+    }
+  }
+  applyExpirationStock(db, productId, change, movementType, movementId, receiving)
   })()
 }
 

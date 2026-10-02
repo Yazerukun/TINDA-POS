@@ -132,10 +132,25 @@ export interface TindaApi {
     info: () => Promise<{ name: string; version: string; offline: boolean }>
     dataDir: () => Promise<string>
     databaseFile: () => Promise<string>
-      openDataDir: () => Promise<void>
-      checkIntegrity: () => Promise<{ ok: boolean; message: string }>
-      isOnline: () => Promise<boolean>
-      openExternal: (url: string) => Promise<void>
+    openDataDir: () => Promise<void>
+    checkIntegrity: () => Promise<{ ok: boolean; message: string }>
+    isOnline: () => Promise<boolean>
+    openExternal: (url: string) => Promise<void>
+    toggleSalesMonitor: () => Promise<boolean>
+    salesMonitorSummary: () => Promise<{
+      store_name: string
+      currency: string
+      today: {
+        total_sales_c: number
+        total_transactions: number
+        cash_c: number
+        gcash_c: number
+        maya_c: number
+        utang_c: number
+      }
+      recent_sales: import('./types').Sale[]
+    }>
+    onSaleCompleted: (cb: (sale: import('./types').Sale) => void) => () => void
   }
 
   update: {

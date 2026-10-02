@@ -21,7 +21,8 @@ import {
   Server,
   Laptop,
   Receipt,
-  Monitor
+  Monitor,
+  Tv
 } from 'lucide-react'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
@@ -618,6 +619,16 @@ export function POS(): React.JSX.Element {
             >
               <Monitor className="h-3.5 w-3.5 text-sky-400" />
               <span className="hidden sm:inline">Customer Screen</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void window.api.app.toggleSalesMonitor()}
+              className="flex items-center gap-1.5 rounded-md border border-brand-500/30 bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-300 hover:border-brand-500/50 hover:bg-brand-500/20 transition-colors shadow-sm"
+              title="Open / Toggle Live Sales Monitor Window"
+            >
+              <Tv className="h-3.5 w-3.5 text-brand-400" />
+              <span className="hidden sm:inline">Sales Monitor</span>
             </button>
 
             <button

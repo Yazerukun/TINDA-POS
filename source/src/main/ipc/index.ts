@@ -115,6 +115,67 @@ handle('app:openExternal', (_e: IpcMainInvokeEvent, targetUrl: string) => {
   }
   return Promise.resolve()
 })
+handle('app:toggleSalesMonitor', () => {
+  const { toggleSalesMonitorWindow } = require('../index')
+  return toggleSalesMonitorWindow()
+})
+handle('app:salesMonitorSummary', () => {
+  const d = db()
+  const now = new Date()
+  const yyyy = now.getFullYear()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  const todayPrefix = `${yyyy}-${mm}-${dd}`
+
+  const todaySummary = d.prepare(`
+    SELECT 
+      COUNT(*) AS total_transactions,
+      COALESCE(SUM(total_c), 0) AS total_sales_c,
+      COALESCE(SUM(subtotal_c), 0) AS subtotal_c,
+      COALESCE(SUM(discount_c), 0) AS discount_c
+    FROM sales
+    WHERE created_at LIKE ? AND status = 'COMPLETED'
+  `).get(`${todayPrefix}%`) as { total_transactions: number; total_sales_c: number; subtotal_c: number; discount_c: number }
+
+  const paymentsSummary = d.prepare(`
+    SELECT 
+      p.method,
+      COALESCE(SUM(p.amount_c), 0) AS amount_c
+    FROM payments p
+    JOIN sales s ON s.id = p.sale_id
+    WHERE s.created_at LIKE ? AND s.status = 'COMPLETED'
+    GROUP BY p.method
+  `).all(`${todayPrefix}%`) as { method: string; amount_c: number }[]
+
+  let cash_c = 0
+  let gcash_c = 0
+  let maya_c = 0
+  let utang_c = 0
+
+  for (const p of paymentsSummary) {
+    if (p.method === 'CASH') cash_c = p.amount_c
+    else if (p.method === 'GCASH') gcash_c = p.amount_c
+    else if (p.method === 'MAYA') maya_c = p.amount_c
+    else if (p.method === 'UTANG') utang_c = p.amount_c
+  }
+
+  const recentSales = listSales(d, { limit: 50 }).rows
+  const settings = settingRepo.getSettings(d)
+
+  return {
+    store_name: settings.store_name || 'TINDA POS',
+    currency: settings.currency || 'PHP',
+    today: {
+      total_sales_c: todaySummary?.total_sales_c ?? 0,
+      total_transactions: todaySummary?.total_transactions ?? 0,
+      cash_c,
+      gcash_c,
+      maya_c,
+      utang_c
+    },
+    recent_sales: recentSales
+  }
+})
 
 // ---- Auth ----
 handle('auth:status', () => authSvc.authStatus())

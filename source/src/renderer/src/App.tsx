@@ -6,8 +6,18 @@ import { FirstRun } from './pages/FirstRun'
 import { Login } from './pages/Login'
 import { Shell } from './layouts/Shell'
 import { useConnectionNotifications } from './hooks/useOnlineStatus'
+import { SalesMonitorScreen } from './pages/SalesMonitor'
 
 export default function App(): React.JSX.Element {
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hash === '#sales-monitor' ||
+      window.location.hash === '#/sales-monitor' ||
+      window.location.hash.includes('sales-monitor'))
+  ) {
+    return <SalesMonitorScreen />
+  }
+
   useConnectionNotifications()
   const { user, ready, firstRun, bootstrap } = useAuth()
   const { init: initUpdate } = useUpdate()

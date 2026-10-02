@@ -14,7 +14,29 @@ const api: TindaApi = {
     openDataDir: () => invoke<void>('app:openDataDir'),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
     isOnline: () => invoke<boolean>('app:isOnline'),
-    openExternal: (url: string) => invoke<void>('app:openExternal', url)
+    openExternal: (url: string) => invoke<void>('app:openExternal', url),
+    toggleSalesMonitor: () => invoke<boolean>('app:toggleSalesMonitor'),
+    salesMonitorSummary: () =>
+      invoke<{
+        store_name: string
+        currency: string
+        today: {
+          total_sales_c: number
+          total_transactions: number
+          cash_c: number
+          gcash_c: number
+          maya_c: number
+          utang_c: number
+        }
+        recent_sales: import('@shared/types').Sale[]
+      }>('app:salesMonitorSummary'),
+    onSaleCompleted: (cb: (sale: import('@shared/types').Sale) => void) => {
+      const listener = (_e: IpcRendererEvent, sale: import('@shared/types').Sale): void => cb(sale)
+      ipcRenderer.on('sales:completed', listener)
+      return () => {
+        ipcRenderer.removeListener('sales:completed', listener)
+      }
+    }
   },
   update: {
     state: () => invoke<UpdateStatusEvent>('update:state'),

@@ -175,6 +175,10 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   })()
 
   const sale = salesRepo.getSale(db, saleId)
+  try {
+    const { broadcastSaleCompleted } = require('../index')
+    broadcastSaleCompleted(sale)
+  } catch {}
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
     { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
