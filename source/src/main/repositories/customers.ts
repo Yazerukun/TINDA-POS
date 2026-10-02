@@ -13,8 +13,8 @@ export function listCustomers(
     const like = `%${opts.search.trim()}%`
     params.push(like, like, like)
   }
-  if (opts.status === 'active') where.push('is_active = 1')
-  if (opts.status === 'inactive') where.push('is_active = 0')
+  if (opts.status?.toLowerCase() === 'active') where.push('is_active = 1')
+  if (opts.status?.toLowerCase() === 'inactive') where.push('is_active = 0')
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : ''
   const total = (db.prepare(`SELECT COUNT(*) AS c FROM customers ${whereSql}`).get(...params) as { c: number }).c
   const limit = opts.limit ?? 50

@@ -6,8 +6,8 @@
 
 ## 🚀 Current Release
 
-- **Published Latest:** v1.0.45 — Sales Monitor Display, Weighable Kilo Checkout Fix & VIP Cloud Dashboard
-- **GitHub:** https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.45
+- **Published Latest:** v1.0.46 — Utang Customer Workflow Fix, Decimal Checkout Validation & Ledger Stabilization
+- **GitHub:** https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.46
 - **Local Dev Source:** `D:\TINDA-POS-v1.0.7-dev\source\source\`
 - **Status:** Stable Release. Built, Packaged, Verified & Published to GitHub.
 
@@ -15,30 +15,36 @@
 
 ## 🗺️ Roadmap
 
-### ✅ v1.0.45 — COMPLETED & PUBLISHED TO GITHUB:
-- 📺 **Dedicated Sales Monitor & Customer Display (Secondary Screen)**:
-  - Second-screen route `#sales-monitor` with F11 fullscreen support.
-  - Live KPI summary bar: Today's Total Sales, Transactions, Cash in Drawer, GCash/Maya, and Utang.
-  - Dual-pane layout: Left pane displays detailed breakdown & live payment receipt of latest completed sale. Right pane displays a continuous real-time feed recording every transaction ("Bawat Sales Summary").
-  - Instant IPC event broadcast (`sales:completed`) with Apple-style gentle audio chime.
-  - 1-click toggle buttons in POS Header and Sidebar navigation.
-- ⚖️ **Weighable / Decimal Kilo Checkout Fix**:
-  - Fixed `adjustStock` in `src/main/repositories/products.ts` to allow fractional decimal changes without whole-unit error.
-  - Fixed cart stepper & text input in `POS.tsx` to preserve decimal scale weights (e.g. `1.5 kg`, `0.75 kg`, `2.24 kg`).
-  - Fixed restock modal and cart stock validation for weighable units.
-  - 100% test coverage: 145/145 passing tests across 22 test suites.
-- ☁️ **Executive Owner Cloud Dashboard (VIP Pro Feature)**:
-  - Separate repo `tinda-sync` deployed on Cloudflare Workers + D1 (`https://tinda-sync.yomikaze-md.workers.dev`) and Cloudflare Pages (`https://tinda-owner-dashboard.pages.dev/`).
-  - Real-time HTTP push sync for checkouts, stock movements, and shift closings.
-  - Dedicated in-app Tagalog VIP User Guide modal under Settings → Cloud Dashboard (VIP).
-- 🛡️ **Zero Data Loss Guarantee**: Local SQLite database, customer utang ledger, and VIP machine licenses 100% preserved.
+### ✅ v1.0.46 — COMPLETED (Utang & Decimal Checkout Fix):
+- 🔍 **Root Cause of Checkout Failure ("dili maka checkout")**:
+  - In `src/main/validation/schemas.ts`, `validateCheckout` was invoking `isPositiveInt(x.qty, 'Quantity')` and `isPositiveInt(x.qty_base, 'Quantity (base)')`.
+  - When weighing fractional items (e.g. `1.5 kg`, `0.75 kg`, `2.24 kg`), `isPositiveInt` threw `Error: Quantity must be a whole number.`, terminating the IPC checkout transaction before saving.
+  - **Fix**: Created `isPositiveNumber(v, label)` supporting float numbers, updating both `qty` and `qty_base`.
+- 🔍 **Root Cause of Utang Disappearance ("nawala daw ang utang")**:
+  - 1. In `CartPanel` (`POS.tsx`), the customer row only rendered a generic `<User /> Select (utang)` placeholder even after picking a customer, making it appear as though the customer selection was lost.
+  - 2. In `CheckoutModal`, choosing `UTANG` without an active customer previously resulted in a blocked flow with `A customer is required for utang.` error and no button to pick one.
+  - 3. Because earlier checkout attempts crashed on decimal weights, transactions were never written to SQLite `sales` or `credit_ledger`, leaving customer balances at `₱0.00` and the Utang screen looking empty.
+  - **Fix**:
+    - Updated `usePosCart` Zustand store with `customer_name` state alongside `customer_id`.
+    - Added selected customer badge with clear button (`✕`) in `CartPanel`.
+    - Added dedicated Customer selection prompt & inline picker trigger inside `CheckoutModal` when `UTANG` payment is chosen.
+    - Updated `Utang.tsx` with top-priority sorting for customers with active balances (`balance_c > 0`) and quick filter tabs ("All Customers" vs "With Utang Only").
+- 🧪 **Verification**:
+  - 147/147 passing tests across 22 suites in Vitest.
+  - Added dedicated unit tests in `src/tests/weighable-kilo-checkout.test.ts` for decimal validation and utang credit ledger updates.
+- 🛡️ **Zero Data Loss Guarantee**: Local SQLite database (`tindapos.db`), existing customers (Juan, Maria, Pedro), and VIP licenses remain 100% intact.
 
-### Release Checksums (v1.0.45)
-- `TindaPOS-Setup-1.0.45.exe`: `23f249cf0c080446f338751bd272224e73ddf667da98711d968ab67b4a144f4e`
-- `TindaPOS-Portable-1.0.45.exe`: `19ab6c853c00fa63b9844c75a1ddc0d3da4dfce85ee934a9722c99342e539cb0`
-- `TindaPOS-Setup-1.0.45.exe.blockmap`: `fe2616501e50626717df84302a520d245d637e43407c63d859113a30159d5317`
-- `latest.yml`: `a2fa6a341edc0f2da0de56800791cc022658cc49881490c994ec714349a5f6ca`
+### Release Checksums (v1.0.46)
+- `TindaPOS-Setup-1.0.46.exe`: `0dcfb333eff44843ca5ee3c1bbb2d45f20a62f2aee004d823052dea65b33d55a`
+- `TindaPOS-Portable-1.0.46.exe`: `1e022cccd0a4a9acc5d2f5ca781998c006cb464bd609b0006b9855ab939e10fb`
+- `TindaPOS-Setup-1.0.46.exe.blockmap`: `1ee43c3c4acfc7114a3bb398a1f6fa0dd11a3d7a87219730a87c3cea02e308d7`
+- `latest.yml`: `3bc2455434ff9364ae19dfc046626f4d13d79ecc98c59bebd057f0b4dd3a1503`
 - `TindaPOS-User-Guide.pdf`: `ec34a815be6ae539ce2dc4517a93d0955b57d598d2c4107cc56b526c25ccabac`
+
+### ✅ v1.0.45 — Sales Monitor Display, Weighable Kilo Checkout Fix & VIP Cloud Dashboard:
+- Dedicated Sales Monitor & Customer Display (Secondary Screen)
+- Initial weighable kilo inventory adjustment
+- Executive Owner Cloud Dashboard (VIP Pro Feature)
 
 ### 🔲 Backlog
 - Multi-branch / franchise management

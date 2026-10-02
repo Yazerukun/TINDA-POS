@@ -19,6 +19,11 @@ export function isPositiveInt(v: unknown, label: string): number {
   return isInt(v, label, 1)
 }
 
+export function isPositiveNumber(v: unknown, label: string): number {
+  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) throw new Error(`${label} must be a positive number.`)
+  return v
+}
+
 export function isPin(v: unknown): string {
   if (typeof v !== 'string' || !/^\d{4}$/.test(v)) throw new Error('PIN must be exactly 4 digits.')
   return v
@@ -118,8 +123,8 @@ export function validateCheckout(payload: unknown) {
       product_id: x.product_id === null ? null : Number(x.product_id),
       name: isNonEmptyString(x.name, 'Item name'),
       unit_name: isNonEmptyString(x.unit_name, 'Unit'),
-      qty: isPositiveInt(x.qty, 'Quantity'),
-      qty_base: isPositiveInt(x.qty_base, 'Quantity (base)'),
+      qty: isPositiveNumber(x.qty, 'Quantity'),
+      qty_base: isPositiveNumber(x.qty_base, 'Quantity (base)'),
       unit_price_c: isCentavos(x.unit_price_c, 'Unit price'),
       cost_base_c: isAmountNonNeg(x.cost_base_c ?? 0, 'Cost'),
       stock_base: x.stock_base === null ? null : (typeof x.stock_base === 'number' ? x.stock_base : null),

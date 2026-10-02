@@ -41,20 +41,22 @@ interface CartItem {
 interface CartState {
   items: CartItem[]
   customer_id: number | null
+  customer_name: string | null
   discount_pesos: number
   add: (p: Product) => void
   setQty: (product_id: number, qty: number) => void
   remove: (product_id: number) => void
   clear: () => void
-  setCustomer: (id: number | null) => void
+  setCustomer: (id: number | null, name?: string | null) => void
   setDiscountPesos: (v: number) => void
-  replace: (items: CartItem[], discount_pesos: number) => void
+  replace: (items: CartItem[], discount_pesos: number, customer_id?: number | null, customer_name?: string | null) => void
   syncStocks: (products: Product[]) => void
 }
 
 export const usePosCart = create<CartState>((set) => ({
   items: [],
   customer_id: null,
+  customer_name: null,
   discount_pesos: 0,
   add: (p) =>
     set((s) => {
@@ -91,10 +93,11 @@ export const usePosCart = create<CartState>((set) => ({
       }).filter((i) => i.qty > 0)
     })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
-  clear: () => set({ items: [], customer_id: null, discount_pesos: 0 }),
-  setCustomer: (id) => set({ customer_id: id }),
+  clear: () => set({ items: [], customer_id: null, customer_name: null, discount_pesos: 0 }),
+  setCustomer: (id, name = null) => set({ customer_id: id, customer_name: name }),
   setDiscountPesos: (v) => set({ discount_pesos: Math.max(0, v) }),
-  replace: (items, discount_pesos) => set({ items, customer_id: null, discount_pesos }),
+  replace: (items, discount_pesos, customer_id = null, customer_name = null) =>
+    set({ items, customer_id, customer_name, discount_pesos }),
   syncStocks: (products) => set((s) => {
     const stocks = new Map(products.map(p => [p.id, p.stock]))
     return { items: s.items.map(item => ({ ...item, stock_base: stocks.get(item.product_id) ?? item.stock_base })) }
@@ -272,14 +275,14 @@ export function POS(): React.JSX.Element {
 }
 
 function CartPanel(): React.JSX.Element {
-  const { items, discount_pesos } = usePosCart()
+  const { items, customer_id, customer_name, discount_pesos } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [customerOpen, setCustomerOpen] = useState(false)
   const [heldOpen, setHeldOpen] = useState(false)
   const [heldSales, setHeldSales] = useState<HeldSale[]>([])
   const [holdBusy, setHoldBusy] = useState(false)
 
-  const subtotal = useMemo(() => items.reduce((s, i) => s + i.unit_price_c * i.qty, 0), [items])
+  const subtotal = useMemo(() => items.reduce((s, i) => s + Math.round(i.unit_price_c * i.qty), 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
   const stockConflict = cartHasStockConflict(items)
 
@@ -307,10 +310,10 @@ function CartPanel(): React.JSX.Element {
           unit_price_c: item.unit_price_c,
           cost_base_c: item.cost_base_c,
           stock_base: item.stock_base,
-          subtotal_c: item.unit_price_c * item.qty
+          subtotal_c: Math.round(item.unit_price_c * item.qty)
         })),
         discount_c: discount_pesos,
-        customer_id: null,
+        customer_id: customer_id ?? null,
         payments: []
       })
       usePosCart.getState().clear()
@@ -451,9 +454,27 @@ function CartPanel(): React.JSX.Element {
       <div className="space-y-1.5 border-t border-ink-line px-4 py-3 text-sm">
         <div className="flex items-center justify-between text-slate-400">
           <span>Customer</span>
-          <button onClick={() => setCustomerOpen(true)} className="flex items-center gap-1 text-brand-400 hover:text-brand-300">
-            <User className="h-3.5 w-3.5" /> Select (utang)
-          </button>
+          {customer_id && customer_name ? (
+            <div className="flex items-center gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/30 px-2 py-0.5">
+              <span className="font-semibold text-xs text-amber-300 max-w-[120px] truncate" title={customer_name}>{customer_name}</span>
+              <button
+                type="button"
+                onClick={() => usePosCart.getState().setCustomer(null, null)}
+                className="text-slate-400 hover:text-danger-400 text-xs font-bold"
+                title="Remove customer"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCustomerOpen(true)}
+              className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 border border-brand-500/20 bg-brand-500/10 rounded-md px-2 py-0.5"
+            >
+              <User className="h-3.5 w-3.5" /> Select (utang)
+            </button>
+          )}
         </div>
         <div className="flex items-center justify-between text-slate-400">
           <span>Subtotal</span><span className="text-slate-200">{money(subtotal)}</span>
@@ -463,8 +484,10 @@ function CartPanel(): React.JSX.Element {
           <input
             type="number"
             min={0}
-            value={discount_pesos}
-            onChange={(e) => usePosCart.getState().setDiscountPesos((parseFloat(e.target.value) || 0) * 100)}
+            step="any"
+            value={discount_pesos > 0 ? (discount_pesos / 100) : ''}
+            placeholder="0"
+            onChange={(e) => usePosCart.getState().setDiscountPesos(Math.round((parseFloat(e.target.value) || 0) * 100))}
             className="w-24 rounded-lg border border-ink-line bg-ink-950 px-2 py-1 text-right text-sm text-slate-200"
           />
         </div>
@@ -524,13 +547,14 @@ function CartPanel(): React.JSX.Element {
 }
 
 function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: number; onClose: () => void }): React.JSX.Element {
-  const { items, customer_id, discount_pesos } = usePosCart()
+  const { items, customer_id, customer_name, discount_pesos } = usePosCart()
   const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState<{ sale: Sale; receipt: string[]; print: PrintResult } | null>(null)
   const [printing, setPrinting] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const setPage = useNav((state) => state.setPage)
 
   const cashC = Math.round((parseFloat(cash) || 0) * 100)
@@ -548,6 +572,11 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
   const doCheckout = async () => {
     if (cartHasStockConflict(items)) {
       toastError('Stock changed', 'Please adjust the cart to the available quantity before checkout.')
+      return
+    }
+    if (method === 'UTANG' && !customer_id) {
+      toastError('Customer required', 'Pilia palihug ang customer nga mag-utang.')
+      setPickerOpen(true)
       return
     }
     setSubmitting(true)
@@ -568,10 +597,10 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
           unit_price_c: i.unit_price_c,
           cost_base_c: i.cost_base_c,
           stock_base: i.stock_base,
-          subtotal_c: i.unit_price_c * i.qty
+          subtotal_c: Math.round(i.unit_price_c * i.qty)
         })),
         discount_c: discount_pesos,
-        customer_id,
+        customer_id: customer_id ?? null,
         payments
       }
       const res = await window.api.pos.checkout(payload)
@@ -626,7 +655,11 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
     <Modal open onClose={onClose} title="Checkout" maxWidth="max-w-md" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button onClick={doCheckout} disabled={submitting} className="btn-primary flex items-center gap-2">
+        <button
+          onClick={doCheckout}
+          disabled={submitting || (method === 'UTANG' && !customer_id)}
+          className="btn-primary flex items-center gap-2 disabled:opacity-40"
+        >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Charge {money(total)}
         </button>
@@ -643,7 +676,12 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
           {methods.map((m) => (
             <button
               key={m.key}
-              onClick={() => setMethod(m.key)}
+              onClick={() => {
+                setMethod(m.key)
+                if (m.key === 'UTANG' && !customer_id) {
+                  setPickerOpen(true)
+                }
+              }}
               className={`btn-ghost flex flex-col items-center gap-1 py-2 text-xs ${method === m.key ? '!border-brand-500 !text-brand-400' : ''}`}
             >
               {m.icon}
@@ -679,9 +717,46 @@ function CheckoutModal({ subtotal, total, onClose }: { subtotal: number; total: 
         )}
 
         {method === 'UTANG' && (
-          <p className="text-xs text-amber-400">This sale will be charged to the selected customer&apos;s utang account.</p>
+          <div className="space-y-2">
+            {customer_id && customer_name ? (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Customer (Utang Account)</span>
+                    <p className="mt-0.5 text-base font-extrabold text-white">{customer_name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    className="rounded-lg border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/30 transition"
+                  >
+                    Change
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-slate-300">
+                  Ang kantidad nga <strong className="text-emerald-400 font-mono">{money(total)}</strong> ma-charge sa utang account ni {customer_name}.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-amber-500/40 bg-amber-950/40 p-4 text-center">
+                <Wallet className="mx-auto h-8 w-8 text-amber-400 mb-1.5" />
+                <p className="text-sm font-bold text-amber-300">Kinahanglan og Customer para sa Utang</p>
+                <p className="text-xs text-slate-400 mt-1">Pilia palihug ang customer nga mag-utang aron ma-record ang transaction.</p>
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-4 py-2 text-xs font-black uppercase text-black hover:bg-amber-400 active:scale-95 transition"
+                >
+                  <User className="h-4 w-4" />
+                  Pili og Customer (Select Customer)
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      {pickerOpen && <CustomerPicker onClose={() => setPickerOpen(false)} />}
     </Modal>
   )
 }
@@ -694,7 +769,7 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
   const load = async (term: string) => {
     setLoading(true)
     try {
-      const res = await window.api.customers.list({ search: term || undefined, status: 'ACTIVE', limit: 30 })
+      const res = await window.api.customers.list({ search: term || undefined, status: 'ACTIVE', limit: 50 })
       setRows(res.rows)
     } catch (e) {
       toastError('Failed to load customers', String((e as Error)?.message || e))
@@ -707,7 +782,7 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
 
   return (
     <Modal open onClose={onClose} title="Select Customer (Utang)" maxWidth="max-w-md" footer={
-      <button onClick={() => { usePosCart.getState().setCustomer(null); onClose() }} className="btn-ghost">Walk-in (no utang)</button>
+      <button onClick={() => { usePosCart.getState().setCustomer(null, null); onClose() }} className="btn-ghost">Walk-in (no utang)</button>
     }>
       <input
         value={q}
@@ -721,7 +796,7 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
         {!loading && rows.map((c) => (
           <button
             key={c.id}
-            onClick={() => { usePosCart.getState().setCustomer(c.id); onClose() }}
+            onClick={() => { usePosCart.getState().setCustomer(c.id, c.full_name); onClose() }}
             className="flex w-full items-center justify-between rounded-lg border border-ink-line px-3 py-2 text-left hover:border-brand-500/50"
           >
             <div>

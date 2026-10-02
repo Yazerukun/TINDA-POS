@@ -4,6 +4,9 @@ import { runMigrations } from '../main/database/migrations'
 import { hashSecret } from '../main/security/passwords'
 import * as users from '../main/repositories/users'
 import * as products from '../main/repositories/products'
+import * as customers from '../main/repositories/customers'
+import * as sales from '../main/repositories/sales'
+import { validateCheckout } from '../main/validation/schemas'
 import { isWeighableUnit } from '../shared/format'
 
 function makeDb(): Database.Database {
@@ -65,5 +68,89 @@ describe('Weighable Kilo & Decimal Quantity Checkout', () => {
     products.adjustStock(db, prod.id, 1.5, 'PURCHASE', 'Test Restock 1.5kg', u.id, 'TXN-KILO-002')
     const restocked = products.getProduct(db, prod.id)
     expect(restocked.stock).toBe(9.75)
+  })
+
+  it('validates checkout payload with decimal / fractional quantities', () => {
+    const validDecimalPayload = {
+      items: [
+        {
+          product_id: 1,
+          name: 'Fresh Pork Liempo',
+          unit_name: 'kilo',
+          qty: 1.75,
+          qty_base: 1.75,
+          unit_price_c: 24000,
+          subtotal_c: 42000
+        }
+      ],
+      discount_c: 0,
+      payments: [{ method: 'CASH', amount_c: 50000 }]
+    }
+
+    const result = validateCheckout(validDecimalPayload)
+    expect(result.items[0].qty).toBe(1.75)
+    expect(result.items[0].qty_base).toBe(1.75)
+
+    // Negative or 0 should throw
+    expect(() =>
+      validateCheckout({
+        ...validDecimalPayload,
+        items: [{ ...validDecimalPayload.items[0], qty: -0.5 }]
+      })
+    ).toThrow(/positive number/)
+  })
+
+  it('records utang charges and updates customer credit ledger correctly', () => {
+    const db = makeDb()
+
+    const u = users.createUser(db, {
+      username: 'admin1',
+      passwordHash: hashSecret('secret'),
+      pinHash: hashSecret('1234'),
+      full_name: 'Admin User',
+      roles: ['ADMIN']
+    })
+
+    const customer = customers.createCustomer(db, {
+      full_name: 'Juan Dela Cruz',
+      phone: '09123456789',
+      credit_limit_c: 500000 // ₱5,000.00
+    })
+
+    expect(customer.balance_c).toBe(0)
+
+    // Create sale with UTANG payment
+    const saleId = sales.createSaleRecord(db, {
+      transaction_no: 'TPOS-000001',
+      user_id: u.id,
+      customer_id: customer.id,
+      subtotal_c: 35000,
+      discount_c: 0,
+      total_c: 35000,
+      shift_id: null,
+      notes: 'Utang purchase'
+    })
+
+    sales.insertPayment(db, saleId, 'UTANG', 35000, null)
+
+    const entry = customers.applyCreditEntry(db, {
+      customer_id: customer.id,
+      entry_type: 'CREDIT_SALE',
+      amount_c: 35000,
+      reference_type: 'SALE',
+      reference_id: saleId,
+      notes: 'Sale TPOS-000001',
+      user_id: u.id
+    })
+
+    const updatedCustomer = customers.getCustomer(db, customer.id)
+    expect(updatedCustomer.balance_c).toBe(35000)
+
+    const ledger = customers.customerLedger(db, customer.id)
+    expect(ledger.length).toBe(1)
+    expect(ledger[0].entry_type).toBe('CREDIT_SALE')
+    expect(ledger[0].amount_c).toBe(35000)
+    expect(ledger[0].balance_after_c).toBe(35000)
+    expect(entry.balance_after_c).toBe(35000)
   })
 })

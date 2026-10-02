@@ -14,6 +14,7 @@ export function Utang(): React.JSX.Element {
   const [selected, setSelected] = useState<Customer | null>(null)
   const [ledger, setLedger] = useState<CreditLedgerEntry[]>([])
   const [action, setAction] = useState<null | { type: 'PAY' | 'ADJUST' | 'OVERLIMIT'; customer: Customer }>(null)
+  const [onlyWithBalance, setOnlyWithBalance] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -28,11 +29,14 @@ export function Utang(): React.JSX.Element {
   }
   useEffect(() => { void load() }, [])
 
+  const withBalanceCount = useMemo(() => rows.filter((c) => c.balance_c > 0).length, [rows])
+
   const filtered = useMemo(() => {
     let list = rows
+    if (onlyWithBalance) list = list.filter((c) => c.balance_c > 0)
     if (q) list = list.filter((c) => (c.full_name + ' ' + (c.nickname || '')).toLowerCase().includes(q.toLowerCase()))
-    return list
-  }, [rows, q])
+    return [...list].sort((a, b) => (b.balance_c > 0 ? 1 : 0) - (a.balance_c > 0 ? 1 : 0) || b.balance_c - a.balance_c)
+  }, [rows, q, onlyWithBalance])
 
   const totalOutstanding = rows.reduce((s, c) => s + c.balance_c, 0)
 
@@ -60,9 +64,32 @@ export function Utang(): React.JSX.Element {
     <div className="p-6">
       <PageHeader title="Utang" subtitle={`Customers with credit · total outstanding ${money(totalOutstanding)}`} />
 
-      <div className="mb-4 relative max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customer…" className="input w-full pl-9" />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customer…" className="input w-full pl-9" />
+        </div>
+
+        <div className="flex items-center gap-1.5 rounded-lg border border-ink-line bg-ink-900 p-1">
+          <button
+            type="button"
+            onClick={() => setOnlyWithBalance(false)}
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
+              !onlyWithBalance ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            All Customers ({rows.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setOnlyWithBalance(true)}
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
+              onlyWithBalance ? 'bg-amber-500 text-black shadow-sm font-bold' : 'text-slate-400 hover:text-amber-300'
+            }`}
+          >
+            With Utang Only ({withBalanceCount})
+          </button>
+        </div>
       </div>
 
       {loading ? (
