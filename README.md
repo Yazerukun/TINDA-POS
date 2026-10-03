@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.44-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.49-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,38 @@
 
 <br />
 
-[⬇️ Download v1.0.44 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-Setup-1.0.44.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-Portable-1.0.44.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.49 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-Setup-1.0.49.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-Portable-1.0.49.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.49 (Extended Specifications Visibility & Manager Bargain Authorization)
+
+> **Multiline Technical Specs Wrap, Secondary Description Display, Manager-PIN Bargain Overrides & Purchase Cost Protection**
+
+- 📐 **Extended Product Name & Technical Specifications Visibility**:
+  - **Expanded POS Catalog Cards**: Grid card height increased from 160px to 185px with adaptive 3-line wrap (`break-words`), guaranteeing long hardware item names and millimeter suffixes (e.g. `1/2" x 100mm`, `3.2mm`, `Grade 40`) are never cut off.
+  - **Dedicated Secondary Specifications Display**: Directly shows product descriptions and technical dimensions in `text-[11px] text-slate-400` beneath the title on catalog cards for instant differentiation between millimeter size variants.
+  - **Inventory Specifications Input**: Added dedicated multiline description/specs field in `ProductModal` with zero disruptive schema changes (persists to core `products.description` column).
+  - **Cart & Held Sales Retention**: Line items in the cart and resumed held sales retain full technical specifications.
+- 🏷️ **Line-Item Custom Price Override & Manager Bargain Authorization ("Tawad")**:
+  - **Manager / Admin Security PIN Gate**: Cashiers attempting to modify an item's unit price are prompted for a 4-digit Manager or Admin PIN (`auth:verifyManagerPin`) without mutating the cashier's active session, user ID, or open shift.
+  - **Direct Manager Access**: Store owners and managers logged into an Admin/Manager account can edit line prices directly without redundant PIN prompts.
+  - **Visual Bargain Badge**: Overridden items feature an amber `✏️ Bargain / Custom Price` tag and struck-through original retail price.
+  - **Live Margin Protection Warning**: `PriceOverrideModal` alerts the manager if a negotiated price drops below product purchase cost (`cost_base_c`).
+  - **Seamless Reset**: One-click "Reset to normal" restores standard retail base price or wholesale volume tiering.
+  - **Transactional Ledger & Sync Integrity**: Custom unit prices and subtotals persist accurately in `sale_items` for correct profit calculations, X/Z-Read reports, and Cloudflare Sync.
+
+---
+
+## ✨ What's New in v1.0.48 (Executive Cloud Dashboard Sync & Remote Sales Monitoring)
+
+> **Real-Time Live Sales Cloud Sync, Cloudflare Worker Backend, Multi-Branch Store ID & VIP Cloud Tab**
+
+- ☁️ **Executive Cloud Owner Dashboard Integration**: Store owners can view live sales, gross profit, active cashier shifts, and inventory levels from any smartphone or laptop anywhere in the world via the official Web Dashboard ([https://tinda-owner-dashboard.pages.dev/](https://tinda-owner-dashboard.pages.dev/)).
+- 🔄 **Automated Background Push Engine**: Completed transactions, Z-Read shift closures, and stock movements auto-sync to Cloudflare Workers with zero cashier latency. Offline queues ensure zero transaction drops if internet connectivity is intermittent.
+- ⚙️ **Dedicated Cloud Dashboard (VIP) Tab**: View connection status, copy Store ID & Sync Key, trigger manual synchronization, and test connection latency with 1-click.
+
+---
 
 ## ✨ What's New in v1.0.44 (Weighable & Fractional Decimal Quantity Mode)
 

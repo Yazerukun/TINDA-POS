@@ -40,9 +40,10 @@ test-data/
 Thumbs.db
 desktop.ini
 
-# === Editor / IDE ===
+# === Editor / IDE / Worktrees ===
 .vscode/
 .idea/
+.paperclip/
 *.swp
 *.swo
 *~

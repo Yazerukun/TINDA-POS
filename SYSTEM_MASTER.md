@@ -569,3 +569,63 @@
   - [x] **100% Cryptographic VIP Pro Preservation:** Tested via `license-service.test.ts` and `settings-vip.test.ts`; HMAC-SHA256 license derivation keys remain permanently frozen and valid.
   - [x] **Zero Counter Paralysis:** POS checkout, USB barcode scanning, camera companion pairing, CFD updates, and shift reconciliation operate seamlessly without blocking.
   - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` permanently synchronized.
+
+---
+
+## 29. Extended Specification Visibility & Multiline Catalog Engine (v1.0.49)
+* **Problem Addressed:**
+  - In hardware stores, auto parts, pharmacies, and specialty retail, products have long technical specifications, dimensions, diameters, and suffixes (e.g. `PVC Pipe Schedule 40 Blue 1/2" x 100mm`, `Corrugated Steel Bar 10mm x 6m Grade 40`).
+  - Previously, product cards in the POS grid and inventory lists clamped text aggressively (`line-clamp-2` and `truncate`), hiding critical specifications and dimensions (`mm`, `cm`, `inches`, `grit`, `gauge`) at the end of the item name.
+  - Store managers also lacked a dedicated field in the inventory modal to enter detailed technical dimensions, variant specifications, or flavor notes.
+* **Key Architectural Implementations:**
+  - **Zero-Migration Optional Schema Invariant:**
+    - Leverages the existing `products.description TEXT` column present in the core schema since v1.0.0. No disruptive schema migration or table rebuild required.
+  - **Enhanced Product Grid Architecture (`POS.tsx`):**
+    - Expanded product card height from `160px` to `185px` (`auto-rows-[185px]` and `h-[185px]`).
+    - Multiline text rendering: `line-clamp-2 break-words text-xs sm:text-sm font-semibold leading-snug text-white` with hover tooltip (`title={p.name}`).
+    - Dedicated secondary specification display: Renders `p.description` in `line-clamp-2 break-words text-[11px] text-slate-400 mt-0.5` directly on the card so cashiers can distinguish between millimeter variations at a single glance.
+  - **Inventory Card & Form Parity (`Inventory.tsx` & `productForm.ts`):**
+    - Product cards in Inventory display multiline break-words names and specifications.
+    - Added dedicated `Description / Specifications` textarea to `ProductModal` with helper placeholder (`e.g. Dimensions (mm/cm), specs, flavor, notes`), cleanly mapping to `form.description` and persisting seamlessly across create and update payloads.
+  - **POS Cart & Held Sales Specification Context:**
+    - `CartItem` interface and cart display enhanced with `description?: string | null`.
+    - Resuming held sales preserves product descriptions for full cashier context.
+
+---
+
+## 30. Flexible Line-Item Price Override & Manager Bargain Authorization (v1.0.49)
+* **Problem Addressed:**
+  - In Philippine retail and hardware environments, custom volume discounts, clearance pricing, and customer bargaining ("tawad") are standard commercial practices (e.g. regular ₱98.00 item negotiated down to ₱90.00 each for a bulk customer, or regular ₱35.00 reduced to ₱30.00).
+  - Previously, only cart-level peso discounts (`F4`) were supported, which apply across the entire cart rather than targeting specific line items.
+  - Unrestricted price editing by cashiers introduces severe fraud, theft, and inventory shrinkage risks.
+* **Key Architectural Implementations:**
+  - **Non-Mutating Manager PIN Authorization (`verifyManagerPin` in `auth.ts`):**
+    - Cashiers requesting a price override are prompted for a 4-digit Manager or Admin PIN via `ManagerPinModal`.
+    - IPC handler `auth:verifyManagerPin` verifies PIN against active `ADMIN` or `MANAGER` users in SQLite without mutating the cashier's active session, user ID, or open shift ID.
+    - If the logged-in user is already an Admin or Manager, the price edit modal opens directly without re-prompting for a PIN.
+  - **Real-Time Dynamic Cart Repricing Engine (`calculateItemUnitPrice` in `cartStock.ts`):**
+    - Extended calculation contract:
+      $$\text{calculateItemUnitPrice}(basePriceC, qty, wholesalePriceC, wholesaleMinQty, customPriceC)$$
+    - When `customPriceC != null && customPriceC >= 0`, custom unit price takes precedence over regular retail and wholesale tiering (`isCustom = true`).
+    - Calling `resetItemPrice(productId)` cleanly clears `custom_price_c` and restores the standard retail or wholesale tiered pricing.
+  - **Visual Bargain Indicators & Profit Protection:**
+    - Cart items with overridden prices display a distinct `✏️ Bargain / Custom Price` amber badge.
+    - Original base retail price is displayed with a strikethrough (e.g. `₱98.00` strikethrough next to `₱90.00`).
+    - Line item subtotal and cart total calculate synchronously in centavos:
+      $$\text{Line Subtotal} = \text{round}(\text{Custom Price Centavos} \times \text{Quantity})$$
+    - `PriceOverrideModal` displays original retail price, current purchase cost, and calculates real-time unit discount and line total.
+    - Prominently warns the manager if the entered price drops below purchase cost (`cost_base_c`), preventing unintended negative-margin sales.
+  - **Transactional Ledger & Sync Integrity:**
+    - `sale_items` already stores `unit_price_c` and `subtotal_c` independently per line item. Custom prices write directly to SQLite ledger rows, ensuring exact profit reporting, X/Z-Read accuracy, thermal receipt alignment, CFD reflection, and Cloudflare Sync consistency.
+
+---
+
+## 31. Verification Gates, Non-Destructive Invariant Proofs & Definition of Done (v1.0.49)
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **58/58 Vitest Test Suites Passing:** Complete test coverage with 372/372 unit and integration tests passing, including dedicated `manager-pin-auth.test.ts` and `custom-price-checkout.test.ts`.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **Zero Packaging / Build Errors:** `npm run build` (`electron-vite build`) succeeds with production client and SSR main bundles.
+  - [x] **Strict Non-Destructive Database Integrity:** Verified through `v108-upgrade-chain.test.ts` (schema upgrade preserves every single product, unit, customer, ledger entry, shift, sale, and payment with zero data loss).
+  - [x] **100% Cryptographic VIP Pro Preservation:** Tested via `license-service.test.ts` and `settings-vip.test.ts`; HMAC-SHA256 license derivation keys remain permanently frozen and valid.
+  - [x] **Zero Counter Paralysis:** POS checkout, USB barcode scanning, camera companion pairing, CFD updates, and shift reconciliation operate seamlessly without blocking.
+  - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` permanently synchronized.
