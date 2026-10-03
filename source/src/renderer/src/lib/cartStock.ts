@@ -34,8 +34,12 @@ export function calculateItemUnitPrice(
   basePriceC: number,
   qty: number,
   wholesalePriceC?: number | null,
-  wholesaleMinQty?: number | null
-): { unitPriceC: number; isWholesale: boolean } {
+  wholesaleMinQty?: number | null,
+  customPriceC?: number | null
+): { unitPriceC: number; isWholesale: boolean; isCustom: boolean } {
+  if (customPriceC != null && customPriceC >= 0) {
+    return { unitPriceC: customPriceC, isWholesale: false, isCustom: true }
+  }
   if (
     wholesalePriceC != null &&
     wholesalePriceC > 0 &&
@@ -43,8 +47,8 @@ export function calculateItemUnitPrice(
     wholesaleMinQty > 0 &&
     qty >= wholesaleMinQty
   ) {
-    return { unitPriceC: wholesalePriceC, isWholesale: true }
+    return { unitPriceC: wholesalePriceC, isWholesale: true, isCustom: false }
   }
-  return { unitPriceC: basePriceC, isWholesale: false }
+  return { unitPriceC: basePriceC, isWholesale: false, isCustom: false }
 }
 

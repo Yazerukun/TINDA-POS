@@ -56,6 +56,7 @@ const api: TindaApi = {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),
     login: (u, p) => invoke<import('@shared/ipc').LoginResult>('auth:login', u, p),
     loginPin: (pin) => invoke<import('@shared/ipc').LoginResult>('auth:loginPin', pin),
+    verifyManagerPin: (pin) => invoke<{ valid: boolean; name?: string }>('auth:verifyManagerPin', pin),
     logout: () => invoke<void>('auth:logout'),
     changePassword: (c, n) => invoke<void>('auth:changePassword', c, n),
     changePin: (pin) => invoke<void>('auth:changePin', pin),

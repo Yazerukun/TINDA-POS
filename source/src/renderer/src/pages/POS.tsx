@@ -22,8 +22,12 @@ import {
   Laptop,
   Receipt,
   Monitor,
-  Tv
+  Tv,
+  Tag,
+  Edit3,
+  KeyRound
 } from 'lucide-react'
+import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
 import { CounterCameraScanner } from '../components/CounterCameraScanner'
@@ -61,6 +65,7 @@ const saleStock = (p: Product): number => p.expiration_mode === 'ITEM' && (!p.ex
 interface CartItem {
   product_id: number
   name: string
+  description?: string | null
   unit_name: string
   qty: number
   unit_price_c: number
@@ -68,6 +73,8 @@ interface CartItem {
   wholesale_price_c?: number | null
   wholesale_min_qty?: number | null
   is_wholesale?: boolean
+  custom_price_c?: number | null
+  is_custom_price?: boolean
   cost_base_c: number
   stock_base: number
   conversion_to_base: number
@@ -80,6 +87,8 @@ interface CartState {
   discount_pesos: number
   add: (p: Product) => void
   setQty: (product_id: number, qty: number) => void
+  setItemPrice: (product_id: number, priceC: number) => void
+  resetItemPrice: (product_id: number) => void
   remove: (product_id: number) => void
   clear: () => void
   setCustomer: (id: number | null, name?: string) => void
@@ -101,11 +110,12 @@ export const usePosCart = create<CartState>((set) => ({
       const weighable = isWeighableUnit(p.base_unit)
       if (ex) {
         const nextQty = Math.min(ex.qty + 1, maxQuantity(stock, ex.conversion_to_base, weighable))
-        const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+        const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
           ex.base_price_c ?? ex.unit_price_c,
           nextQty,
           ex.wholesale_price_c,
-          ex.wholesale_min_qty
+          ex.wholesale_min_qty,
+          ex.custom_price_c
         )
         return {
           items: s.items.map((i) =>
@@ -115,18 +125,20 @@ export const usePosCart = create<CartState>((set) => ({
                   stock_base: stock,
                   qty: nextQty,
                   unit_price_c: unitPriceC,
-                  is_wholesale: isWholesale
+                  is_wholesale: isWholesale,
+                  is_custom_price: isCustom
                 }
               : i
           )
         }
       }
       const basePrice = p.default_price_c
-      const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+      const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
         basePrice,
         1,
         p.wholesale_price_c,
-        p.wholesale_min_qty
+        p.wholesale_min_qty,
+        null
       )
       return {
         items: [
@@ -134,6 +146,7 @@ export const usePosCart = create<CartState>((set) => ({
           {
             product_id: p.id,
             name: p.name,
+            description: p.description ?? null,
             unit_name: p.base_unit,
             qty: 1,
             unit_price_c: unitPriceC,
@@ -141,6 +154,8 @@ export const usePosCart = create<CartState>((set) => ({
             wholesale_price_c: p.wholesale_price_c,
             wholesale_min_qty: p.wholesale_min_qty,
             is_wholesale: isWholesale,
+            custom_price_c: null,
+            is_custom_price: isCustom,
             cost_base_c: p.purchase_cost_c,
             stock_base: stock,
             conversion_to_base: 1
@@ -157,20 +172,63 @@ export const usePosCart = create<CartState>((set) => ({
           const safeQty = Number.isFinite(qty) ? (weighable ? Math.round(qty * 1000) / 1000 : Math.round(qty)) : 0
           const maxQ = maxQuantity(i.stock_base, i.conversion_to_base, weighable)
           const nextQty = Math.min(Math.max(0, safeQty), maxQ)
-          const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+          const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
             i.base_price_c ?? i.unit_price_c,
             nextQty,
             i.wholesale_price_c,
-            i.wholesale_min_qty
+            i.wholesale_min_qty,
+            i.custom_price_c
           )
           return {
             ...i,
             qty: nextQty,
             unit_price_c: unitPriceC,
-            is_wholesale: isWholesale
+            is_wholesale: isWholesale,
+            is_custom_price: isCustom
           }
         })
         .filter((i) => i.qty > 0)
+    })),
+  setItemPrice: (product_id, priceC) =>
+    set((s) => ({
+      items: s.items.map((i) => {
+        if (i.product_id !== product_id) return i
+        const safePriceC = Math.max(0, Math.round(priceC))
+        const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
+          i.base_price_c ?? i.unit_price_c,
+          i.qty,
+          i.wholesale_price_c,
+          i.wholesale_min_qty,
+          safePriceC
+        )
+        return {
+          ...i,
+          custom_price_c: safePriceC,
+          unit_price_c: unitPriceC,
+          is_wholesale: isWholesale,
+          is_custom_price: isCustom
+        }
+      })
+    })),
+  resetItemPrice: (product_id) =>
+    set((s) => ({
+      items: s.items.map((i) => {
+        if (i.product_id !== product_id) return i
+        const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
+          i.base_price_c ?? i.unit_price_c,
+          i.qty,
+          i.wholesale_price_c,
+          i.wholesale_min_qty,
+          null
+        )
+        return {
+          ...i,
+          custom_price_c: null,
+          unit_price_c: unitPriceC,
+          is_wholesale: isWholesale,
+          is_custom_price: isCustom
+        }
+      })
     })),
   remove: (product_id) => set((s) => ({ items: s.items.filter((i) => i.product_id !== product_id) })),
   clear: () => set({ items: [], customer_id: null, customer_name: null, discount_pesos: 0 }),
@@ -179,17 +237,19 @@ export const usePosCart = create<CartState>((set) => ({
   replace: (items, discount_pesos) =>
     set({
       items: items.map((item) => {
-        const { unitPriceC, isWholesale } = calculateItemUnitPrice(
+        const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
           item.base_price_c ?? item.unit_price_c,
           item.qty,
           item.wholesale_price_c,
-          item.wholesale_min_qty
+          item.wholesale_min_qty,
+          item.custom_price_c
         )
         return {
           ...item,
           base_price_c: item.base_price_c ?? item.unit_price_c,
           unit_price_c: unitPriceC,
-          is_wholesale: isWholesale
+          is_wholesale: isWholesale,
+          is_custom_price: isCustom
         }
       }),
       customer_id: null,
@@ -658,7 +718,7 @@ export function POS(): React.JSX.Element {
           </div>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
-        <div className="grid min-h-0 flex-1 auto-rows-[160px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
+        <div className="grid min-h-0 flex-1 auto-rows-[185px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
           {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
           {!loading && products.length === 0 && (
             <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
@@ -682,7 +742,7 @@ export function POS(): React.JSX.Element {
                   }
                 }}
                 aria-disabled={out}
-                className="card group flex h-40 min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+                className="card group flex h-[185px] min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
               >
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                   <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
@@ -693,8 +753,11 @@ export function POS(): React.JSX.Element {
                 <div className="flex items-start gap-2.5 min-w-0">
                   <ProductImage src={p.image_path} alt={p.name} className="h-10 w-10 rounded-md shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 break-words text-sm font-semibold leading-5 text-white" title={p.name}>{p.name}</p>
-                    {blocked > 0 && <p className="truncate text-xs text-red-400">{blocked} expired / undated</p>}
+                    <p className="line-clamp-2 break-words text-xs sm:text-sm font-semibold leading-snug text-white" title={p.name}>{p.name}</p>
+                    {p.description && (
+                      <p className="line-clamp-2 break-words text-[11px] text-slate-400 mt-0.5" title={p.description}>{p.description}</p>
+                    )}
+                    {blocked > 0 && <p className="truncate text-xs text-red-400 mt-0.5">{blocked} expired / undated</p>}
                   </div>
                 </div>
                 <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
@@ -812,6 +875,248 @@ function CartQtyInput({
   )
 }
 
+function ManagerPinModal({
+  item,
+  onAuthorized,
+  onClose
+}: {
+  item: CartItem
+  onAuthorized: () => void
+  onClose: () => void
+}): React.JSX.Element {
+  const [pin, setPin] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const checkPin = async (inputPin: string) => {
+    if (!/^\d{4}$/.test(inputPin)) {
+      setError('Please enter a 4-digit PIN.')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await window.api.auth.verifyManagerPin(inputPin)
+      if (res.valid) {
+        toastSuccess('Manager Authorized', `Approved by ${res.name || 'Manager/Admin'}`)
+        onAuthorized()
+      } else {
+        setError('Invalid PIN or not authorized. Only Admin or Manager PIN can approve price overrides.')
+      }
+    } catch (err) {
+      setError(String((err as Error)?.message || err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    void checkPin(pin)
+  }
+
+  return (
+    <Modal open title="Manager Authorization Required" onClose={onClose}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-amber-300">
+          <KeyRound className="h-6 w-6 shrink-0 text-amber-400" />
+          <div className="text-xs">
+            <p className="font-semibold text-sm">Manager / Admin PIN Required</p>
+            <p className="text-amber-300/80 mt-0.5">
+              Custom price override / bargain discount for <strong>{item.name}</strong> requires manager authorization.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Enter 4-Digit Manager / Admin PIN</label>
+          <input
+            ref={inputRef}
+            type="password"
+            maxLength={4}
+            inputMode="numeric"
+            value={pin}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '').slice(0, 4)
+              setPin(val)
+              setError(null)
+              if (val.length === 4) {
+                void checkPin(val)
+              }
+            }}
+            placeholder="••••"
+            className="input w-full text-center text-2xl tracking-[0.5em] font-mono"
+            disabled={loading}
+          />
+        </div>
+
+        {error && <p className="text-xs text-danger-400">{error}</p>}
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="btn-ghost">
+            Cancel
+          </button>
+          <button type="submit" disabled={pin.length !== 4 || loading} className="btn-primary">
+            {loading ? 'Verifying…' : 'Authorize Override'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function PriceOverrideModal({
+  item,
+  onClose
+}: {
+  item: CartItem
+  onClose: () => void
+}): React.JSX.Element {
+  const basePricePesos = (item.base_price_c ?? item.unit_price_c) / 100
+  const currentPricePesos = item.unit_price_c / 100
+  const costPesos = item.cost_base_c / 100
+  const [newPrice, setNewPrice] = useState<string>(String(currentPricePesos))
+  const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+
+  const enteredPesos = parseFloat(newPrice) || 0
+  const enteredCents = Math.round(enteredPesos * 100)
+  const diffPesos = basePricePesos - enteredPesos
+  const totalItemCents = Math.round(enteredCents * item.qty)
+
+  const isBelowCost = costPesos > 0 && enteredPesos < costPesos
+
+  const handleSave = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (isNaN(enteredPesos) || enteredPesos < 0) {
+      setError('Please enter a valid price greater than or equal to 0.')
+      return
+    }
+    usePosCart.getState().setItemPrice(item.product_id, enteredCents)
+    toastSuccess('Price Updated', `${item.name} set to ${money(enteredCents)}`)
+    onClose()
+  }
+
+  const handleReset = () => {
+    usePosCart.getState().resetItemPrice(item.product_id)
+    toastSuccess('Price Reset', `${item.name} reverted to normal price`)
+    onClose()
+  }
+
+  return (
+    <Modal open title={`Custom Price / Tawad: ${item.name}`} onClose={onClose}>
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="rounded-lg border border-ink-line bg-ink-900/50 p-3 text-xs space-y-1.5">
+          <div className="flex justify-between items-center text-slate-300">
+            <span>Item:</span>
+            <span className="font-semibold text-white break-words text-right max-w-[200px]">{item.name}</span>
+          </div>
+          {item.description && (
+            <div className="flex justify-between items-center text-slate-400">
+              <span>Specs / Description:</span>
+              <span className="text-right text-slate-300 break-words max-w-[200px]">{item.description}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center text-slate-300">
+            <span>Original Retail Price:</span>
+            <span className="font-bold text-brand-400">{money(item.base_price_c ?? item.unit_price_c)}</span>
+          </div>
+          {costPesos > 0 && (
+            <div className="flex justify-between items-center text-slate-400">
+              <span>Purchase Cost:</span>
+              <span className="font-medium text-slate-300">{money(item.cost_base_c)}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center text-slate-300">
+            <span>Current Quantity:</span>
+            <span className="font-semibold text-white">{item.qty} {item.unit_name}</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="label flex items-center justify-between">
+            <span>New Custom Unit Price (₱) *</span>
+            <span className="text-[11px] text-slate-500">Per 1 {item.unit_name}</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">₱</span>
+            <input
+              ref={inputRef}
+              type="number"
+              step="any"
+              min="0"
+              required
+              value={newPrice}
+              onChange={(e) => {
+                setNewPrice(e.target.value)
+                setError(null)
+              }}
+              placeholder="0.00"
+              className="input w-full pl-8 text-xl font-bold text-white focus:border-brand-500"
+            />
+          </div>
+        </div>
+
+        {enteredPesos > 0 && (
+          <div className="rounded-lg border border-ink-line bg-ink-950/60 p-3 text-xs space-y-1">
+            <div className="flex justify-between text-slate-300">
+              <span>Unit Discount:</span>
+              <span className={diffPesos > 0 ? 'text-emerald-400 font-semibold' : 'text-slate-400'}>
+                {diffPesos > 0 ? `-₱${diffPesos.toFixed(2)} / pc` : diffPesos < 0 ? `+₱${Math.abs(diffPesos).toFixed(2)} / pc` : 'No discount'}
+              </span>
+            </div>
+            <div className="flex justify-between text-slate-300">
+              <span>New Line Subtotal ({item.qty} {item.unit_name}):</span>
+              <span className="font-bold text-brand-300 text-sm">{money(totalItemCents)}</span>
+            </div>
+          </div>
+        )}
+
+        {isBelowCost && (
+          <div className="flex items-center gap-2 rounded-lg border border-danger-500/30 bg-danger-500/10 p-2.5 text-xs text-danger-300">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-danger-400" />
+            <span>Warning: ₱{enteredPesos.toFixed(2)} is lower than purchase cost ({money(item.cost_base_c)}). Store will lose margin.</span>
+          </div>
+        )}
+
+        {error && <p className="text-xs text-danger-400">{error}</p>}
+
+        <div className="flex items-center justify-between pt-2">
+          {item.is_custom_price ? (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="btn-ghost text-xs text-amber-400 hover:text-amber-300"
+            >
+              Reset to Base Price
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="btn-ghost">
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary">
+              Apply Price
+            </button>
+          </div>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
 function CartPanel({
   counterCameraEnabled,
   onToggleCounterCamera,
@@ -828,8 +1133,20 @@ function CartPanel({
   const [heldOpen, setHeldOpen] = useState(false)
   const [heldSales, setHeldSales] = useState<HeldSale[]>([])
   const [holdBusy, setHoldBusy] = useState(false)
+  const [priceEditItem, setPriceEditItem] = useState<CartItem | null>(null)
+  const [pinPromptItem, setPinPromptItem] = useState<CartItem | null>(null)
   const discountInputRef = useRef<HTMLInputElement>(null)
   const lastQtyInputRef = useRef<HTMLInputElement>(null)
+
+  const handleEditPriceClick = (item: CartItem) => {
+    const currentUser = useAuth.getState().user
+    const isManagerOrAdmin = currentUser?.roles.some((r) => r === 'ADMIN' || r === 'MANAGER') ?? false
+    if (isManagerOrAdmin) {
+      setPriceEditItem(item)
+    } else {
+      setPinPromptItem(item)
+    }
+  }
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + Math.round(i.unit_price_c * i.qty), 0), [items])
   const total = Math.max(0, subtotal - discount_pesos)
@@ -877,7 +1194,7 @@ function CartPanel({
 
   useEffect(() => {
     const handleCartHotkeys = (e: KeyboardEvent) => {
-      if (checkoutOpen || customerOpen || heldOpen) return
+      if (checkoutOpen || customerOpen || heldOpen || priceEditItem || pinPromptItem) return
 
       if (e.key === 'F2') {
         if (items.length > 0) {
@@ -924,7 +1241,7 @@ function CartPanel({
 
     window.addEventListener('keydown', handleCartHotkeys)
     return () => window.removeEventListener('keydown', handleCartHotkeys)
-  }, [checkoutOpen, customerOpen, heldOpen, items, holdBusy, stockConflict])
+  }, [checkoutOpen, customerOpen, heldOpen, priceEditItem, pinPromptItem, items, holdBusy, stockConflict])
 
   const resumeHeldSale = async (id: number) => {
     if (items.length && !confirm('Replace the current cart with this held sale?')) return
@@ -935,16 +1252,27 @@ function CartPanel({
         window.api.products.search('', { status: 'ACTIVE', limit: 1000 })
       ])
       const catalog = new Map(productResult.rows.map((product) => [product.id, product]))
-      usePosCart.getState().replace(held.items.map((item) => ({
-        product_id: item.product_id as number,
-        name: item.name,
-        unit_name: item.unit_name,
-        qty: item.qty,
-        unit_price_c: item.unit_price_c,
-        cost_base_c: item.cost_base_c,
-        stock_base: item.product_id == null ? 0 : catalog.has(item.product_id) ? saleStock(catalog.get(item.product_id)!) : 0,
-        conversion_to_base: item.qty > 0 ? item.qty_base / item.qty : 1
-      })), held.discount_c)
+      usePosCart.getState().replace(held.items.map((item) => {
+        const prod = item.product_id != null ? catalog.get(item.product_id) : undefined
+        const basePrice = prod?.default_price_c ?? item.unit_price_c
+        const isCustom = item.unit_price_c !== basePrice
+        return {
+          product_id: item.product_id as number,
+          name: item.name,
+          description: prod?.description ?? null,
+          unit_name: item.unit_name,
+          qty: item.qty,
+          unit_price_c: item.unit_price_c,
+          base_price_c: basePrice,
+          wholesale_price_c: prod?.wholesale_price_c ?? null,
+          wholesale_min_qty: prod?.wholesale_min_qty ?? null,
+          custom_price_c: isCustom ? item.unit_price_c : null,
+          is_custom_price: isCustom,
+          cost_base_c: item.cost_base_c,
+          stock_base: item.product_id == null ? 0 : catalog.has(item.product_id) ? saleStock(catalog.get(item.product_id)!) : 0,
+          conversion_to_base: item.qty > 0 ? item.qty_base / item.qty : 1
+        }
+      }), held.discount_c)
       setHeldOpen(false)
       await loadHeldSales()
       toastSuccess('Sale resumed', `Reference ${held.token}`)
@@ -1008,13 +1336,25 @@ function CartPanel({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
-                {i.is_wholesale && (
-                  <span className="inline-flex items-center gap-1 mt-0.5 rounded bg-emerald-500/10 px-1.5 py-0.5 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
-                    🏷️ Wholesale Tier
-                  </span>
+                {i.description && (
+                  <p className="text-xs text-slate-400 break-words mt-0.5 line-clamp-2" title={i.description}>
+                    {i.description}
+                  </p>
                 )}
+                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                  {i.is_custom_price && (
+                    <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 border border-amber-500/30 text-[10px] font-bold text-amber-300">
+                      <Tag className="h-3 w-3" /> Bargain / Custom Price
+                    </span>
+                  )}
+                  {i.is_wholesale && !i.is_custom_price && (
+                    <span className="inline-flex items-center gap-1 mt-0.5 rounded bg-emerald-500/10 px-1.5 py-0.5 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
+                      🏷️ Wholesale Tier
+                    </span>
+                  )}
+                </div>
               </div>
-              <button onClick={() => usePosCart.getState().remove(i.product_id)} className="shrink-0 text-slate-600 hover:text-danger-400" title="Remove">
+              <button onClick={() => usePosCart.getState().remove(i.product_id)} className="shrink-0 text-slate-600 hover:text-danger-400 p-1" title="Remove">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -1047,14 +1387,25 @@ function CartPanel({
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold text-white">{money(Math.round(i.unit_price_c * i.qty))}</p>
-                <p className="text-sm text-slate-400">
-                  @{money(i.unit_price_c)} / {i.unit_name}
-                  {i.is_wholesale && i.base_price_c && i.base_price_c > i.unit_price_c && (
-                    <span className="line-through text-xs text-slate-500 ml-1">
-                      {money(i.base_price_c)}
-                    </span>
-                  )}
-                </p>
+                <div className="flex items-center justify-end gap-1.5">
+                  <p className="text-sm text-slate-400">
+                    @{money(i.unit_price_c)} / {i.unit_name}
+                    {i.base_price_c && i.base_price_c !== i.unit_price_c && (
+                      <span className="line-through text-xs text-slate-500 ml-1">
+                        {money(i.base_price_c)}
+                      </span>
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleEditPriceClick(i)}
+                    className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold text-brand-400 hover:bg-brand-500/10 hover:text-brand-300 transition"
+                    title="Edit line item unit price (Tawad / Custom price)"
+                  >
+                    <Edit3 className="h-3 w-3" />
+                    <span>Edit</span>
+                  </button>
+                </div>
               </div>
             </div>
             <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {formatQuantity(availableBase(i.stock_base, i))} {i.unit_name} / {formatQuantity(i.stock_base)} {i.unit_name}</p>
@@ -1150,6 +1501,25 @@ function CartPanel({
             ))}
           </div>
         </Modal>
+      )}
+
+      {pinPromptItem && (
+        <ManagerPinModal
+          item={pinPromptItem}
+          onAuthorized={() => {
+            const itemToEdit = pinPromptItem
+            setPinPromptItem(null)
+            setPriceEditItem(itemToEdit)
+          }}
+          onClose={() => setPinPromptItem(null)}
+        />
+      )}
+
+      {priceEditItem && (
+        <PriceOverrideModal
+          item={priceEditItem}
+          onClose={() => setPriceEditItem(null)}
+        />
       )}
     </aside>
   )

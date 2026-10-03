@@ -166,6 +166,7 @@ export interface TindaApi {
     status: () => Promise<SessionUser | null>
     login: (username: string, password: string) => Promise<LoginResult>
     loginPin: (pin: string) => Promise<LoginResult>
+    verifyManagerPin: (pin: string) => Promise<{ valid: boolean; name?: string }>
     logout: () => Promise<void>
     changePassword: (current: string, next: string) => Promise<void>
     changePin: (pin: string) => Promise<void>

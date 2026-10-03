@@ -181,6 +181,7 @@ handle('app:salesMonitorSummary', () => {
 handle('auth:status', () => authSvc.authStatus())
 handle('auth:login', (_e: IpcMainInvokeEvent, username: string, password: string) => authSvc.login(username, password))
 handle('auth:loginPin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.loginPin(pin))
+handle('auth:verifyManagerPin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.verifyManagerPin(pin))
 handle('auth:logout', () => authSvc.logout())
 handle('auth:changePassword', (_e: IpcMainInvokeEvent, current: string, next: string) => authSvc.changePassword(current, next))
 handle('auth:changePin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.changePin(pin))

@@ -33,13 +33,24 @@ describe('v1.0.5 realtime cart availability', () => {
 
   it('calculates wholesale pricing correctly based on min quantity thresholds', () => {
     // No wholesale defined
-    expect(calculateItemUnitPrice(1000, 5, null, null)).toEqual({ unitPriceC: 1000, isWholesale: false })
+    expect(calculateItemUnitPrice(1000, 5, null, null)).toEqual({ unitPriceC: 1000, isWholesale: false, isCustom: false })
     // Wholesale defined (₱8.00 min 10 pcs, base ₱10.00)
     // Less than threshold -> base price
-    expect(calculateItemUnitPrice(1000, 9, 800, 10)).toEqual({ unitPriceC: 1000, isWholesale: false })
+    expect(calculateItemUnitPrice(1000, 9, 800, 10)).toEqual({ unitPriceC: 1000, isWholesale: false, isCustom: false })
     // At threshold -> wholesale price
-    expect(calculateItemUnitPrice(1000, 10, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true })
+    expect(calculateItemUnitPrice(1000, 10, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true, isCustom: false })
     // Above threshold -> wholesale price
-    expect(calculateItemUnitPrice(1000, 50, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true })
+    expect(calculateItemUnitPrice(1000, 50, 800, 10)).toEqual({ unitPriceC: 800, isWholesale: true, isCustom: false })
+  })
+
+  it('prioritizes custom price override over base and wholesale pricing', () => {
+    // Custom price lower than base price (₱90 vs ₱98)
+    expect(calculateItemUnitPrice(9800, 1, null, null, 9000)).toEqual({ unitPriceC: 9000, isWholesale: false, isCustom: true })
+    // Custom price takes precedence even when quantity reaches wholesale tier
+    expect(calculateItemUnitPrice(9800, 20, 8500, 10, 8000)).toEqual({ unitPriceC: 8000, isWholesale: false, isCustom: true })
+    // Zero custom price allowed (freebie/promo)
+    expect(calculateItemUnitPrice(5000, 1, null, null, 0)).toEqual({ unitPriceC: 0, isWholesale: false, isCustom: true })
+    // Null custom price falls back to wholesale/base
+    expect(calculateItemUnitPrice(9800, 10, 8500, 10, null)).toEqual({ unitPriceC: 8500, isWholesale: true, isCustom: false })
   })
 })

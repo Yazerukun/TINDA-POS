@@ -324,8 +324,11 @@ export function Inventory(): React.JSX.Element {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-white" title={p.name}>{p.name}</p>
-                        <p className="truncate text-xs text-slate-500">{p.sku} · {p.category_name ?? 'Uncategorized'}</p>
+                        <p className="line-clamp-2 break-words text-sm font-semibold text-white" title={p.name}>{p.name}</p>
+                        {p.description && (
+                          <p className="line-clamp-2 break-words text-xs text-slate-400 mt-0.5" title={p.description}>{p.description}</p>
+                        )}
+                        <p className="truncate text-xs text-slate-500 mt-0.5">{p.sku} · {p.category_name ?? 'Uncategorized'}</p>
                       </div>
                       <StockBadge status={p.stock_status} />
                     </div>
@@ -1142,6 +1145,19 @@ function ProductModal({
         <div className="col-span-2">
           <label className="label">Name *</label>
           <input required value={f.name} onChange={(e) => set({ name: e.target.value })} className="input w-full" />
+        </div>
+        <div className="col-span-2">
+          <label className="label flex items-center justify-between">
+            <span>Description / Specifications (Optional)</span>
+            <span className="text-[11px] text-slate-500 font-normal">e.g. Dimensions (mm/cm), specs, flavor, notes</span>
+          </label>
+          <textarea
+            rows={2}
+            value={f.description ?? ''}
+            onChange={(e) => set({ description: e.target.value || null })}
+            className="input w-full resize-none text-sm leading-relaxed"
+            placeholder="Detailed specifications, dimensions (e.g. 1/2&quot; x 100mm), variant details..."
+          />
         </div>
         <div>
           <label className="label">SKU</label>
