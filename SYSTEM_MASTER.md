@@ -705,3 +705,37 @@
   - [x] **Dual Distribution Assets on GitHub:** Both Windows (`Setup.exe`, `Portable.exe`) and Linux (`AppImage`) published with SHA-256 checksums on GitHub Release v1.0.50.
   - [x] **Public & Private Documentation Parity:** Public README.md and living architecture master document (`SYSTEM_MASTER.md`) 100% synchronized.
 
+---
+
+## 36. Free Nationwide Merchant Community, Dynamic Red Unread Alerts & POS Header Streamlining (v1.0.51)
+* **Problem Addressed:**
+  - In v1.0.50, the Global Community Lounge was restricted to VIP Pro stores for messaging, limiting community adoption and peer store collaboration across smaller merchants.
+  - Users had no visual indication when another merchant posted a message while the chat drawer was closed.
+  - The POS header contained an unclickable, distracting informational label (`+ add · F2 qty`) which cluttered cashier action items.
+  - Semver auto-update: To trigger existing installed terminals to download and apply all latest enhancements, an incremented version release (`1.0.51`) was required.
+* **Key Architectural Implementations:**
+  - **100% Free Nationwide Community Access:**
+    - Removed VIP gating from `sendCommunityMessage` and the UI drawer form.
+    - All merchants can post and read messages freely; verified Developer identity (`👑 Ian (Founder / Dev) [VERIFIED]`) remains cryptographically secured by edge master secret.
+  - **Dynamic Red Pulse Unread Alert Indicator:**
+    - Non-blocking 12-second background polling tracks unread message IDs (`tinda_last_seen_msg_id`) when drawer is closed.
+    - Floating trigger button dynamically shifts to bright pulsing red (`bg-gradient-to-r from-red-600 to-rose-600`, `ring-4 ring-red-400/60`, `animate-pulse`) with a pulsing white beacon and `NEW` badge upon arrival of new messages.
+    - Opening the drawer resets the indicator and updates the last-seen watermark.
+  - **Cleaned POS Navigation Header:**
+    - Removed unclickable `+ add · F2 qty` element from the top toolbar, keeping only actionable controls (Sales Monitor, Petty Cash F7, Help Guide).
+  - **Multi-Platform Auto-Update Trigger:**
+    - Full distribution across Windows (Setup NSIS + Portable) and Linux (AppImage) at semver `1.0.51`.
+    - Auto-updater prompts installed machines with the English release modal (`🎉 New Update Available · v1.0.51`).
+
+---
+
+## 37. Verification Gates, Non-Destructive Invariant Proofs & Definition of Done (v1.0.51)
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **59/59 Vitest Test Suites Passing:** Complete test coverage with 378/378 unit and integration tests passing.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **Zero Packaging / Build Errors:** Windows NSIS (`Setup.exe`), Portable (`Portable.exe`), and Linux (`AppImage`) compiled and packaged cleanly.
+  - [x] **Multi-Platform Artifact Integrity:** All 6 release artifacts published to GitHub Release `v1.0.51` with cryptographically verified SHA-256 checksums.
+  - [x] **Strict Non-Destructive Database Integrity:** 100% zero data loss, HMAC-SHA256 VIP licenses preserved, and zero counter latency.
+  - [x] **Public & Private Documentation Parity:** `SYSTEM_MASTER.md`, `README.md`, and `RELEASE_NOTES_v1.0.51.md` synchronized across repositories.
+
+

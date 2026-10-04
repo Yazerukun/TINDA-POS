@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.50-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.51-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_%7C_Linux-0078d4?style=for-the-badge&logo=linux&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,27 @@
 
 <br />
 
-[⬇️ Download v1.0.50 Windows Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Setup-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Portable-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-1.0.50.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-User-Guide.pdf)
+[⬇️ Download v1.0.51 Windows Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-Setup-1.0.51.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-Portable-1.0.51.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-1.0.51.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-User-Guide.pdf)
 
 </div>
+
+## ✨ What's New in v1.0.51 — Free Community Lounge, Red Unread Alerts & Linux Support
+
+> **100% Free Nationwide Merchant Chat, Red Pulse Unread Alerts, Streamlined Header & Multi-Platform Releases**
+
+- 💬 **100% Free Nationwide Community Lounge**:
+  - Real-time merchant messaging is now **completely free and accessible for all store owners** (both Free and VIP Pro tiers).
+  - Ask questions, share wholesale supplier deals, and collaborate with peers nationwide without paywalls.
+  - Verified **`👑 Ian (Founder / Dev) [VERIFIED]`** identity remains cryptographically secured.
+- 🔴 **Dynamic Red Pulse Unread Alert Indicator**:
+  - Non-blocking 12-second background heartbeat checks for new incoming merchant messages when the chat drawer is closed.
+  - The floating **Global Lounge** trigger button automatically pulses with a **glowing red beacon** and **`NEW`** badge whenever an unread message arrives.
+- 🧹 **Clean POS Header Toolbar**:
+  - Removed unclickable `+ add · F2 qty` informational clutter from the header navigation bar for a cleaner counter view.
+- 🐧 **Official Linux AppImage Distribution**:
+  - Official standalone **Linux AppImage** (`TindaPOS-1.0.51.AppImage`) with native Wayland support (`xwayland: 0`) and bundled SQLite binaries (`linux-x64.node`).
+
+---
 
 ## ✨ What's New in v1.0.50 — Global Community Lounge & Live Dev Announcements
 
