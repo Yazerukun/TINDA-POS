@@ -102,4 +102,34 @@ describe('communityChat service (Non-Blocking Global Lounge)', () => {
     expect(res.message?.is_dev).toBe(1)
     expect(res.message?.sender_name).toBe('Ian (Dev / Owner)')
   })
+
+  it('sends community message with is_vip flag included in request body', async () => {
+    let capturedBody = ''
+    global.fetch = vi.fn().mockImplementation((_url, init) => {
+      capturedBody = init?.body as string
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          message: {
+            id: 'msg_vip_456',
+            store_id: 'vip_store',
+            store_name: 'VIP Store',
+            sender_name: 'Store Cashier',
+            role: 'MERCHANT',
+            text: 'VIP merchant message',
+            is_dev: 0,
+            is_vip: 1,
+            created_at: '2026-10-04T00:00:00Z'
+          }
+        })
+      })
+    })
+
+    const res = await sendCommunityMessage(db, 'VIP merchant message')
+    expect(res.ok).toBe(true)
+    expect(res.message?.is_vip).toBe(1)
+    const parsed = JSON.parse(capturedBody)
+    expect(parsed.is_vip).toBe(1)
+  })
 })

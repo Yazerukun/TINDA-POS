@@ -751,5 +751,6 @@ export interface CommunityChatMessage {
   role: string
   text: string
   is_dev: number
+  is_vip?: number
   created_at: string
 }

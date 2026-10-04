@@ -32,6 +32,7 @@ export function TindaCommunityChat(): React.JSX.Element {
   const [devInput, setDevInput] = useState('')
   const [unreadAnnouncement, setUnreadAnnouncement] = useState(false)
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false)
+  const [isLocalVip, setIsLocalVip] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -84,10 +85,15 @@ export function TindaCommunityChat(): React.JSX.Element {
     }
   }, [isOpen])
 
-  // Initial fetch on mount for announcements and messages badge
+  // Initial fetch on mount for announcements, messages badge, and VIP status
   useEffect(() => {
     void fetchAnnouncements()
     void fetchMessages()
+    window.api?.license?.getStatus?.().then((s) => {
+      if (s && typeof s.isVip === 'boolean') {
+        setIsLocalVip(s.isVip)
+      }
+    }).catch(() => {})
   }, [fetchAnnouncements, fetchMessages])
 
   // Polling:
@@ -370,9 +376,15 @@ export function TindaCommunityChat(): React.JSX.Element {
                         </span>
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 font-medium text-slate-300">
+                      <span className="flex items-center gap-1.5 font-medium text-slate-300">
                         <Store className="h-3 w-3 text-slate-400" />
-                        {m.store_name}
+                        <span>{m.store_name}</span>
+                        {Boolean(m.is_vip) && (
+                          <span className="relative inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/25 via-yellow-400/35 to-amber-500/25 px-2 py-0.5 text-[9px] font-black tracking-wider text-amber-300 border border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-pulse">
+                            <Sparkles className="h-2.5 w-2.5 text-yellow-300 animate-spin" style={{ animationDuration: '4s' }} />
+                            <span>VERIFIED VIP</span>
+                          </span>
+                        )}
                         <span className="text-[10px] text-slate-500">
                           ({m.sender_name})
                         </span>
@@ -392,6 +404,8 @@ export function TindaCommunityChat(): React.JSX.Element {
                     className={`rounded-2xl px-3.5 py-2 text-xs leading-relaxed max-w-[90%] break-words ${
                       isDev
                         ? 'border border-amber-500/30 bg-gradient-to-br from-amber-950/40 to-ink-900 text-amber-100 shadow-md'
+                        : Boolean(m.is_vip)
+                        ? 'border border-amber-500/35 bg-gradient-to-br from-amber-950/20 via-ink-900 to-ink-900 text-amber-50 shadow-[0_2px_12px_rgba(245,158,11,0.12)] ring-1 ring-amber-400/20'
                         : 'border border-ink-800 bg-ink-900 text-slate-200'
                     }`}
                   >
@@ -418,6 +432,8 @@ export function TindaCommunityChat(): React.JSX.Element {
               placeholder={
                 isDevActive
                   ? 'Write as 👑 Dev / Owner...'
+                  : isLocalVip
+                  ? 'Write as 💎 Verified VIP Pro...'
                   : 'Share a tip or ask fellow store owners...'
               }
               className="flex-1 rounded-xl border border-ink-700 bg-ink-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-brand-500"
@@ -433,7 +449,9 @@ export function TindaCommunityChat(): React.JSX.Element {
           <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-slate-500">
             <span>
               {isDevActive
-                ? 'Posting with verified Developer identity'
+                ? '👑 Posting with verified Developer identity'
+                : isLocalVip
+                ? '💎 Posting with Verified VIP Pro badge'
                 : 'Posting as store merchant'}
             </span>
             <span>{inputText.length} / 500</span>

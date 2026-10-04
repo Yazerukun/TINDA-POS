@@ -107,6 +107,8 @@ export async function sendCommunityMessage(
   const address = settings.address?.trim()
   const displayStoreName = address ? `${storeName} (${address})` : storeName
 
+  const isVip = isVipActive(settings)
+
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -125,7 +127,8 @@ export async function sendCommunityMessage(
         sender_name: isDevAttempt ? 'Ian (Dev / Owner)' : (settings.owner_name?.trim() || 'Store Cashier'),
         role: isDevAttempt ? 'DEV' : 'MERCHANT',
         text: cleanText,
-        dev_key: devKey
+        dev_key: devKey,
+        is_vip: isVip ? 1 : 0
       }),
       signal: AbortSignal.timeout(5000)
     })
