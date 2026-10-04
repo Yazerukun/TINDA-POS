@@ -643,12 +643,14 @@
     - Background service `communityChat.ts` operates strictly asynchronously using standard `AbortSignal.timeout(4000)`.
     - Main-process IPC handlers (`community:getAnnouncements`, `community:getMessages`, `community:sendMessage`) catch all network drops, DNS errors, and timeouts silently, returning fallback state without blocking UI threads, SQLite transactions, barcode scanning, or thermal printing.
     - Polling interval (6s) activates **only** when the chat drawer is open; when closed, all polling stops to conserve CPU and network bandwidth.
-  - **VIP Pro Gated Access:**
-    - Sending messages in the Global Lounge is cryptographically gated by `isVipActive()`.
-    - Non-VIP stores view a sleek promotional banner explaining VIP Pro benefits while maintaining read-only access to critical developer announcements.
-  - **Verified `👑 DEV / OWNER` Identity Protection:**
-    - The developer's messages carry an authentic `👑 FOUNDER / DEV` badge with gold gradient styling and verified checkmark.
-    - Protected at the Cloudflare edge via `DEV_SECRET` / `SESSION_SECRET` header validation (`x-dev-key`), preventing spoofing or impersonation by store terminals.
+  - **100% Free & Open Nationwide Merchant Community:**
+    - Live messaging in the Global Lounge is free for all registered and unregistered TINDA POS store owners (no VIP paywall).
+    - Stores can freely ask questions, share wholesale supplier deals, and discuss operational tips in real time.
+    - Verified `👑 DEV / OWNER` badge remains cryptographically restricted to Ian via Dev Master Secret (`x-dev-key`), preventing spoofing.
+  - **Dynamic Red Pulse Unread Alert Indicator:**
+    - Gentle 12-second background polling tracks new incoming community messages when the drawer is closed.
+    - Floating trigger button transitions dynamically from brand blue/indigo to vibrant glowing **RED** (`bg-gradient-to-r from-red-600 to-rose-600`, `ring-4 ring-red-400/60`, `animate-pulse`) with a pulsing beacon and `NEW` notification badge when unread messages arrive.
+    - Opening the drawer marks messages as read (`tinda_last_seen_msg_id`), instantly returning the button to standard resting theme.
   - **Cloudflare D1 Real-Time Edge Engine:**
     - Backed by Cloudflare D1 database (`tinda-sync-db`) with persistent tables `global_chat_messages` and `live_announcements`.
     - Endpoints deployed on `tinda-sync.yomikaze-md.workers.dev` (`/api/announcements`, `/api/chat/messages`).
