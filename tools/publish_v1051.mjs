@@ -83,6 +83,7 @@ async function run() {
   const portableExe = path.join(BUILDS_DIR, 'TindaPOS-Portable-1.0.51.exe')
   const appImage = path.join(BUILDS_DIR, 'TindaPOS-1.0.51.AppImage')
   const latestYml = path.join(BUILDS_DIR, 'latest.yml')
+  const latestLinuxYml = path.join(BUILDS_DIR, 'latest-linux.yml')
   const userGuidePdf = path.join(BUILDS_DIR, 'TindaPOS-User-Guide.pdf')
 
   const requiredFiles = [
@@ -91,6 +92,7 @@ async function run() {
     { path: portableExe, name: 'TindaPOS-Portable-1.0.51.exe', mime: 'application/octet-stream' },
     { path: appImage, name: 'TindaPOS-1.0.51.AppImage', mime: 'application/x-executable' },
     { path: latestYml, name: 'latest.yml', mime: 'text/yaml' },
+    { path: latestLinuxYml, name: 'latest-linux.yml', mime: 'text/yaml' },
     { path: userGuidePdf, name: 'TindaPOS-User-Guide.pdf', mime: 'application/pdf' }
   ]
 

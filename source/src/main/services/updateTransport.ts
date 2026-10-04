@@ -34,7 +34,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
   private progressHandler: UpdateProgressHandler | null = null
 
   isPortable(): boolean {
-    return portableRuntime(process.env)
+    return process.platform === 'linux' || portableRuntime(process.env)
   }
 
   installedVersion(): string {
@@ -105,9 +105,20 @@ export class ElectronUpdateTransport implements UpdateTransport {
   }
 
   async downloadPortable(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<{ filePath: string }> {
-    const asset = release.assets.find((a) => /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name))
-    if (!asset) throw new Error('The portable update file was not found for this release.')
-    if (!isOfficialUpdateUrl(asset.url)) throw new Error('The portable update file has an unexpected source.')
+    const isLinux = process.platform === 'linux'
+    const asset = release.assets.find((a) =>
+      isLinux
+        ? /^TindaPOS-.*\.AppImage$/i.test(a.name)
+        : /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name)
+    )
+    if (!asset) {
+      throw new Error(
+        isLinux
+          ? 'The Linux AppImage update file was not found for this release.'
+          : 'The portable update file was not found for this release.'
+      )
+    }
+    if (!isOfficialUpdateUrl(asset.url)) throw new Error('The update file has an unexpected source.')
 
     let res: Response
     try {
@@ -145,6 +156,23 @@ export class ElectronUpdateTransport implements UpdateTransport {
             reject(err instanceof Error && err.message ? err : new Error('Download failed'))
           })
         })
+
+      if (isLinux) {
+        const { chmod, copyFile, rename } = await import('node:fs/promises')
+        await chmod(filePath, 0o755).catch(() => undefined)
+
+        const runningAppImage = process.env.APPIMAGE
+        if (runningAppImage) {
+          try {
+            const tempTarget = `${runningAppImage}.update-tmp`
+            await copyFile(filePath, tempTarget)
+            await chmod(tempTarget, 0o755)
+            await rename(tempTarget, runningAppImage)
+          } catch {
+            // Non-fatal
+          }
+        }
+      }
     } catch (error) {
       await unlink(filePath).catch(() => undefined)
       throw error
@@ -168,6 +196,15 @@ export class ElectronUpdateTransport implements UpdateTransport {
   }
 
   async reveal(path: string): Promise<void> {
+    if (process.platform === 'linux' && process.env.APPIMAGE) {
+      try {
+        app.relaunch({ execPath: process.env.APPIMAGE })
+        app.exit(0)
+        return
+      } catch {
+        // Fallback to showItemInFolder
+      }
+    }
     await shell.showItemInFolder(path)
   }
 

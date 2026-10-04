@@ -170,7 +170,10 @@ export class UpdateService {
           this.downloadedPath = filePath
           this.set({
             status: 'DOWNLOADED',
-            message: `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
+            message:
+              process.platform === 'linux'
+                ? `Update downloaded: ${filePath}. Relaunch TINDA POS to use the new version.`
+                : `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
             progress: null
           })
         } else {
