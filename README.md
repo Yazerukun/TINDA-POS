@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.49-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.50-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,31 @@
 
 <br />
 
-[⬇️ Download v1.0.49 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-Setup-1.0.49.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-Portable-1.0.49.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.49/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.50 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Setup-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Portable-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.50 — Global Community Lounge & Live Dev Announcements
+
+> **Real-Time VIP Community Chat, Live Developer Announcements, Verified Dev Badge & English Modals — Powered by Cloudflare**
+
+- 💬 **TINDA Global Community Lounge** (VIP Pro Exclusive):
+  - A floating **Global Lounge** button in the bottom-right corner opens a real-time community chat drawer.
+  - **VIP Pro members** can send messages to all stores worldwide; free-tier users have read-only access.
+  - Amber unread-message dot badge when there are new messages while the drawer is closed.
+  - Polling is active **only while the drawer is open** (every 6 seconds) — stops automatically to save bandwidth.
+  - **Zero-freeze architecture**: all Cloudflare network calls run with `AbortSignal` timeouts (4s GET / 5s POST) and fail silently — the POS never stalls.
+- 📢 **Live Developer Announcements**:
+  - Pinned announcement banner at the top of the Community Lounge always shows the latest official message from the developer.
+  - Used for update notices, downtime warnings, and feature previews.
+- 👑 **Dev/Owner Verified Badge**:
+  - Founder messages display as **`👑 Ian (Founder / Dev) [VERIFIED]`** in a distinct amber style.
+  - Badge is cryptographically verified **server-side** — cannot be spoofed by any regular user.
+- 🌐 **English Update Notification Modal**:
+  - The update pop-up is now 100% in English: **"New Update Available"**, **"Later"**, **"Download Update"**, **"Restart & Install"**.
+- 🏗️ **Quality**: 59/59 test suites passing · 0 TypeScript errors · all master invariants passed.
+
+---
 
 ## ✨ What's New in v1.0.49 (Extended Specifications Visibility & Manager Bargain Authorization)
 
