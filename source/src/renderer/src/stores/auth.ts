@@ -8,7 +8,7 @@ interface AuthState {
   shiftOpen: boolean
   bootstrap: () => Promise<void>
   login: (u: string, p: string) => Promise<SessionUser>
-  loginPin: (pin: string) => Promise<SessionUser>
+  loginPin: (pin: string, targetUserId?: number) => Promise<SessionUser>
   logout: () => Promise<void>
   setFirstRun: (v: boolean) => void
 }
@@ -39,8 +39,8 @@ export const useAuth = create<AuthState>((set) => ({
     set({ user: r.user, firstRun: r.firstRun, shiftOpen: r.shiftOpen })
     return r.user
   },
-  loginPin: async (pin) => {
-    const r = await window.api.auth.loginPin(pin)
+  loginPin: async (pin, targetUserId) => {
+    const r = await window.api.auth.loginPin(pin, targetUserId)
     set({ user: r.user, firstRun: r.firstRun, shiftOpen: r.shiftOpen })
     return r.user
   },

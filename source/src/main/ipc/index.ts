@@ -180,12 +180,16 @@ handle('app:salesMonitorSummary', () => {
 // ---- Auth ----
 handle('auth:status', () => authSvc.authStatus())
 handle('auth:login', (_e: IpcMainInvokeEvent, username: string, password: string) => authSvc.login(username, password))
-handle('auth:loginPin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.loginPin(pin))
+handle('auth:loginPin', (_e: IpcMainInvokeEvent, pin: string, targetUserId?: number) => authSvc.loginPin(pin, targetUserId))
 handle('auth:verifyManagerPin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.verifyManagerPin(pin))
 handle('auth:logout', () => authSvc.logout())
 handle('auth:changePassword', (_e: IpcMainInvokeEvent, current: string, next: string) => authSvc.changePassword(current, next))
 handle('auth:changePin', (_e: IpcMainInvokeEvent, pin: string) => authSvc.changePin(pin))
 handle('auth:adminResetPin', (_e: IpcMainInvokeEvent, userId: number, newPin: string) => authSvc.adminResetPin(userId, newPin))
+// M7.4 — admin password reset for any user
+handle('auth:adminResetPassword', (_e: IpcMainInvokeEvent, userId: number, newPassword: string) => authSvc.adminResetPassword(userId, newPassword))
+// M7.4 — public user directory for login chips (no auth required)
+handle('auth:publicUsers', () => authSvc.publicUsers())
 handle('auth:setup', () => ({ complete: authSvc.firstRunComplete(db()) }))
 handle('auth:completeSetup', (_e: IpcMainInvokeEvent, payload: unknown) => {
   const validated = require('../validation/schemas').validateSetup(payload)
@@ -221,6 +225,7 @@ handle('users:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
   })
 })
 handle('users:roles', () => userRepo.listRoles(db()))
+
 
 // ---- Settings ----
 handle('settings:get', () => settingRepo.getSettings(db()))

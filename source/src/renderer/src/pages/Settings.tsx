@@ -1000,13 +1000,26 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
   )
 }
 
-interface UserForm { id: number | null; username: string; password: string; pin: string; full_name: string; roles: string[] }
+interface UserForm {
+  id: number | null
+  username: string
+  password: string
+  confirmPassword: string
+  pin: string
+  full_name: string
+  roles: string[]
+  is_active: boolean
+}
 
 function UsersTab(): React.JSX.Element {
   const [users, setUsers] = useState<User[]>([])
   const [editing, setEditing] = useState<UserForm | null>(null)
   const [roles, setRoles] = useState<string[]>([])
   const [resetPin, setResetPin] = useState<{ id: number; full_name: string } | null>(null)
+  const [resetPw, setResetPw] = useState<{ id: number; full_name: string } | null>(null)
+
+  // Track logged-in user for guardrails
+  const loggedInId = (window as unknown as { __session?: { id: number } }).__session?.id
 
   const load = async () => {
     try {
@@ -1021,10 +1034,23 @@ function UsersTab(): React.JSX.Element {
   const save = async (f: UserForm) => {
     try {
       if (f.id) {
-        await window.api.users.update(f.id, { username: f.username, full_name: f.full_name, roles: f.roles, password: f.password || undefined, pin: f.pin || undefined })
+        await window.api.users.update(f.id, {
+          username: f.username,
+          full_name: f.full_name,
+          roles: f.roles,
+          is_active: f.is_active,
+          password: f.password || undefined,
+          pin: f.pin || undefined
+        })
         toastSuccess('User updated')
       } else {
-        await window.api.users.create({ username: f.username, password: f.password, pin: f.pin, full_name: f.full_name, roles: f.roles })
+        await window.api.users.create({
+          username: f.username,
+          password: f.password,
+          pin: f.pin,
+          full_name: f.full_name,
+          roles: f.roles
+        })
         toastSuccess('User created')
       }
       setEditing(null)
@@ -1032,34 +1058,65 @@ function UsersTab(): React.JSX.Element {
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) }
   }
 
+  // Deactivation guardrail: count active admins
+  const activeAdmins = users.filter((u) => u.is_active && u.roles.includes('ADMIN')).length
+
   return (
     <div>
-      <div className="mb-4 flex justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-slate-400">{users.length} users</p>
-        <button onClick={() => setEditing({ id: null, username: '', password: '', pin: '', full_name: '', roles: ['CASHIER'] })} className="btn-primary flex items-center gap-2"><UserPlus className="h-4 w-4" /> New User</button>
+        <button
+          onClick={() => setEditing({ id: null, username: '', password: '', confirmPassword: '', pin: '', full_name: '', roles: ['CASHIER'], is_active: true })}
+          className="btn-primary flex items-center gap-2"
+        >
+          <UserPlus className="h-4 w-4" /> New User
+        </button>
       </div>
       <div className="card table-container">
         <table className="table">
           <thead>
             <tr>
-              <th className="w-[28%]">User</th>
-              <th className="w-[22%]">Username</th>
-              <th className="w-[20%]">Roles</th>
-              <th className="w-[14%]">Status</th>
-              <th className="w-[16%]">Actions</th>
+              <th className="w-[26%]">User</th>
+              <th className="w-[20%]">Username</th>
+              <th className="w-[18%]">Roles</th>
+              <th className="w-[12%]">Status</th>
+              <th className="w-[24%]">Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="w-[28%] font-medium text-slate-200">{u.full_name}</td>
-                <td className="w-[22%] text-slate-400">{u.username}</td>
-                <td className="w-[20%] text-slate-300">{u.roles.join(', ')}</td>
-                <td className="w-[14%]"><span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>{u.is_active ? 'Active' : 'Inactive'}</span></td>
-                <td className="w-[16%]">
+                <td className="w-[26%] font-medium text-slate-200">{u.full_name}</td>
+                <td className="w-[20%] text-slate-400">{u.username}</td>
+                <td className="w-[18%] text-slate-300">{u.roles.join(', ')}</td>
+                <td className="w-[12%]">
+                  <span className={`badge ${u.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/10 text-slate-400 border-slate-500/30'}`}>
+                    {u.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="w-[24%]">
                   <div className="flex justify-center gap-1">
-                    <button onClick={() => setEditing({ id: u.id, username: u.username, password: '', pin: '', full_name: u.full_name, roles: u.roles })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
-                    <button onClick={() => setResetPin({ id: u.id, full_name: u.full_name })} className="btn-ghost-2 rounded-lg p-2" title="Reset PIN"><KeyRound className="h-4 w-4" /></button>
+                    <button
+                      onClick={() => setEditing({ id: u.id, username: u.username, password: '', confirmPassword: '', pin: '', full_name: u.full_name, roles: u.roles, is_active: u.is_active })}
+                      className="btn-ghost-2 rounded-lg p-2"
+                      title="Edit user"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setResetPw({ id: u.id, full_name: u.full_name })}
+                      className="btn-ghost-2 rounded-lg p-2"
+                      title="Reset password"
+                    >
+                      <KeyRound className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setResetPin({ id: u.id, full_name: u.full_name })}
+                      className="btn-ghost-2 rounded-lg p-2"
+                      title="Reset PIN"
+                    >
+                      <span className="text-xs font-bold text-slate-400">PIN</span>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1067,54 +1124,167 @@ function UsersTab(): React.JSX.Element {
           </tbody>
         </table>
       </div>
-      {editing && <UserModal form={editing} roles={roles} onSave={save} onClose={() => setEditing(null)} />}
-      {resetPin && <ResetPinModal user={resetPin} onClose={() => setResetPin(null)} />}
+      {editing && <UserModal form={editing} roles={roles} activeAdmins={activeAdmins} loggedInId={loggedInId} onSave={save} onClose={() => setEditing(null)} />}
+      {resetPin && <ResetPinModal user={resetPin} onClose={() => { setResetPin(null); void load() }} />}
+      {resetPw && <ResetPasswordModal user={resetPw} onClose={() => { setResetPw(null); void load() }} />}
     </div>
   )
 }
 
-function UserModal({ form, roles, onSave, onClose }: { form: UserForm; roles: string[]; onSave: (f: UserForm) => void; onClose: () => void }): React.JSX.Element {
+function UserModal({ form, roles, activeAdmins, loggedInId, onSave, onClose }: {
+  form: UserForm
+  roles: string[]
+  activeAdmins: number
+  loggedInId?: number
+  onSave: (f: UserForm) => void
+  onClose: () => void
+}): React.JSX.Element {
   const [f, setF] = useState<UserForm>(form)
   const set = (patch: Partial<UserForm>) => setF((p) => ({ ...p, ...patch }))
   const isNew = f.id === null
+  const [showPw, setShowPw] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [showPin, setShowPin] = useState(false)
+
+  // Deactivation guardrail: block if this user is the sole admin or is logged in
+  const isSelf = loggedInId != null && f.id === loggedInId
+  const isSoleAdmin = f.roles.includes('ADMIN') && activeAdmins <= 1 && f.is_active
+  const cantDeactivate = isSelf || isSoleAdmin
+
+  const handleSave = () => {
+    if (isNew) {
+      if (!f.password || f.password.length < 4) { toastError('Password too short', 'At least 4 characters required'); return }
+      if (f.password !== f.confirmPassword) { toastError('Passwords do not match'); return }
+      if (!/^\d{4}$/.test(f.pin)) { toastError('Invalid PIN', '4 digits required'); return }
+    } else {
+      if (f.password && f.password !== f.confirmPassword) { toastError('Passwords do not match'); return }
+      if (f.pin && !/^\d{4}$/.test(f.pin)) { toastError('Invalid PIN', '4 digits required'); return }
+    }
+    onSave(f)
+  }
 
   return (
-    <Modal open onClose={onClose} title={isNew ? 'New User' : `Edit ${f.full_name}`} maxWidth="max-w-md" footer={
+    <Modal open onClose={onClose} title={isNew ? 'New User' : `Edit — ${f.full_name}`} maxWidth="max-w-md" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button onClick={() => onSave(f)} className="btn-primary">Save</button>
+        <button onClick={handleSave} className="btn-primary">Save</button>
       </>
     }>
-      <form onSubmit={(e) => { e.preventDefault(); onSave(f) }} className="space-y-3">
-        <div><label className="label">Full Name *</label><input required value={f.full_name} onChange={(e) => set({ full_name: e.target.value })} className="input w-full" /></div>
-        <div><label className="label">Username *</label><input required value={f.username} onChange={(e) => set({ username: e.target.value })} className="input w-full" /></div>
-        {isNew && (
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="label">Password *</label><input type="password" required value={f.password} onChange={(e) => set({ password: e.target.value })} className="input w-full" /></div>
-            <div><label className="label">PIN (4 digits) *</label><input required value={f.pin} maxLength={4} onChange={(e) => set({ pin: e.target.value.replace(/\D/g, '') })} className="input w-full" /></div>
+      <div className="space-y-3">
+        <div>
+          <label className="label">Full Name *</label>
+          <input required value={f.full_name} onChange={(e) => set({ full_name: e.target.value })} className="input w-full" placeholder="e.g. Maria Santos" />
+        </div>
+        <div>
+          <label className="label">Username *</label>
+          <input required value={f.username} onChange={(e) => set({ username: e.target.value })} className="input w-full" placeholder="e.g. maria" autoComplete="off" />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label className="label">{isNew ? 'Password *' : 'New Password (leave blank to keep)'}</label>
+          <div className="relative">
+            <input
+              type={showPw ? 'text' : 'password'}
+              required={isNew}
+              value={f.password}
+              onChange={(e) => set({ password: e.target.value })}
+              className="input w-full pr-10"
+              placeholder={isNew ? 'Min. 4 characters' : '(unchanged)'}
+              autoComplete="new-password"
+            />
+            <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+        {(isNew || f.password) && (
+          <div>
+            <label className="label">Confirm Password *</label>
+            <div className="relative">
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                required={isNew || !!f.password}
+                value={f.confirmPassword}
+                onChange={(e) => set({ confirmPassword: e.target.value })}
+                className="input w-full pr-10"
+                placeholder="Re-enter password"
+                autoComplete="new-password"
+              />
+              <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         )}
-        <div><label className="label">Roles</label>
+
+        {/* PIN */}
+        <div>
+          <label className="label">{isNew ? 'PIN (4 digits) *' : 'New PIN (leave blank to keep)'}</label>
+          <div className="relative">
+            <input
+              type={showPin ? 'text' : 'password'}
+              required={isNew}
+              value={f.pin}
+              maxLength={4}
+              inputMode="numeric"
+              onChange={(e) => set({ pin: e.target.value.replace(/\D/g, '') })}
+              className="input w-full pr-10 tracking-widest"
+              placeholder={isNew ? '••••' : '(unchanged)'}
+            />
+            <button type="button" onClick={() => setShowPin((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Roles */}
+        <div>
+          <label className="label">Roles</label>
           <div className="flex flex-wrap gap-2">
             {roles.map((r) => (
-              <button key={r} type="button" onClick={() => set({ roles: f.roles.includes(r) ? f.roles.filter((x) => x !== r) : [...f.roles, r] })} className={`badge cursor-pointer border ${f.roles.includes(r) ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'bg-ink-800 text-slate-400 border-ink-line'}`}>{r}</button>
+              <button key={r} type="button"
+                onClick={() => set({ roles: f.roles.includes(r) ? f.roles.filter((x) => x !== r) : [...f.roles, r] })}
+                className={`badge cursor-pointer border ${f.roles.includes(r) ? 'bg-brand-600/20 text-brand-300 border-brand-500/40' : 'bg-ink-800 text-slate-400 border-ink-line'}`}
+              >{r}</button>
             ))}
           </div>
         </div>
-      </form>
+
+        {/* Active toggle — with guardrails */}
+        {!isNew && (
+          <div className="flex items-center gap-3">
+            <label className="label mb-0">Active</label>
+            <button
+              type="button"
+              disabled={cantDeactivate}
+              onClick={() => { if (!cantDeactivate) set({ is_active: !f.is_active }) }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${f.is_active ? 'bg-brand-600' : 'bg-ink-700'} ${cantDeactivate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${f.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            {cantDeactivate && (
+              <span className="text-xs text-amber-400">
+                {isSelf ? 'Cannot deactivate your own account' : 'Cannot deactivate the sole Admin'}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </Modal>
   )
 }
 
 function ResetPinModal({ user, onClose }: { user: { id: number; full_name: string }; onClose: () => void }): React.JSX.Element {
   const [pin, setPin] = useState('')
+  const [showPin, setShowPin] = useState(false)
   const [saving, setSaving] = useState(false)
   const submit = async () => {
     if (pin.length !== 4) { toastError('PIN must be 4 digits'); return }
     setSaving(true)
     try {
       await window.api.auth.adminResetPin(user.id, pin)
-      toastSuccess('PIN reset')
+      toastSuccess(`PIN reset for ${user.full_name}`)
       onClose()
     } catch (e) { toastError('Reset failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
   }
@@ -1122,11 +1292,87 @@ function ResetPinModal({ user, onClose }: { user: { id: number; full_name: strin
     <Modal open onClose={onClose} title={`Reset PIN — ${user.full_name}`} maxWidth="max-w-xs" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
-        <button onClick={() => void submit()} disabled={saving} className="btn-primary">Reset</button>
+        <button onClick={() => void submit()} disabled={saving} className="btn-primary">Reset PIN</button>
       </>
     }>
       <label className="label">New 4-digit PIN</label>
-      <input value={pin} maxLength={4} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} className="input w-full text-2xl tracking-widest" autoFocus />
+      <div className="relative">
+        <input
+          value={pin}
+          maxLength={4}
+          inputMode="numeric"
+          type={showPin ? 'text' : 'password'}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+          className="input w-full pr-10 text-2xl tracking-widest"
+          autoFocus
+          placeholder="••••"
+        />
+        <button type="button" onClick={() => setShowPin((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+          {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+function ResetPasswordModal({ user, onClose }: { user: { id: number; full_name: string }; onClose: () => void }): React.JSX.Element {
+  const [pw, setPw] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const submit = async () => {
+    if (pw.length < 4) { toastError('Password too short', 'Minimum 4 characters'); return }
+    if (pw !== confirm) { toastError('Passwords do not match'); return }
+    setSaving(true)
+    try {
+      await window.api.auth.adminResetPassword(user.id, pw)
+      toastSuccess(`Password reset for ${user.full_name}`)
+      onClose()
+    } catch (e) { toastError('Reset failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
+  }
+  return (
+    <Modal open onClose={onClose} title={`Reset Password — ${user.full_name}`} maxWidth="max-w-xs" footer={
+      <>
+        <button onClick={onClose} className="btn-ghost">Cancel</button>
+        <button onClick={() => void submit()} disabled={saving} className="btn-primary">Reset Password</button>
+      </>
+    }>
+      <div className="space-y-3">
+        <div>
+          <label className="label">New Password</label>
+          <div className="relative">
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              className="input w-full pr-10"
+              placeholder="Min. 4 characters"
+              autoFocus
+              autoComplete="new-password"
+            />
+            <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="label">Confirm Password</label>
+          <div className="relative">
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="input w-full pr-10"
+              placeholder="Re-enter password"
+              autoComplete="new-password"
+            />
+            <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+      </div>
     </Modal>
   )
 }

@@ -57,14 +57,34 @@
 
 ---
 
-### 💎 Phase 6: VIP E-Wallet & Cash Audit Hub — GCash, Maya, Cash-In/Out & 3-Way Audit (IN PROGRESS)
-- [ ] **M6.1: Additive Database Schema (Migration 11)** — Create `ewallet_transactions` and `ewallet_audits` tables with non-destructive index creation.
-- [ ] **M6.2: Shared Types & Accounting Calculations** — Define `EwalletTransactionRecord`, `EwalletAuditRecord`, fee computation, and drawer impact helpers.
-- [ ] **M6.3: Backend Repository, IPC Handlers & VIP Cryptographic Gating** — Secure operations behind `licenseService.getStatus().isVip` with hardware verification.
-- [ ] **M6.4: Thermal Claim Stub & Audit Sheet Formatting** — 58mm/80mm printable slips for customer proof of transfer and end-of-day audit reports.
-- [ ] **M6.5: Interactive UI Module & VIP Gating Experience** —
+### ✅ Phase 6: VIP E-Wallet & Cash Audit Hub — GCash, Maya, Cash-In/Out & 3-Way Audit (COMPLETED in v1.0.53)
+- [x] **M6.1: Additive Database Schema (Migration 11)** — Created `ewallet_transactions` and `ewallet_audits` tables with non-destructive index creation.
+- [x] **M6.2: Shared Types & Accounting Calculations** — Defined `EwalletTransactionRecord`, `EwalletAuditRecord`, fee computation, and drawer impact helpers.
+- [x] **M6.3: Backend Repository, IPC Handlers & VIP Cryptographic Gating** — Secured operations behind `licenseService.getStatus().isVip` with hardware verification.
+- [x] **M6.4: Thermal Claim Stub & Audit Sheet Formatting** — 58mm/80mm printable slips for customer proof of transfer and end-of-day audit reports.
+- [x] **M6.5: Interactive UI Module & VIP Gating Experience** —
   - Cash In / Cash Out express register with customizable service fees.
   - 3-Way Audit Sheet: Physical Cash on Hand (Denomination Counter) + GCash App Balance + Maya App Balance = Over/Short/Balanced variance.
   - Dedicated VIP Upgrade Banner and demo preview for Community Edition users.
-- [ ] **M6.6: Automated Vitest Test Suite & Master Verification** — Comprehensive unit and integration test coverage (`ewallet-audit.test.ts`), typecheck green, and master invariants verified.
+- [x] **M6.6: Automated Vitest Test Suite & Master Verification** — Comprehensive unit and integration test coverage (`ewallet.test.ts`), typecheck green, and master invariants verified.
+
+---
+
+### ✅ Phase 7: Bulletproof User Management & Multi-Account Login System (Settings & Login — COMPLETED in v1.0.54)
+- [x] **M7.1: Non-Breaking Safety & Backwards Compatibility Invariant** — Zero account lockout for existing users (`admin`, `cashier`); backup live db pre-migration.
+- [x] **M7.2: Flexible & Case-Insensitive Auth Matching** — Allow login by either `username` OR `full_name` (case-insensitive: `LOWER(u.username) = LOWER(?) OR LOWER(u.full_name) = LOWER(?)`).
+- [x] **M7.3: Target-Aware PIN Verification & Unique PIN Enforcement** — Support `loginPin(pin, targetUserId?)`; enforce unique PIN on creation/editing with clear collision warning.
+- [x] **M7.4: Admin Password Reset & Public User Directory Endpoints** — Implement `auth:adminResetPassword` and safe `auth:publicUsers` (id, username, full_name, roles) in IPC & Preload.
+- [x] **M7.5: Polished User Management UI (`Settings.tsx`)** —
+  - Show/Hide Password (`👁️`) and Confirm Password in User Create & Edit modal.
+  - In-modal Password & PIN changing for existing accounts.
+  - Quick Reset Password & Reset PIN action buttons in users table.
+  - Safe user deactivation guardrails (cannot deactivate self or sole admin).
+- [x] **M7.6: Interactive 1-Tap Cashier Login Screen (`Login.tsx`)** —
+  - User profile chips/cards at the top for instant 1-tap cashier selection.
+  - Pre-fills username and focuses password in Password mode; targets user in Quick PIN mode.
+  - Show/Hide toggle on Password and PIN inputs to prevent mistyping.
+- [x] **M7.7: Automated Vitest Test Suite & Regression Verification** — Dedicated `user-management.test.ts` suite with 100% green tests (18/18 passing, 61/61 test files, 401/401 total passing), typecheck passing, and release v1.0.54 packaging.
+
+
 

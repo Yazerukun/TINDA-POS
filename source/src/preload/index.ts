@@ -55,12 +55,14 @@ const api: TindaApi = {
   auth: {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),
     login: (u, p) => invoke<import('@shared/ipc').LoginResult>('auth:login', u, p),
-    loginPin: (pin) => invoke<import('@shared/ipc').LoginResult>('auth:loginPin', pin),
+    loginPin: (pin: string, targetUserId?: number) => invoke<import('@shared/ipc').LoginResult>('auth:loginPin', pin, targetUserId),
     verifyManagerPin: (pin) => invoke<{ valid: boolean; name?: string }>('auth:verifyManagerPin', pin),
     logout: () => invoke<void>('auth:logout'),
     changePassword: (c, n) => invoke<void>('auth:changePassword', c, n),
     changePin: (pin) => invoke<void>('auth:changePin', pin),
     adminResetPin: (id, pin) => invoke<void>('auth:adminResetPin', id, pin),
+    adminResetPassword: (id: number, newPassword: string) => invoke<void>('auth:adminResetPassword', id, newPassword),
+    publicUsers: () => invoke<{ id: number; username: string; full_name: string; roles: string[] }[]>('auth:publicUsers'),
     setup: () => invoke<{ complete: boolean }>('auth:setup'),
     completeSetup: (payload: CompleteSetupPayload) => invoke<import('@shared/ipc').LoginResult>('auth:completeSetup', payload)
   },
@@ -70,6 +72,7 @@ const api: TindaApi = {
     update: (id, input) => invoke<import('@shared/types').User>('users:update', id, input),
     roles: () => invoke<string[]>('users:roles')
   },
+
   settings: {
     get: () => invoke<import('@shared/types').StoreSettings>('settings:get'),
     update: (patch) => invoke<import('@shared/types').StoreSettings>('settings:update', patch)

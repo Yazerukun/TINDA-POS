@@ -1,7 +1,7 @@
 import { getDb } from '../database/connection'
 import { getSettings, updateSettings } from '../repositories/settings'
 import { hashSecret, verifySecret } from '../security/passwords'
-import { createUser, getUserByUsername, updatePassword, updateUser, userCount } from '../repositories/users'
+import { createUser, updatePassword, updateUser, userCount } from '../repositories/users'
 import { getSession, requirePermission, requireUser, setSession } from './session'
 import { createBackupSync } from '../repositories/backup'
 import { audit } from '../repositories/audit'
@@ -30,9 +30,17 @@ export function firstRunComplete(db: DB): boolean {
   return userCount(db) > 0 && !!getSettings(db).store_name
 }
 
+// M7.2 — Case-insensitive login by either username OR full_name
 export function login(username: string, password: string): { user: SessionUser; firstRun: boolean; shiftOpen: boolean } {
   const db = getDb()
-  const user = getUserByUsername(db, username.trim())
+  const trimmed = username.trim()
+  const user = db.prepare(
+    `SELECT u.id, u.username, u.password_hash, u.full_name, u.is_active
+     FROM users u
+     WHERE (LOWER(u.username) = LOWER(?) OR LOWER(u.full_name) = LOWER(?))
+     AND u.is_active = 1
+     LIMIT 1`
+  ).get(trimmed, trimmed) as { id: number; username: string; password_hash: string; full_name: string; is_active: number } | undefined
   if (!user || !verifySecret(password, user.password_hash)) {
     audit(db, { action: 'LOGIN_FAILED', user_id: null, reason: `Failed login for "${username}"` })
     throw new Error('Invalid username or password.')
@@ -41,13 +49,19 @@ export function login(username: string, password: string): { user: SessionUser; 
   return finalize(db, user.id)
 }
 
-export function loginPin(pin: string): { user: SessionUser; firstRun: boolean; shiftOpen: boolean } {
+// M7.3 — Target-aware PIN login: if targetUserId given, only verify that user's PIN
+export function loginPin(pin: string, targetUserId?: number): { user: SessionUser; firstRun: boolean; shiftOpen: boolean } {
   const db = getDb()
-  const candidates = db.prepare('SELECT id, pin_hash, is_active FROM users WHERE is_active = 1').all() as {
-    id: number
-    pin_hash: string
-    is_active: number
-  }[]
+  let candidates: { id: number; pin_hash: string; is_active: number }[]
+  if (targetUserId != null) {
+    candidates = db.prepare(
+      `SELECT id, pin_hash, is_active FROM users WHERE is_active = 1 AND id = ?`
+    ).all(targetUserId) as typeof candidates
+  } else {
+    candidates = db.prepare(
+      `SELECT id, pin_hash, is_active FROM users WHERE is_active = 1`
+    ).all() as typeof candidates
+  }
   const match = candidates.find((c) => verifySecret(pin, c.pin_hash))
   if (!match) {
     audit(db, { action: 'LOGIN_FAILED', user_id: null, reason: 'Failed PIN login' })
@@ -107,6 +121,7 @@ export function changePin(pin: string): void {
   const db = getDb()
   const u = requireUser()
   if (!/^\d{4}$/.test(pin)) throw new Error('PIN must be exactly 4 digits.')
+  checkPinUniqueness(db, pin, u.id)
   updateUser(db, u.id, { pinHash: hashSecret(pin) })
   audit(db, { action: 'PIN_CHANGE', user_id: u.id })
   refreshSession(db, u.id)
@@ -116,8 +131,43 @@ export function adminResetPin(targetUserId: number, newPin: string): void {
   const db = getDb()
   requirePermission('users:manage')
   if (!/^\d{4}$/.test(newPin)) throw new Error('PIN must be exactly 4 digits.')
+  checkPinUniqueness(db, newPin, targetUserId)
   updateUser(db, targetUserId, { pinHash: hashSecret(newPin) })
   audit(db, { action: 'ADMIN_RESET_PIN', user_id: requireUser().id, entity_type: 'USER', entity_id: targetUserId, reason: newPin })
+}
+
+// M7.4 — Admin password reset for any user (requires users:manage permission)
+export function adminResetPassword(targetUserId: number, newPassword: string): void {
+  const db = getDb()
+  requirePermission('users:manage')
+  if (!newPassword || newPassword.length < 4) throw new Error('Password must be at least 4 characters.')
+  updatePassword(db, targetUserId, hashSecret(newPassword))
+  audit(db, { action: 'ADMIN_RESET_PASSWORD', user_id: requireUser().id, entity_type: 'USER', entity_id: targetUserId })
+}
+
+// M7.4 — Public user directory for login chips (no auth required — returns safe fields only)
+export function publicUsers(): { id: number; username: string; full_name: string; roles: string[] }[] {
+  const db = getDb()
+  const rows = db.prepare(
+    `SELECT u.id, u.username, u.full_name FROM users u WHERE u.is_active = 1 ORDER BY u.full_name`
+  ).all() as { id: number; username: string; full_name: string }[]
+  return rows.map((r) => {
+    const roles = (
+      db.prepare(
+        `SELECT r.name FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ? ORDER BY r.name`
+      ).all(r.id) as { name: string }[]
+    ).map((x) => x.name)
+    return { id: r.id, username: r.username, full_name: r.full_name, roles }
+  })
+}
+
+// M7.3 — Unique PIN enforcement helper
+function checkPinUniqueness(db: DB, pin: string, excludeUserId: number): void {
+  const others = db.prepare(
+    `SELECT id, pin_hash FROM users WHERE is_active = 1 AND id != ?`
+  ).all(excludeUserId) as { id: number; pin_hash: string }[]
+  const collision = others.find((o) => verifySecret(pin, o.pin_hash))
+  if (collision) throw new Error('This PIN is already used by another user. Please choose a different PIN.')
 }
 
 export function refreshSession(db: DB, userId: number): void {
@@ -132,9 +182,6 @@ export function completeSetup(input: {
   data_dir: string
   load_demo: boolean
 }): { user: SessionUser; firstRun: boolean; shiftOpen: boolean } {
-  // Defensive validation mirrors the IPC-layer validation but runs here too,
-  // so a partial/manually-crafted payload can never cause a nested-property
-  // TypeError or leave the store half-initialized.
   if (!input || typeof input !== 'object') {
     throw new Error('Setup payload was not received.')
   }
@@ -155,9 +202,6 @@ export function completeSetup(input: {
   }
 
   const db = getDb()
-
-  // All setup writing happens inside ONE transaction. If any step throws the
-  // whole operation rolls back, so we never leave a partially-initialized store.
   const wasFirstRun = !firstRunComplete(db)
 
   const runSetup = db.transaction(() => {
@@ -186,10 +230,6 @@ export function completeSetup(input: {
 
   runSetup()
 
-  // Only after the transaction committed successfully do we snapshot a backup,
-  // so the backup file reflects a fully-initialized store. Uses the same
-  // pre-transaction flag: `firstRunComplete(db)` is true post-commit, so it
-  // cannot be relied on to gate the backup.
   if (wasFirstRun) {
     createBackupSync(db, 'MANUAL')
   }

@@ -69,5 +69,23 @@
   - Total Tubo / Profit Earned Tracker: Distinct from retail product margins.
 - **Decision 4 (Thermal Receipt Proofs):**
   - 58mm/80mm claim slip for customers (Cash-In/Cash-Out reference receipt).
-  - 58mm/80mm End-of-Day Audit Report for owners/managers.
-
+  
+## 2026-10-04: v1.0.54 Phase 7 — Bulletproof User Management & Multi-Account Login System
+- **Trigger:** Store owner feedback requesting seamless multi-cashier login, error-free PIN unlock, admin password resets, and user management guardrails.
+- **Decision 1 (Flexible Case-Insensitive Auth):**
+  - Updated `auth.ts` `login()` with `LOWER(u.username) = LOWER(?) OR LOWER(u.full_name) = LOWER(?)`.
+  - Cashiers can type their real display name or username in any case without login friction.
+- **Decision 2 (Target-Aware PIN & Collision Prevention):**
+  - Updated `loginPin(pin, targetUserId?)` to directly test the selected user's PIN hash when a user is selected.
+  - Implemented `checkPinUniqueness()` during PIN change and admin reset to block duplicate PINs among active staff.
+- **Decision 3 (Admin Password Reset & Safe Public Directory):**
+  - Added `auth:adminResetPassword` handler guarded by `users:manage` permission.
+  - Added `auth:publicUsers` handler exposing only safe display fields (`id`, `username`, `full_name`, `roles`) with zero hash exposure.
+- **Decision 4 (Polished UI & Deactivation Guardrails):**
+  - `Settings.tsx`: Show/Hide password toggles (`👁️`), confirm password matching, in-modal password/PIN change, separate Reset Password modal, and safety guards preventing users from deactivating themselves or the store's sole active Admin.
+  - `Login.tsx`: 1-tap cashier avatar chips for instant profile selection with automatic PIN mode switch and target-aware authentication.
+- **Decision 5 (Comprehensive Verification):**
+  - Authored `user-management.test.ts` (18 unit/integration tests).
+  - All 61 Vitest suites passing (401/401 tests).
+  - Zero TypeScript errors across Node and Web targets.
+  - Clean production build verified via `electron-vite build`.

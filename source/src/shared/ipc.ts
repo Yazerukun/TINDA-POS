@@ -165,12 +165,14 @@ export interface TindaApi {
   auth: {
     status: () => Promise<SessionUser | null>
     login: (username: string, password: string) => Promise<LoginResult>
-    loginPin: (pin: string) => Promise<LoginResult>
+    loginPin: (pin: string, targetUserId?: number) => Promise<LoginResult>
     verifyManagerPin: (pin: string) => Promise<{ valid: boolean; name?: string }>
     logout: () => Promise<void>
     changePassword: (current: string, next: string) => Promise<void>
     changePin: (pin: string) => Promise<void>
     adminResetPin: (userId: number, newPin: string) => Promise<void>
+    adminResetPassword: (userId: number, newPassword: string) => Promise<void>
+    publicUsers: () => Promise<{ id: number; username: string; full_name: string; roles: string[] }[]>
     setup: () => Promise<{ complete: boolean }>
     completeSetup: (payload: CompleteSetupPayload) => Promise<LoginResult>
   }
