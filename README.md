@@ -1,7 +1,7 @@
 <div align="center">
 
 <img src="https://img.shields.io/badge/TINDA_POS-v1.0.50-059669?style=for-the-badge&labelColor=065f46" alt="Version">
-<img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
+<img src="https://img.shields.io/badge/Platform-Windows_%7C_Linux-0078d4?style=for-the-badge&logo=linux&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
@@ -16,7 +16,7 @@
 
 <br />
 
-[⬇️ Download v1.0.50 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Setup-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Portable-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.50 Windows Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Setup-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-Portable-1.0.50.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-1.0.50.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.50/TindaPOS-User-Guide.pdf)
 
 </div>
 
