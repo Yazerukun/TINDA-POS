@@ -446,6 +446,12 @@ export interface TindaApi {
     syncNow: () => Promise<{ ok: boolean; message: string }>
     updateSettings: (patch: Partial<import('@shared/types').StoreSettings>) => Promise<import('@shared/types').StoreSettings>
   }
+  community: {
+    getAnnouncements: () => Promise<{ ok: boolean; announcements: import('@shared/types').LiveAnnouncement[] }>
+    getMessages: (limit?: number) => Promise<{ ok: boolean; messages: import('@shared/types').CommunityChatMessage[] }>
+    sendMessage: (text: string, devKey?: string) => Promise<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>
+    postAnnouncement: (title: string, message: string, devKey: string) => Promise<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>
+  }
 }
 
 export type SupplierInput = {

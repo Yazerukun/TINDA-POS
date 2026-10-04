@@ -283,6 +283,12 @@ const api: TindaApi = {
     status: () => invoke<{ isVip: boolean; settings: import('@shared/types').StoreSettings }>('cloud:status'),
     syncNow: () => invoke<{ ok: boolean; message: string }>('cloud:syncNow'),
     updateSettings: (patch) => invoke<import('@shared/types').StoreSettings>('cloud:updateSettings', patch)
+  },
+  community: {
+    getAnnouncements: () => invoke<{ ok: boolean; announcements: import('@shared/types').LiveAnnouncement[] }>('community:getAnnouncements'),
+    getMessages: (limit) => invoke<{ ok: boolean; messages: import('@shared/types').CommunityChatMessage[] }>('community:getMessages', limit),
+    sendMessage: (text, devKey) => invoke<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>('community:sendMessage', text, devKey),
+    postAnnouncement: (title, message, devKey) => invoke<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>('community:postAnnouncement', title, message, devKey)
   }
 }
 

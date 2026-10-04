@@ -733,3 +733,23 @@ export interface CloudShiftSyncPayload {
   net_sales_c: number
 }
 
+export interface LiveAnnouncement {
+  id: string
+  title: string
+  message: string
+  author: string
+  version_target?: string | null
+  is_pinned: number
+  created_at: string
+}
+
+export interface CommunityChatMessage {
+  id: string
+  store_id: string
+  store_name: string
+  sender_name: string
+  role: string
+  text: string
+  is_dev: number
+  created_at: string
+}

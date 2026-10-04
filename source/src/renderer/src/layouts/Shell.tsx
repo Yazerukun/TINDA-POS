@@ -19,6 +19,7 @@ import { Settings } from '../pages/Settings'
 import { Handbook } from '../pages/Handbook'
 import { ExpirationAlerts } from '../components/Expiration'
 import { HelpGuideModal } from '../components/HelpGuideModal'
+import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -52,6 +53,7 @@ export function Shell(): React.JSX.Element {
       <ToastHost />
       <UpdateNotification />
       <HelpGuideModal />
+      <TindaCommunityChat />
     </div>
   )
 }

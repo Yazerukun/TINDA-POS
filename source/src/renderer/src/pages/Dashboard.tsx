@@ -293,7 +293,7 @@ export function Dashboard(): React.JSX.Element | null {
           setShowModal(false)
           setModalDismissed(true)
         }}
-        title={`🎉 Bag-ong Update! · v${version}`}
+        title={`🎉 New Update Available · v${version}`}
         maxWidth="max-w-xl"
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
@@ -305,7 +305,7 @@ export function Dashboard(): React.JSX.Element | null {
               }}
               className="btn-ghost px-4 py-2 text-xs text-slate-300 hover:text-white"
             >
-              Unya Na (Later)
+              Later
             </button>
 
             {updateStatus === 'UPDATE_AVAILABLE' && (

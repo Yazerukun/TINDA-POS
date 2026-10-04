@@ -1016,6 +1016,25 @@ handle('cloud:updateSettings', (_e: IpcMainInvokeEvent, patch: Record<string, un
   return settingRepo.updateSettings(db(), patch as any)
 })
 
+// ---- VIP Pro Community Lounge & Live Announcements ----
+handle('community:getAnnouncements', async () => {
+  const { getLiveAnnouncements } = require('../services/communityChat')
+  return await getLiveAnnouncements(db())
+})
+handle('community:getMessages', async (_e: IpcMainInvokeEvent, limit?: number) => {
+  const { getCommunityMessages } = require('../services/communityChat')
+  return await getCommunityMessages(db(), limit)
+})
+handle('community:sendMessage', async (_e: IpcMainInvokeEvent, text: string, devKey?: string) => {
+  const { sendCommunityMessage } = require('../services/communityChat')
+  return await sendCommunityMessage(db(), text, devKey)
+})
+handle('community:postAnnouncement', async (_e: IpcMainInvokeEvent, title: string, message: string, devKey: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  const { postLiveAnnouncement } = require('../services/communityChat')
+  return await postLiveAnnouncement(db(), title, message, devKey)
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }
