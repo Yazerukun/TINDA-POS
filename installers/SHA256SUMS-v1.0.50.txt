@@ -3,4 +3,4 @@
 b595f1d09f9f4beed47a156d56c3dd6fdbea328846ac6315f7ad62014e3c36d1  TindaPOS-Portable-1.0.50.exe
 c90219ec230b97be1de10b6069ad05d8a0a62f678a2d403adbefe5a3ffbd8738  latest.yml
 c9e9191b3b074812c4bfeef3fe55faf11de37dbb07877d9aa182ea1c76d185d2  TindaPOS-User-Guide.pdf
-58ea5b4e246009b000f39efd280f31a80582b51e75bbe6f6cc2c8ecfd156fc8f  TindaPOS-1.0.50.AppImage
+d31c4f30d99d9a86368e747c14f5b26809e6d2c4853f0f7860ffe3de29440fb0  TindaPOS-1.0.50.AppImage
