@@ -666,3 +666,40 @@
   - [x] **100% Cryptographic VIP Pro Preservation:** Tested via `license-service.test.ts` and `settings-vip.test.ts`; HMAC-SHA256 license derivation keys remain permanently frozen and valid.
   - [x] **Zero Counter Paralysis:** POS checkout, USB barcode scanning, camera companion pairing, CFD updates, and shift reconciliation operate seamlessly without blocking.
   - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` permanently synchronized.
+
+---
+
+## 34. Multi-Platform Linux AppImage Distribution & Native Wayland Desktop Integration (v1.0.50)
+* **Problem Addressed:**
+  - TINDA POS previously only produced Windows installer targets (`.exe` NSIS installer & standalone portable).
+  - Philippine store owners, modern kiosks, and technicians running open-source POS machines on Linux (Arch Linux, Ubuntu, Debian, Omarchy, Fedora) had no packaged, zero-dependency binary.
+  - Native SQLite bindings (`better-sqlite3`) require compiled C++ Node-API binaries (`.node`). Past configurations excluded `linux-*` prebuilds to minimize Windows installer payload size, which prevented Linux binary execution.
+* **Key Architectural Implementations:**
+  - **Multi-Platform SQLite Prebuild Invariant (`electron-builder.yml`):**
+    - Configured packaging files manifest to explicitly bundle both `prebuilds/win32-x64.node` and `prebuilds/linux-x64.node` without inflating installer bloat.
+    - Excluded non-target architectures (`darwin-*`, `linuxmusl-*`, `win32-arm64.node`, `linux-arm64.node`).
+    - N-API (Node-API) guarantees cross-runtime binary stability across Node and Electron without requiring dynamic C++ recompilation.
+  - **Linux AppImage Packaging Target:**
+    - Added `AppImage` output target in `electron-builder.yml` generating `TindaPOS-${version}.AppImage` (130.83 MB).
+    - Fully self-contained squashfs payload with zero system dependency requirements; runs seamlessly with modern `libfuse3` and `libfuse2`.
+  - **Native Wayland & X11 Graphics Engine:**
+    - Full support for Linux Wayland compositors (Hyprland, Sway, GNOME, KDE) via `--ozone-platform-hint=auto`.
+    - Native Wayland client window association (`xwayland: 0`, `class: tinda-pos`), verified operational on Arch Linux / Omarchy Hyprland.
+  - **System Desktop Integration & CLI Launcher:**
+    - Extracted 256x256 application icon to `~/.local/share/icons/tinda-pos.png`.
+    - Registered desktop application menu entry: `~/.local/share/applications/tinda-pos.desktop` (`StartupWMClass=tinda-pos`, categories `Office;Finance;`).
+    - Provided instant command-line executable: `~/.local/bin/tinda-pos` pointing to permanent binary `~/Applications/TindaPOS.AppImage`.
+  - **Dual-Platform Distribution Pipeline:**
+    - Automated GitHub Release publisher updated (`tools/upload_linux_v1050.mjs`) to upload `TindaPOS-1.0.50.AppImage` to GitHub Release `v1.0.50`.
+    - `SHA256SUMS-v1.0.50.txt` updated with cryptographically verified checksum for the Linux AppImage (`ae5281d2...`).
+
+---
+
+## 35. Verification Gates, Non-Destructive Invariant Proofs & Definition of Done (v1.0.50 Linux Target)
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **Linux AppImage Build Success:** `npm run build:linux` builds production SSR main, preload, and client Vite bundles and packages `TindaPOS-1.0.50.AppImage` (exit code 0).
+  - [x] **Native Linux Execution Verified:** Launched live on Arch Linux / Omarchy Hyprland (PID 905111, mapped: 1, visible: 1, Wayland native).
+  - [x] **Multi-Platform SQLite Integrity:** `better-sqlite3` initialized without crashing; WAL mode, foreign keys, and migration chain verified on Linux filesystem (`~/.config/TINDA POS/database/tindapos.db`).
+  - [x] **Dual Distribution Assets on GitHub:** Both Windows (`Setup.exe`, `Portable.exe`) and Linux (`AppImage`) published with SHA-256 checksums on GitHub Release v1.0.50.
+  - [x] **Public & Private Documentation Parity:** Public README.md and living architecture master document (`SYSTEM_MASTER.md`) 100% synchronized.
+
