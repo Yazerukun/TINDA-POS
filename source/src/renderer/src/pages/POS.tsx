@@ -710,11 +710,6 @@ export function POS(): React.JSX.Element {
               <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
               <span className="hidden sm:inline">Guide</span>
             </button>
-            <div className="flex items-center gap-1 text-xs text-slate-500">
-              <Plus className="h-3.5 w-3.5" /> add
-              <span className="text-slate-600">·</span>
-              <span>F2 qty</span>
-            </div>
           </div>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}

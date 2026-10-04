@@ -87,10 +87,12 @@ async function run() {
   // Update local SHA256 file
   const shaPath = path.join(BUILDS_DIR, 'SHA256SUMS-v1.0.50.txt')
   let shaContent = fs.existsSync(shaPath) ? fs.readFileSync(shaPath, 'utf-8') : ''
-  if (!shaContent.includes('TindaPOS-1.0.50.AppImage')) {
+  if (shaContent.includes('TindaPOS-1.0.50.AppImage')) {
+    shaContent = shaContent.replace(/.*TindaPOS-1\.0\.50\.AppImage.*/, `${appImageHash}  TindaPOS-1.0.50.AppImage`)
+  } else {
     shaContent += `${appImageHash}  TindaPOS-1.0.50.AppImage\n`
-    fs.writeFileSync(shaPath, shaContent, 'utf-8')
   }
+  fs.writeFileSync(shaPath, shaContent, 'utf-8')
 
   console.log('\nFetching release v1.0.50 from GitHub...')
   const release = await ghRequest('GET', `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${TAG}`)
