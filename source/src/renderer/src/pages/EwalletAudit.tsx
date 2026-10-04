@@ -1,0 +1,988 @@
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import {
+  Smartphone,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Printer,
+  Trash2,
+  Crown,
+  Sparkles,
+  Calculator,
+  History,
+  CheckCircle2,
+  AlertCircle,
+  Banknote,
+  DollarSign
+} from 'lucide-react'
+import type {
+  EwalletTransactionRecord,
+  EwalletAuditRecord,
+  EwalletShiftSummary,
+  EwalletChannel,
+  EwalletTransactionType
+} from '@shared/types'
+import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
+import { toastSuccess, toastError } from '../stores/toast'
+
+const toast = {
+  success: (title: string, msg?: string) => toastSuccess(title, msg),
+  error: (title: string, msg?: string) => toastError(title, msg)
+}
+import { VipUpgradeModal } from '../components/VipUpgradeModal'
+
+export function EwalletAudit(): React.JSX.Element {
+  const [isVip, setIsVip] = useState(false)
+  const [vipModalOpen, setVipModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'register' | 'audit' | 'history'>('register')
+
+  // Register Form State
+  const [channel, setChannel] = useState<EwalletChannel>('GCASH')
+  const [type, setType] = useState<EwalletTransactionType>('CASH_IN')
+  const [amountStr, setAmountStr] = useState('')
+  const [feeStr, setFeeStr] = useState('10')
+  const [feeCollectedVia, setFeeCollectedVia] = useState<'CASH' | 'WALLET'>('CASH')
+  const [referenceNo, setReferenceNo] = useState('')
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [notes, setNotes] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Transactions & Summary Data
+  const [transactions, setTransactions] = useState<EwalletTransactionRecord[]>([])
+  const [summary, setSummary] = useState<EwalletShiftSummary | null>(null)
+  const [audits, setAudits] = useState<EwalletAuditRecord[]>([])
+
+  // Audit Form State
+  const [denominations, setDenominations] = useState<number[]>(() =>
+    new Array(CASH_COUNT_DENOMINATIONS.length).fill(0)
+  )
+  const [expectedCashDrawerStr, setExpectedCashDrawerStr] = useState('0')
+  const [startingGcashStr, setStartingGcashStr] = useState('0')
+  const [actualGcashStr, setActualGcashStr] = useState('0')
+  const [startingMayaStr, setStartingMayaStr] = useState('0')
+  const [actualMayaStr, setActualMayaStr] = useState('0')
+  const [auditNotes, setAuditNotes] = useState('')
+
+  // Load VIP status
+  const checkVipStatus = useCallback(async () => {
+    try {
+      const s = await window.api.license.getStatus()
+      setIsVip(Boolean(s.isVip))
+    } catch {
+      setIsVip(false)
+    }
+  }, [])
+
+  // Load transactions and summary
+  const loadData = useCallback(async () => {
+    try {
+      const [txList, shiftSummary, auditList] = await Promise.all([
+        window.api.ewallet.listTransactions({ limit: 100 }),
+        window.api.ewallet.getShiftSummary(),
+        window.api.ewallet.listAudits({ limit: 30 })
+      ])
+      setTransactions(txList)
+      setSummary(shiftSummary)
+      setAudits(auditList)
+
+      // Also get expected cash in drawer from shift
+      try {
+        const expected = await window.api.reports.cashCountExpected()
+        if (expected && expected.expected_cash_c != null) {
+          setExpectedCashDrawerStr((expected.expected_cash_c / 100).toFixed(2))
+        }
+      } catch {
+        // Ignored if no shift
+      }
+    } catch {
+      // Non-blocking catch
+    }
+  }, [])
+
+  useEffect(() => {
+    void checkVipStatus()
+    void loadData()
+  }, [checkVipStatus, loadData])
+
+  // Denomination calculations
+  const actualCashC = useMemo(() => {
+    try {
+      return actualCashCent(denominations)
+    } catch {
+      return 0
+    }
+  }, [denominations])
+
+  const expectedCashC = Math.round((parseFloat(expectedCashDrawerStr) || 0) * 100)
+  const cashDifferenceC = actualCashC - expectedCashC
+  const cashStatus = cashDifferenceC === 0 ? 'BALANCED' : cashDifferenceC > 0 ? 'OVER' : 'SHORT'
+
+  // E-Wallet Calculations
+  const startingGcashC = Math.round((parseFloat(startingGcashStr) || 0) * 100)
+  const actualGcashC = Math.round((parseFloat(actualGcashStr) || 0) * 100)
+  const gcashSentC = summary?.gcash_in_amount_c || 0
+  const gcashReceivedC = summary?.gcash_out_amount_c || 0
+  const expectedGcashC = startingGcashC - gcashSentC + gcashReceivedC
+  const gcashDifferenceC = actualGcashC - expectedGcashC
+
+  const startingMayaC = Math.round((parseFloat(startingMayaStr) || 0) * 100)
+  const actualMayaC = Math.round((parseFloat(actualMayaStr) || 0) * 100)
+  const mayaSentC = summary?.maya_in_amount_c || 0
+  const mayaReceivedC = summary?.maya_out_amount_c || 0
+  const expectedMayaC = startingMayaC - mayaSentC + mayaReceivedC
+  const mayaDifferenceC = actualMayaC - expectedMayaC
+
+  const handleDenomChange = (index: number, val: string): void => {
+    const qty = parseInt(val, 10) || 0
+    setDenominations((prev) => {
+      const copy = [...prev]
+      copy[index] = Math.max(0, qty)
+      return copy
+    })
+  }
+
+  // Handle Create Transaction
+  const handleSaveTransaction = async (printSlip = false): Promise<void> => {
+    const amountVal = parseFloat(amountStr)
+    if (!amountVal || amountVal <= 0) {
+      toast.error('Please enter a valid amount.')
+      return
+    }
+    const feeVal = parseFloat(feeStr) || 0
+    const amount_c = Math.round(amountVal * 100)
+    const fee_c = Math.round(feeVal * 100)
+
+    setIsSubmitting(true)
+    try {
+      const tx = await window.api.ewallet.createTransaction({
+        channel,
+        type,
+        amount_c,
+        fee_c,
+        fee_collected_via: feeCollectedVia,
+        reference_no: referenceNo || null,
+        customer_name: customerName || null,
+        customer_phone: customerPhone || null,
+        notes: notes || null
+      })
+
+      toast.success(
+        `${channel} ${type === 'CASH_IN' ? 'Cash In' : 'Cash Out'} of ₱${amountVal.toFixed(2)} recorded!`
+      )
+
+      if (printSlip && tx.id) {
+        try {
+          await window.api.ewallet.printSlip(tx.id)
+        } catch (e) {
+          toast.error('Failed to print claim slip: ' + (e as Error).message)
+        }
+      }
+
+      // Reset form fields
+      setAmountStr('')
+      setReferenceNo('')
+      setCustomerName('')
+      setCustomerPhone('')
+      setNotes('')
+      void loadData()
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to save transaction.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteTransaction = async (id: number): Promise<void> => {
+    if (!confirm('Are you sure you want to delete/void this e-wallet entry?')) return
+    try {
+      await window.api.ewallet.deleteTransaction(id)
+      toast.success('Transaction removed.')
+      void loadData()
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to delete transaction.')
+    }
+  }
+
+  const handleSaveAudit = async (printReport = false): Promise<void> => {
+    try {
+      const audit = await window.api.ewallet.saveAudit({
+        expected_cash_c: expectedCashC,
+        actual_cash_c: actualCashC,
+        denominations,
+        starting_gcash_c: startingGcashC,
+        actual_gcash_c: actualGcashC,
+        starting_maya_c: startingMayaC,
+        actual_maya_c: actualMayaC,
+        notes: auditNotes || null
+      })
+
+      toast.success('E-Wallet & Cash Audit saved successfully!')
+      if (printReport && audit.id) {
+        try {
+          await window.api.ewallet.printAuditReport(audit.id)
+        } catch (e) {
+          toast.error('Print failed: ' + (e as Error).message)
+        }
+      }
+      void loadData()
+      setActiveTab('history')
+    } catch (err) {
+      toast.error((err as Error)?.message || 'Failed to save audit.')
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-y-auto p-6 space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink-line pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <Smartphone className="h-6 w-6 text-emerald-400" />
+              E-Wallet & Cash Audit Hub
+            </h1>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 border border-amber-500/30">
+              <Crown className="h-3 w-3" /> VIP PRO EXCLUSIVE
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Complete Cash In / Cash Out bookkeeping, instant customer receipt printing, and 3-Way End-of-Day Reconciliation.
+          </p>
+        </div>
+
+        {/* Navigation Tabs */}
+        {isVip && (
+          <div className="flex rounded-xl bg-ink-900 p-1 border border-ink-line">
+            <button
+              type="button"
+              onClick={() => setActiveTab('register')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'register'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+              Cash In / Out
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('audit')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'audit'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              Audit Sheet
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'history'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <History className="h-3.5 w-3.5" />
+              Audit History
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Free Community Edition Preview Lock Banner */}
+      {!isVip && (
+        <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-ink-900 to-ink-900 p-6 shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/40">
+                <Sparkles className="h-3.5 w-3.5" /> Stop Using Manual Notebooks
+              </div>
+              <h2 className="text-lg font-bold text-white">
+                Unlock GCash & Maya Cash-In/Out Ledger with Automatic 3-Way Audit
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Eliminate cashier cash shortages, lost paper notes, and calculation errors. VIP Pro empowers your store to log customer Cash In/Out, collect custom service fees, print 58mm/80mm claim slips, and balance your physical cash drawer vs GCash & Maya wallet apps every day.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-4 text-xs text-amber-200/90 font-medium">
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> GCash & Maya 1-Click Logger</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Total Service Fees (Tubo) Tracker</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Physical Cash Drawer Reconciliation</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Thermal Claim Stubs & End-of-Day Reports</span>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex flex-col items-center gap-2.5 bg-ink-950/80 p-5 rounded-2xl border border-amber-500/30">
+              <div className="text-center">
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">One-Time Lifetime Access</p>
+                <p className="text-2xl font-black text-amber-400">₱500 <span className="text-xs font-normal text-slate-400">/ PC</span></p>
+                <p className="text-[10px] text-slate-400">Send to Maya: 0991 225 5156</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVipModalOpen(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-5 py-2.5 text-xs font-bold text-ink-950 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition"
+              >
+                <Crown className="h-4 w-4" />
+                Upgrade to VIP Pro Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      {isVip && activeTab === 'register' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Form: Express Cash In / Cash Out Register */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="card p-5 border border-ink-line bg-ink-900/90 rounded-2xl shadow-card space-y-5">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-emerald-400" />
+                New E-Wallet Transaction
+              </h3>
+
+              {/* Channel Selector: GCash vs Maya */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setChannel('GCASH')}
+                  className={`flex items-center justify-center gap-2.5 py-3 rounded-xl border font-bold text-sm transition ${
+                    channel === 'GCASH'
+                      ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-2 ring-sky-500/30'
+                      : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="h-4 w-4" />
+                  GCash
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChannel('MAYA')}
+                  className={`flex items-center justify-center gap-2.5 py-3 rounded-xl border font-bold text-sm transition ${
+                    channel === 'MAYA'
+                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-md ring-2 ring-emerald-500/30'
+                      : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="h-4 w-4" />
+                  Maya
+                </button>
+              </div>
+
+              {/* Type Selector: Cash In vs Cash Out */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setType('CASH_IN')}
+                  className={`flex flex-col items-center justify-center py-2.5 rounded-xl border font-bold text-xs transition ${
+                    type === 'CASH_IN'
+                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-md'
+                      : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-1 text-sm">
+                    <ArrowDownLeft className="h-4 w-4" /> CASH IN
+                  </span>
+                  <span className="text-[10px] font-normal text-slate-400">Customer gives Cash, send load</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setType('CASH_OUT')}
+                  className={`flex flex-col items-center justify-center py-2.5 rounded-xl border font-bold text-xs transition ${
+                    type === 'CASH_OUT'
+                      ? 'border-amber-500 bg-amber-500/20 text-amber-300 shadow-md'
+                      : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <span className="flex items-center gap-1 text-sm">
+                    <ArrowUpRight className="h-4 w-4" /> CASH OUT
+                  </span>
+                  <span className="text-[10px] font-normal text-slate-400">Customer sends load, release Cash</span>
+                </button>
+              </div>
+
+              {/* Amount Input & Quick Chips */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Principal Amount (₱) <span className="text-danger-400">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-base font-bold text-slate-500">₱</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={amountStr}
+                    onChange={(e) => setAmountStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full rounded-xl border border-ink-line bg-ink-950 pl-8 pr-4 py-2.5 text-base font-bold text-white outline-none focus:border-brand-500 transition"
+                  />
+                </div>
+                {/* Quick amount chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[100, 200, 500, 1000, 1500, 2000, 3000, 5000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setAmountStr(String(amt))}
+                      className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-ink-line bg-ink-950 text-slate-300 hover:border-brand-500 hover:text-brand-300 transition"
+                    >
+                      ₱{amt.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Service Fee / Tubo */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-300">
+                    Service Fee / Tubo (₱)
+                  </label>
+                  <span className="text-[10px] text-slate-500">Store Profit</span>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-sm font-bold text-slate-500">₱</span>
+                    <input
+                      type="number"
+                      step="any"
+                      value={feeStr}
+                      onChange={(e) => setFeeStr(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 pl-7 pr-3 py-2 text-sm font-bold text-emerald-400 outline-none focus:border-brand-500 transition"
+                    />
+                  </div>
+                  {/* Quick fee buttons */}
+                  {[10, 15, 20, 30, 50].map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setFeeStr(String(f))}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-xl border border-ink-line bg-ink-950 text-slate-300 hover:border-emerald-500 hover:text-emerald-300 transition"
+                    >
+                      +₱{f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fee Collection Method */}
+              <div className="flex items-center justify-between text-xs pt-1">
+                <span className="text-slate-400 font-medium">Service Fee Paid In:</span>
+                <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line">
+                  <button
+                    type="button"
+                    onClick={() => setFeeCollectedVia('CASH')}
+                    className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                      feeCollectedVia === 'CASH'
+                        ? 'bg-emerald-500/20 text-emerald-300'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Cash (In Drawer)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeeCollectedVia('WALLET')}
+                    className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                      feeCollectedVia === 'WALLET'
+                        ? 'bg-sky-500/20 text-sky-300'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Deducted / In Wallet
+                  </button>
+                </div>
+              </div>
+
+              {/* Customer & Reference Details (Optional) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="text-[11px] font-medium text-slate-400">Reference Number (Optional)</label>
+                  <input
+                    type="text"
+                    value={referenceNo}
+                    onChange={(e) => setReferenceNo(e.target.value)}
+                    placeholder="e.g. 987654321"
+                    className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-xs text-white outline-none focus:border-brand-500 transition"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-slate-400">Customer Name / Phone</label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="e.g. Aling Marites"
+                    className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-xs text-white outline-none focus:border-brand-500 transition"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void handleSaveTransaction(true)}
+                  className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition disabled:opacity-50"
+                >
+                  <Printer className="h-4 w-4" />
+                  Record & Print Slip
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void handleSaveTransaction(false)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-5 py-3 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white active:scale-95 transition disabled:opacity-50"
+                >
+                  Save Only
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Summary & Live Transaction Feed */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* Shift Snapshot Card */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                <span>Active Shift E-Wallet Metrics</span>
+                <span className="text-emerald-400 font-bold">● Active</span>
+              </h3>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-sky-400">GCash Cash In</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.gcash_in_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.gcash_in_count || 0} txn · Fee: ₱{((summary?.gcash_in_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-sky-400">GCash Cash Out</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.gcash_out_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.gcash_out_count || 0} txn · Fee: ₱{((summary?.gcash_out_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-emerald-400">Maya Cash In</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.maya_in_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.maya_in_count || 0} txn · Fee: ₱{((summary?.maya_in_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-emerald-400">Maya Cash Out</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.maya_out_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.maya_out_count || 0} txn · Fee: ₱{((summary?.maya_out_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Total Service Fees & Cash Impact */}
+              <div className="border-t border-ink-line pt-3 flex items-center justify-between text-xs">
+                <div>
+                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Tubo (Fees Earned)</p>
+                  <p className="text-lg font-black text-amber-400">
+                    +₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Net Cash Drawer Impact</p>
+                  <p className={`text-base font-bold ${
+                    (summary?.net_cash_drawer_delta_c || 0) >= 0 ? 'text-emerald-400' : 'text-amber-400'
+                  }`}>
+                    {(summary?.net_cash_drawer_delta_c || 0) >= 0 ? '+' : ''}
+                    ₱{((summary?.net_cash_drawer_delta_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Transaction Log */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Recent E-Wallet Transactions
+              </h3>
+
+              <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+                {transactions.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500 text-xs">
+                    No transactions recorded yet today.
+                  </div>
+                ) : (
+                  transactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl border border-ink-line bg-ink-950 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`flex h-7 w-7 items-center justify-center rounded-lg font-bold text-[10px] ${
+                            tx.channel === 'GCASH'
+                              ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
+                              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          }`}
+                        >
+                          {tx.channel === 'GCASH' ? 'GC' : 'MY'}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-white flex items-center gap-1.5">
+                            <span>{tx.type === 'CASH_IN' ? 'Cash In' : 'Cash Out'}</span>
+                            <span className="text-[10px] text-slate-400">· ₱{(tx.amount_c / 100).toFixed(2)}</span>
+                          </p>
+                          <p className="text-[10px] text-slate-500">
+                            Fee: ₱{(tx.fee_c / 100).toFixed(2)} {tx.customer_name ? `· ${tx.customer_name}` : ''}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => void window.api.ewallet.printSlip(tx.id)}
+                          className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-ink-800 transition"
+                          title="Reprint Slip"
+                        >
+                          <Printer className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleDeleteTransaction(tx.id)}
+                          className="p-1.5 text-slate-500 hover:text-danger-400 rounded hover:bg-danger-500/10 transition"
+                          title="Void / Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: 3-Way Audit Sheet */}
+      {isVip && activeTab === 'audit' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Box 1: Physical Cash Drawer Audit */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Banknote className="h-4 w-4 text-emerald-400" />
+                1. Physical Cash on Hand
+              </h3>
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Expected Drawer Cash:</span>
+                  <span className="font-bold text-white">₱{(expectedCashC / 100).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Actual Counted Cash:</span>
+                  <span className="font-bold text-emerald-400">₱{(actualCashC / 100).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs border-t border-ink-line pt-2">
+                  <span className="text-slate-400 font-semibold">Variance:</span>
+                  <span
+                    className={`font-black ${
+                      cashDifferenceC === 0
+                        ? 'text-emerald-400'
+                        : cashDifferenceC > 0
+                        ? 'text-sky-400'
+                        : 'text-danger-400'
+                    }`}
+                  >
+                    {cashDifferenceC > 0 ? '+' : ''}₱{(cashDifferenceC / 100).toFixed(2)} ({cashStatus})
+                  </span>
+                </div>
+              </div>
+
+              {/* Denomination Counter Collapse / List */}
+              <div className="space-y-1.5 pt-2 border-t border-ink-line max-h-60 overflow-y-auto pr-1">
+                <p className="text-[10px] uppercase font-bold text-slate-500">Denomination Breakdown</p>
+                {CASH_COUNT_DENOMINATIONS.map((d, i) => (
+                  <div key={d.label + d.kind} className="flex items-center justify-between text-xs gap-2 py-0.5">
+                    <span className="w-16 font-semibold text-slate-300">{d.label}</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={denominations[i] || ''}
+                      onChange={(e) => handleDenomChange(i, e.target.value)}
+                      placeholder="0"
+                      className="w-20 rounded border border-ink-line bg-ink-950 px-2 py-1 text-right text-xs text-white outline-none focus:border-brand-500"
+                    />
+                    <span className="w-20 text-right text-slate-400 text-[11px]">
+                      ₱{(((denominations[i] || 0) * d.cents) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Box 2: GCash App Wallet Audit */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+              <h3 className="text-sm font-bold text-sky-400 flex items-center gap-2">
+                <Smartphone className="h-4 w-4" />
+                2. GCash App Reconciliation
+              </h3>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Starting GCash Balance (₱)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={startingGcashStr}
+                    onChange={(e) => setStartingGcashStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-white font-bold outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div className="rounded-xl bg-ink-950 p-2.5 space-y-1 text-[11px] border border-ink-line">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">- Sent for Cash In:</span>
+                    <span className="font-semibold text-danger-400">-₱{(gcashSentC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">+ Received via Cash Out:</span>
+                    <span className="font-semibold text-emerald-400">+₱{(gcashReceivedC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-ink-line pt-1 font-bold">
+                    <span className="text-slate-300">Expected GCash App:</span>
+                    <span className="text-white">₱{(expectedGcashC / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Actual GCash App Balance (What phone shows)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={actualGcashStr}
+                    onChange={(e) => setActualGcashStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-sky-500/40 bg-ink-950 px-3 py-2 text-sky-300 font-black text-sm outline-none focus:border-sky-400"
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs border-t border-ink-line pt-2">
+                  <span className="text-slate-400 font-semibold">GCash Variance:</span>
+                  <span
+                    className={`font-black ${
+                      gcashDifferenceC === 0
+                        ? 'text-emerald-400'
+                        : gcashDifferenceC > 0
+                        ? 'text-sky-400'
+                        : 'text-danger-400'
+                    }`}
+                  >
+                    {gcashDifferenceC > 0 ? '+' : ''}₱{(gcashDifferenceC / 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Box 3: Maya App Wallet Audit */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+              <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                <Smartphone className="h-4 w-4" />
+                3. Maya App Reconciliation
+              </h3>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Starting Maya Balance (₱)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={startingMayaStr}
+                    onChange={(e) => setStartingMayaStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-white font-bold outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="rounded-xl bg-ink-950 p-2.5 space-y-1 text-[11px] border border-ink-line">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">- Sent for Cash In:</span>
+                    <span className="font-semibold text-danger-400">-₱{(mayaSentC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">+ Received via Cash Out:</span>
+                    <span className="font-semibold text-emerald-400">+₱{(mayaReceivedC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-ink-line pt-1 font-bold">
+                    <span className="text-slate-300">Expected Maya App:</span>
+                    <span className="text-white">₱{(expectedMayaC / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Actual Maya App Balance (What phone shows)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={actualMayaStr}
+                    onChange={(e) => setActualMayaStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-emerald-500/40 bg-ink-950 px-3 py-2 text-emerald-300 font-black text-sm outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs border-t border-ink-line pt-2">
+                  <span className="text-slate-400 font-semibold">Maya Variance:</span>
+                  <span
+                    className={`font-black ${
+                      mayaDifferenceC === 0
+                        ? 'text-emerald-400'
+                        : mayaDifferenceC > 0
+                        ? 'text-emerald-400'
+                        : 'text-danger-400'
+                    }`}
+                  >
+                    {mayaDifferenceC > 0 ? '+' : ''}₱{(mayaDifferenceC / 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Audit Actions */}
+          <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                <DollarSign className="h-4 w-4 text-amber-400" />
+                Total Service Fees (Tubo) Earned: <span className="text-amber-400 font-black text-base">₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}</span>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Audits are permanently archived and printable for store accounting records.
+              </p>
+            </div>
+
+            <div className="flex gap-3 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={() => void handleSaveAudit(true)}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition"
+              >
+                <Printer className="h-4 w-4" />
+                Save & Print Audit Report
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSaveAudit(false)}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-5 py-2.5 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white transition"
+              >
+                Save Audit Only
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 3: Audit History */}
+      {isVip && activeTab === 'history' && (
+        <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <History className="h-4 w-4 text-brand-400" />
+            Previous E-Wallet & Cash Audits
+          </h3>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-ink-line text-[11px] uppercase tracking-wider text-slate-400">
+                <tr>
+                  <th className="py-2.5 px-3">Date</th>
+                  <th className="py-2.5 px-3">Cashier</th>
+                  <th className="py-2.5 px-3 text-right">Cash Var</th>
+                  <th className="py-2.5 px-3 text-right">GCash Var</th>
+                  <th className="py-2.5 px-3 text-right">Maya Var</th>
+                  <th className="py-2.5 px-3 text-right">Fees Earned</th>
+                  <th className="py-2.5 px-3 text-center">Status</th>
+                  <th className="py-2.5 px-3 text-center">Print</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-line">
+                {audits.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-slate-500">
+                      No previous audits found.
+                    </td>
+                  </tr>
+                ) : (
+                  audits.map((a) => (
+                    <tr key={a.id} className="hover:bg-ink-950/50 transition">
+                      <td className="py-2.5 px-3 font-medium text-white">{a.business_date}</td>
+                      <td className="py-2.5 px-3 text-slate-300">{a.cashier_name || 'Cashier'}</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-200">
+                        ₱{(a.cash_difference_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-sky-400">
+                        ₱{(a.gcash_difference_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-emerald-400">
+                        ₱{(a.maya_difference_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-bold text-amber-400">
+                        +₱{(a.total_fees_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            a.cash_status === 'BALANCED'
+                              ? 'bg-emerald-500/15 text-emerald-400'
+                              : 'bg-danger-500/15 text-danger-400'
+                          }`}
+                        >
+                          {a.cash_status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => void window.api.ewallet.printAuditReport(a.id)}
+                          className="p-1 rounded text-slate-400 hover:text-white hover:bg-ink-800 transition"
+                          title="Print Thermal Report"
+                        >
+                          <Printer className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Modal */}
+      <VipUpgradeModal
+        open={vipModalOpen}
+        onClose={() => {
+          setVipModalOpen(false)
+          void checkVipStatus()
+        }}
+        onActivated={() => {
+          setIsVip(true)
+          setVipModalOpen(false)
+          void loadData()
+        }}
+      />
+    </div>
+  )
+}

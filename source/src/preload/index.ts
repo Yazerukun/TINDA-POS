@@ -289,6 +289,16 @@ const api: TindaApi = {
     getMessages: (limit) => invoke<{ ok: boolean; messages: import('@shared/types').CommunityChatMessage[] }>('community:getMessages', limit),
     sendMessage: (text, devKey) => invoke<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>('community:sendMessage', text, devKey),
     postAnnouncement: (title, message, devKey) => invoke<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>('community:postAnnouncement', title, message, devKey)
+  },
+  ewallet: {
+    createTransaction: (input) => invoke<import('@shared/types').EwalletTransactionRecord>('ewallet:createTransaction', input),
+    deleteTransaction: (id) => invoke<boolean>('ewallet:deleteTransaction', id),
+    listTransactions: (opts) => invoke<import('@shared/types').EwalletTransactionRecord[]>('ewallet:listTransactions', opts),
+    getShiftSummary: (shiftId) => invoke<import('@shared/types').EwalletShiftSummary>('ewallet:getShiftSummary', shiftId),
+    saveAudit: (input) => invoke<import('@shared/types').EwalletAuditRecord>('ewallet:saveAudit', input),
+    listAudits: (opts) => invoke<import('@shared/types').EwalletAuditRecord[]>('ewallet:listAudits', opts),
+    printSlip: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printSlip', id),
+    printAuditReport: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id)
   }
 }
 

@@ -1,0 +1,147 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import Database from 'better-sqlite3'
+import { runMigrations } from '../../database/migrations'
+import {
+  recordEwalletTransaction,
+  deleteEwalletTransaction,
+  listEwalletTransactions,
+  getEwalletShiftSummary,
+  saveEwalletAudit,
+  listEwalletAudits
+} from '../ewallet'
+
+describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
+  let db: Database.Database
+  const userId = 1
+
+  beforeEach(() => {
+    db = new Database(':memory:')
+    runMigrations(db)
+    // Seed initial user and open shift
+    db.prepare("INSERT INTO users (id, username, password_hash, pin_hash, full_name, is_active) VALUES (1, 'admin', 'hash', 'pin', 'Admin Owner', 1)").run()
+    db.prepare("INSERT INTO shifts (id, user_id, starting_cash_c, status, opened_at) VALUES (1, 1, 500000, 'OPENED', datetime('now'))").run()
+  })
+
+  afterEach(() => {
+    db.close()
+  })
+
+  it('records a GCash Cash In transaction and updates drawer delta correctly', () => {
+    const tx = recordEwalletTransaction(db, userId, {
+      channel: 'GCASH',
+      type: 'CASH_IN',
+      amount_c: 100000, // ₱1,000.00
+      fee_c: 1500,      // ₱15.00
+      reference_no: 'REF-GCASH-001',
+      customer_name: 'Juan Dela Cruz',
+      customer_phone: '09171234567',
+      fee_collected_via: 'CASH',
+      notes: 'Load cash in'
+    })
+
+    expect(tx.id).toBeGreaterThan(0)
+    expect(tx.channel).toBe('GCASH')
+    expect(tx.type).toBe('CASH_IN')
+    expect(tx.amount_c).toBe(100000)
+    expect(tx.fee_c).toBe(1500)
+    expect(tx.reference_no).toBe('REF-GCASH-001')
+    expect(tx.customer_name).toBe('Juan Dela Cruz')
+
+    const summary = getEwalletShiftSummary(db, 1)
+    expect(summary.gcash_in_count).toBe(1)
+    expect(summary.gcash_in_amount_c).toBe(100000)
+    expect(summary.gcash_in_fees_c).toBe(1500)
+    expect(summary.total_fees_c).toBe(1500)
+    // Physical cash drawer gained: ₱1,000 + ₱15 fee = ₱1,015 (101500 cents)
+    expect(summary.net_cash_drawer_delta_c).toBe(101500)
+  })
+
+  it('records a Maya Cash Out transaction with custom fee and updates drawer delta', () => {
+    const tx = recordEwalletTransaction(db, userId, {
+      channel: 'MAYA',
+      type: 'CASH_OUT',
+      amount_c: 50000, // ₱500.00
+      fee_c: 1000,     // ₱10.00
+      reference_no: 'REF-MAYA-002',
+      customer_name: 'Maria Clara',
+      fee_collected_via: 'CASH'
+    })
+
+    expect(tx.channel).toBe('MAYA')
+    expect(tx.type).toBe('CASH_OUT')
+
+    const summary = getEwalletShiftSummary(db, 1)
+    expect(summary.maya_out_count).toBe(1)
+    expect(summary.maya_out_amount_c).toBe(50000)
+    expect(summary.maya_out_fees_c).toBe(1000)
+    expect(summary.total_fees_c).toBe(1000)
+    // Physical cash released: ₱500 - ₱10 fee kept = -₱490 (-49000 cents)
+    expect(summary.net_cash_drawer_delta_c).toBe(-49000)
+  })
+
+  it('computes 3-Way Audit accurately (Physical Cash, GCash wallet & Maya wallet)', () => {
+    // 1. Customer Cash In: ₱1,000 via GCash (fee ₱15)
+    recordEwalletTransaction(db, userId, {
+      channel: 'GCASH',
+      type: 'CASH_IN',
+      amount_c: 100000,
+      fee_c: 1500,
+      fee_collected_via: 'CASH'
+    })
+
+    // 2. Customer Cash Out: ₱500 via Maya (fee ₱10)
+    recordEwalletTransaction(db, userId, {
+      channel: 'MAYA',
+      type: 'CASH_OUT',
+      amount_c: 50000,
+      fee_c: 1000,
+      fee_collected_via: 'CASH'
+    })
+
+    const summary = getEwalletShiftSummary(db, 1)
+    expect(summary.total_fees_c).toBe(2500) // ₱25.00 total tubo
+
+    // Perform End of Day Audit
+    // Starting balances:
+    // Physical cash drawer: Expected ₱5,000, counted ₱5,000 (BALANCED)
+    // GCash: Starting ₱5,000. Sent ₱1,000 to customer. Expected: ₱4,000. Actual on app: ₱4,000 (Diff: 0)
+    // Maya: Starting ₱2,000. Received ₱500 from customer. Expected: ₱2,500. Actual on app: ₱2,500 (Diff: 0)
+    const audit = saveEwalletAudit(db, userId, {
+      shift_id: 1,
+      expected_cash_c: 500000,
+      actual_cash_c: 500000,
+      denominations: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      starting_gcash_c: 500000,
+      actual_gcash_c: 400000,
+      starting_maya_c: 200000,
+      actual_maya_c: 250000,
+      notes: 'End of shift audit'
+    })
+
+    expect(audit.cash_status).toBe('BALANCED')
+    expect(audit.cash_difference_c).toBe(0)
+    expect(audit.expected_gcash_c).toBe(400000)
+    expect(audit.gcash_difference_c).toBe(0)
+    expect(audit.expected_maya_c).toBe(250000)
+    expect(audit.maya_difference_c).toBe(0)
+    expect(audit.total_fees_c).toBe(2500)
+
+    const audits = listEwalletAudits(db)
+    expect(audits.length).toBe(1)
+  })
+
+  it('deletes an ewallet transaction cleanly', () => {
+    const tx = recordEwalletTransaction(db, userId, {
+      channel: 'GCASH',
+      type: 'CASH_IN',
+      amount_c: 20000,
+      fee_c: 500
+    })
+
+    const deleted = deleteEwalletTransaction(db, tx.id)
+    expect(deleted).toBe(true)
+
+    const list = listEwalletTransactions(db, { shift_id: 1 })
+    expect(list.length).toBe(0)
+  })
+})

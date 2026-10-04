@@ -55,7 +55,19 @@
   - User application data in Windows `%APPDATA%\TINDA POS\` (`tindapos.db`, `tinda_license.json`) is never touched, truncated, or overwritten by updates.
   - All future migrations strictly additive (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ADD COLUMN`).
   - Cryptographic HMAC key derivation algorithm, hardware entropy, and pepper bytes are frozen permanently to guarantee 100% license validity for all existing and future VIP Pro customers.
-- **Decision 2 (Store Petty Cash Out & Shift Balancing):**
-  - Implement full store expense logging and Z-Read cash drawer reconciliation to resolve cashier cash shortages caused by unrecorded store expenses (ice, plastic bags, utilities, helper wage).
-  - Add True Net Profit financial reporting: `Gross Profit - Operating Expenses`.
+## 2026-10-04: v1.0.53 Phase 6 — VIP E-Wallet & Cash Audit Hub (GCash, Maya, Cash-In/Out & 3-Way Audit)
+- **Trigger:** Store owner client feedback requested by Ian: adding Cash-In, Cash-Out, and Cash on Hand audit for GCash and Maya, exclusively gated for VIP Pro merchants.
+- **Decision 1 (VIP Pro Exclusivity):**
+  - Gated at backend IPC (`licenseService.getStatus().isVip`) and frontend UI.
+  - Community edition stores receive a non-blocking interactive preview with clear upgrade value propositions and payment instructions.
+- **Decision 2 (Freeform Service Fees):**
+  - Store owners set their own transaction fee rates without forced hardcoded minimums or rigid percentages. Editable with 1-click quick-fill shortcuts (e.g. ₱10, ₱15, ₱20).
+- **Decision 3 (3-Way Reconciliation Model):**
+  - Physical Cash on Hand: Integrated denomination breakdown (₱1,000 down to 25¢).
+  - GCash Ledger: Starting balance + Inflows - Outflows vs Actual App balance = Variance.
+  - Maya Ledger: Starting balance + Inflows - Outflows vs Actual App balance = Variance.
+  - Total Tubo / Profit Earned Tracker: Distinct from retail product margins.
+- **Decision 4 (Thermal Receipt Proofs):**
+  - 58mm/80mm claim slip for customers (Cash-In/Cash-Out reference receipt).
+  - 58mm/80mm End-of-Day Audit Report for owners/managers.
 

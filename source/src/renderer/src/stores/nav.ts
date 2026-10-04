@@ -12,6 +12,7 @@ export type PageKey =
   | 'backup'
   | 'settings'
   | 'customers'
+  | 'ewallet'
   | 'handbook'
 
 interface NavState {

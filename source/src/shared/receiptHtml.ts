@@ -212,3 +212,78 @@ export function receiptHtml(lines: string[], width: ReceiptWidth, currency = '')
   const docReset = 'html, body { margin: 0; padding: 0; background: white; color: black; }'
   return `<!doctype html><html><head><meta charset="utf-8"><style>${docReset}${receiptCss(width)}</style></head><body>${receiptBodyHtml(lines, width, currency)}</body></html>`
 }
+
+export function formatEwalletSlipLines(
+  tx: import('./types').EwalletTransactionRecord,
+  storeName?: string | null
+): string[] {
+  const money = (cents: number): string => (cents / 100).toFixed(2)
+  const isCashIn = tx.type === 'CASH_IN'
+  const lines: string[] = [
+    storeName || 'TINDA POS',
+    `E-WALLET ${tx.channel} SLIP`,
+    '--------------------------------',
+    `Transaction: ${isCashIn ? 'CASH IN' : 'CASH OUT'}`,
+    `Channel: ${tx.channel}`,
+    `Date: ${tx.created_at}`,
+    `Reference: ${tx.reference_no || 'N/A'}`
+  ]
+  if (tx.customer_name) lines.push(`Customer: ${tx.customer_name}`)
+  if (tx.customer_phone) lines.push(`Mobile: ${tx.customer_phone}`)
+  if (tx.cashier_name) lines.push(`Cashier: ${tx.cashier_name}`)
+  lines.push('--------------------------------')
+  lines.push(`Amount         ${money(tx.amount_c)}`)
+  lines.push(`Service Fee    ${money(tx.fee_c)}`)
+  const totalReceivedOrGiven = isCashIn
+    ? tx.amount_c + (tx.fee_collected_via === 'CASH' ? tx.fee_c : 0)
+    : tx.amount_c - (tx.fee_collected_via === 'CASH' ? tx.fee_c : 0)
+  lines.push('--------------------------------')
+  lines.push(`TOTAL ${isCashIn ? 'CASH RECEIVED' : 'CASH RELEASED'}  ${money(totalReceivedOrGiven)}`)
+  lines.push('--------------------------------')
+  lines.push('Thank you for choosing us!')
+  lines.push('Please retain this slip for your proof.')
+  return lines
+}
+
+export function formatEwalletAuditLines(
+  a: import('./types').EwalletAuditRecord,
+  storeName?: string | null
+): string[] {
+  const money = (cents: number): string => (cents / 100).toFixed(2)
+  const lines: string[] = [
+    storeName || 'TINDA POS',
+    'E-WALLET & CASH AUDIT REPORT',
+    '--------------------------------',
+    `Date: ${a.business_date}`,
+    `Shift: ${a.shift_id ?? 'N/A'}`,
+    `Cashier: ${a.cashier_name || 'Store Cashier'}`,
+    '--------------------------------',
+    'PHYSICAL CASH DRAWER',
+    `Expected Cash  ${money(a.expected_cash_c)}`,
+    `Actual Cash    ${money(a.actual_cash_c)}`,
+    `Difference     ${money(a.cash_difference_c)}`,
+    `Status         ${a.cash_status}`,
+    '--------------------------------',
+    'GCASH WALLET AUDIT',
+    `Starting GCash ${money(a.starting_gcash_c)}`,
+    `Cash In (Sent) ${money(a.gcash_in_c)}`,
+    `Cash Out (Rcvd) ${money(a.gcash_out_c)}`,
+    `Expected GCash ${money(a.expected_gcash_c)}`,
+    `Actual GCash   ${money(a.actual_gcash_c)}`,
+    `Difference     ${money(a.gcash_difference_c)}`,
+    '--------------------------------',
+    'MAYA WALLET AUDIT',
+    `Starting Maya  ${money(a.starting_maya_c)}`,
+    `Cash In (Sent) ${money(a.maya_in_c)}`,
+    `Cash Out (Rcvd) ${money(a.maya_out_c)}`,
+    `Expected Maya  ${money(a.expected_maya_c)}`,
+    `Actual Maya    ${money(a.actual_maya_c)}`,
+    `Difference     ${money(a.maya_difference_c)}`,
+    '--------------------------------',
+    `TOTAL FEES EARNED  ${money(a.total_fees_c)}`,
+    '--------------------------------',
+    'TINDA POS AUDIT VERIFIED'
+  ]
+  return lines
+}
+

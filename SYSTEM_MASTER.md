@@ -802,5 +802,41 @@
   - [x] **Cloudflare Worker Deployed:** Edge worker and D1 schema live and serving `is_vip` across production endpoints.
   - [x] **Local Linux Runtime Updated:** `~/Applications/TindaPOS.AppImage` atomically refreshed with v1.0.52 binary.
 
+---
+
+## 42. VIP E-Wallet & Cash Audit Hub (GCash, Maya & 3-Way Audit) (v1.0.53)
+* **Problem Addressed:**
+  - Sari-sari stores and local merchants actively operate auxiliary financial services: **GCash and Maya Cash In & Cash Out**.
+  - Previously, store owners had to manually calculate cash drawer deltas and often suffered discrepancies when physical drawer cash was used to fulfill Cash Out transactions or when customer Cash In funds entered the drawer.
+  - Store owners required custom, unrestricted service fees (tubo) per transaction without hardcoded percentage limits.
+  - End-of-day reconciliation required auditing physical cash along with both digital e-wallets to catch unrecorded transfers or missing cash.
+* **Key Architectural Implementations:**
+  - **Additive Database Migration 11 (`ewallet_hub`):**
+    - `ewallet_transactions`: Stores `channel` (GCASH/MAYA), `type` (CASH_IN/CASH_OUT), `amount_c`, `fee_c`, `fee_collected_via` (CASH/WALLET), `reference_no`, `customer_name`, `customer_phone`, `shift_id`, `created_at`.
+    - `ewallet_audits`: Stores physical cash count denomination breakdown (1000 down to 0.25), expected vs actual for Cash, GCash, Maya, computed discrepancies, and total fees earned.
+  - **Drawer & Wallet Delta Logic:**
+    - Cash In: Customer gives cash to store -> drawer gains `+ (amount_c + feeInCash)`; digital wallet balance decreases.
+    - Cash Out: Store gives cash to customer -> drawer loses `- (amount_c - feeInCash)`; digital wallet balance increases.
+  - **Thermal Slips & Reports (58mm / 80mm):**
+    - Customer Claim Slip: Formats reference number, sender/receiver, amount, service fee, and timestamp with store header.
+    - 3-Way Audit Slip: Full breakdown of Physical Cash Drawer + GCash Account + Maya Account variances.
+  - **POS Quick Access:**
+    - `F8` keyboard hotkey and toolbar shortcut on POS screen for instant navigation to E-Wallet register.
+    - Sidebar navigation entry with `💎 VIP` badge.
+  - **VIP Cryptographic Gating:**
+    - Backend IPC mutation handlers enforce `licenseService.getStatus().isVip`. Free users receive an interactive preview and upgrade prompt.
+
+---
+
+## 43. Verification Gates & Definition of Done (v1.0.53)
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **60/60 Vitest Test Suites Passing:** 383/383 unit and integration tests passing, including dedicated `ewallet.test.ts` (4/4 tests).
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` clean with 0 errors across main, preload, and renderer.
+  - [x] **Master Invariants Passed:** `tools/check_master_invariants.mjs` passed with 0 violations.
+  - [x] **Multi-Platform Clean Builds:** Windows NSIS (`TindaPOS-Setup-1.0.53.exe`), Portable (`TindaPOS-Portable-1.0.53.exe`), and Linux (`TindaPOS-1.0.53.AppImage`) packaged.
+  - [x] **GitHub Release Published:** Release `v1.0.53` live with SHA-256 checksums at `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.53`.
+  - [x] **Local Linux Runtime Updated:** `~/Applications/TindaPOS.AppImage` points to v1.0.53.
+
+
 
 

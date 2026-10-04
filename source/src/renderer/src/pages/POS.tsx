@@ -25,7 +25,8 @@ import {
   Tv,
   Tag,
   Edit3,
-  KeyRound
+  KeyRound,
+  Landmark
 } from 'lucide-react'
 import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
@@ -264,6 +265,7 @@ export const usePosCart = create<CartState>((set) => ({
 }))
 
 export function POS(): React.JSX.Element {
+  const { setPage } = useNav()
   const [q, setQ] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -497,6 +499,11 @@ export function POS(): React.JSX.Element {
         setExpenseModalOpen(true)
         return
       }
+      if (e.key === 'F8') {
+        e.preventDefault()
+        setPage('ewallet')
+        return
+      }
       if (e.key === '/') {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag !== 'input' && tag !== 'textarea') {
@@ -699,6 +706,16 @@ export function POS(): React.JSX.Element {
             >
               <Receipt className="h-3.5 w-3.5 text-amber-400" />
               <span className="hidden sm:inline">Petty Cash (F7)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPage('ewallet')}
+              className="flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 hover:border-emerald-500/50 hover:bg-emerald-500/20 transition-colors shadow-sm"
+              title="Open E-Wallet & Cash Audit Hub (GCash, Maya, Cash In/Out & 3-Way Audit) (F8)"
+            >
+              <Landmark className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">E-Wallet (F8)</span>
             </button>
 
             <button

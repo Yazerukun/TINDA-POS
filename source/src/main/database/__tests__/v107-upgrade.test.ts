@@ -27,7 +27,8 @@ describe('v1.0.6 to v1.0.7 upgrade preserves data (user feedback release)', () =
         { version: 7, name: 'product_srp' },
         { version: 8, name: 'price_references' },
         { version: 9, name: 'epoch_41_anti_downgrade' },
-        { version: 10, name: 'wholesale_tiering' }
+        { version: 10, name: 'wholesale_tiering' },
+        { version: 11, name: 'ewallet_hub' }
       ])
     const shiftNumbering = migrations.find((m) => m.version === 5)
     expect(shiftNumbering?.name).toBe('shift_numbering')

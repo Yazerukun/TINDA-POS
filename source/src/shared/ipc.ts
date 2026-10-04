@@ -452,6 +452,38 @@ export interface TindaApi {
     sendMessage: (text: string, devKey?: string) => Promise<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>
     postAnnouncement: (title: string, message: string, devKey: string) => Promise<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>
   }
+  ewallet: {
+    createTransaction: (input: {
+      shift_id?: number | null
+      channel: import('./types').EwalletChannel
+      type: import('./types').EwalletTransactionType
+      amount_c: number
+      fee_c?: number
+      reference_no?: string | null
+      customer_name?: string | null
+      customer_phone?: string | null
+      fee_collected_via?: 'CASH' | 'WALLET'
+      notes?: string | null
+    }) => Promise<import('./types').EwalletTransactionRecord>
+    deleteTransaction: (id: number) => Promise<boolean>
+    listTransactions: (opts?: { shift_id?: number; channel?: import('./types').EwalletChannel; type?: import('./types').EwalletTransactionType; limit?: number }) => Promise<import('./types').EwalletTransactionRecord[]>
+    getShiftSummary: (shiftId?: number | null) => Promise<import('./types').EwalletShiftSummary>
+    saveAudit: (input: {
+      shift_id?: number | null
+      business_date?: string
+      expected_cash_c: number
+      actual_cash_c: number
+      denominations: number[]
+      starting_gcash_c: number
+      actual_gcash_c: number
+      starting_maya_c: number
+      actual_maya_c: number
+      notes?: string | null
+    }) => Promise<import('./types').EwalletAuditRecord>
+    listAudits: (opts?: { limit?: number }) => Promise<import('./types').EwalletAuditRecord[]>
+    printSlip: (id: number) => Promise<{ ok: boolean; message: string }>
+    printAuditReport: (id: number) => Promise<{ ok: boolean; message: string }>
+  }
 }
 
 export type SupplierInput = {

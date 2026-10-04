@@ -15,7 +15,8 @@ import {
   HelpCircle,
   BookOpen,
   Crown,
-  Tv
+  Tv,
+  Landmark
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -24,9 +25,10 @@ import { useSettings } from '../../stores/settings'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 
-const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission?: Permission }[] = [
+const NAV: { key: PageKey; label: string; icon: React.ReactNode; permission?: Permission; badge?: string }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
   { key: 'pos', label: 'POS', icon: <ShoppingCart className="h-4 w-4" />, permission: 'pos:use' },
+  { key: 'ewallet', label: 'E-Wallet & Audit', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use', badge: 'VIP' },
   { key: 'inventory', label: 'Inventory', icon: <Boxes className="h-4 w-4" />, permission: 'products:manage' },
   { key: 'customers', label: 'Customers', icon: <Users className="h-4 w-4" />, permission: 'customers:manage' },
   { key: 'utang', label: 'Utang', icon: <Wallet className="h-4 w-4" />, permission: 'pos:utang' },
@@ -72,14 +74,21 @@ export function Sidebar(): React.JSX.Element {
           <button
             key={n.key}
             onClick={() => setPage(n.key)}
-            className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
+            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
               page === n.key
                 ? 'bg-brand-600/15 text-brand-400'
                 : 'text-slate-400 hover:bg-ink-800 hover:text-slate-200'
             }`}
           >
-            {n.icon}
-            {n.label}
+            <span className="flex items-center gap-2.5 truncate">
+              {n.icon}
+              <span className="truncate">{n.label}</span>
+            </span>
+            {n.badge && (
+              <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 border border-amber-500/30">
+                💎 {n.badge}
+              </span>
+            )}
           </button>
         ))}
       </nav>

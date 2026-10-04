@@ -587,6 +587,59 @@ END;
 ALTER TABLE products ADD COLUMN wholesale_price_c INTEGER;
 ALTER TABLE products ADD COLUMN wholesale_min_qty INTEGER;
 `
+  },
+  {
+    version: 11,
+    name: 'ewallet_hub',
+    sql: `
+CREATE TABLE IF NOT EXISTS ewallet_transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  channel TEXT NOT NULL CHECK (channel IN ('GCASH', 'MAYA')),
+  type TEXT NOT NULL CHECK (type IN ('CASH_IN', 'CASH_OUT')),
+  amount_c INTEGER NOT NULL,
+  fee_c INTEGER NOT NULL DEFAULT 0,
+  reference_no TEXT,
+  customer_name TEXT,
+  customer_phone TEXT,
+  fee_collected_via TEXT NOT NULL DEFAULT 'CASH' CHECK (fee_collected_via IN ('CASH', 'WALLET')),
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_ewallet_shift ON ewallet_transactions(shift_id);
+CREATE INDEX IF NOT EXISTS idx_ewallet_created_at ON ewallet_transactions(created_at);
+
+CREATE TABLE IF NOT EXISTS ewallet_audits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  business_date TEXT NOT NULL,
+  expected_cash_c INTEGER NOT NULL,
+  actual_cash_c INTEGER NOT NULL,
+  cash_difference_c INTEGER NOT NULL,
+  cash_status TEXT NOT NULL CHECK (cash_status IN ('BALANCED', 'OVER', 'SHORT')),
+  denominations_json TEXT,
+  starting_gcash_c INTEGER NOT NULL DEFAULT 0,
+  gcash_in_c INTEGER NOT NULL DEFAULT 0,
+  gcash_out_c INTEGER NOT NULL DEFAULT 0,
+  expected_gcash_c INTEGER NOT NULL DEFAULT 0,
+  actual_gcash_c INTEGER NOT NULL DEFAULT 0,
+  gcash_difference_c INTEGER NOT NULL DEFAULT 0,
+  starting_maya_c INTEGER NOT NULL DEFAULT 0,
+  maya_in_c INTEGER NOT NULL DEFAULT 0,
+  maya_out_c INTEGER NOT NULL DEFAULT 0,
+  expected_maya_c INTEGER NOT NULL DEFAULT 0,
+  actual_maya_c INTEGER NOT NULL DEFAULT 0,
+  maya_difference_c INTEGER NOT NULL DEFAULT 0,
+  total_fees_c INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_ewallet_audits_date ON ewallet_audits(business_date);
+`
   }
 ]
 

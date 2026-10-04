@@ -754,3 +754,69 @@ export interface CommunityChatMessage {
   is_vip?: number
   created_at: string
 }
+
+export type EwalletChannel = 'GCASH' | 'MAYA'
+export type EwalletTransactionType = 'CASH_IN' | 'CASH_OUT'
+
+export interface EwalletTransactionRecord {
+  id: number
+  shift_id: number | null
+  user_id: number | null
+  cashier_name?: string
+  channel: EwalletChannel
+  type: EwalletTransactionType
+  amount_c: number
+  fee_c: number
+  reference_no: string | null
+  customer_name: string | null
+  customer_phone: string | null
+  fee_collected_via: 'CASH' | 'WALLET'
+  notes: string | null
+  created_at: string
+}
+
+export interface EwalletAuditRecord {
+  id: number
+  shift_id: number | null
+  user_id: number | null
+  cashier_name?: string
+  business_date: string
+  expected_cash_c: number
+  actual_cash_c: number
+  cash_difference_c: number
+  cash_status: 'BALANCED' | 'OVER' | 'SHORT'
+  denominations: number[]
+  starting_gcash_c: number
+  gcash_in_c: number
+  gcash_out_c: number
+  expected_gcash_c: number
+  actual_gcash_c: number
+  gcash_difference_c: number
+  starting_maya_c: number
+  maya_in_c: number
+  maya_out_c: number
+  expected_maya_c: number
+  actual_maya_c: number
+  maya_difference_c: number
+  total_fees_c: number
+  notes: string | null
+  created_at: string
+}
+
+export interface EwalletShiftSummary {
+  gcash_in_count: number
+  gcash_in_amount_c: number
+  gcash_in_fees_c: number
+  gcash_out_count: number
+  gcash_out_amount_c: number
+  gcash_out_fees_c: number
+  maya_in_count: number
+  maya_in_amount_c: number
+  maya_in_fees_c: number
+  maya_out_count: number
+  maya_out_amount_c: number
+  maya_out_fees_c: number
+  total_fees_c: number
+  net_cash_drawer_delta_c: number
+}
+

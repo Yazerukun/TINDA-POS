@@ -1035,6 +1035,85 @@ handle('community:postAnnouncement', async (_e: IpcMainInvokeEvent, title: strin
   return await postLiveAnnouncement(db(), title, message, devKey)
 })
 
+// ---- VIP E-Wallet & Cash Audit Hub ----
+handle('ewallet:createTransaction', (_e: IpcMainInvokeEvent, input: unknown) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet Cash-In/Out is a VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to unlock.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  const u = user()
+  return ewalletRepo.recordEwalletTransaction(db(), u.id, input)
+})
+handle('ewallet:deleteTransaction', (_e: IpcMainInvokeEvent, id: number) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet Cash-In/Out is a VIP Pro feature.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  return ewalletRepo.deleteEwalletTransaction(db(), id)
+})
+handle('ewallet:listTransactions', (_e: IpcMainInvokeEvent, opts?: unknown) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    return []
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  return ewalletRepo.listEwalletTransactions(db(), (opts ?? {}) as object)
+})
+handle('ewallet:getShiftSummary', (_e: IpcMainInvokeEvent, shiftId?: number | null) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet Audit is a VIP Pro feature.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  let targetShiftId = shiftId
+  if (targetShiftId === undefined) {
+    const s = shiftRepo.currentShiftFor(db(), user().id)
+    targetShiftId = s?.id ?? null
+  }
+  return ewalletRepo.getEwalletShiftSummary(db(), targetShiftId)
+})
+handle('ewallet:saveAudit', (_e: IpcMainInvokeEvent, input: unknown) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet Audit is a VIP Pro feature.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  const u = user()
+  return ewalletRepo.saveEwalletAudit(db(), u.id, input)
+})
+handle('ewallet:listAudits', (_e: IpcMainInvokeEvent, opts?: unknown) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    return []
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  return ewalletRepo.listEwalletAudits(db(), (opts ?? {}) as object)
+})
+handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet slip printing is a VIP Pro feature.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  const tx = ewalletRepo.getEwalletTransaction(db(), id)
+  const settings = settingRepo.getSettings(db())
+  const { formatEwalletSlipLines } = require('../../shared/receiptHtml')
+  return await printingSvc.printLines(settings, formatEwalletSlipLines(tx, settings.store_name))
+})
+handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: E-Wallet audit report printing is a VIP Pro feature.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  const audit = ewalletRepo.getEwalletAudit(db(), id)
+  const settings = settingRepo.getSettings(db())
+  const { formatEwalletAuditLines } = require('../../shared/receiptHtml')
+  return await printingSvc.printLines(settings, formatEwalletAuditLines(audit, settings.store_name))
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }
