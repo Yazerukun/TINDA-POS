@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { Role, User } from '@shared/types'
+import { verifySecret } from '../security/passwords'
 
 interface UserRow {
   id: number
@@ -40,7 +41,13 @@ export function getUserRoles(db: Database.Database, userId: number): Role['name'
 }
 
 export function getUserByUsername(db: Database.Database, username: string): UserRow | undefined {
-  return db.prepare(`${SELECT_USER} WHERE u.username = ?`).get(username) as UserRow | undefined
+  const clean = username.trim()
+  if (!clean) return undefined
+  // 1. Exact or case-insensitive match on username
+  const byUsername = db.prepare(`${SELECT_USER} WHERE LOWER(u.username) = LOWER(?)`).get(clean) as UserRow | undefined
+  if (byUsername) return byUsername
+  // 2. Case-insensitive match on full_name fallback
+  return db.prepare(`${SELECT_USER} WHERE LOWER(u.full_name) = LOWER(?)`).get(clean) as UserRow | undefined
 }
 
 export function getUserById(db: Database.Database, id: number): UserRow | undefined {
@@ -49,6 +56,19 @@ export function getUserById(db: Database.Database, id: number): UserRow | undefi
 
 export function getUserByPin(db: Database.Database, pinHash: string): UserRow | undefined {
   return db.prepare(`${SELECT_USER} WHERE u.pin_hash = ? AND u.is_active = 1`).get(pinHash) as UserRow | undefined
+}
+
+export function findUserByPin(
+  db: Database.Database,
+  pin: string,
+  excludeUserId?: number
+): { id: number; username: string; full_name: string } | undefined {
+  const candidates = db
+    .prepare('SELECT id, pin_hash, full_name, username FROM users WHERE is_active = 1')
+    .all() as { id: number; pin_hash: string; full_name: string; username: string }[]
+  return candidates.find(
+    (c) => (excludeUserId ? c.id !== excludeUserId : true) && verifySecret(pin, c.pin_hash)
+  )
 }
 
 export function createUser(
