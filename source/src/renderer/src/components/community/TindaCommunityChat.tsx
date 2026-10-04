@@ -19,7 +19,6 @@ import { useSettings } from '../../stores/settings'
 export function TindaCommunityChat(): React.JSX.Element {
   const { settings } = useSettings()
   const [isOpen, setIsOpen] = useState(false)
-  const [isVip, setIsVip] = useState(true)
   const [messages, setMessages] = useState<CommunityChatMessage[]>([])
   const [announcements, setAnnouncements] = useState<LiveAnnouncement[]>([])
   const [inputText, setInputText] = useState('')
@@ -32,23 +31,12 @@ export function TindaCommunityChat(): React.JSX.Element {
   const [showDevPrompt, setShowDevPrompt] = useState(false)
   const [devInput, setDevInput] = useState('')
   const [unreadAnnouncement, setUnreadAnnouncement] = useState(false)
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = useCallback((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
-
-  // Check VIP status
-  useEffect(() => {
-    window.api?.cloud
-      ?.status()
-      .then((res) => {
-        setIsVip(Boolean(res?.isVip))
-      })
-      .catch(() => {
-        setIsVip(false)
-      })
   }, [])
 
   // Fetch announcements
@@ -75,39 +63,65 @@ export function TindaCommunityChat(): React.JSX.Element {
       if (res && res.ok && Array.isArray(res.messages)) {
         setMessages(res.messages)
         setIsOnline(true)
+
+        // Check for unread messages when drawer is closed
+        if (res.messages.length > 0) {
+          const lastMsg = res.messages[res.messages.length - 1]
+          const lastSeenId = localStorage.getItem('tinda_last_seen_msg_id')
+          if (!isOpen && lastSeenId && lastMsg && lastMsg.id !== lastSeenId) {
+            setHasUnreadMessages(true)
+          } else if (isOpen && lastMsg) {
+            localStorage.setItem('tinda_last_seen_msg_id', lastMsg.id)
+          } else if (!lastSeenId && lastMsg) {
+            localStorage.setItem('tinda_last_seen_msg_id', lastMsg.id)
+          }
+        }
       } else if (!res?.ok) {
         setIsOnline(false)
       }
     } catch {
       setIsOnline(false)
     }
-  }, [])
+  }, [isOpen])
 
-  // Initial fetch on mount for announcements badge
+  // Initial fetch on mount for announcements and messages badge
   useEffect(() => {
     void fetchAnnouncements()
-  }, [fetchAnnouncements])
+    void fetchMessages()
+  }, [fetchAnnouncements, fetchMessages])
 
-  // Poll only when chat drawer is open
+  // Polling:
+  // When open: poll every 5s
+  // When closed: poll every 12s in background so red notification triggers on new messages
   useEffect(() => {
-    if (!isOpen) return
-
-    setIsLoading(true)
-    void Promise.all([fetchAnnouncements(), fetchMessages()]).finally(() => {
-      setIsLoading(false)
-      scrollToBottom()
-    })
-
-    const interval = setInterval(() => {
-      void fetchMessages()
-    }, 6000)
-
-    return () => clearInterval(interval)
+    if (isOpen) {
+      setIsLoading(true)
+      void Promise.all([fetchAnnouncements(), fetchMessages()]).finally(() => {
+        setIsLoading(false)
+        scrollToBottom()
+      })
+      const interval = setInterval(() => {
+        void fetchMessages()
+      }, 5000)
+      return () => clearInterval(interval)
+    } else {
+      const bgInterval = setInterval(() => {
+        void fetchMessages()
+      }, 12000)
+      return () => clearInterval(bgInterval)
+    }
   }, [isOpen, fetchAnnouncements, fetchMessages, scrollToBottom])
 
   const handleOpen = (): void => {
     setIsOpen(true)
+    setHasUnreadMessages(false)
     setUnreadAnnouncement(false)
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1]
+      if (lastMsg) {
+        localStorage.setItem('tinda_last_seen_msg_id', lastMsg.id)
+      }
+    }
     const first = announcements[0]
     if (first) {
       localStorage.setItem('tinda_last_seen_announcement', first.id)
@@ -156,17 +170,31 @@ export function TindaCommunityChat(): React.JSX.Element {
         <button
           type="button"
           onClick={handleOpen}
-          className="relative flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-brand-500/25 active:scale-95"
+          className={`relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            hasUnreadMessages
+              ? 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 shadow-red-500/50 ring-4 ring-red-400/60 animate-pulse'
+              : 'bg-gradient-to-r from-brand-600 to-indigo-600 hover:shadow-brand-500/25'
+          }`}
           title="Open TINDA Global Community Lounge"
         >
           <MessageSquare className="h-4 w-4" />
           <span>Global Lounge</span>
-          {unreadAnnouncement && (
+          {hasUnreadMessages ? (
+            <span className="flex items-center gap-1.5 ml-1">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
+              </span>
+              <span className="rounded-full bg-red-950/80 px-1.5 py-0.2 text-[10px] font-bold text-red-100 border border-red-300/30">
+                NEW
+              </span>
+            </span>
+          ) : unreadAnnouncement ? (
             <span className="flex h-2.5 w-2.5 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
             </span>
-          )}
+          ) : null}
         </button>
       </div>
 
@@ -304,18 +332,16 @@ export function TindaCommunityChat(): React.JSX.Element {
           </div>
         )}
 
-        {/* VIP Lock Banner for non-VIP stores */}
-        {!isVip && !isDevActive && (
-          <div className="m-3 rounded-xl border border-brand-500/30 bg-gradient-to-br from-brand-950/50 to-ink-900 p-3.5 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-brand-300 mb-1">
-              <Sparkles className="h-4 w-4" />
-              <span>VIP Pro Community Feature</span>
-            </div>
-            <p className="text-slate-300 leading-relaxed">
-              Live messaging and merchant discussions are reserved for verified TINDA POS VIP Pro stores. Upgrade your license to participate and chat with fellow business owners.
-            </p>
+        {/* Free Community Banner */}
+        <div className="m-3 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/30 to-ink-900 p-3 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-emerald-400 mb-0.5">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>TINDA Nationwide Merchant Community</span>
           </div>
-        )}
+          <p className="text-slate-300 text-[11px] leading-relaxed">
+            Free and open for all store owners. Chat, share pricing insights, and receive real-time updates directly from the developer!
+          </p>
+        </div>
 
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -388,20 +414,17 @@ export function TindaCommunityChat(): React.JSX.Element {
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              disabled={!isVip && !isDevActive}
               maxLength={500}
               placeholder={
-                !isVip && !isDevActive
-                  ? 'Upgrade to VIP Pro to participate in chat...'
-                  : isDevActive
-                    ? 'Write as 👑 Dev / Owner...'
-                    : 'Share a tip or ask fellow store owners...'
+                isDevActive
+                  ? 'Write as 👑 Dev / Owner...'
+                  : 'Share a tip or ask fellow store owners...'
               }
-              className="flex-1 rounded-xl border border-ink-700 bg-ink-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-xl border border-ink-700 bg-ink-950 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition focus:border-brand-500"
             />
             <button
               type="submit"
-              disabled={!inputText.trim() || isSending || (!isVip && !isDevActive)}
+              disabled={!inputText.trim() || isSending}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500 text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:hover:bg-brand-500"
             >
               <Send className="h-4 w-4" />
@@ -411,7 +434,7 @@ export function TindaCommunityChat(): React.JSX.Element {
             <span>
               {isDevActive
                 ? 'Posting with verified Developer identity'
-                : 'Posting as verified store'}
+                : 'Posting as store merchant'}
             </span>
             <span>{inputText.length} / 500</span>
           </div>

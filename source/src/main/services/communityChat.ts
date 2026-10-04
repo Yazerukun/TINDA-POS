@@ -81,7 +81,7 @@ export async function getCommunityMessages(
 
 /**
  * Send a chat message to the TINDA Global Lounge
- * Gated by VIP Pro status.
+ * Free and open for all merchants!
  */
 export async function sendCommunityMessage(
   db: Database.Database,
@@ -89,17 +89,7 @@ export async function sendCommunityMessage(
   devKey?: string
 ): Promise<{ ok: boolean; message?: CommunityChatMessage; error?: string }> {
   const settings = getSettings(db)
-
-  // VIP Check: Only VIP stores or dev key can send in Global Lounge
-  const isVip = isVipActive(settings)
   const isDevAttempt = Boolean(devKey && devKey.trim().length > 0)
-
-  if (!isVip && !isDevAttempt) {
-    return {
-      ok: false,
-      error: 'VIP Pro is required to post in the TINDA Global Community Lounge.'
-    }
-  }
 
   const cleanText = text.trim()
   if (!cleanText) {
