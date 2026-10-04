@@ -4,10 +4,13 @@
 
 ## Current release
 
-- Version: **1.0.54 (LOCAL BUILD CANDIDATE)**
-- Status: Phase 7 User Management & Multi-Account Login System completed. Flexible case-insensitive login by username/full_name, target-aware PIN login, unique PIN enforcement, admin password reset, public user directory, deactivation guardrails, and 1-tap cashier chips on Login screen.
+- Version: **1.0.54 (STABLE RELEASE — PUBLISHED)**
+- Status: Phase 7 Bulletproof User Management & Multi-Account Login System completed, alongside Modern Categorized Sidebar UX Overhaul. All test suites passing (401/401 tests), clean TypeScript, binaries signed and published to GitHub Releases.
 - Tag: `v1.0.54`
+- Public GitHub Release: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.54`
 - Application source: `source/`
+- Windows & Linux binaries: `source/builds/`
+
 
 ## Latest completed work (v1.0.54 — Phase 7)
 
