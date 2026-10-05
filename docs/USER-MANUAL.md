@@ -1,24 +1,23 @@
-# TINDA POS v1.0.47 User Manual
+# TINDA POS v1.0.57 User Manual
 
-**TINDA POS v1.0.47** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.57** - Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.47**, introducing **Master Feature Restoration (v1.0.44 Full Feature Parity)**, **Decimal Kilo Checkout Fix**, **Database Schema Auto-Healing (`inventory_movements`)**, and the **Secondary Live Sales Monitor Display Screen**, alongside Store Petty Cash Out (F7), Shift Z-Read Cash Drawer Balancing, True Net Profit Reporting, Instant Hardware Barcode Auto-Capture Engine, and Cryptographic Anti-Downgrade Safeguards.
+This guide covers release **v1.0.57**, introducing the **Financial Realized Revenue Model (Utang Exclusion from Net Sales)**, **Zero-Flicker VIP Store Experience**, and **Multi-Theme Eye-Care Background Switcher**, alongside **Version Rollback & Safe Downgrade Recovery Manager**, **Permanent Hardware-Anchored VIP Licensing**, VIP E-Wallet & Cash Audit Hub, Store Petty Cash Out (F7), Shift Z-Read Cash Drawer Balancing, True Net Profit Reporting, and Instant Hardware Barcode Auto-Capture Engine.
 
-Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## What's New in v1.0.47 (Master Feature Restoration, Decimal Kilo Checkout & Schema Auto-Heal)
+## What's New in v1.0.57 (Realized Revenue Model, Zero-Flicker VIP Experience & Multi-Theme Engine)
 
-- **Complete Master Feature Restoration (v1.0.44 Parity Restored):**
-  - Fully restores all production features: Wholesale Pricing Tiers, SRP Comparison, DTI Price Catalog, Expiration Tracking & Near-Expiry Alerts, Anti-Downgrade Safeguard, Barcode Auto-Capture, and Multi-Terminal LAN Sync.
-  - Rebuilt directly from the true master codebase, eliminating all regressions.
-- **Decimal Weighable Checkout Fix:**
-  - Cashiers can now ring up and check out fractional quantities for weighable items (e.g. `1.5 kg`, `0.75 kg`, `0.25 kg`) smoothly with no validation errors.
-- **Database Schema Auto-Healing (`inventory_movements`):**
-  - Completely resolves and permanently eliminates the `table inventory_movements has no column named product_name` SqliteError.
-  - System automatically inspects and dynamically patches missing columns on startup and during stock adjustments.
-- **Secondary Live Sales Monitor Screen:**
-  - Real-time display screen accessible via `#sales-monitor` or the **"Sales Monitor"** toggle button in the Sidebar and POS screen.
-  - Provides instant sales totals, transaction counts, payment method breakdowns (Cash, GCash, Maya, Utang), and audio chimes for cashier or customer monitoring.
+- **Strict Financial Realized Revenue Model (Utang Exclusion from Net Sales):**
+  - Transactions processed on UTANG (credit) are strictly separated from realized sales. Today's Net Sales and Total Sales in the Dashboard, Sales Monitor, and TINDA POS Owner Cloud Executive accurately reflect cash and e-wallet funds collected, while unpaid store credit stands purely in Outstanding Utang and Customer Ledgers.
+- **Zero-Flicker VIP Store Experience:**
+  - Synchronous pre-hydrated license state eliminates layout shifts, button flashes, and community lock banners when navigating to E-Wallet & Audit and Settings.
+- **Multi-Theme & Eye-Care Background Switcher:**
+  - 4 tailored viewing modes (Midnight Black, Daylight White, Warm Eye-Care Sepia, Nordic Slate) with instant 1-tap switching under Settings > Store tab.
+- **Version Rollback & Safe Downgrade Manager:**
+  - Safe 1-tap recovery to previous versions (v1.0.56, v1.0.55) with automatic SQLite pre-rollback safety snapshots.
+- **Permanent Quad-Vault Hardware VIP Licensing:**
+  - Indestructible license preservation across Windows User Profile, AppData, Registry, and SQLite.
 
 
 - **1-Click Cashier Petty Cash Out Modal (`F7` Hotkey):**
