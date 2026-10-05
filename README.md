@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.56-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.58-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,47 @@
 
 <br />
 
-[⬇️ Download v1.0.56 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Setup-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Portable-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-1.0.56-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Portable-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback Engine)
+
+> **Fulfilled Merchandise Margin Integrity, Hardened VIP Anti-Tamper Protection & Direct Auto-Restart ("Diritsyo Na")**
+
+- 📈 **Restored Gross Profit & True Net Profit Margin Integrity (VIP Feedback Addressed)**:
+  - Fixed an accounting distortion where uncollected customer credit (Utang) purchases artificially crashed Gross Profit into negative numbers.
+  - Gross Profit is strictly calculated from fulfilled merchandise markup (`(Gross Sales - Refunds) - COGS`), decoupling retail margins from customer debt collection schedules.
+  - Net Profit accurately computes `Gross Profit - Operating Expenses`.
+  - Daily, weekly, and monthly sales profit curves maintain realistic, accurate retail markup trajectories.
+- 🛡️ **Hardened VIP Downgrade Protection (Anti-Tamper & Security Invariants)**:
+  - Version rollback and downgrade recovery is strictly locked behind cryptographic VIP Pro license verification across IPC and UI layers.
+  - Protects store owners from unauthorized personnel downgrading to older builds to exploit patched vulnerabilities, bypass cashier restrictions, or alter sales ledgers.
+- ⚡ **Direct Execution & Automatic System Restart ("Diritsyo Na")**:
+  - Once the target version download completes, the engine spawns the installer detached and terminates the POS application cleanly after a 1.5-second buffer.
+  - Releasing SQLite database and process locks enables NSIS to seamlessly overwrite and relaunch TINDA POS into the chosen version without requiring cashiers to manually browse folders.
+  - Auto-detects runtime flavor (Portable vs Setup) to download and launch the matching executable.
+- 📊 **Professional Live Download Progress Bar**:
+  - Live IPC stream displays an Apple-standard progress bar showing exact transfer percentage and transfer volume (`X MB / Y MB`).
+- 🌐 **100% Professional English Interface**:
+  - All color schemes (`Midnight Black`, `Daylight White`, `Warm Eye-Care`, `Nordic Slate`) and guidance notes have been permanently translated into polished, professional English.
+
+---
+
+## ✨ What's New in v1.0.57 (Financial Realized Revenue Model & Zero-Flicker VIP Store)
+
+> **Utang Exclusion from Realized Sales, Zero-Flicker Store Hydration & Multi-Theme Background Switcher**
+
+- 💵 **Financial Realized Revenue Model**:
+  - Uncollected store credit (Utang) is strictly excluded from Today's Realized Net Sales and Total Sales counters, standing purely in the Customer Credit Ledger until cash/digital payments are collected.
+  - For split payments (e.g. ₱50 Cash + ₱50 Utang), only the realized ₱50 Cash portion enters realized sales immediately.
+- ⚡ **Zero-Flicker VIP Store Experience**:
+  - Instant first-frame rendering without layout shifts, blinks, or banner flashes when opening E-Wallet & Audit or Settings tabs.
+  - Synchronous Zustand store hydration directly on app initialization.
+- 🎨 **Multi-Theme Eye-Care Engine**:
+  - 4 distinct theme environments designed for variable retail lighting conditions: Midnight Black (OLED contrast), Daylight White (bright sunlight/open storefront), Warm Eye-Care (soft sepia for night shifts), and Nordic Slate.
+
+---
 
 ## ✨ What's New in v1.0.56 (Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery)
 
@@ -342,7 +380,7 @@ TINDA POS is built with modern desktop and web technologies:
 * **Framework:** Electron & Vite
 * **Frontend:** React 19, TypeScript, Tailwind CSS, Lucide Icons, Zustand
 * **Database:** SQLite with `better-sqlite3` (WAL mode enabled)
-* **Testing:** Vitest (292/292 passing tests across 42 test suites)
+* **Testing:** Vitest (411/411 passing tests across 63 test suites)
 
 ```bash
 # Clone and run locally
@@ -355,7 +393,7 @@ npm run dev
 # Run quality & verification gates
 npm run typecheck    # TypeScript verification (0 errors)
 npm run lint         # ESLint code quality
-npm test             # Vitest test suite (292/292 passing)
+npm test             # Vitest test suite (411/411 passing)
 npm run build        # Production bundle
 ```
 
@@ -372,6 +410,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.27 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
