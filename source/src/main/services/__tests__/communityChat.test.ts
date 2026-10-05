@@ -4,6 +4,7 @@ import {
   getLiveAnnouncements,
   getCommunityMessages,
   sendCommunityMessage,
+  deleteCommunityMessage,
   isVipActive
 } from '../communityChat'
 
@@ -131,5 +132,47 @@ describe('communityChat service (Non-Blocking Global Lounge)', () => {
     expect(res.message?.is_vip).toBe(1)
     const parsed = JSON.parse(capturedBody)
     expect(parsed.is_vip).toBe(1)
+  })
+
+  it('rejects deleting message with empty id', async () => {
+    const res = await deleteCommunityMessage(db, '   ')
+    expect(res.ok).toBe(false)
+    expect(res.error).toContain('required')
+  })
+
+  it('deletes community message successfully with DELETE endpoint', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true })
+    } as unknown as Response)
+
+    const res = await deleteCommunityMessage(db, 'msg_123', 'dev_secret')
+    expect(res.ok).toBe(true)
+  })
+
+  it('falls back to POST delete when DELETE endpoint returns 404', async () => {
+    let callCount = 0
+    global.fetch = vi.fn().mockImplementation((_url, init) => {
+      callCount++
+      if (init?.method === 'DELETE') {
+        return Promise.resolve({ ok: false, status: 404 })
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ ok: true })
+      })
+    })
+
+    const res = await deleteCommunityMessage(db, 'msg_456')
+    expect(res.ok).toBe(true)
+    expect(callCount).toBe(2)
+  })
+
+  it('handles delete network failure safely and non-blockingly', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network offline'))
+
+    const res = await deleteCommunityMessage(db, 'msg_789')
+    expect(res.ok).toBe(false)
+    expect(res.error).toContain('Network offline')
   })
 })

@@ -452,6 +452,7 @@ export interface TindaApi {
     getAnnouncements: () => Promise<{ ok: boolean; announcements: import('@shared/types').LiveAnnouncement[] }>
     getMessages: (limit?: number) => Promise<{ ok: boolean; messages: import('@shared/types').CommunityChatMessage[] }>
     sendMessage: (text: string, devKey?: string) => Promise<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>
+    deleteMessage: (messageId: string, devKey?: string) => Promise<{ ok: boolean; error?: string }>
     postAnnouncement: (title: string, message: string, devKey: string) => Promise<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>
   }
   ewallet: {

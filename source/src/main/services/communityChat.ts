@@ -148,6 +148,76 @@ export async function sendCommunityMessage(
 }
 
 /**
+ * Delete a chat message from the TINDA Global Lounge
+ * Non-blocking, handles both DELETE and POST fallback with timeout
+ */
+export async function deleteCommunityMessage(
+  db: Database.Database,
+  messageId: string,
+  devKey?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const cleanId = String(messageId || '').trim()
+  if (!cleanId) {
+    return { ok: false, error: 'Message ID is required.' }
+  }
+
+  const settings = getSettings(db)
+  const apiUrl = getCloudApiUrl(db)
+  const storeId = settings.cloud_store_id || 'unregistered'
+
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'TINDA-POS/CommunityChat (Windows NT 10.0; Win64; x64)'
+    }
+    if (devKey) {
+      headers['x-dev-key'] = devKey
+    }
+
+    const url = `${apiUrl.replace(/\/+$/, '')}/api/chat/messages/${encodeURIComponent(cleanId)}`
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({
+        store_id: storeId,
+        dev_key: devKey
+      }),
+      signal: AbortSignal.timeout(5000)
+    })
+
+    if (!res.ok) {
+      // Try fallback endpoint POST /api/chat/messages/delete in case DELETE method is blocked
+      try {
+        const fallbackUrl = `${apiUrl.replace(/\/+$/, '')}/api/chat/messages/delete`
+        const fallbackRes = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            id: cleanId,
+            store_id: storeId,
+            dev_key: devKey
+          }),
+          signal: AbortSignal.timeout(5000)
+        })
+        if (fallbackRes.ok) {
+          return { ok: true }
+        }
+      } catch {
+        // Fallback ignored
+      }
+      return { ok: false, error: `Server responded with status ${res.status}` }
+    }
+
+    return { ok: true }
+  } catch (err: unknown) {
+    return {
+      ok: false,
+      error: 'Unable to delete message: ' + ((err as Error)?.message || 'Network disconnected')
+    }
+  }
+}
+
+/**
  * Post a live developer announcement
  * Requires Dev Secret.
  */

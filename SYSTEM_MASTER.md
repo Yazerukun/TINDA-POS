@@ -837,6 +837,93 @@
   - [x] **GitHub Release Published:** Release `v1.0.53` live with SHA-256 checksums at `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.53`.
   - [x] **Local Linux Runtime Updated:** `~/Applications/TindaPOS.AppImage` points to v1.0.53.
 
+---
+
+## 44. Bulletproof User Management & Modern Categorized Sidebar Navigation (v1.0.54)
+* **Problem Addressed:**
+  - Store staff frequently entered full names or usernames with varying letter case, causing false login failures.
+  - Duplicate 4-digit PIN assignment risked cashier account collision in multi-staff retail environments.
+  - Previous flat sidebar list grew excessively long as new modules (e-wallets, handbook, cloud sync) were introduced, cluttering the view for frontline cashiers.
+* **Key Architectural Implementations:**
+  - **Flexible & Case-Insensitive Auth Matching:**
+    - SQL auth queries utilize `LOWER(u.username) = LOWER(?) OR LOWER(u.full_name) = LOWER(?)` for zero-friction sign-in.
+  - **Target-Aware PIN & Collision Prevention:**
+    - Extended `loginPin(pin, targetUserId?)` to verify direct credentials against selected cashier profiles.
+    - Added unique PIN collision check in repository preventing duplicate PINs across active staff.
+  - **1-Tap Cashier Switcher Chips:**
+    - Exposed safe `auth:publicUsers` directory rendering interactive avatar chips on `Login.tsx` with auto-focus to PIN input.
+  - **Categorized Sidebar UX Hierarchy:**
+    - Structured all routes into 5 intuitive functional categories:
+      1. *Cashier & Register* (POS, Quick Monitor, Help Guide)
+      2. *Stock & Operations* (Inventory, Suppliers, Restock)
+      3. *Customers & Suki* (Customers, Utang Ledger, E-Wallet Hub)
+      4. *Records & Reports* (Transactions, Sales Reports, Audit Logs)
+      5. *System & Guide* (Handbook, Database Backup, Settings)
+    - Role-based section filtering: restricted staff roles do not see empty categories.
+    - Active emerald indicator bar and polished staff status card with 1-tap lock/logout.
+
+---
+
+## 45. Enhanced Global Community Lounge: 100% Free Nationwide Online Chat, Non-Blocking Draggable Window, Minimizable Capsule Pill, Audio Chime & Message Moderation
+* **Problem Addressed:**
+  - The Global Community Lounge in v1.0.50 used a blocking modal backdrop that locked the cashier register screen while chat was open.
+  - Merchants needed an audible alert when fellow store owners or Dev Ian posted wholesale updates or advisories.
+  - Users wanted to move or minimize the lounge to maintain visibility of sales register totals.
+  - Merchants needed the ability to delete accidental typos or remove their own messages, and the developer needed edge moderation tools.
+* **Core Architectural Principles & Guarantees:**
+  - **100% Free & Open to All Store Owners:**
+    - The Global Lounge is completely unrestricted — ALL merchants nationwide can freely read, post, and discuss retail tips.
+    - VIP Pro stores receive the exclusive animated `💎 VERIFIED VIP` badge with gold shimmering aura.
+    - Founder / Dev Ian posts with cryptographically verified `👑 DEV / OWNER` badge unlocked via edge master secret.
+  - **Dual-Tone Web Audio API Chime:**
+    - Synthesizes clean Apple-style dual-tone chimes (587.33 Hz D5 → 880 Hz A5) via native `AudioContext`.
+    - Zero external sound asset downloads, 100% offline-resilient, zero latency.
+    - Filtered alert trigger: plays ONLY on new incoming messages from external senders (never triggers on own sent messages or initial bulk load).
+    - Sound toggle button (`Volume2` / `VolumeX`) with persistent user preference in `localStorage`.
+  - **Draggable Floating Window & Minimizable Capsule Pill:**
+    - Removed blocking backdrop — cashiers can drag the chat window anywhere on screen and continue scanning barcodes and punching orders simultaneously.
+    - Direct 1:1 physical tracking with viewport boundary safety preventing the window from ever moving off-screen.
+    - Minimize button (`Minus`) collapses the chat into an ultra-compact Apple-style floating capsule pill (`w-72 h-11`) showing online pulse dot, unread message count badge, sound control, and 1-tap restore (`Maximize2`).
+    - Position memory persisted in `localStorage` (`tinda_lounge_pos`).
+  - **Self-Message Deletion & Master Moderation:**
+    - Merchants can delete their own store's messages with a discreet hover trash button (`Trash2`).
+    - Dev / Owner can delete and moderate any message across the network using the verified master secret.
+    - Optimistic instant removal from UI + local blacklist prevents poll bounce-back, paired with non-blocking IPC `community:deleteMessage` dispatching DELETE / POST fallback to Cloudflare D1 edge backend.
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **61/61 Vitest Test Suites Passing:** 401+ unit and integration tests passing, including 11/11 tests in `communityChat.test.ts`.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **Master Document Synchronized:** `SYSTEM_MASTER.md` and `GEMINI.md` fully up to date.
+
+---
+
+## 46. VIP E-Wallet Reconciliation Hub (v1.0.55): Physical Cash Drawer Zero Float Override, Dedicated Transactions Ledger, and 1-Tap Void/Delete Management
+* **Problem Addressed:**
+  - Cashiers running E-Wallet Cash In / Out ledger reported that the physical cash drawer reconciliation was locked to the total POS shift cash sales (`₱4,791.00`), causing false discrepancy/shortage alarms when the store maintains a separate E-Wallet cash pouch or starts with zero float.
+  - Users testing or mistyping GCash/Maya transactions could not easily find where to delete or void mistakes, as transaction deletion was confined to a subtle icon on the side panel rather than an accessible ledger.
+* **Core Architectural Principles & Guarantees:**
+  - **Physical Cash Drawer Zero Float & Custom Presets:**
+    - Cashiers can freely edit the Expected Cash Drawer field or use 1-tap quick action presets:
+      1. `₱0.00 (Zero Float)`: Instantly sets expected drawer cash to zero for stores auditing e-wallet cash separately from POS sales.
+      2. `Sync POS Shift (₱4,791.00)`: 1-tap resynchronization with the active shift's register cash sales if combined drawer accounting is preferred.
+      3. `E-Wallet Net Only`: Dynamically sets expected cash to the shift's cumulative net cash drawer delta (+₱ Cash In collected minus ₱ Cash Out released).
+    - Preserves user manual entries across data reloads without forced overrides.
+    - Added 1-tap `Reset All to 0` for quick denomination clearing.
+  - **Dedicated E-Wallet Transactions Ledger Tab:**
+    - Added full-width 4th navigation tab: `Transactions ({count})` alongside `Cash In / Out`, `Audit Sheet`, and `Audit History`.
+    - Live client-side search across Reference Number, Customer Name, Phone, Cashier, and Notes.
+    - 1-Tap Channel filters (`All`, `GCash`, `Maya`) and Type filters (`All`, `Cash In`, `Cash Out`).
+    - Complete audit columns: Date/Time, Cashier, Channel, Type, Principal Amount, Service Fee (Tubo), Fee Paid Via (Cash Drawer vs Wallet Deduction), Reference No, Customer Info.
+  - **Apple-Design Destructive Void Modal & Optimistic State Recalculation:**
+    - Prominent red `Void` action buttons on both recent side-feed and full transactions ledger.
+    - Sleek Cupertino modal with frosted glass backdrop, transaction details summary, and safety warning.
+    - Immediate IPC invocation to `ewallet:deleteTransaction(id)` with optimistic removal, shift summary recalculation, and drawer delta updates.
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **All Test Suites Passing:** 401+ unit and integration tests passing.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` clean.
+  - [x] **Master Documentation Synchronized:** `SYSTEM_MASTER.md` and `GEMINI.md` updated to v1.0.55.
+
+
+
 
 
 

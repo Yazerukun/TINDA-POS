@@ -1034,6 +1034,10 @@ handle('community:sendMessage', async (_e: IpcMainInvokeEvent, text: string, dev
   const { sendCommunityMessage } = require('../services/communityChat')
   return await sendCommunityMessage(db(), text, devKey)
 })
+handle('community:deleteMessage', async (_e: IpcMainInvokeEvent, messageId: string, devKey?: string) => {
+  const { deleteCommunityMessage } = require('../services/communityChat')
+  return await deleteCommunityMessage(db(), messageId, devKey)
+})
 handle('community:postAnnouncement', async (_e: IpcMainInvokeEvent, title: string, message: string, devKey: string) => {
   sessionSvc.requirePermission('settings:manage')
   const { postLiveAnnouncement } = require('../services/communityChat')

@@ -12,7 +12,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Banknote,
-  DollarSign
+  DollarSign,
+  Search,
+  Receipt,
+  RotateCcw,
+  X
 } from 'lucide-react'
 import type {
   EwalletTransactionRecord,
@@ -33,7 +37,7 @@ import { VipUpgradeModal } from '../components/VipUpgradeModal'
 export function EwalletAudit(): React.JSX.Element {
   const [isVip, setIsVip] = useState(false)
   const [vipModalOpen, setVipModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'register' | 'audit' | 'history'>('register')
+  const [activeTab, setActiveTab] = useState<'register' | 'transactions' | 'audit' | 'history'>('register')
 
   // Register Form State
   const [channel, setChannel] = useState<EwalletChannel>('GCASH')
@@ -46,6 +50,14 @@ export function EwalletAudit(): React.JSX.Element {
   const [customerPhone, setCustomerPhone] = useState('')
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Transaction Ledger Filters & Search
+  const [txSearch, setTxSearch] = useState('')
+  const [txFilterChannel, setTxFilterChannel] = useState<'ALL' | 'GCASH' | 'MAYA'>('ALL')
+  const [txFilterType, setTxFilterType] = useState<'ALL' | 'CASH_IN' | 'CASH_OUT'>('ALL')
+  const [txToDelete, setTxToDelete] = useState<EwalletTransactionRecord | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [posShiftExpectedCashStr, setPosShiftExpectedCashStr] = useState('0')
 
   // Transactions & Summary Data
   const [transactions, setTransactions] = useState<EwalletTransactionRecord[]>([])
@@ -89,7 +101,9 @@ export function EwalletAudit(): React.JSX.Element {
       try {
         const expected = await window.api.reports.cashCountExpected()
         if (expected && expected.expected_cash_c != null) {
-          setExpectedCashDrawerStr((expected.expected_cash_c / 100).toFixed(2))
+          const valStr = (expected.expected_cash_c / 100).toFixed(2)
+          setPosShiftExpectedCashStr(valStr)
+          setExpectedCashDrawerStr((prev) => (prev === '0' || prev === '' ? valStr : prev))
         }
       } catch {
         // Ignored if no shift
@@ -112,6 +126,27 @@ export function EwalletAudit(): React.JSX.Element {
       return 0
     }
   }, [denominations])
+
+  // Filtered transactions for the ledger view
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((tx) => {
+      if (txFilterChannel !== 'ALL' && tx.channel !== txFilterChannel) return false
+      if (txFilterType !== 'ALL' && tx.type !== txFilterType) return false
+      if (txSearch.trim()) {
+        const q = txSearch.toLowerCase()
+        const matchRef = tx.reference_no?.toLowerCase().includes(q)
+        const matchCust = tx.customer_name?.toLowerCase().includes(q)
+        const matchPhone = tx.customer_phone?.toLowerCase().includes(q)
+        const matchCashier = tx.cashier_name?.toLowerCase().includes(q)
+        const matchNotes = tx.notes?.toLowerCase().includes(q)
+        const matchAmt = (tx.amount_c / 100).toFixed(2).includes(q)
+        if (!matchRef && !matchCust && !matchPhone && !matchCashier && !matchNotes && !matchAmt) {
+          return false
+        }
+      }
+      return true
+    })
+  }, [transactions, txFilterChannel, txFilterType, txSearch])
 
   const expectedCashC = Math.round((parseFloat(expectedCashDrawerStr) || 0) * 100)
   const cashDifferenceC = actualCashC - expectedCashC
@@ -192,14 +227,25 @@ export function EwalletAudit(): React.JSX.Element {
     }
   }
 
-  const handleDeleteTransaction = async (id: number): Promise<void> => {
-    if (!confirm('Are you sure you want to delete/void this e-wallet entry?')) return
+  const handleDeleteTransaction = (id: number): void => {
+    const tx = transactions.find((t) => t.id === id)
+    if (tx) {
+      setTxToDelete(tx)
+    }
+  }
+
+  const confirmDeleteTransaction = async (): Promise<void> => {
+    if (!txToDelete) return
+    setIsDeleting(true)
     try {
-      await window.api.ewallet.deleteTransaction(id)
-      toast.success('Transaction removed.')
+      await window.api.ewallet.deleteTransaction(txToDelete.id)
+      toast.success('Transaction voided successfully.', 'Shift metrics and drawer balance updated.')
+      setTxToDelete(null)
       void loadData()
     } catch (err) {
       toast.error((err as Error)?.message || 'Failed to delete transaction.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -264,6 +310,18 @@ export function EwalletAudit(): React.JSX.Element {
             >
               <Smartphone className="h-3.5 w-3.5" />
               Cash In / Out
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('transactions')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'transactions'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Receipt className="h-3.5 w-3.5" />
+              Transactions ({transactions.length})
             </button>
             <button
               type="button"
@@ -611,9 +669,20 @@ export function EwalletAudit(): React.JSX.Element {
 
             {/* Recent Transaction Log */}
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Recent E-Wallet Transactions
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  Recent E-Wallet Transactions
+                </h3>
+                {transactions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('transactions')}
+                    className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition"
+                  >
+                    View All ({transactions.length}) →
+                  </button>
+                )}
+              </div>
 
               <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
                 {transactions.length === 0 ? (
@@ -647,22 +716,23 @@ export function EwalletAudit(): React.JSX.Element {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => void window.api.ewallet.printSlip(tx.id)}
-                          className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-ink-800 transition"
-                          title="Reprint Slip"
+                          className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
+                          title="Reprint Claim Slip"
                         >
                           <Printer className="h-3.5 w-3.5" />
                         </button>
                         <button
                           type="button"
-                          onClick={() => void handleDeleteTransaction(tx.id)}
-                          className="p-1.5 text-slate-500 hover:text-danger-400 rounded hover:bg-danger-500/10 transition"
-                          title="Void / Delete"
+                          onClick={() => handleDeleteTransaction(tx.id)}
+                          className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition"
+                          title="Void / Delete Transaction"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3 w-3" />
+                          <span>Void</span>
                         </button>
                       </div>
                     </div>
@@ -670,6 +740,231 @@ export function EwalletAudit(): React.JSX.Element {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Dedicated Transactions Ledger with Void/Delete & Filter */}
+      {isVip && activeTab === 'transactions' && (
+        <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink-line pb-4">
+            <div>
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-emerald-400" />
+                E-Wallet Transactions Ledger & Management
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Review complete Cash In / Out entries, search by reference or customer, reprint thermal slips, or void mistyped records.
+              </p>
+            </div>
+
+            {/* Total summary chip */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400">
+                Total Tubo Earned:{' '}
+                <strong className="text-amber-400 font-bold">
+                  +₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}
+                </strong>
+              </span>
+              <span className="rounded-full bg-ink-950 px-2.5 py-1 text-xs font-semibold text-slate-300 border border-ink-line">
+                {filteredTransactions.length} of {transactions.length} records
+              </span>
+            </div>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+              <input
+                type="text"
+                value={txSearch}
+                onChange={(e) => setTxSearch(e.target.value)}
+                placeholder="Search reference #, customer name, phone, cashier..."
+                className="w-full rounded-xl border border-ink-line bg-ink-950 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-brand-500 transition"
+              />
+              {txSearch && (
+                <button
+                  type="button"
+                  onClick={() => setTxSearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-500 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Channel Filter */}
+              <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line text-xs font-semibold">
+                {(['ALL', 'GCASH', 'MAYA'] as const).map((ch) => (
+                  <button
+                    key={ch}
+                    type="button"
+                    onClick={() => setTxFilterChannel(ch)}
+                    className={`px-2.5 py-1 rounded-md transition ${
+                      txFilterChannel === ch
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {ch === 'ALL' ? 'All Channels' : ch}
+                  </button>
+                ))}
+              </div>
+
+              {/* Type Filter */}
+              <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line text-xs font-semibold">
+                {(['ALL', 'CASH_IN', 'CASH_OUT'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTxFilterType(t)}
+                    className={`px-2.5 py-1 rounded-md transition ${
+                      txFilterType === t
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {t === 'ALL' ? 'All Types' : t === 'CASH_IN' ? 'Cash In' : 'Cash Out'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Transactions Table */}
+          <div className="overflow-x-auto rounded-xl border border-ink-line bg-ink-950/60">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-ink-line bg-ink-950 text-[11px] uppercase tracking-wider text-slate-400">
+                <tr>
+                  <th className="py-2.5 px-3">Date / Time</th>
+                  <th className="py-2.5 px-3">Cashier</th>
+                  <th className="py-2.5 px-3">Channel</th>
+                  <th className="py-2.5 px-3">Type</th>
+                  <th className="py-2.5 px-3 text-right">Principal</th>
+                  <th className="py-2.5 px-3 text-right">Tubo / Fee</th>
+                  <th className="py-2.5 px-3">Fee Paid Via</th>
+                  <th className="py-2.5 px-3">Reference No</th>
+                  <th className="py-2.5 px-3">Customer</th>
+                  <th className="py-2.5 px-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-line">
+                {filteredTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <Smartphone className="h-8 w-8 text-slate-600" />
+                        <p className="font-semibold text-slate-400">No matching e-wallet transactions found</p>
+                        <p className="text-[11px] text-slate-500">
+                          Try adjusting your search query or channel filter above.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTransactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-ink-900/60 transition">
+                      <td className="py-2.5 px-3 text-slate-300 font-mono text-[11px] whitespace-nowrap">
+                        {tx.created_at}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-300 font-medium">
+                        {tx.cashier_name || 'Cashier'}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                            tx.channel === 'GCASH'
+                              ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                              : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                          }`}
+                        >
+                          <Smartphone className="h-3 w-3" />
+                          {tx.channel}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                            tx.type === 'CASH_IN'
+                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                          }`}
+                        >
+                          {tx.type === 'CASH_IN' ? (
+                            <>
+                              <ArrowDownLeft className="h-3 w-3" /> Cash In
+                            </>
+                          ) : (
+                            <>
+                              <ArrowUpRight className="h-3 w-3" /> Cash Out
+                            </>
+                          )}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-white">
+                        ₱{(tx.amount_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-400">
+                        +₱{(tx.fee_c / 100).toFixed(2)}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-400 text-[11px]">
+                        {tx.fee_collected_via === 'WALLET' ? (
+                          <span className="text-sky-400">Wallet</span>
+                        ) : (
+                          <span className="text-emerald-400">Cash Drawer</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-[11px] text-slate-300">
+                        {tx.reference_no ? (
+                          <span className="rounded bg-ink-900 px-1.5 py-0.5 border border-ink-line">
+                            {tx.reference_no}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600">—</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-300">
+                        {tx.customer_name ? (
+                          <div>
+                            <p className="font-semibold text-white">{tx.customer_name}</p>
+                            {tx.customer_phone && (
+                              <p className="text-[10px] text-slate-500 font-mono">{tx.customer_phone}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-600">Walk-in</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void window.api.ewallet.printSlip(tx.id)}
+                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
+                            title="Reprint Thermal Claim Slip"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTransaction(tx.id)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition"
+                            title="Void / Delete Transaction"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            <span>Void</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -685,12 +980,61 @@ export function EwalletAudit(): React.JSX.Element {
                 1. Physical Cash on Hand
               </h3>
 
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-400">Expected Drawer Cash:</span>
-                  <span className="font-bold text-white">₱{(expectedCashC / 100).toFixed(2)}</span>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] text-slate-300 font-semibold">Expected Drawer Cash (₱)</label>
+                    <span className="text-[10px] text-slate-500">Drawer Target</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-500">₱</span>
+                    <input
+                      type="number"
+                      step="any"
+                      value={expectedCashDrawerStr}
+                      onChange={(e) => setExpectedCashDrawerStr(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 pl-7 pr-3 py-1.5 text-sm font-bold text-white outline-none focus:border-brand-500 transition"
+                    />
+                  </div>
+
+                  {/* Quick Action Presets */}
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpectedCashDrawerStr('0.00')}
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition"
+                      title="Set expected cash to 0 (If store has separate e-wallet cash pouch or no onhand cash)"
+                    >
+                      ₱0.00 (Zero Float)
+                    </button>
+                    {posShiftExpectedCashStr !== '0' && (
+                      <button
+                        type="button"
+                        onClick={() => setExpectedCashDrawerStr(posShiftExpectedCashStr)}
+                        className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 transition"
+                        title="Sync with current POS register cash balance"
+                      >
+                        POS Shift (₱{posShiftExpectedCashStr})
+                      </button>
+                    )}
+                    {summary?.net_cash_drawer_delta_c !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setExpectedCashDrawerStr(((summary?.net_cash_drawer_delta_c || 0) / 100).toFixed(2))}
+                        className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition"
+                        title="Set expected cash to net e-wallet impact"
+                      >
+                        E-Wallet Net ({summary?.net_cash_drawer_delta_c! >= 0 ? '+' : ''}₱{((summary?.net_cash_drawer_delta_c || 0) / 100).toFixed(2)})
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    💡 Walang ₱{posShiftExpectedCashStr} onhand? I-tap ang <span className="text-amber-400 font-semibold">&quot;₱0.00 (Zero Float)&quot;</span> o i-type ang onhand cash.
+                  </p>
                 </div>
-                <div className="flex justify-between text-xs">
+
+                <div className="flex justify-between text-xs pt-1">
                   <span className="text-slate-400">Actual Counted Cash:</span>
                   <span className="font-bold text-emerald-400">₱{(actualCashC / 100).toFixed(2)}</span>
                 </div>
@@ -712,7 +1056,18 @@ export function EwalletAudit(): React.JSX.Element {
 
               {/* Denomination Counter Collapse / List */}
               <div className="space-y-1.5 pt-2 border-t border-ink-line max-h-60 overflow-y-auto pr-1">
-                <p className="text-[10px] uppercase font-bold text-slate-500">Denomination Breakdown</p>
+                <div className="flex items-center justify-between pb-1">
+                  <p className="text-[10px] uppercase font-bold text-slate-500">Denomination Breakdown</p>
+                  <button
+                    type="button"
+                    onClick={() => setDenominations(new Array(CASH_COUNT_DENOMINATIONS.length).fill(0))}
+                    className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-rose-400 transition"
+                    title="Reset all bills and coins to 0"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Reset to 0
+                  </button>
+                </div>
                 {CASH_COUNT_DENOMINATIONS.map((d, i) => (
                   <div key={d.label + d.kind} className="flex items-center justify-between text-xs gap-2 py-0.5">
                     <span className="w-16 font-semibold text-slate-300">{d.label}</span>
@@ -983,6 +1338,80 @@ export function EwalletAudit(): React.JSX.Element {
           void loadData()
         }}
       />
+
+      {/* Apple Design Void Transaction Confirmation Modal */}
+      {txToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-rose-500/30 bg-ink-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Void E-Wallet Transaction</h3>
+                <p className="text-xs text-slate-400">Permanently delete this entry from shift records</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-ink-line bg-ink-950 p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Transaction ID:</span>
+                <span className="font-mono text-slate-300">#{txToDelete.id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Channel & Type:</span>
+                <span className="font-semibold text-white">
+                  {txToDelete.channel} · {txToDelete.type === 'CASH_IN' ? 'Cash In' : 'Cash Out'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Principal Amount:</span>
+                <span className="font-bold text-white">₱{(txToDelete.amount_c / 100).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Service Fee (Tubo):</span>
+                <span className="font-bold text-amber-400">+₱{(txToDelete.fee_c / 100).toFixed(2)}</span>
+              </div>
+              {txToDelete.reference_no && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Reference No:</span>
+                  <span className="font-mono text-slate-300">{txToDelete.reference_no}</span>
+                </div>
+              )}
+              {txToDelete.customer_name && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Customer:</span>
+                  <span className="text-slate-300">{txToDelete.customer_name}</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[11px] text-rose-300/80 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              ⚠️ Warning: This will immediately remove the transaction and update your shift totals and drawer balance.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setTxToDelete(null)}
+                className="flex-1 rounded-xl border border-ink-line bg-ink-950 py-2.5 text-xs font-semibold text-slate-300 hover:bg-ink-800 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => void confirmDeleteTransaction()}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-600/30 active:scale-95 transition disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? 'Voiding...' : 'Yes, Void & Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
