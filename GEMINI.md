@@ -21,9 +21,9 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Stable Version: **v1.0.56**
+- Current Stable Version: **v1.0.57**
 
-## Key Features in v1.0.56
+## Key Features in v1.0.57
 1. **Permanent Hardware-Anchored VIP Licensing & Multi-Vault Self-Healing Architecture (Client Feedback Addressed)**:
    - **Quad-Vault Redundant Persistence**: License is synchronously stored and self-healed across 4 vaults: `%USERPROFILE%/.tindapos/tinda_license.json`, `%APPDATA%/TINDA POS/tinda_license.json`, Windows Registry `HKCU\Software\TindaPOS\LicensePayload` (Base64), and SQLite DB `system_license_vault` (Migration 12 in `tindapos.db`).
    - **Canonical Machine ID Anchoring**: Machine ID is generated ONCE from immutable hardware attributes (Windows Cryptography `MachineGuid` + Motherboard Product/UUID) without volatile network interface or user hostname dependencies, and anchored into 4 durable storage locations (`machine.id`, registry, database).

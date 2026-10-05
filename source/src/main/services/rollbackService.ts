@@ -33,7 +33,7 @@ export class RollbackService {
    * Fetch previous stable releases that are strictly older than the currently installed version.
    */
   async getRollbackTargets(): Promise<RollbackTarget[]> {
-    let currentVersion = '1.0.56'
+    let currentVersion = '1.0.57'
     try {
       if (app && typeof app.getVersion === 'function') {
         currentVersion = app.getVersion()
@@ -56,6 +56,26 @@ export class RollbackService {
     } catch {
       // Offline fallback: provide documented stable fallback releases
       releases = [
+        {
+          version: '1.0.56',
+          tag: 'v1.0.56',
+          title: 'TINDA POS v1.0.56 — Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery',
+          publishedAt: '2026-10-05T04:55:00Z',
+          releaseNotes: 'Quad-vault redundant VIP license persistence, canonical hardware-anchoring, and pre-rollback DB snapshot.',
+          stable: true,
+          assets: [
+            {
+              name: 'TindaPOS-Setup-1.0.56.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Setup-1.0.56.exe',
+              size: 112280000
+            },
+            {
+              name: 'TindaPOS-Portable-1.0.56.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Portable-1.0.56.exe',
+              size: 112070000
+            }
+          ]
+        },
         {
           version: '1.0.55',
           tag: 'v1.0.55',
