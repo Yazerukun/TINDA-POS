@@ -1,10 +1,36 @@
-# TINDA POS v1.0.36 User Manual
+# TINDA POS v1.0.58 User Manual
 
-**TINDA POS v1.0.36** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.58** — Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.36**, introducing the **Multi-Terminal Local LAN Hub (Master & Satellite Mode)** and **Self-Hosted VPS Cloud Mirroring Architecture**, alongside the **Hands-Free Counter Camera & Zero-Click Background Scanning** (v1.0.35), **Multi-Frame Barcode Consensus Engine** (v1.0.34), **Dual-Mode Secure Phone Scanner** (v1.0.33), **Precision Barcode Checksum Engine** (v1.0.32), **In-System Store Handbook** (v1.0.31), and **Universal Hardware Barcode Scanner Engine** (v1.0.30).
+This guide covers release **v1.0.58**, introducing **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**, alongside the **Financial Realized Revenue Model**, **Zero-Flicker VIP Store Experience**, and **Multi-Theme Eye-Care Background Switcher**, **Version Rollback Recovery Manager**, and **Permanent Hardware-Anchored VIP Licensing**.
 
-Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback)
+
+- **Restored Gross Profit & True Net Profit Accounting:**
+  - Gross Profit accurately calculates markup across all fulfilled merchandise (`Gross Sales - Refunds - COGS`), ensuring credit (Utang) purchases do not artificially crash store profits. True Net Profit strictly reflects `Gross Profit - Operating Expenses`.
+- **Hardened VIP Downgrade Protection:**
+  - Version rollback is protected and cryptographically gated behind VIP Pro licenses to prevent unauthorized downgrades, counter terminal tampering, or license bypass attempts.
+- **Direct Execution & Automatic System Restart ("Diritsyo Na"):**
+  - Downgrade installers execute directly once downloaded; TINDA POS automatically saves a safety backup and cleanly relaunches into the target version without manual clicking.
+- **Professional Live Download Progress Bar:**
+  - Real-time progress bar displaying live percentage, downloaded megabytes, and total recovery package size.
+- **100% Professional English Theme Controls:**
+  - All color schemes and eye-care recommendations are presented in clear, professional English.
+
+
+- **1-Click Cashier Petty Cash Out Modal (`F7` Hotkey):**
+  - Cashiers ringing up sales can directly record cash taken from the active cash drawer (e.g. ₱50 for tube ice, ₱35 for packaging plastic bags, staff lunch, delivery fees) by clicking **"Petty Cash (F7)"** or pressing `F7`.
+  - Automatically records the disbursement under the active cashier shift with category tags, custom notes, and Web Audio chime confirmation.
+- **Accurate Cash Drawer Reconciliation in Z-Read:**
+  - Shift reconciliation automatically incorporates recorded cash disbursements into expected cash calculations:
+    $$\text{Expected Cash} = \text{Opening Float} + \text{Cash Sales} + \text{Utang Repayments} - \text{Cash Refunds} - \text{Cash Expenses}$$
+  - Eliminates false cash drawer shortages and unfair cashier blame caused by unrecorded store expenses.
+- **True Net Profit Intelligence (Dashboard & Reports):**
+  - Upgraded Dashboard and Reports to compute and display **True Net Profit** (`Gross Profit - Operating Expenses`) alongside Gross Margin and Operating Expenses, providing store owners with 100% financial clarity.
+- **Strict Non-Destructive Invariant & 100% VIP Pro Preservation:**
+  - All existing user databases (`tindapos.db`), products, sales history, customer credit (utang) ledgers, and VIP Pro machine licenses (`tinda_license.json`) are permanently preserved and carry forward with zero data loss.
 
 ## What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)
 
