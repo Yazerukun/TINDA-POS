@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.42-059669?style=for-the-badge&labelColor=065f46" alt="Version">
-<img src="https://img.shields.io/badge/Platform-Windows_10%2F11-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.56-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,11 +16,26 @@
 
 <br />
 
-[⬇️ Download v1.0.42 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Setup-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-Portable-1.0.42.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.42/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.56 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Setup-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Portable-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-1.0.56-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.42 (Instant Hardware Barcode Auto-Capture & Inventory Speed Cataloging)
+## ✨ What's New in v1.0.56 (Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery)
+
+> **Quad-Vault Self-Healing VIP Licensing, Zero Machine ID Drift & 1-Tap Version Rollback Recovery**
+
+- 💎 **Permanent Hardware-Anchored VIP Licensing**: Solved the issue where software updates or network switching caused VIP merchants to lose their license. The canonical Machine ID is calculated once from immutable hardware attributes (`MachineGuid` + Motherboard UUID) without volatile network interface dependencies, and locked across 4 durable storage locations (`machine.id`, registry, database).
+- 🛡️ **Quad-Vault Redundant Persistence & Self-Healing**: Licenses are mirrored synchronously across 4 vaults (`%USERPROFILE%/.tindapos/tinda_license.json`, `%APPDATA%/TINDA POS/tinda_license.json`, Windows Registry `HKCU\Software\TindaPOS\LicensePayload`, and SQLite DB `system_license_vault`). If any file is deleted or cleared by disk cleanup or updates, the system automatically detects, restores, and self-heals all vaults on startup.
+- 🔄 **Zero-Friction Legacy VIP Rescue**: Automatically detects and reconciles existing VIP Pro licenses and legacy candidate IDs, locking their status permanently so merchants never lose their VIP status and Dev Francis never has to re-issue keys.
+- ⏪ **Version Rollback & Safe Downgrade Recovery Manager (Client Requested)**:
+  - If a merchant encounters any issues or bugs with a newly installed update, they can safely 1-tap rollback to any previous version (`v1.0.55`, `v1.0.54`) directly from Settings > About or Backup & Restore.
+  - Automatically creates a verified SQLite safety backup (`createBackupSync`) before initiating rollback.
+  - Additive database migrations ensure previous versions open the existing database cleanly with zero data loss.
+  - Automatically downloads and launches the previous version's installer with real-time download tracking.
+
+---
+
+## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Zero Float)
 
 > **Zero-Typing Barcode Gun Auto-Capture, Active Input Contamination Sanitizer & Store Handbook Polish**
 

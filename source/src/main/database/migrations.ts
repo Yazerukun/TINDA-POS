@@ -640,6 +640,23 @@ CREATE TABLE IF NOT EXISTS ewallet_audits (
 
 CREATE INDEX IF NOT EXISTS idx_ewallet_audits_date ON ewallet_audits(business_date);
 `
+  },
+  {
+    version: 12,
+    name: 'system_license_vault',
+    sql: `
+CREATE TABLE IF NOT EXISTS system_license_vault (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  machine_id TEXT NOT NULL,
+  license_key TEXT,
+  customer_name TEXT,
+  tier TEXT NOT NULL DEFAULT 'COMMUNITY',
+  is_vip INTEGER NOT NULL DEFAULT 0,
+  activated_at TEXT,
+  tamper_proof_hash TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+`
   }
 ]
 

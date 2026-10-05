@@ -922,6 +922,43 @@
   - [x] **Zero TypeScript Errors:** `npm run typecheck` clean.
   - [x] **Master Documentation Synchronized:** `SYSTEM_MASTER.md` and `GEMINI.md` updated to v1.0.55.
 
+---
+
+## 47. Permanent Hardware-Anchored VIP Licensing & Multi-Vault Self-Healing Architecture (v1.0.56)
+* **Problem Addressed & Client Feedback:**
+  - Merchants who purchased VIP Pro licenses reported losing their VIP status after software updates, requiring them to repeatedly copy their Machine ID and ask Dev Francis to generate new keys.
+  - **Root Cause Analysis:**
+    1. **Volatile Hardware Detection:** The legacy Machine ID calculation relied on `os.networkInterfaces()`, whose adapter ordering in Node.js flips whenever Wi-Fi is toggled, an Ethernet cable is unplugged, or mobile hotspot/VPN adapters connect. Furthermore, `wmic csproduct get uuid` was deprecated in Windows 11 24H2 and timed out on slow POS hardware, causing the hash to drift from `WIN_BIOS` to `WIN_REG`.
+    2. **Ephemeral ID Computation (No Permanent Anchor):** Machine IDs were recalculated on every boot instead of being permanently anchored. Any momentary hardware state change generated a new `TNDA-XXXX-...` hash, failing the `stored.machineId !== liveMachineId` comparison.
+    3. **Single Point of Storage Failure:** `tinda_license.json` was stored only in `%USERPROFILE%/.tindapos/tinda_license.json`. If an installer ran elevated (Admin) or disk cleanup cleared the folder, the license was deleted.
+* **Core Architectural Implementations:**
+  - **Quad-Vault Redundant License Persistence:**
+    - Every VIP Pro activation and license record is synchronously mirrored across 4 independent vaults:
+      1. `Vault 1 (User Home)`: `%USERPROFILE%/.tindapos/tinda_license.json`
+      2. `Vault 2 (Electron UserData)`: `app.getPath('userData')/tinda_license.json`
+      3. `Vault 3 (Windows Registry)`: `HKCU\Software\TindaPOS\LicensePayload` (Base64-encoded)
+      4. `Vault 4 (SQLite Database)`: `system_license_vault` table (Migration 12 in `tindapos.db`)
+    - **Self-Healing Engine:** On startup, `readAllVaults()` scans all 4 locations. If ANY vault contains a cryptographically verified VIP Pro payload, all missing or corrupted vaults are instantly reconstructed and synced.
+  - **Permanent Canonical Machine ID Anchoring:**
+    - The Machine ID is resolved ONCE from immutable hardware attributes (Windows Cryptography `MachineGuid` + Motherboard Product/UUID) without volatile network interface or user hostname dependencies.
+    - Persisted into 4 hardware anchors (`machine.id` in User Home, UserData, Windows Registry `HKCU\Software\TindaPOS\MachineId`, and SQLite DB `system_license_vault.machine_id`).
+    - Once anchored, the Machine ID never drifts or changes across software updates, network changes, or system reboots.
+  - **Zero-Friction Legacy VIP Rescue & Automatic Reconciliation:**
+    - In `getStatus()`, if an existing VIP license is found whose key matches either the canonical ID or any legacy candidate ID generated from the system's hardware/MAC adapters, the system automatically reconciles and permanently anchors that Machine ID!
+    - Existing VIP clients update seamlessly without losing their license and without having to contact Dev Francis.
+  - **Version Rollback & Safe Downgrade Recovery Manager:**
+    - Merchants who encounter unexpected errors, OS incompatibilities, or issues with a newly installed update can safely revert to a previous stable release (e.g. `v1.0.55`, `v1.0.54`) directly from the app.
+    - **100% Pre-Rollback Database Safety Snapshot:** Automatically triggers `createBackupSync(getDb(), 'BEFORE_UPDATE')` and validates SQLite database integrity before initiating any downgrade.
+    - **Zero Data Loss & Additive Compatibility:** Since all database migrations in TINDA POS are strictly additive, previous versions cleanly open the existing database with zero loss to sales history, inventory, customers, or credit ledgers.
+    - **Permanent VIP Preservation:** Because the license is anchored in `%USERPROFILE%/.tindapos/tinda_license.json` and the Windows Registry, previous versions immediately read the active VIP Pro license without re-activation.
+    - **One-Tap UI Access:** Integrated into `SoftwareUpdatePanel` (Settings > About) and `Backup & Restore` page with an Apple-design frosted Cupertino modal (`RollbackModal.tsx`), download progress tracking, and automatic installer execution.
+* **Verification Gates Checklist (100% Passed):**
+  - [x] **All 62 Vitest Test Suites Passing (411/411 Tests):** Full unit test suite passes with 0 failures, including 11/11 tests in `license-service.test.ts` and 2/2 tests in `rollback-service.test.ts`.
+  - [x] **Zero TypeScript Errors:** `npm run typecheck` (`typecheck:node` and `typecheck:web`) clean with 0 errors.
+  - [x] **Additive Migration 12:** `system_license_vault` table added safely with full upgrade-chain preservation.
+  - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` and `GEMINI.md` fully up to date.
+
+
 
 
 

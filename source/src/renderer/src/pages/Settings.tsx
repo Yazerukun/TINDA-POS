@@ -45,6 +45,7 @@ import { NetworkSettingsTab } from '../components/NetworkSettingsTab'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { VipUpgradeBanner } from '../components/VipUpgradeBanner'
 import { LegalModal, type LegalTab } from '../components/LegalModal'
+import { RollbackModal } from '../components/update/RollbackModal'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'CLOUD' | 'VIP' | 'ABOUT'
 
@@ -736,6 +737,7 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
   const { event, check, download, dismiss } = useUpdate()
   const [busy, setBusy] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
+  const [rollbackOpen, setRollbackOpen] = useState(false)
   if (!event) return null
 
   const installed = event.installedVersion
@@ -746,7 +748,7 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
   return (
     <div className="card p-5">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 text-sm font-bold text-white"><Download className="h-4 w-4 text-brand-400" /> Software Update</h3>
+        <h3 className="flex items-center gap-2 text-sm font-bold text-white"><Download className="h-4 w-4 text-brand-400" /> Software Update &amp; Recovery</h3>
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${event.status === 'ERROR' || event.status === 'OFFLINE' || event.status === 'UNABLE_TO_CHECK' ? 'bg-red-500/15 text-red-300' : event.status === 'CHECKING' || event.status === 'DOWNLOADING' ? 'bg-brand-500/15 text-brand-300' : 'bg-emerald-500/15 text-emerald-300'}`}>{label}</span>
       </div>
       <div className="space-y-1 text-sm text-slate-300">
@@ -788,6 +790,14 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
         {event.available && (
           <button onClick={() => setShowNotes((v) => !v)} className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs"><Sparkles className="h-3.5 w-3.5" /> {showNotes ? 'Hide What\'s New' : 'What\'s New'}</button>
         )}
+        <button
+          onClick={() => setRollbackOpen(true)}
+          className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-300 border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10"
+          title="Safely downgrade or restore a previous stable version with automatic database backup"
+        >
+          <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+          Version Rollback
+        </button>
       </div>
       {showNotes && event.available && (
         <div className="mt-3 max-h-44 overflow-y-auto rounded-lg bg-ink-900/70 p-3 text-xs leading-relaxed text-slate-300">
@@ -795,6 +805,12 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
           <pre className="whitespace-pre-wrap font-sans">{event.available.releaseNotes}</pre>
         </div>
       )}
+
+      <RollbackModal
+        open={rollbackOpen}
+        onClose={() => setRollbackOpen(false)}
+        currentVersion={installed}
+      />
     </div>
   )
 }

@@ -41,6 +41,7 @@ import * as priceRefRepo from '../repositories/priceReferences'
 import * as priceRefSvc from '../services/priceReferenceService'
 import * as lanHubSvc from '../services/lanHubService'
 import { licenseService } from '../services/licenseService'
+import { rollbackService } from '../services/rollbackService'
 
 // IPC handlers have differing concrete signatures; the router erases them so
 // any handler can be registered. `any` is intentional here (variadic dispatch).
@@ -888,6 +889,13 @@ handle('update:check', (_e, manual: boolean) => getUpdateService().check({ manua
 handle('update:download', () => getUpdateService().download())
 handle('update:install', () => getUpdateService().install())
 handle('update:dismiss', () => getUpdateService().dismiss())
+
+// ---- Rollback & Version Recovery ----
+handle('rollback:getTargets', () => rollbackService.getRollbackTargets())
+handle('rollback:execute', async (_e: IpcMainInvokeEvent, version: string) => {
+  sessionSvc.requirePermission('settings:manage')
+  return await rollbackService.executeRollback(version)
+})
 
 // ---- Audit ----
 handle('audit:list', (_e: IpcMainInvokeEvent, opts?: unknown) => {

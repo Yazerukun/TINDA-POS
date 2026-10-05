@@ -7,11 +7,13 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
+import { RollbackModal } from '../components/update/RollbackModal'
 
 export function Backup(): React.JSX.Element {
   const [rows, setRows] = useState<BackupInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [confirm, setConfirm] = useState<BackupInfo | null>(null)
+  const [rollbackOpen, setRollbackOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [settings, setSettings] = useState<StoreSettings | null>(null)
 
@@ -72,6 +74,9 @@ export function Backup(): React.JSX.Element {
           <div className="flex items-center gap-2">
             <button onClick={() => useGuide.getState().openGuide('backup')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200">
               <HelpCircle className="h-4 w-4 text-amber-400" /> Backup Guide
+            </button>
+            <button onClick={() => setRollbackOpen(true)} className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 border border-amber-500/20" title="Safely downgrade or restore a previous version of TINDA POS">
+              <RotateCcw className="h-3.5 w-3.5 text-amber-400" /> Version Rollback
             </button>
             <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
           </div>
@@ -154,6 +159,12 @@ export function Backup(): React.JSX.Element {
           <p className="text-sm text-amber-400">Restoring will overwrite current data with the backup from {shortDateTime(confirm.created_at)}. A safety backup will be made first, then TINDA POS will restart automatically.</p>
         </Modal>
       )}
+
+      <RollbackModal
+        open={rollbackOpen}
+        onClose={() => setRollbackOpen(false)}
+        currentVersion="1.0.56"
+      />
     </div>
   )
 }

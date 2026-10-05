@@ -131,4 +131,48 @@ describe('LicenseService — Hardware-Locked Machine ID & VIP Pro Activation', (
     expect(licenseSvc.getStatus().isVip).toBe(false)
     expect(licenseSvc.getStatus().tier).toBe('COMMUNITY')
   })
+
+  it('persists Machine ID to anchor file and reuses it across new instances', () => {
+    const originalId = licenseSvc.getMachineId()
+    const anchorPath = path.join(tmpDir, 'machine.id')
+    expect(fs.existsSync(anchorPath)).toBe(true)
+    expect(fs.readFileSync(anchorPath, 'utf8').trim()).toBe(originalId)
+
+    // Create a new instance pointing to the same directory
+    const newSvc = new LicenseService(testLicensePath)
+    expect(newSvc.getMachineId()).toBe(originalId)
+  })
+
+  it('self-heals and retains VIP status across new LicenseService instances', () => {
+    const machineId = licenseSvc.getMachineId()
+    const validKey = licenseSvc.generateKeyForMachine(machineId, 'VIP_PRO')
+    licenseSvc.activate(validKey, 'Permanent Suki Store')
+
+    expect(licenseSvc.getStatus().isVip).toBe(true)
+
+    // Simulate app update / process restart with a fresh LicenseService instance
+    const restartedSvc = new LicenseService(testLicensePath)
+    const restartedStatus = restartedSvc.getStatus()
+
+    expect(restartedStatus.isVip).toBe(true)
+    expect(restartedStatus.tier).toBe('VIP_PRO')
+    expect(restartedStatus.licenseKey).toBe(validKey)
+    expect(restartedStatus.customerName).toBe('Permanent Suki Store')
+    expect(restartedStatus.machineId).toBe(machineId)
+  })
+
+  it('reconciles and locks legacy candidate Machine IDs when activated with a legacy key', () => {
+    const legacyCandidates = licenseSvc.computeLegacyCandidateMachineIds()
+    if (legacyCandidates.length > 0 && legacyCandidates[0]) {
+      const targetLegacyId: string = legacyCandidates[0]
+      const legacyKey = licenseSvc.generateKeyForMachine(targetLegacyId, 'VIP_PRO')
+
+      const result = licenseSvc.activate(legacyKey, 'Legacy Migrated Client')
+      expect(result.ok).toBe(true)
+      expect(result.status.isVip).toBe(true)
+      expect(result.status.machineId).toBe(targetLegacyId)
+      expect(licenseSvc.getMachineId()).toBe(targetLegacyId)
+    }
+  })
 })
+

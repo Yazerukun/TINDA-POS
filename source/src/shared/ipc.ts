@@ -162,6 +162,25 @@ export interface TindaApi {
     onEvent: (cb: (event: import('./update').UpdateStatusEvent) => void) => () => void
   }
 
+  rollback: {
+    getTargets: () => Promise<Array<{
+      version: string
+      tag: string
+      title: string
+      publishedAt: string
+      releaseNotes: string
+      assetName: string
+      assetUrl: string
+      assetSize: number
+    }>>
+    execute: (version: string) => Promise<{
+      ok: boolean
+      message: string
+      backupPath: string
+      installerPath: string
+    }>
+  }
+
   auth: {
     status: () => Promise<SessionUser | null>
     login: (username: string, password: string) => Promise<LoginResult>

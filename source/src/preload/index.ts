@@ -52,6 +52,10 @@ const api: TindaApi = {
       }
     }
   },
+  rollback: {
+    getTargets: () => invoke<import('../main/services/rollbackService').RollbackTarget[]>('rollback:getTargets'),
+    execute: (version: string) => invoke<{ ok: boolean; message: string; backupPath: string; installerPath: string }>('rollback:execute', version)
+  },
   auth: {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),
     login: (u, p) => invoke<import('@shared/ipc').LoginResult>('auth:login', u, p),
