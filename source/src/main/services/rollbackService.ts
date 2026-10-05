@@ -9,6 +9,8 @@ import { createBackupSync, validateBackupDatabase } from '../repositories/backup
 import { getDb } from '../database/connection'
 import { consumeWithIdleTimeout } from './updateDownload'
 
+import pkg from '../../../package.json'
+
 export interface RollbackTarget {
   version: string
   tag: string
@@ -34,10 +36,11 @@ export class RollbackService {
    * Fetch previous stable releases that are strictly older than the currently installed version.
    */
   async getRollbackTargets(): Promise<RollbackTarget[]> {
-    let currentVersion = '1.0.58'
+    let currentVersion = pkg.version || '1.0.59'
     try {
       if (app && typeof app.getVersion === 'function') {
-        currentVersion = app.getVersion()
+        const v = app.getVersion()
+        if (v) currentVersion = v
       }
     } catch {}
 
@@ -57,6 +60,26 @@ export class RollbackService {
     } catch {
       // Offline fallback: provide documented stable fallback releases
       releases = [
+        {
+          version: '1.0.58',
+          tag: 'v1.0.58',
+          title: 'TINDA POS v1.0.58 — Profit Margins Restoration & Automated VIP Rollback Engine',
+          publishedAt: '2026-10-05T12:50:00Z',
+          releaseNotes: 'Restored Gross Profit accounting, hardened VIP downgrade protection, direct auto-restart, and live download progress.',
+          stable: true,
+          assets: [
+            {
+              name: 'TindaPOS-Setup-1.0.58.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe',
+              size: 112504411
+            },
+            {
+              name: 'TindaPOS-Portable-1.0.58.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Portable-1.0.58.exe',
+              size: 112274440
+            }
+          ]
+        },
         {
           version: '1.0.57',
           tag: 'v1.0.57',

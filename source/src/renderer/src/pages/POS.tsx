@@ -26,7 +26,9 @@ import {
   Tag,
   Edit3,
   KeyRound,
-  Landmark
+  Landmark,
+  LayoutList,
+  LayoutGrid
 } from 'lucide-react'
 import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
@@ -297,6 +299,31 @@ export function POS(): React.JSX.Element {
     }
   }
 
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>(() => {
+    return (localStorage.getItem('tinda_pos_view_mode') as 'list' | 'grid') || 'list'
+  })
+
+  const setAndSaveViewMode = (mode: 'list' | 'grid') => {
+    setViewMode(mode)
+    localStorage.setItem('tinda_pos_view_mode', mode)
+  }
+
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setSelectedRowIndex(products.length > 0 ? 0 : -1)
+  }, [products])
+
+  useEffect(() => {
+    if (selectedRowIndex >= 0 && viewMode === 'list' && tableContainerRef.current) {
+      const rowEl = tableContainerRef.current.querySelector(`[data-row-index="${selectedRowIndex}"]`) as HTMLElement | null
+      if (rowEl) {
+        rowEl.scrollIntoView({ block: 'nearest' })
+      }
+    }
+  }, [selectedRowIndex, viewMode])
+
   const [lanStatus, setLanStatus] = useState<import('@shared/types').LanStatus | null>(null)
   useEffect(() => {
     void window.api.lan?.getStatus().then(setLanStatus).catch(() => {})
@@ -513,6 +540,37 @@ export function POS(): React.JSX.Element {
           return
         }
       }
+      if (e.key === 'ArrowDown') {
+        const tag = (document.activeElement?.tagName || '').toLowerCase()
+        if (tag === 'textarea') return
+        e.preventDefault()
+        setSelectedRowIndex((prev) => (products.length > 0 ? Math.min(prev + 1, products.length - 1) : -1))
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        const tag = (document.activeElement?.tagName || '').toLowerCase()
+        if (tag === 'textarea') return
+        e.preventDefault()
+        setSelectedRowIndex((prev) => (products.length > 0 ? Math.max(prev - 1, 0) : -1))
+        return
+      }
+      if (e.key === 'Enter') {
+        const activeTag = (document.activeElement?.tagName || '').toLowerCase()
+        if (activeTag !== 'input' && activeTag !== 'textarea') {
+          if (selectedRowIndex >= 0 && selectedRowIndex < products.length) {
+            const p = products[selectedRowIndex]
+            if (p) {
+              e.preventDefault()
+              if (saleStock(p) > 0) {
+                usePosCart.getState().add(p)
+                warnIfNearExpiry(p)
+              } else {
+                toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+              }
+            }
+          }
+        }
+      }
       if (e.key === 'Escape') {
         if (categoryMenuOpen) {
           setCategoryMenuOpen(false)
@@ -527,7 +585,7 @@ export function POS(): React.JSX.Element {
     }
     window.addEventListener('keydown', handlePosHotkeys)
     return () => window.removeEventListener('keydown', handlePosHotkeys)
-  }, [categoryMenuOpen, q, catFilter])
+  }, [categoryMenuOpen, q, catFilter, products, selectedRowIndex])
 
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
@@ -546,9 +604,28 @@ export function POS(): React.JSX.Element {
               value={q}
               onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && q.trim()) {
+                if (e.key === 'Enter') {
+                  if (q.trim()) {
+                    e.preventDefault()
+                    void handleScan(q.trim())
+                  } else if (selectedRowIndex >= 0 && selectedRowIndex < products.length) {
+                    const p = products[selectedRowIndex]
+                    if (p) {
+                      e.preventDefault()
+                      if (saleStock(p) > 0) {
+                        usePosCart.getState().add(p)
+                        warnIfNearExpiry(p)
+                      } else {
+                        toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                      }
+                    }
+                  }
+                } else if (e.key === 'ArrowDown') {
                   e.preventDefault()
-                  void handleScan(q.trim())
+                  setSelectedRowIndex((prev) => (products.length > 0 ? Math.min(prev + 1, products.length - 1) : -1))
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  setSelectedRowIndex((prev) => (products.length > 0 ? Math.max(prev - 1, 0) : -1))
                 }
               }}
               placeholder="Search product by name or barcode… (F1 or /)"
@@ -595,6 +672,36 @@ export function POS(): React.JSX.Element {
                 {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
               </div>
             )}
+          </div>
+
+          {/* View Mode Toggle: List vs Grid */}
+          <div className="flex items-center rounded-lg border border-ink-line bg-ink-850 p-0.5 shrink-0" role="group" aria-label="Catalog view mode">
+            <button
+              type="button"
+              onClick={() => setAndSaveViewMode('list')}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-semibold transition-all ${
+                viewMode === 'list'
+                  ? 'bg-brand-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Listing Table View (Dense Professional)"
+            >
+              <LayoutList className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAndSaveViewMode('grid')}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-semibold transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-brand-500 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Card Grid View (Visual Tiles)"
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <div
@@ -730,71 +837,291 @@ export function POS(): React.JSX.Element {
           </div>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
-        <div className="grid min-h-0 flex-1 auto-rows-[185px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
-          {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
-          {!loading && products.length === 0 && (
-            <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
-          )}
-          {!loading && products.map((p) => {
-            const cartItem = cartItems.find(item => item.product_id === p.id)
-            const stock = saleStock(p)
-            const available = availableBase(stock, cartItem)
-            const blocked = p.stock - stock
-            const low = available > 0 && available <= p.low_stock_threshold
-            const out = available <= 0
-            return (
-              <button
-                key={p.id}
-                onClick={() => {
-                  if (out) {
-                    toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`)
-                  } else {
-                    usePosCart.getState().add(p)
-                    warnIfNearExpiry(p)
-                  }
-                }}
-                aria-disabled={out}
-                className="card group flex h-[185px] min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
-              >
-                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                  <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
-                  <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
-                    {blocked > 0 ? `Sellable: ${formatQuantity(stock)}` : cartItem ? `Available: ${formatQuantity(available)} / ${formatQuantity(stock)}` : `Stock: ${formatQuantity(stock)}`} {p.base_unit}
-                  </span>
+
+        {viewMode === 'list' ? (
+          /* High-Density Enterprise Listing Table */
+          <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-ink-line bg-ink-900/60 overflow-hidden shadow-sm">
+            <div ref={tableContainerRef} className="flex-1 min-h-0 overflow-auto">
+              <div className="min-w-[680px]">
+                {/* Table Header */}
+                <div className="sticky top-0 z-10 grid grid-cols-[minmax(240px,2fr)_120px_130px_120px_140px] items-center gap-3 border-b border-ink-line bg-ink-850 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 select-none shadow-sm">
+                  <div>Product / SKU / Barcode</div>
+                  <div>Category</div>
+                  <div>Stock Level</div>
+                  <div className="text-right">Price / Tier</div>
+                  <div className="text-center">Cart / Action</div>
                 </div>
-                <div className="flex items-start gap-2.5 min-w-0">
-                  <ProductImage src={p.image_path} alt={p.name} className="h-10 w-10 rounded-md shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 break-words text-xs sm:text-sm font-semibold leading-snug text-white" title={p.name}>{p.name}</p>
-                    {p.description && (
-                      <p className="line-clamp-2 break-words text-[11px] text-slate-400 mt-0.5" title={p.description}>{p.description}</p>
-                    )}
-                    {blocked > 0 && <p className="truncate text-xs text-red-400 mt-0.5">{blocked} expired / undated</p>}
-                  </div>
+
+                {/* Table Body */}
+                <div className="divide-y divide-ink-line/50">
+                  {loading && Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-4 py-3 animate-pulse">
+                      <div className="h-9 w-9 rounded-lg bg-ink-800 shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-4 w-44 rounded bg-ink-800" />
+                        <div className="h-3 w-28 rounded bg-ink-800" />
+                      </div>
+                      <div className="h-5 w-20 rounded bg-ink-800" />
+                      <div className="h-5 w-24 rounded bg-ink-800" />
+                    </div>
+                  ))}
+
+                  {!loading && products.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500">
+                      <Search className="h-8 w-8 text-slate-600 mb-2" />
+                      <p className="text-sm font-medium text-slate-300">No products found</p>
+                      <p className="text-xs text-slate-500 mt-1">Try searching by product name, SKU, or scanning a barcode.</p>
+                    </div>
+                  )}
+
+                  {!loading && products.map((p, idx) => {
+                    const cartItem = cartItems.find((item) => item.product_id === p.id)
+                    const stock = saleStock(p)
+                    const available = availableBase(stock, cartItem)
+                    const blocked = p.stock - stock
+                    const low = available > 0 && available <= p.low_stock_threshold
+                    const out = available <= 0
+                    const isSelected = selectedRowIndex === idx
+                    const expStatus = productExpirationStatus(p)
+                    const isNearExpiry = expStatus === 'SOON' || expStatus === 'NEAR'
+                    const categoryName = categories.find((c) => c.id === p.category_id)?.name || 'General'
+
+                    return (
+                      <div
+                        key={p.id}
+                        data-row-index={idx}
+                        onClick={() => {
+                          if (out) {
+                            toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`)
+                          } else {
+                            usePosCart.getState().add(p)
+                            warnIfNearExpiry(p)
+                          }
+                        }}
+                        className={`grid grid-cols-[minmax(240px,2fr)_120px_130px_120px_140px] items-center gap-3 px-4 py-2.5 transition-colors cursor-pointer select-none ${
+                          out
+                            ? 'opacity-40 bg-ink-950/40 hover:bg-ink-950/60'
+                            : isSelected
+                            ? 'bg-brand-500/15 border-l-4 border-l-brand-400'
+                            : 'hover:bg-ink-800/80 active:bg-ink-700/80'
+                        }`}
+                      >
+                        {/* Column 1: Product Thumbnail, Name, SKU, Barcode */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <ProductImage
+                            src={p.image_path}
+                            alt={p.name}
+                            className="h-9 w-9 rounded-lg border border-ink-line/80 object-cover shrink-0 bg-ink-800"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate text-sm font-semibold text-white group-hover:text-brand-300" title={p.name}>
+                                {p.name}
+                              </span>
+                              {cartItem && (
+                                <span className="flex items-center gap-1 rounded-full bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300 border border-brand-500/30 shrink-0">
+                                  <ShoppingCart className="h-2.5 w-2.5" />
+                                  {cartItem.qty}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                              <span className="font-mono text-brand-400/90 font-medium text-[11px]">{p.sku}</span>
+                              {p.barcode && (
+                                <>
+                                  <span className="text-slate-600">•</span>
+                                  <span className="font-mono text-slate-400 text-[11px] truncate">{p.barcode}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Column 2: Category */}
+                        <div className="truncate text-xs text-slate-300">
+                          <span className="inline-block max-w-full truncate rounded-md bg-ink-800/90 px-2 py-1 border border-ink-line/60 font-medium text-slate-300">
+                            {categoryName}
+                          </span>
+                        </div>
+
+                        {/* Column 3: Stock Level & Expiry */}
+                        <div className="flex flex-col text-xs min-w-0">
+                          <div className="flex items-center gap-1.5 font-medium">
+                            <span className={`h-2 w-2 rounded-full shrink-0 ${out ? 'bg-red-400' : low ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+                            <span className={`font-semibold ${out ? 'text-red-400' : low ? 'text-amber-300' : 'text-slate-200'}`}>
+                              {blocked > 0
+                                ? `${formatQuantity(stock)} ${p.base_unit}`
+                                : cartItem
+                                ? `${formatQuantity(available)} / ${formatQuantity(stock)} ${p.base_unit}`
+                                : `${formatQuantity(stock)} ${p.base_unit}`}
+                            </span>
+                          </div>
+                          {out ? (
+                            <span className="text-[10px] text-red-400/80 font-medium mt-0.5">Out of Stock</span>
+                          ) : low ? (
+                            <span className="text-[10px] text-amber-400/90 font-medium mt-0.5">Low Stock Alert</span>
+                          ) : isNearExpiry ? (
+                            <span className="text-[10px] text-amber-300 font-medium mt-0.5">⚠️ Near Expiry</span>
+                          ) : blocked > 0 ? (
+                            <span className="text-[10px] text-red-400 font-medium mt-0.5">{blocked} blocked</span>
+                          ) : (
+                            <span className="text-[10px] text-slate-500 mt-0.5">Available</span>
+                          )}
+                        </div>
+
+                        {/* Column 4: Price & Wholesale / SRP */}
+                        <div className="flex flex-col items-end text-right min-w-0">
+                          <span className="text-base font-bold text-brand-400">
+                            {money(p.default_price_c)}
+                          </span>
+                          {p.wholesale_price_c != null && p.wholesale_min_qty != null ? (
+                            <span className="text-[10px] font-semibold text-emerald-400" title={`Wholesale price for ${p.wholesale_min_qty}+ units`}>
+                              WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
+                            </span>
+                          ) : p.srp_c != null ? (
+                            <span className="text-[10px] text-slate-400" title="Suggested Retail Price">
+                              SRP: {money(p.srp_c)}
+                            </span>
+                          ) : priceRefs[p.id] !== undefined ? (
+                            <span className="text-[10px] text-brand-400/70" title="Market Reference Price">
+                              Ref: {money(priceRefs[p.id]!)}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {/* Column 5: Action / Quick Stepper */}
+                        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          {cartItem ? (
+                            <div className="flex items-center gap-1 rounded-lg border border-brand-500/40 bg-ink-950 p-0.5 shadow-sm">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (cartItem.qty > 1) {
+                                    usePosCart.getState().setQty(p.id, cartItem.qty - 1)
+                                  } else {
+                                    usePosCart.getState().remove(p.id)
+                                  }
+                                }}
+                                className="flex h-7 w-7 items-center justify-center rounded-md bg-ink-800 text-slate-300 hover:bg-ink-700 hover:text-white transition-colors"
+                                title="Decrease Quantity"
+                              >
+                                <Minus className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="min-w-7 text-center font-bold text-xs text-white">
+                                {cartItem.qty}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={available <= 0}
+                                onClick={() => {
+                                  if (available > 0) {
+                                    usePosCart.getState().add(p)
+                                  } else {
+                                    toastError('Out of stock', `Cannot exceed available stock (${stock} ${p.base_unit}).`)
+                                  }
+                                }}
+                                className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-500 text-slate-950 hover:bg-brand-400 font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Increase Quantity"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={out}
+                              onClick={() => {
+                                if (!out) {
+                                  usePosCart.getState().add(p)
+                                  warnIfNearExpiry(p)
+                                }
+                              }}
+                              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                                out
+                                  ? 'border border-ink-line/40 bg-ink-800/40 text-slate-500 cursor-not-allowed'
+                                  : 'border border-brand-500/40 bg-brand-500/10 text-brand-300 hover:bg-brand-500 hover:text-slate-950 shadow-sm active:scale-95'
+                              }`}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              <span>Add</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-                <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
-                  <div>
-                    <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
-                    {p.wholesale_price_c != null && p.wholesale_min_qty != null && (
-                      <p className="text-[10px] font-semibold text-emerald-400">
-                        WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
-                      </p>
-                    )}
-                  </div>
-                  {p.srp_c != null ? (
-                    <span className="text-[11px] text-slate-400 font-normal" title="Suggested Retail Price">
-                      SRP: {money(p.srp_c)}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Card Grid View (Visual Tiles) */
+          <div className="grid min-h-0 flex-1 auto-rows-[185px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
+            {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
+            {!loading && products.length === 0 && (
+              <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
+            )}
+            {!loading && products.map((p) => {
+              const cartItem = cartItems.find(item => item.product_id === p.id)
+              const stock = saleStock(p)
+              const available = availableBase(stock, cartItem)
+              const blocked = p.stock - stock
+              const low = available > 0 && available <= p.low_stock_threshold
+              const out = available <= 0
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    if (out) {
+                      toastError(blocked > 0 ? 'Expired or undated stock is blocked' : 'Out of stock', `Available for sale: ${stock} ${p.base_unit}.`)
+                    } else {
+                      usePosCart.getState().add(p)
+                      warnIfNearExpiry(p)
+                    }
+                  }}
+                  aria-disabled={out}
+                  className="card group flex h-[185px] min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
+                >
+                  <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
+                    <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
+                      {blocked > 0 ? `Sellable: ${formatQuantity(stock)}` : cartItem ? `Available: ${formatQuantity(available)} / ${formatQuantity(stock)}` : `Stock: ${formatQuantity(stock)}`} {p.base_unit}
                     </span>
-                  ) : priceRefs[p.id] !== undefined ? (
-                    <span className="text-[11px] text-brand-400/80 font-normal" title="Market Reference Price">
-                      Ref: {money(priceRefs[p.id]!)}
-                    </span>
-                  ) : null}
-                </div>
-              </button>
-            )
-          })}
-        </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <ProductImage src={p.image_path} alt={p.name} className="h-10 w-10 rounded-md shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 break-words text-xs sm:text-sm font-semibold leading-snug text-white" title={p.name}>{p.name}</p>
+                      {p.description && (
+                        <p className="line-clamp-2 break-words text-[11px] text-slate-400 mt-0.5" title={p.description}>{p.description}</p>
+                      )}
+                      {blocked > 0 && <p className="truncate text-xs text-red-400 mt-0.5">{blocked} expired / undated</p>}
+                    </div>
+                  </div>
+                  <div className="mt-auto flex items-baseline justify-between gap-1 pt-1">
+                    <div>
+                      <p className="text-xl font-bold text-brand-400">{money(p.default_price_c)}</p>
+                      {p.wholesale_price_c != null && p.wholesale_min_qty != null && (
+                        <p className="text-[10px] font-semibold text-emerald-400">
+                          WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
+                        </p>
+                      )}
+                    </div>
+                    {p.srp_c != null ? (
+                      <span className="text-[11px] text-slate-400 font-normal" title="Suggested Retail Price">
+                        SRP: {money(p.srp_c)}
+                      </span>
+                    ) : priceRefs[p.id] !== undefined ? (
+                      <span className="text-[11px] text-brand-400/80 font-normal" title="Market Reference Price">
+                        Ref: {money(priceRefs[p.id]!)}
+                      </span>
+                    ) : null}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <CartPanel
