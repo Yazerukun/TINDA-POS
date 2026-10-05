@@ -1,7 +1,7 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.51-059669?style=for-the-badge&labelColor=065f46" alt="Version">
-<img src="https://img.shields.io/badge/Platform-Windows_%7C_Linux-0078d4?style=for-the-badge&logo=linux&logoColor=white" alt="Platform">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.55-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
@@ -12,13 +12,24 @@
 
 ### Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses
 
-**Sell products · Track inventory · Manage customer Utang · Reconcile cash — all in one focused desktop app. No internet required.**
+**Sell products · Track inventory · Manage customer Utang · VIP E-Wallet Reconciliation — all in one focused desktop app. No internet required.**
 
 <br />
 
-[⬇️ Download v1.0.51 Windows Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-Setup-1.0.51.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-Portable-1.0.51.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-1.0.51.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.51/TindaPOS-User-Guide.pdf)
+[⬇️ Download v1.0.55 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Setup-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Portable-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-1.0.55-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
+
+> **Zero Float Physical Cash Drawer Override, Dedicated Transactions Ledger, 1-Tap Void/Delete Management & Draggable Lounge**
+
+- 📱 **Zero Float & Physical Cash Drawer Override**: Cashiers can freely edit or 1-tap reset Expected Cash Drawer (`₱0.00 (Zero Float)`, `Sync POS Shift (₱...)`, `E-Wallet Net Only`). Completely eliminates false cash shortages when store keeps E-wallet money in a separate pouch or audits independently.
+- 📋 **Dedicated Transactions Ledger Tab**: Full-width tab with real-time search across Reference #, Customer Name, Phone, and Cashier; quick channel (`GCash`/`Maya`) and type (`Cash In`/`Cash Out`) filters; and instant thermal slip reprints.
+- 🗑️ **Accessible 1-Tap Void/Delete Management**: Prominent red `Void` buttons with Apple-design frosted confirmation modal and instant shift summary + drawer balance recalculation without ghost records.
+- 💬 **Enhanced Global Lounge**: Non-blocking draggable floating window, minimizable floating capsule pill, dual-tone Web Audio API chime with mute/unmute toggle, and self-message deletion.
+
+---
 
 ## ✨ What's New in v1.0.51 — Free Community Lounge, Red Unread Alerts & Linux Support
 
@@ -90,6 +101,20 @@
 ---
 
 ## ✨ What's New in v1.0.44 (Weighable & Fractional Decimal Quantity Mode)
+=======
+[⬇️ Download v1.0.55 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Setup-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Portable-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-1.0.55-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+
+</div>
+
+## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
+
+> **Zero Float Physical Cash Drawer Override, Dedicated Transactions Ledger, 1-Tap Void/Delete Management & Draggable Lounge**
+
+- 📱 **Zero Float & Physical Cash Drawer Override**: Cashiers can freely edit or 1-tap reset Expected Cash Drawer (`₱0.00 (Zero Float)`, `Sync POS Shift (₱...)`, `E-Wallet Net Only`). Completely eliminates false cash shortages when store keeps E-wallet money in a separate pouch or audits independently.
+- 📋 **Dedicated Transactions Ledger Tab**: Full-width tab with real-time search across Reference #, Customer Name, Phone, and Cashier; quick channel (`GCash`/`Maya`) and type (`Cash In`/`Cash Out`) filters; and instant thermal slip reprints.
+- 🗑️ **Accessible 1-Tap Void/Delete Management**: Prominent red `Void` buttons with Apple-design frosted confirmation modal and instant shift summary + drawer balance recalculation without ghost records.
+- 💬 **Enhanced Global Lounge**: Non-blocking draggable floating window, minimizable floating capsule pill, dual-tone Web Audio API chime with mute/unmute toggle, and self-message deletion.
+>>>>>>> 8ae85ff (release: v1.0.55 - E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
 
 > **Kilo & Scale Precision, Real-Time Peso Totaling, Fractional Inventory Deductions, Thermal Receipt & CFD Parity**
 
