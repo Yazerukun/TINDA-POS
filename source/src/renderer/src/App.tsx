@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './stores/auth'
 import { useUpdate } from './stores/update'
+import { useLicense } from './stores/license'
 import { Splash } from './components/Splash'
 import { FirstRun } from './pages/FirstRun'
 import { Login } from './pages/Login'
@@ -26,6 +27,7 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     bootstrap().catch((e) => setBootErr(String(e?.message ?? e)))
     initUpdate().catch(() => undefined)
+    useLicense.getState().loadLicense().catch(() => undefined)
   }, [bootstrap, initUpdate])
 
   if (!ready) return <Splash error={bootErr} />

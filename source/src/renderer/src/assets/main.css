@@ -206,3 +206,195 @@
     animation: none !important;
   }
 }
+
+/* =========================================================================
+   Theme Support (Daylight White, Warm Eye-Care, Nordic Slate, Midnight Dark)
+   ========================================================================= */
+
+/* --- ☀️ LIGHT / DAYLIGHT WHITE THEME --- */
+[data-theme='light'] {
+  color-scheme: light;
+}
+[data-theme='light'] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+[data-theme='light'] .bg-ink-950 {
+  background-color: #f8fafc !important;
+}
+[data-theme='light'] .bg-ink-900 {
+  background-color: #f1f5f9 !important;
+}
+[data-theme='light'] .bg-ink-850 {
+  background-color: #ffffff !important;
+}
+[data-theme='light'] .bg-ink-800 {
+  background-color: #e2e8f0 !important;
+}
+[data-theme='light'] .bg-ink-750 {
+  background-color: #e2e8f0 !important;
+}
+[data-theme='light'] .bg-ink-700 {
+  background-color: #cbd5e1 !important;
+}
+[data-theme='light'] .border-ink-line {
+  border-color: #e2e8f0 !important;
+}
+[data-theme='light'] .card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme='light'] .input {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+[data-theme='light'] .input::placeholder {
+  color: #94a3b8 !important;
+}
+[data-theme='light'] .text-white {
+  color: #0f172a !important;
+}
+[data-theme='light'] .text-slate-100,
+[data-theme='light'] .text-slate-200,
+[data-theme='light'] .text-slate-300 {
+  color: #1e293b !important;
+}
+[data-theme='light'] .text-slate-400 {
+  color: #475569 !important;
+}
+[data-theme='light'] .text-slate-500 {
+  color: #64748b !important;
+}
+[data-theme='light'] .table-row:hover {
+  background-color: #f1f5f9 !important;
+}
+[data-theme='light'] .btn-ghost {
+  color: #334155 !important;
+}
+[data-theme='light'] .btn-ghost:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme='light'] .btn-secondary {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+[data-theme='light'] .btn-primary,
+[data-theme='light'] .btn-primary *,
+[data-theme='light'] .btn-danger,
+[data-theme='light'] .btn-danger * {
+  color: #ffffff !important;
+}
+
+/* --- 🍵 WARM EYE-CARE (SEPIA / KAHOY) THEME --- */
+[data-theme='warm'] {
+  color-scheme: light;
+}
+[data-theme='warm'] body {
+  background-color: #fbf7ee !important;
+  color: #292524 !important;
+}
+[data-theme='warm'] .bg-ink-950 {
+  background-color: #fbf7ee !important;
+}
+[data-theme='warm'] .bg-ink-900 {
+  background-color: #f5ede0 !important;
+}
+[data-theme='warm'] .bg-ink-850 {
+  background-color: #fffdf7 !important;
+}
+[data-theme='warm'] .bg-ink-800 {
+  background-color: #eee3d0 !important;
+}
+[data-theme='warm'] .bg-ink-750 {
+  background-color: #e5d7c0 !important;
+}
+[data-theme='warm'] .bg-ink-700 {
+  background-color: #d6c5aa !important;
+}
+[data-theme='warm'] .border-ink-line {
+  border-color: #e5d7c0 !important;
+}
+[data-theme='warm'] .card {
+  background-color: #fffdf7 !important;
+  border-color: #e5d7c0 !important;
+  box-shadow: 0 1px 3px rgba(68, 48, 25, 0.05), 0 4px 14px rgba(68, 48, 25, 0.04) !important;
+}
+[data-theme='warm'] .input {
+  background-color: #fffdf7 !important;
+  border-color: #d6c5aa !important;
+  color: #292524 !important;
+}
+[data-theme='warm'] .input::placeholder {
+  color: #a8a29e !important;
+}
+[data-theme='warm'] .text-white {
+  color: #1c1917 !important;
+}
+[data-theme='warm'] .text-slate-100,
+[data-theme='warm'] .text-slate-200,
+[data-theme='warm'] .text-slate-300 {
+  color: #292524 !important;
+}
+[data-theme='warm'] .text-slate-400 {
+  color: #57534e !important;
+}
+[data-theme='warm'] .text-slate-500 {
+  color: #78716c !important;
+}
+[data-theme='warm'] .table-row:hover {
+  background-color: #f5ede0 !important;
+}
+[data-theme='warm'] .btn-ghost {
+  color: #44403c !important;
+}
+[data-theme='warm'] .btn-ghost:hover {
+  background-color: #eee3d0 !important;
+  color: #1c1917 !important;
+}
+[data-theme='warm'] .btn-primary,
+[data-theme='warm'] .btn-primary *,
+[data-theme='warm'] .btn-danger,
+[data-theme='warm'] .btn-danger * {
+  color: #ffffff !important;
+}
+
+/* --- 🌊 NORDIC SLATE (ASUL / NAVY) THEME --- */
+[data-theme='slate'] {
+  color-scheme: dark;
+}
+[data-theme='slate'] body {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+[data-theme='slate'] .bg-ink-950 {
+  background-color: #0b1120 !important;
+}
+[data-theme='slate'] .bg-ink-900 {
+  background-color: #0f172a !important;
+}
+[data-theme='slate'] .bg-ink-850 {
+  background-color: #1e293b !important;
+}
+[data-theme='slate'] .bg-ink-800 {
+  background-color: #334155 !important;
+}
+[data-theme='slate'] .bg-ink-750 {
+  background-color: #334155 !important;
+}
+[data-theme='slate'] .border-ink-line {
+  border-color: #334155 !important;
+}
+[data-theme='slate'] .card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+[data-theme='slate'] .input {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+

@@ -590,6 +590,8 @@ export interface ReportSummary {
   refunds_c: number
   expenses_c: number
   net_profit_c?: number
+  utang_sales_c?: number
+  gross_sales_total_c?: number
 }
 
 export interface ExportResult {
@@ -700,6 +702,7 @@ export interface CloudSaleSyncPayload {
   local_shift_id: number | null
   sold_at: string
   items: CloudSaleSyncItem[]
+  net_sales_c?: number
 }
 
 export interface CloudStockSyncPayload {

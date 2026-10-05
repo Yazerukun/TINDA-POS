@@ -23,6 +23,7 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
               (SELECT COUNT(*) FROM sale_items si WHERE si.sale_id = s.id) AS items,
               s.subtotal_c, s.discount_c, s.total_c,
               (SELECT GROUP_CONCAT(p.method, ',') FROM payments p WHERE p.sale_id = s.id) AS method,
+              (SELECT COALESCE(SUM(p.amount_c), 0) FROM payments p WHERE p.sale_id = s.id AND p.method = 'UTANG') AS utang_c,
               s.status, s.shift_id
        FROM sales s
        LEFT JOIN users u ON u.id = s.user_id
@@ -30,19 +31,25 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
        WHERE s.status != 'VOIDED' AND s.created_at >= ? AND s.created_at <= ?
        ORDER BY s.created_at ASC`
     )
-    .all(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as (SalesReportRow & { shift_id: number | null })[]
+    .all(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as (SalesReportRow & { shift_id: number | null; utang_c: number })[]
 
   const dateKeys = [...new Set(rows.map((r) => groupKey(r.created_at, groupBy)))].sort()
 
+  const totalUtang = rows.reduce((s, r) => s + (r.utang_c || 0), 0)
+  const grossSalesTotal = rows.reduce((s, r) => s + r.total_c, 0)
+  const realizedSalesTotal = Math.max(0, grossSalesTotal - totalUtang)
+
   const summary: ReportSummary = {
-    sales_total_c: rows.reduce((s, r) => s + r.total_c, 0),
+    sales_total_c: realizedSalesTotal,
     profit_c: 0,
     items_sold: rows.reduce((s, r) => s + r.items, 0),
     transactions: rows.length,
     cost_c: 0,
     discount_c: rows.reduce((s, r) => s + r.discount_c, 0),
     refunds_c: 0,
-    expenses_c: 0
+    expenses_c: 0,
+    utang_sales_c: totalUtang,
+    gross_sales_total_c: grossSalesTotal
   }
 
   const cost = db
@@ -90,7 +97,7 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
 
   const chart = dateKeys.map((k) => {
     const inGroup = rows.filter((r) => groupKey(r.created_at, groupBy) === k)
-    const total = inGroup.reduce((s, r) => s + r.total_c, 0)
+    const total = inGroup.reduce((s, r) => s + Math.max(0, r.total_c - (r.utang_c || 0)), 0)
     const cost = inGroup.reduce((s, r) => s + (costBySale.get(r.sale_id) ?? 0), 0)
     return { label: k, total_c: total, profit_c: Math.round(total - cost) }
   })

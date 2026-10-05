@@ -160,6 +160,7 @@ handle('app:salesMonitorSummary', () => {
     else if (p.method === 'UTANG') utang_c = p.amount_c
   }
 
+  const realized_sales_c = cash_c + gcash_c + maya_c
   const recentSales = listSales(d, { limit: 50 }).rows
   const settings = settingRepo.getSettings(d)
 
@@ -167,7 +168,8 @@ handle('app:salesMonitorSummary', () => {
     store_name: settings.store_name || 'TINDA POS',
     currency: settings.currency || 'PHP',
     today: {
-      total_sales_c: todaySummary?.total_sales_c ?? 0,
+      total_sales_c: realized_sales_c,
+      gross_sales_c: todaySummary?.total_sales_c ?? 0,
       total_transactions: todaySummary?.total_transactions ?? 0,
       cash_c,
       gcash_c,

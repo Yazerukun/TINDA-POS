@@ -78,7 +78,7 @@ export function finalizeZ(db: Database.Database, shiftId: number, userId: number
         void_count: snap.void_count || 0,
         transaction_count: snap.transaction_count || 0,
         expenses_c: snap.expenses_c || 0,
-        net_sales_c: snap.net_sales_c || 0
+        net_sales_c: Math.max(0, (snap.net_sales_c || 0) - (snap.utang_c || 0))
       }).catch(() => {})
     } catch {}
     return z

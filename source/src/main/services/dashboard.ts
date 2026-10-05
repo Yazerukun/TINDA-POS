@@ -32,12 +32,16 @@ export function dashboardStats(): DashboardStats {
   let cash = 0
   let gcash = 0
   let maya = 0
+  let utang = 0
   for (const s of sales)
     for (const p of s.payments) {
       if (p.method === 'CASH') cash += p.amount_c
       if (p.method === 'GCASH') gcash += p.amount_c
       if (p.method === 'MAYA') maya += p.amount_c
+      if (p.method === 'UTANG') utang += p.amount_c
     }
+
+  const realizedSales = Math.max(0, todaySales - utang)
 
   const outstanding =
     (db.prepare('SELECT COALESCE(SUM(balance_c),0) AS s FROM customers').get() as { s: number }).s
@@ -56,7 +60,7 @@ export function dashboardStats(): DashboardStats {
   const recent = listSales(db, { limit: 10 }).rows.filter((s) => s.status !== 'VOIDED')
 
   return {
-    today_sales_c: todaySales,
+    today_sales_c: realizedSales,
     today_profit_c: todayProfit,
     today_transactions: sales.length,
     today_items_sold: itemsSold,

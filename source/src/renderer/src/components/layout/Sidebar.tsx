@@ -23,6 +23,7 @@ import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
 import { useAuth } from '../../stores/auth'
 import { useSettings } from '../../stores/settings'
+import { useLicense } from '../../stores/license'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 
@@ -85,11 +86,7 @@ export function Sidebar(): React.JSX.Element {
   const { page, setPage } = useNav()
   const { user, logout } = useAuth()
   const { settings } = useSettings()
-  const [isVip, setIsVip] = useState(false)
-
-  useEffect(() => {
-    window.api?.license?.getStatus().then((s) => setIsVip(s.isVip)).catch(() => {})
-  }, [page])
+  const { isVip } = useLicense()
 
   // Filter sections by user permissions, keeping only sections that have at least one visible item
   const filteredSections = SECTIONS.map((sec) => ({

@@ -198,6 +198,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
       gcash_c: getAmt('GCASH'),
       maya_c: getAmt('MAYA'),
       utang_c: getAmt('UTANG'),
+      net_sales_c: Math.max(0, sale.total_c - getAmt('UTANG')),
       local_shift_id: sale.shift_id,
       sold_at: sale.created_at,
       items: ((sale as any).items || []).map((it: any) => ({

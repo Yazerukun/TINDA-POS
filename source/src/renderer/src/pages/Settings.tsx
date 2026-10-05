@@ -46,28 +46,21 @@ import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { VipUpgradeBanner } from '../components/VipUpgradeBanner'
 import { LegalModal, type LegalTab } from '../components/LegalModal'
 import { RollbackModal } from '../components/update/RollbackModal'
+import { useLicense } from '../stores/license'
+import { ThemeSelector } from '../components/theme/ThemeSelector'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'CLOUD' | 'VIP' | 'ABOUT'
 
 export function Settings(): React.JSX.Element {
   const { load } = useSettings()
+  const { status: licenseStatus, isVip, loadLicense } = useLicense()
   const [tab, setTab] = useState<Tab>('HOME')
-  const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null)
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
-
-  const loadLicense = async (): Promise<void> => {
-    try {
-      const s = await window.api.license.getStatus()
-      setLicenseStatus(s)
-    } catch {
-      // Ignored
-    }
-  }
 
   useEffect(() => {
     void load()
     void loadLicense()
-  }, [load])
+  }, [load, loadLicense])
 
   return (
     <div className="p-4 md:p-6 min-h-full">
@@ -79,7 +72,7 @@ export function Settings(): React.JSX.Element {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
               Settings
-              {licenseStatus?.isVip ? (
+              {isVip ? (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-0.5 text-xs font-bold text-amber-400 border border-amber-500/30">
                   <Crown className="h-3.5 w-3.5" /> VIP Pro
                 </span>
@@ -94,7 +87,7 @@ export function Settings(): React.JSX.Element {
             </p>
           </div>
 
-          {!licenseStatus?.isVip && (
+          {!isVip && (
             <button
               onClick={() => setUpgradeModalOpen(true)}
               className="btn-primary self-start sm:self-auto flex items-center gap-2 text-xs font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-ink-950 border-0 shadow-md transition active:scale-95"
@@ -105,8 +98,8 @@ export function Settings(): React.JSX.Element {
         </div>
 
         {/* Sliding Banner for Community Edition */}
-        {!licenseStatus?.isVip && (
-          <VipUpgradeBanner onUpgradeClick={() => setUpgradeModalOpen(true)} isVip={licenseStatus?.isVip} />
+        {!isVip && (
+          <VipUpgradeBanner onUpgradeClick={() => setUpgradeModalOpen(true)} isVip={isVip} />
         )}
 
         {/* Centered Navigation Tabs */}
@@ -181,13 +174,14 @@ export function Settings(): React.JSX.Element {
         <div className="flex justify-center w-full">
           {tab === 'HOME' && (
             <div className="w-full max-w-2xl space-y-4">
+              <ThemeSelector />
               <StartupSetting />
               <StoreSettingsTab />
             </div>
           )}
           {tab === 'RECEIPT' && (
             <div className="w-full max-w-2xl">
-              <ReceiptSettingsTab isVip={licenseStatus?.isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
+              <ReceiptSettingsTab isVip={isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
             </div>
           )}
           {tab === 'USERS' && (
@@ -207,7 +201,7 @@ export function Settings(): React.JSX.Element {
           )}
           {tab === 'CLOUD' && (
             <div className="w-full max-w-3xl">
-              <CloudSettingsTab isVip={licenseStatus?.isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
+              <CloudSettingsTab isVip={isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
             </div>
           )}
           {tab === 'VIP' && (
@@ -217,7 +211,7 @@ export function Settings(): React.JSX.Element {
           )}
           {tab === 'ABOUT' && (
             <div className="w-full max-w-xl">
-              <AboutTab onUpgradeClick={() => setUpgradeModalOpen(true)} isVip={licenseStatus?.isVip} />
+              <AboutTab onUpgradeClick={() => setUpgradeModalOpen(true)} isVip={isVip} />
             </div>
           )}
         </div>

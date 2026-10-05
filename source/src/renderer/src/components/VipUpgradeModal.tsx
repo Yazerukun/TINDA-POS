@@ -15,6 +15,7 @@ import {
 import type { LicenseStatus } from '@shared/types'
 import { toastSuccess, toastError } from '../stores/toast'
 import { LegalModal, type LegalTab } from './LegalModal'
+import { useLicense } from '../stores/license'
 
 interface VipUpgradeModalProps {
   open: boolean
@@ -99,6 +100,7 @@ export function VipUpgradeModal({ open, onClose, onActivated }: VipUpgradeModalP
       if (result.ok) {
         toastSuccess('VIP Pro Activated!', result.message)
         setStatus(result.status)
+        useLicense.getState().setLicenseStatus(result.status)
         setKeyInput('')
         if (onActivated) onActivated()
       } else {

@@ -958,6 +958,60 @@
   - [x] **Additive Migration 12:** `system_license_vault` table added safely with full upgrade-chain preservation.
   - [x] **Living Architecture Master Document:** `SYSTEM_MASTER.md` and `GEMINI.md` fully up to date.
 
+---
+
+## 48. Financial Realized Revenue Engine & Zero-Flicker Client Store Hydration (v1.0.56 Polish)
+
+* **Date:** October 2026
+* **Component Impact:** `reporting.ts`, `dashboard.ts`, `app:salesMonitorSummary` (`ipc/index.ts`), `readReports.ts`, `checkout.ts`, `cloudSync.ts`, `stores/license.ts`, `EwalletAudit.tsx`, `Settings.tsx`, `Sidebar.tsx`.
+* **Client Feedback Addressed:**
+  1. *Financial Realized Revenue Model:* "Example may ei process ka sa cart na utang sya na mga items pwede sana boss franz hindi sya papasok sa todays net sales sa outstanding utang/credit lng tlaga sya naka standu sa dashboad, sales monitor at sa tinda pos owner cloude executive"
+  2. *Zero-Flicker VIP Store Experience:* "Tapos pag click ko sa e wallet ug settings naay mo blink blink murag naay bug mag pakita pa fix pud ko ani"
+* **Technical Implementations:**
+  1. **Strict Realized Revenue Accounting (Utang Exclusion):**
+     - Items and orders purchased via `UTANG` (credit) represent uncollected receivables rather than cash/digital revenue.
+     - `salesReport` in `reporting.ts` computes `utang_c` per transaction via subquery: `(SELECT COALESCE(SUM(p.amount_c), 0) FROM payments p WHERE p.sale_id = s.id AND p.method = 'UTANG')`.
+     - `summary.sales_total_c` strictly tracks `realizedSalesTotal = Math.max(0, grossSalesTotal - totalUtang)` (Cash + GCash + Maya, net of returns).
+     - In `Dashboard.tsx`, "Today's Net Sales" stat card reflects only collected funds, while the "Outstanding Utang" card displays cumulative store credit receivables.
+     - In `app:salesMonitorSummary` (`ipc/index.ts`) and `SalesMonitor.tsx`, `today.total_sales_c` is computed as `cash_c + gcash_c + maya_c`, while `today.utang_c` is isolated in its own metric pill.
+     - In `readReports.ts` and `checkout.ts`, `net_sales_c` sent via `pushShiftToCloud` and `pushSaleToCloud` excludes Utang, keeping the Cloud Owner Dashboard synchronized with actual collected revenue.
+  2. **Synchronous Zero-Flicker Hydration (`useLicense` Store):**
+     - Root cause of navigation flicker was asynchronous initialization of `isVip: false` or `licenseStatus: null` inside `EwalletAudit.tsx`, `Settings.tsx`, and `Sidebar.tsx`. On every tab switch, components mounted fresh, flashed the Free Community Edition preview lock banner for 50ms, then violently unmounted it when `window.api.license.getStatus()` resolved.
+     - Created `useLicense` Zustand store in `source/src/renderer/src/stores/license.ts` with synchronous `localStorage.getItem('tinda_is_vip')` initialization.
+     - On the very first frame of render, `isVip` is already `true` for verified VIP merchants. The upgrade lock banner and upgrade buttons are skipped without delay or layout jitter.
+* **Verification Gates Checklist:**
+  - [x] `utang-net-sales-exclusion.test.ts` passes with 100% assertion on gross vs utang vs realized net sales.
+  - [x] Zero TypeScript errors across entire frontend and backend (`npm run typecheck`).
+  - [x] Production bundle builds cleanly (`npm run build`).
+
+---
+
+## 49. Multi-Theme & High-Clarity Eye-Care Background Engine (v1.0.56 Polish)
+
+* **Date:** October 2026
+* **Component Impact:** `main.css`, `theme.ts`, `ThemeSelector.tsx`, `Settings.tsx`, `main.tsx`.
+* **Client Feedback Addressed:**
+  - "butangi pud diay sa settings nga maka change change silag theme or background. kay dili daw makita boss suggest ko pla boss franz pwede mapalit palitan yung background pwede daw black pwede pud puti i dungag lang ni ikaw na bahala ani. kanang mas klaro sa mata nila."
+* **Technical Implementations:**
+  1. **Multi-Theme Engine Support:**
+     - Created global `useTheme` Zustand store in `source/src/renderer/src/stores/theme.ts`.
+     - Supports 4 distinct, purpose-designed theme palettes:
+       - **Midnight Black (`dark`)**: Original Apple-design dark mode with deep OLED `#0a0d0f` background and emerald accents.
+       - **Daylight White (`light`)**: High-contrast, pure white paper background (`#f8fafc` / `#ffffff`) with deep dark slate typography (`#0f172a`), specifically solving screen glare in bright sari-sari stores with direct sunlight or open-air storefronts.
+       - **Warm Eye-Care (`warm`)**: Gentle sepia / cream background (`#fbf7ee` / `#fffdf7`) with soft stone ink (`#292524`) designed to filter harsh blue light and prevent eye fatigue during long 12-hour cashier shifts.
+       - **Nordic Slate (`slate`)**: Deep navy blue environment (`#0b1120` / `#1e293b`) for high-contrast cashiering.
+  2. **Zero-Flash Pre-React Hydration:**
+     - In `main.tsx`, `localStorage.getItem('tinda_theme')` synchronously sets `document.documentElement.setAttribute('data-theme', theme)` before React mounts, guaranteeing 0ms flash of dark mode when launching in white or warm mode.
+  3. **Apple-Design Theme Selector:**
+     - Beautiful interactive card in `Settings.tsx` (`ThemeSelector.tsx`) with visual mini-swatches, active checkmarks, and instant 1-tap switching.
+     - Persists automatically to both `localStorage` and SQLite database `StoreSettings.theme`.
+* **Verification Gates Checklist:**
+  - [x] Zero TypeScript errors in `npm run typecheck`.
+  - [x] Production bundle compiles cleanly (`npm run build`).
+  - [x] Windows distribution setup and portable binaries signed and verified (`npm run build:win`).
+
+
+
 
 
 

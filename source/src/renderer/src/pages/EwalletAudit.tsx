@@ -33,9 +33,10 @@ const toast = {
   error: (title: string, msg?: string) => toastError(title, msg)
 }
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
+import { useLicense } from '../stores/license'
 
 export function EwalletAudit(): React.JSX.Element {
-  const [isVip, setIsVip] = useState(false)
+  const { isVip, loadLicense } = useLicense()
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'register' | 'transactions' | 'audit' | 'history'>('register')
 
@@ -75,16 +76,6 @@ export function EwalletAudit(): React.JSX.Element {
   const [actualMayaStr, setActualMayaStr] = useState('0')
   const [auditNotes, setAuditNotes] = useState('')
 
-  // Load VIP status
-  const checkVipStatus = useCallback(async () => {
-    try {
-      const s = await window.api.license.getStatus()
-      setIsVip(Boolean(s.isVip))
-    } catch {
-      setIsVip(false)
-    }
-  }, [])
-
   // Load transactions and summary
   const loadData = useCallback(async () => {
     try {
@@ -114,9 +105,9 @@ export function EwalletAudit(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    void checkVipStatus()
+    void loadLicense()
     void loadData()
-  }, [checkVipStatus, loadData])
+  }, [loadLicense, loadData])
 
   // Denomination calculations
   const actualCashC = useMemo(() => {
@@ -1330,10 +1321,10 @@ export function EwalletAudit(): React.JSX.Element {
         open={vipModalOpen}
         onClose={() => {
           setVipModalOpen(false)
-          void checkVipStatus()
+          void loadLicense()
         }}
         onActivated={() => {
-          setIsVip(true)
+          void loadLicense()
           setVipModalOpen(false)
           void loadData()
         }}
