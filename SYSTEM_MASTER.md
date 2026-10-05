@@ -1065,6 +1065,37 @@
   5. **100% Professional English Interface:**
      - Replaced all Bisaya text in `ThemeSelector.tsx` and `theme.ts` with polished English descriptions and eye-care guidance.
 
+---
+
+## 52. Release v1.0.59 — High-Density Enterprise POS Cashier Listing Engine
+* **Version:** `1.0.59`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/main/services/rollbackService.ts`
+  - `source/package.json`
+  - `tools/publish_v1059.mjs`
+* **Technical Implementations:**
+  1. **High-Density Enterprise POS Cashier Listing Table:**
+     - Replaced bulky catalog tiles with an ultra-clean, high-density listing table, displaying 15–25 products simultaneously without vertical layout waste.
+     - 5-Column Responsive Layout:
+       - **Product / SKU / Barcode**: 36x36 thumbnail image avatar, high-visibility product name, cyan mono SKU badge, barcode, and optional specs.
+       - **Category**: Clean rounded tag pill.
+       - **Stock & Safety Status**: Exact available quantity with unit (pcs, kg), live pulse indicator (🟢 In Stock, 🟡 Low Stock Alert, 🔴 Out of Stock), and near-expiry warning dots.
+       - **Pricing & Tier**: Bold retail price, wholesale volume pricing badge (`WS: ₱XX.XX (≥10)`), and Suggested Retail Price (`SRP`).
+       - **Cart Status & Quick Stepper**: Active `In Cart: X` indicator with in-row `[ - ] [ count ] [ + ]` quantity stepper and 1-tap add.
+  2. **Dual-Mode Switcher with Persistent Memory:**
+     - Instant List / Grid Toggle buttons in the search header allowing cashiers to switch between the dense **Listing Table** (default) and the visual **Card Grid**.
+     - Automatically persisted in `localStorage` (`tinda_pos_view_mode`) across app launches.
+  3. **High-Speed Keyboard Navigation Ergonomics:**
+     - `ArrowDown` and `ArrowUp` navigate through products with automatic smooth scroll follow (`scrollIntoView`).
+     - `Enter` key immediately adds the selected product to the cart with audio and toast confirmation.
+  4. **Retained System Invariants:**
+     - Zero regression on hardware scanners, counter cameras, wireless phone scanners, CFD customer screens, or quad-vault VIP licensing.
+  5. **Offline Rollback Continuity:**
+     - Added `v1.0.58` as the top fallback release target in `rollbackService.ts`.
+
+
 
 
 

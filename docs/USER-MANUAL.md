@@ -1,10 +1,27 @@
-# TINDA POS v1.0.58 User Manual
+# TINDA POS v1.0.59 User Manual
 
-**TINDA POS v1.0.58** — Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.59** — Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.58**, introducing **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**, alongside the **Financial Realized Revenue Model**, **Zero-Flicker VIP Store Experience**, and **Multi-Theme Eye-Care Background Switcher**, **Version Rollback Recovery Manager**, and **Permanent Hardware-Anchored VIP Licensing**.
+This guide covers release **v1.0.59**, introducing the **High-Density Enterprise Cashier Listing Engine**, **Dual-Mode Switcher (Table Listing vs Card Grid)**, **In-Line Table Cart Quantity Steppers**, and **High-Speed Keyboard Navigation (`ArrowUp` / `ArrowDown` / `Enter`)**, alongside **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**.
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v1.0.59 (High-Density Enterprise Cashier Listing Engine)
+
+- **High-Density Supermarket/Enterprise Cashier Listing Table:**
+  - Cashiers can now ring up sales using a sleek, compact, high-information table view engineered specifically for high-volume retail, wholesale, grocery, and pharmacy operations.
+  - Columns:
+    1. **Product / SKU / Barcode**: Shows 36×36 high-contrast thumbnail avatar, bold product name, monospace cyan SKU tag, barcode value, and active in-cart counter badge (`🛒 X in cart`).
+    2. **Category**: Clean rounded tag pill indicating product classification.
+    3. **Stock Level & Safety**: Real-time quantity with unit of measure, live pulse indicator (🟢 Normal, 🟡 Low Stock Alert, 🔴 Out of Stock), near-expiry indicators, and blocked stock alerts.
+    4. **Price / Tier**: Retail unit price, Wholesale tier badge (`WS: ₱XX.XX (≥10)`), Suggested Retail Price (`SRP`), and market reference pricing.
+    5. **Cart Status & Actions**: In-line compact quantity stepper `[ - ] [ count ] [ + ]` for items already in cart (allowing instant quantity adjustments without leaving the table), plus `+ Add` button with out-of-stock guard. Whole-row click adds +1 to cart.
+- **Dual-Mode Display Switcher (Table Listing vs Card Grid):**
+  - Switch between Table Listing mode and Card Grid mode instantly via the header toggle buttons in the POS search bar. Preference is automatically remembered per terminal across sessions (`localStorage: tinda_pos_view_mode`).
+- **High-Speed Keyboard Navigation:**
+  - Cashiers can navigate products directly using `ArrowDown` and `ArrowUp` keys with automatic smooth viewport tracking. Pressing `Enter` adds the highlighted item directly into the active cart without requiring mouse clicks.
+- **Zero Breakage Guarantee Across Existing POS Workflows:**
+  - Hardware barcode laser scanners, docked counter camera, wireless companion phone scanner, CFD customer dual screen, sales monitor, petty cash modal (`F7`), e-wallet hub, hold/resume sales, hotkeys (`F1`-`F10`), and offline-first LAN sync remain 100% functional without disruption.
 
 ## What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback)
 

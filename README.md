@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.58-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.59-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,28 @@
 
 <br />
 
-[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Portable-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.59 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Setup-1.0.59.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Portable-1.0.59.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.59 (High-Density Enterprise Cashier Listing Table & Dual-Mode POS)
+
+> **Supermarket-Grade Listing Table, 1-Click Dual-Mode Switcher, In-Line Cart Quantity Steppers & High-Speed Keyboard Navigation**
+
+- 📋 **High-Density Enterprise Cashier Listing Table (Client Feedback Addressed)**:
+  - Upgrades the POS Cashier from loose cards into an enterprise-grade 5-column listing table built specifically for high-speed checkout in groceries, wholesale outlets, and pharmacies.
+  - Features 36×36 high-contrast thumbnail avatar, cyan monospace SKU badge, barcode value, category pill, real-time stock levels with safety pulse (🟢 Normal, 🟡 Low Stock, 🔴 Out of Stock), wholesale/SRP/reference pricing, and in-line quantity adjustment steppers `[ - ] [ count ] [ + ]`.
+  - Whole-row click adds +1 to cart with instantaneous response.
+- 🔀 **Dual-Mode POS Layout Switcher with Persistent Memory**:
+  - Cashiers can seamlessly switch between Table Listing mode and Card Grid mode at any moment with the top header toggle.
+  - Selection is automatically remembered per terminal (`localStorage: tinda_pos_view_mode`), defaulting to Listing mode for high-density workflow efficiency.
+- ⌨️ **High-Speed Keyboard Navigation (`ArrowUp` / `ArrowDown` / `Enter`)**:
+  - Cashiers can navigate the product catalog using arrow keys with automatic smooth viewport tracking.
+  - Pressing `Enter` adds the highlighted row directly to the active cart, enabling completely hands-free scanning and manual selection without reaching for the mouse.
+- 🔒 **Zero Feature Regressions & Full Continuity Guarantee**:
+  - Hardware barcode laser scanners, docked counter camera, wireless companion phone scanner, CFD customer dual screen, sales monitor, petty cash modal (`F7`), e-wallet hub, hold/resume sales, hotkeys (`F1`-`F10`), and offline-first LAN sync remain 100% functional without disruption.
+
+---
 
 ## ✨ What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback Engine)
 
@@ -410,6 +429,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.59 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Setup-1.0.59.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
