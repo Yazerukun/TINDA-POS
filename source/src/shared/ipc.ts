@@ -133,6 +133,8 @@ export interface TindaApi {
     dataDir: () => Promise<string>
     databaseFile: () => Promise<string>
     openDataDir: () => Promise<void>
+    openPath: (path: string) => Promise<string>
+    revealPath: (path: string) => Promise<void>
     checkIntegrity: () => Promise<{ ok: boolean; message: string }>
     isOnline: () => Promise<boolean>
     openExternal: (url: string) => Promise<void>
@@ -179,6 +181,7 @@ export interface TindaApi {
       backupPath: string
       installerPath: string
     }>
+    onProgress: (cb: (progress: { downloaded: number; total: number; percent: number }) => void) => () => void
   }
 
   auth: {

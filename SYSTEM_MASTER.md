@@ -1029,6 +1029,43 @@
   - 0 TypeScript errors across Node and Web targets (`typecheck:node`, `typecheck:web`).
   - Strict compliance with `docs/RELEASE-WORKFLOW.md` and `docs/RELEASE-STATE.md`.
 
+---
+
+## 51. Profit Margins Restoration & Automated VIP Rollback Engine (v1.0.58)
+
+* **Date:** October 5, 2026
+* **Target Version:** `v1.0.58`
+* **Trigger:** VIP merchant feedback on profit drop and request for hardened, direct 1-click rollback with progress tracking and professional English UI copy.
+* **Component Impact:**
+  - `source/src/main/services/reporting.ts`
+  - `source/src/main/services/rollbackService.ts`
+  - `source/src/main/ipc/index.ts`
+  - `source/src/preload/index.ts`
+  - `source/src/renderer/src/components/update/RollbackModal.tsx`
+  - `source/src/renderer/src/components/theme/ThemeSelector.tsx`
+  - `source/src/renderer/src/stores/theme.ts`
+  - `source/src/renderer/src/pages/Settings.tsx`
+  - `source/src/renderer/src/pages/Backup.tsx`
+* **Technical Implementations:**
+  1. **Gross Profit & True Net Profit Margin Accuracy:**
+     - In `reporting.ts`, corrected `summary.profit_c` calculation: `Math.round((grossSalesTotal - refunds.c) - (cost.c - refundedCost.c))`.
+     - Preserves Realized Sales (`sales_total_c` excluding uncollected Utang credit) while maintaining true merchandise profit margin across all delivered goods.
+     - Resolved negative profit dips in date-grouped sales charts by aligning profit curves to gross merchandise margins.
+  2. **Hardened VIP Downgrade Protection:**
+     - Both `rollback:getTargets` and `rollback:execute` IPC handlers now verify `licenseService.getStatus().isVip`. Non-VIP access is rejected with a security error.
+     - Prevents unauthorized downgrades, crack attempts, or machine bypasses on store cashier terminals.
+     - Added VIP Pro Crown badges to `Version Rollback` buttons in Settings and Backup pages.
+  3. **Direct Execution & Automatic System Restart ("Diritsyo Na"):**
+     - Once download completes, `rollbackService.ts` spawns the target installer detached with `--updated` and cleanly triggers `app.quit()` after 1.5 seconds.
+     - Eliminates file locks on `tindapos.db` and executables, allowing NSIS to update smoothly and relaunch TINDA POS without cashier friction.
+     - Auto-detects runtime flavor (`portableRuntime(process.env)`) to select `Setup` vs `Portable` binaries accurately.
+  4. **Professional Live Download Progress Bar:**
+     - IPC streaming via `_e.sender.send('rollback:progress', { downloaded, total, percent })`.
+     - Apple-design gradient progress bar in `RollbackModal.tsx` displaying live percentage and MB transferred (`X MB / Y MB`).
+  5. **100% Professional English Interface:**
+     - Replaced all Bisaya text in `ThemeSelector.tsx` and `theme.ts` with polished English descriptions and eye-care guidance.
+
+
 
 
 

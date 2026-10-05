@@ -12,6 +12,8 @@ const api: TindaApi = {
     dataDir: () => invoke<string>('app:dataDir'),
     databaseFile: () => invoke<string>('app:databaseFile'),
     openDataDir: () => invoke<void>('app:openDataDir'),
+    openPath: (targetPath: string) => invoke<string>('app:openPath', targetPath),
+    revealPath: (targetPath: string) => invoke<void>('app:revealPath', targetPath),
     checkIntegrity: () => invoke<{ ok: boolean; message: string }>('app:checkIntegrity'),
     isOnline: () => invoke<boolean>('app:isOnline'),
     openExternal: (url: string) => invoke<void>('app:openExternal', url),
@@ -54,7 +56,14 @@ const api: TindaApi = {
   },
   rollback: {
     getTargets: () => invoke<import('../main/services/rollbackService').RollbackTarget[]>('rollback:getTargets'),
-    execute: (version: string) => invoke<{ ok: boolean; message: string; backupPath: string; installerPath: string }>('rollback:execute', version)
+    execute: (version: string) => invoke<{ ok: boolean; message: string; backupPath: string; installerPath: string }>('rollback:execute', version),
+    onProgress: (cb: (progress: { downloaded: number; total: number; percent: number }) => void) => {
+      const listener = (_e: IpcRendererEvent, p: { downloaded: number; total: number; percent: number }): void => cb(p)
+      ipcRenderer.on('rollback:progress', listener)
+      return () => {
+        ipcRenderer.removeListener('rollback:progress', listener)
+      }
+    }
   },
   auth: {
     status: () => invoke<import('@shared/types').SessionUser | null>('auth:status'),

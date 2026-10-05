@@ -81,6 +81,8 @@ handle('app:startup', (_e, enabled?: boolean) => {
 handle('app:dataDir', () => appDirs().root)
 handle('app:databaseFile', () => getDbFile())
 handle('app:openDataDir', () => { sessionSvc.requirePermission('settings:manage'); return shell.openPath(appDirs().root) })
+handle('app:openPath', (_e, targetPath: string) => { sessionSvc.requirePermission('settings:manage'); return shell.openPath(targetPath) })
+handle('app:revealPath', (_e, targetPath: string) => { sessionSvc.requirePermission('settings:manage'); shell.showItemInFolder(targetPath) })
 handle('app:checkIntegrity', () => require('../database/connection').integrityCheck())
 handle('app:isOnline', async () => {
   if (!net.isOnline()) return false
@@ -892,11 +894,30 @@ handle('update:download', () => getUpdateService().download())
 handle('update:install', () => getUpdateService().install())
 handle('update:dismiss', () => getUpdateService().dismiss())
 
-// ---- Rollback & Version Recovery ----
-handle('rollback:getTargets', () => rollbackService.getRollbackTargets())
+// ---- Rollback & Version Recovery (VIP Pro Protected) ----
+handle('rollback:getTargets', () => {
+  sessionSvc.requirePermission('settings:manage')
+  const status = licenseService.getStatus()
+  if (!status.isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP Pro license required. Version rollback and downgrade recovery is protected and strictly restricted to verified VIP Pro merchants.')
+  }
+  return rollbackService.getRollbackTargets()
+})
 handle('rollback:execute', async (_e: IpcMainInvokeEvent, version: string) => {
   sessionSvc.requirePermission('settings:manage')
-  return await rollbackService.executeRollback(version)
+  const status = licenseService.getStatus()
+  if (!status.isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP Pro license required. Version rollback and downgrade recovery is protected and strictly restricted to verified VIP Pro merchants.')
+  }
+  return await rollbackService.executeRollback(version, (downloaded, total) => {
+    try {
+      _e.sender.send('rollback:progress', {
+        downloaded,
+        total,
+        percent: total > 0 ? Math.round((downloaded / total) * 100) : 0
+      })
+    } catch {}
+  })
 })
 
 // ---- Audit ----

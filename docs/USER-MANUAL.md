@@ -1,23 +1,23 @@
-# TINDA POS v1.0.57 User Manual
+# TINDA POS v1.0.58 User Manual
 
-**TINDA POS v1.0.57** - Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v1.0.58** — Official User Manual & Operations Guide for Store Owners and Cashiers.
 
-This guide covers release **v1.0.57**, introducing the **Financial Realized Revenue Model (Utang Exclusion from Net Sales)**, **Zero-Flicker VIP Store Experience**, and **Multi-Theme Eye-Care Background Switcher**, alongside **Version Rollback & Safe Downgrade Recovery Manager**, **Permanent Hardware-Anchored VIP Licensing**, VIP E-Wallet & Cash Audit Hub, Store Petty Cash Out (F7), Shift Z-Read Cash Drawer Balancing, True Net Profit Reporting, and Instant Hardware Barcode Auto-Capture Engine.
+This guide covers release **v1.0.58**, introducing **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**, alongside the **Financial Realized Revenue Model**, **Zero-Flicker VIP Store Experience**, and **Multi-Theme Eye-Care Background Switcher**, **Version Rollback Recovery Manager**, and **Permanent Hardware-Anchored VIP Licensing**.
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## What's New in v1.0.57 (Realized Revenue Model, Zero-Flicker VIP Experience & Multi-Theme Engine)
+## What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback)
 
-- **Strict Financial Realized Revenue Model (Utang Exclusion from Net Sales):**
-  - Transactions processed on UTANG (credit) are strictly separated from realized sales. Today's Net Sales and Total Sales in the Dashboard, Sales Monitor, and TINDA POS Owner Cloud Executive accurately reflect cash and e-wallet funds collected, while unpaid store credit stands purely in Outstanding Utang and Customer Ledgers.
-- **Zero-Flicker VIP Store Experience:**
-  - Synchronous pre-hydrated license state eliminates layout shifts, button flashes, and community lock banners when navigating to E-Wallet & Audit and Settings.
-- **Multi-Theme & Eye-Care Background Switcher:**
-  - 4 tailored viewing modes (Midnight Black, Daylight White, Warm Eye-Care Sepia, Nordic Slate) with instant 1-tap switching under Settings > Store tab.
-- **Version Rollback & Safe Downgrade Manager:**
-  - Safe 1-tap recovery to previous versions (v1.0.56, v1.0.55) with automatic SQLite pre-rollback safety snapshots.
-- **Permanent Quad-Vault Hardware VIP Licensing:**
-  - Indestructible license preservation across Windows User Profile, AppData, Registry, and SQLite.
+- **Restored Gross Profit & True Net Profit Accounting:**
+  - Gross Profit accurately calculates markup across all fulfilled merchandise (`Gross Sales - Refunds - COGS`), ensuring credit (Utang) purchases do not artificially crash store profits. True Net Profit strictly reflects `Gross Profit - Operating Expenses`.
+- **Hardened VIP Downgrade Protection:**
+  - Version rollback is protected and cryptographically gated behind VIP Pro licenses to prevent unauthorized downgrades, counter terminal tampering, or license bypass attempts.
+- **Direct Execution & Automatic System Restart ("Diritsyo Na"):**
+  - Downgrade installers execute directly once downloaded; TINDA POS automatically saves a safety backup and cleanly relaunches into the target version without manual clicking.
+- **Professional Live Download Progress Bar:**
+  - Real-time progress bar displaying live percentage, downloaded megabytes, and total recovery package size.
+- **100% Professional English Theme Controls:**
+  - All color schemes and eye-care recommendations are presented in clear, professional English.
 
 
 - **1-Click Cashier Petty Cash Out Modal (`F7` Hotkey):**

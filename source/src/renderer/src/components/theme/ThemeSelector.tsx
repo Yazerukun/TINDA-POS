@@ -14,7 +14,7 @@ export function ThemeSelector(): React.JSX.Element {
           <div>
             <h3 className="text-sm font-bold text-white">Appearance &amp; Store Background</h3>
             <p className="text-xs text-slate-400">
-              Pilia ang kolor nga mas klaro sa imong panan-aw (Daylight White, Midnight Black, o Warm Eye-Care).
+              Select the color theme that provides optimal visibility and comfort for your store environment.
             </p>
           </div>
         </div>
@@ -74,9 +74,9 @@ export function ThemeSelector(): React.JSX.Element {
       </div>
 
       <div className="rounded-lg border border-brand-500/20 bg-brand-500/5 p-3 text-[11px] text-slate-300">
-        💡 <strong className="text-brand-400">Tip para sa mata:</strong> Gamita ang{' '}
-        <strong className="text-white">Daylight White (Puti)</strong> kung hayag ang tindahan o may silaw gikan sa adlaw, o{' '}
-        <strong className="text-white">Warm Eye-Care (Sepia)</strong> para dili kapuyon ang mata sa dugay nga cashier shift.
+        💡 <strong className="text-brand-400">Eye-Care Recommendation:</strong> Use{' '}
+        <strong className="text-white">Daylight White</strong> in bright or open-air storefronts with outdoor sunlight glare, or{' '}
+        <strong className="text-white">Warm Eye-Care</strong> to reduce eye strain and blue-light fatigue during extended cashier shifts.
       </div>
     </div>
   )

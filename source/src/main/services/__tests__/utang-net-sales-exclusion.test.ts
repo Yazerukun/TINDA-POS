@@ -134,9 +134,14 @@ describe('Client Feedback: UTANG exclusion from Today Net Sales', () => {
     // Realized Net Sales (excludes UTANG) = 10,000 (Cash) + 5,000 (Cash) = ₱150 (15,000c)
     expect(rep.summary.sales_total_c).toBe(15000)
 
-    // Verify dashboardStats() also excludes utang
+    // Gross Profit preserves true margin: 3 sales * (100 - 40) = ₱180 (18,000c)
+    // Not falsely depressed to ₱30 or negative by deducting uncollected utang from gross margin
+    expect(rep.summary.profit_c).toBe(18000)
+
+    // Verify dashboardStats() also excludes utang from realized sales while keeping profit intact
     const dash = dashboardStats()
     expect(dash.today_sales_c).toBe(15000) // ₱150 realized, NOT ₱300
+    expect(dash.today_profit_c).toBe(18000) // ₱180 gross merchandise margin
     expect(dash.outstanding_utang_c).toBe(15000) // Aling Nena's ₱150 balance in credit card
   })
 })

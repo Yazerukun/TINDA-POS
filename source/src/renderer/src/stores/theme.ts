@@ -17,7 +17,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'dark',
     label: 'Midnight Black',
-    sublabel: 'Itom — Original dark mode, elegant & battery-saving',
+    sublabel: 'Dark mode — High contrast OLED black, elegant and battery-saving',
     bgPreview: '#0a0d0f',
     borderPreview: '#2a313c',
     textPreview: '#f1f5f9',
@@ -27,7 +27,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'light',
     label: 'Daylight White',
-    sublabel: 'Puti — Clean white paper, high contrast sa hayag nga tindahan',
+    sublabel: 'Light mode — Clean paper white with maximum clarity for bright storefronts',
     bgPreview: '#ffffff',
     borderPreview: '#cbd5e1',
     textPreview: '#0f172a',
@@ -37,7 +37,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'warm',
     label: 'Warm Eye-Care',
-    sublabel: 'Sepia / Kahoy — Dili sakit sa mata, soft cream panan-aw',
+    sublabel: 'Eye-care mode — Soft cream & sepia tone to minimize eye fatigue during long shifts',
     bgPreview: '#fbf7ee',
     borderPreview: '#e5d7c0',
     textPreview: '#292524',
@@ -47,7 +47,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'slate',
     label: 'Nordic Slate',
-    sublabel: 'Asul / Navy — Balanced modern navy blue contrast',
+    sublabel: 'Slate mode — Balanced modern deep navy for professional cashier environments',
     bgPreview: '#0f172a',
     borderPreview: '#334155',
     textPreview: '#e2e8f0',

@@ -1,9 +1,10 @@
 import { app, shell } from 'electron'
+import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import { mkdir, chmod } from 'node:fs/promises'
 import { createWriteStream, existsSync, statSync } from 'node:fs'
 import type { ReleaseInfo } from '@shared/update'
-import { compareSemver, parseGitHubReleases } from '@shared/update'
+import { compareSemver, parseGitHubReleases, portableRuntime } from '@shared/update'
 import { createBackupSync, validateBackupDatabase } from '../repositories/backup'
 import { getDb } from '../database/connection'
 import { consumeWithIdleTimeout } from './updateDownload'
@@ -33,7 +34,7 @@ export class RollbackService {
    * Fetch previous stable releases that are strictly older than the currently installed version.
    */
   async getRollbackTargets(): Promise<RollbackTarget[]> {
-    let currentVersion = '1.0.57'
+    let currentVersion = '1.0.58'
     try {
       if (app && typeof app.getVersion === 'function') {
         currentVersion = app.getVersion()
@@ -56,6 +57,26 @@ export class RollbackService {
     } catch {
       // Offline fallback: provide documented stable fallback releases
       releases = [
+        {
+          version: '1.0.57',
+          tag: 'v1.0.57',
+          title: 'TINDA POS v1.0.57 — Realized Revenue, Zero-Flicker VIP Store & Multi-Theme Engine',
+          publishedAt: '2026-10-05T08:35:00Z',
+          releaseNotes: 'Financial realized revenue model, zero-flicker VIP store hydration, multi-theme eye-care engine, and quad-vault licensing.',
+          stable: true,
+          assets: [
+            {
+              name: 'TindaPOS-Setup-1.0.57.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.57/TindaPOS-Setup-1.0.57.exe',
+              size: 112300000
+            },
+            {
+              name: 'TindaPOS-Portable-1.0.57.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.57/TindaPOS-Portable-1.0.57.exe',
+              size: 112080000
+            }
+          ]
+        },
         {
           version: '1.0.56',
           tag: 'v1.0.56',
@@ -121,6 +142,7 @@ export class RollbackService {
 
     const isWindows = process.platform === 'win32'
     const isLinux = process.platform === 'linux'
+    const isPortable = isLinux || portableRuntime(process.env)
     const targets: RollbackTarget[] = []
 
     for (const r of releases) {
@@ -130,10 +152,18 @@ export class RollbackService {
             return /\.AppImage$/i.test(a.name) || /-linux-x64\.tar\.gz$/i.test(a.name)
           }
           if (isWindows) {
-            return /^TindaPOS-Setup-.*\.exe$/i.test(a.name) || /^TindaPOS-Portable-.*\.exe$/i.test(a.name)
+            if (isPortable) {
+              return /^TindaPOS-Portable-.*\.exe$/i.test(a.name)
+            }
+            return /^TindaPOS-Setup-.*\.exe$/i.test(a.name)
           }
           return false
         })
+
+        // If preferred flavor is missing, try any valid Windows binary
+        if (!asset && isWindows) {
+          asset = r.assets.find((a) => /^TindaPOS-.*\.exe$/i.test(a.name))
+        }
 
         if (!asset && r.assets.length > 0) {
           asset = r.assets[0]
@@ -201,7 +231,9 @@ export class RollbackService {
     if (existsSync(installerPath)) {
       try {
         const stats = statSync(installerPath)
-        if (target.assetSize <= 0 || stats.size === target.assetSize) {
+        if (target.assetSize > 0 && Math.abs(stats.size - target.assetSize) < 1024 * 1024) {
+          needsDownload = false
+        } else if (stats.size > 80 * 1024 * 1024) {
           needsDownload = false
         }
       } catch {}
@@ -239,18 +271,54 @@ export class RollbackService {
       await chmod(installerPath, 0o755).catch(() => undefined)
     }
 
-    // Step 4: Launch installer or reveal file
+    // Step 4: Direct execution & automatic system restart
     try {
       if (process.platform === 'win32' && installerPath.endsWith('.exe')) {
-        void shell.openPath(installerPath)
+        const isSetup = installerPath.toLowerCase().includes('setup')
+        const args = isSetup ? ['--updated'] : []
+        const child = spawn(installerPath, args, {
+          detached: true,
+          stdio: 'ignore'
+        })
+        child.unref()
+
+        // Cleanly exit current application so installer can replace binaries without file locks
+        setTimeout(() => {
+          try {
+            app.quit()
+          } catch {
+            try {
+              process.exit(0)
+            } catch {}
+          }
+        }, 1500)
+      } else if (process.platform === 'linux') {
+        const child = spawn(installerPath, [], {
+          detached: true,
+          stdio: 'ignore'
+        })
+        child.unref()
+        setTimeout(() => {
+          try {
+            app.quit()
+          } catch {
+            try {
+              process.exit(0)
+            } catch {}
+          }
+        }, 1500)
       } else {
-        void shell.showItemInFolder(installerPath)
+        void shell.openPath(installerPath)
       }
-    } catch {}
+    } catch {
+      try {
+        await shell.openPath(installerPath)
+      } catch {}
+    }
 
     return {
       ok: true,
-      message: `Verified safety backup saved to ${backupPath}. Version ${targetVersion} installer is ready at ${installerPath}. Launching installer...`,
+      message: `Safety backup secured at ${backupPath}. System is restarting to install v${targetVersion}...`,
       backupPath,
       installerPath
     }

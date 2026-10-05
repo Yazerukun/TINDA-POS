@@ -77,7 +77,8 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
     )
     .get(opts.from + ' 00:00:00', opts.to + ' 23:59:59') as { c: number }
   summary.refunds_c = refunds.c
-  summary.profit_c = Math.round((summary.sales_total_c - refunds.c) - (cost.c - refundedCost.c))
+  // Gross Profit reflects true merchandise margin: (Gross Sales - Refunds) - (COGS - Refunded Cost)
+  summary.profit_c = Math.round((grossSalesTotal - refunds.c) - (cost.c - refundedCost.c))
 
   const expenses = db
     .prepare(
@@ -98,8 +99,9 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
   const chart = dateKeys.map((k) => {
     const inGroup = rows.filter((r) => groupKey(r.created_at, groupBy) === k)
     const total = inGroup.reduce((s, r) => s + Math.max(0, r.total_c - (r.utang_c || 0)), 0)
+    const grossGroupTotal = inGroup.reduce((s, r) => s + r.total_c, 0)
     const cost = inGroup.reduce((s, r) => s + (costBySale.get(r.sale_id) ?? 0), 0)
-    return { label: k, total_c: total, profit_c: Math.round(total - cost) }
+    return { label: k, total_c: total, profit_c: Math.round(grossGroupTotal - cost) }
   })
 
   return { rows, summary, chart }

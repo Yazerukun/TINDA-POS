@@ -787,10 +787,11 @@ function SoftwareUpdatePanel(): React.JSX.Element | null {
         <button
           onClick={() => setRollbackOpen(true)}
           className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-300 border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10"
-          title="Safely downgrade or restore a previous stable version with automatic database backup"
+          title="Safely downgrade or restore a previous stable version with automatic database backup (VIP Pro Protected)"
         >
           <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
           Version Rollback
+          <Crown className="h-3 w-3 text-amber-400" />
         </button>
       </div>
       {showNotes && event.available && (

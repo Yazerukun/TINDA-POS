@@ -8,10 +8,13 @@ import {
   Loader2,
   CheckCircle2,
   X,
-  History
+  History,
+  Crown,
+  FolderOpen
 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { toastSuccess, toastError } from '../../stores/toast'
+import { useLicense } from '../../stores/license'
 
 interface RollbackTarget {
   version: string
@@ -31,11 +34,13 @@ interface RollbackModalProps {
 }
 
 export function RollbackModal({ open, onClose, currentVersion }: RollbackModalProps): React.JSX.Element | null {
+  const isVip = useLicense((s) => s.isVip)
   const [targets, setTargets] = useState<RollbackTarget[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTarget, setSelectedTarget] = useState<RollbackTarget | null>(null)
   const [executing, setExecuting] = useState(false)
   const [progressMsg, setProgressMsg] = useState<string | null>(null)
+  const [progress, setProgress] = useState<{ downloaded: number; total: number; percent: number } | null>(null)
   const [completed, setCompleted] = useState<{ backupPath: string; installerPath: string } | null>(null)
 
   useEffect(() => {
@@ -43,7 +48,13 @@ export function RollbackModal({ open, onClose, currentVersion }: RollbackModalPr
       setSelectedTarget(null)
       setExecuting(false)
       setProgressMsg(null)
+      setProgress(null)
       setCompleted(null)
+      return
+    }
+
+    if (!isVip) {
+      setLoading(false)
       return
     }
 
@@ -59,17 +70,32 @@ export function RollbackModal({ open, onClose, currentVersion }: RollbackModalPr
       .finally(() => {
         setLoading(false)
       })
-  }, [open])
+  }, [open, isVip])
+
+  useEffect(() => {
+    if (!open || !window.api?.rollback?.onProgress) return
+    const unsub = window.api.rollback.onProgress((p) => {
+      setProgress(p)
+      if (p.percent > 0) {
+        setProgressMsg(`Downloading v${selectedTarget?.version ?? 'previous'} installer (${p.percent}%)…`)
+      }
+    })
+    return () => {
+      unsub()
+    }
+  }, [open, selectedTarget?.version])
 
   if (!open) return null
 
   const handleStartRollback = async (target: RollbackTarget) => {
+    if (!isVip) return
     setSelectedTarget(target)
   }
 
   const handleConfirmExecute = async () => {
-    if (!selectedTarget) return
+    if (!selectedTarget || !isVip) return
     setExecuting(true)
+    setProgress(null)
     setProgressMsg(`Creating database safety backup & preparing v${selectedTarget.version} installer...`)
 
     try {
@@ -130,29 +156,80 @@ export function RollbackModal({ open, onClose, currentVersion }: RollbackModalPr
           </span>
         </div>
 
-        {/* Execution In-Progress Screen */}
-        {executing && (
-          <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-6 text-center space-y-3">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-brand-400" />
-            <p className="font-semibold text-white text-sm">Processing Safe Rollback</p>
-            <p className="text-xs text-slate-300">{progressMsg}</p>
+        {/* VIP Protection Screen (Strict Downgrade Hardening) */}
+        {!isVip && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 space-y-3.5">
+            <div className="flex items-center gap-2.5 text-amber-300 font-bold text-sm">
+              <Crown className="h-5 w-5 text-amber-400 shrink-0" />
+              VIP Pro Protected Feature: Downgrade &amp; Rollback Guard
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Version rollback and downgrade recovery is protected and strictly restricted to verified VIP Pro merchants. This security policy prevents unauthorized system downgrades, software tampering, or license bypasses on cashier terminals.
+            </p>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  window.location.hash = '#/settings'
+                }}
+                className="btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-semibold"
+              >
+                <Crown className="h-4 w-4" /> Upgrade to VIP Pro (₱500 Lifetime)
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Rollback Success Screen */}
-        {completed && (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 space-y-3 text-xs text-emerald-200">
-            <div className="flex items-center gap-2 text-sm font-bold text-emerald-300">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400" /> Rollback Installer Launched!
+        {/* Execution In-Progress Screen */}
+        {executing && (
+          <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-6 text-center space-y-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/20 text-brand-400">
+              <Download className="h-6 w-6 animate-bounce text-brand-400" />
             </div>
-            <p>
-              A verified database safety backup was saved to:
-            </p>
-            <p className="font-mono bg-ink-950/60 p-2 rounded text-[11px] text-slate-300 break-all select-all">
+            <div className="space-y-1">
+              <p className="font-bold text-white text-sm">Downloading Version v{selectedTarget?.version}</p>
+              <p className="text-xs text-slate-300">{progressMsg}</p>
+            </div>
+            {/* Professional Progress Bar */}
+            <div className="mt-2 space-y-2 max-w-md mx-auto">
+              <div className="h-3 w-full overflow-hidden rounded-full bg-ink-900 border border-ink-line p-0.5">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-brand-500 via-teal-400 to-emerald-400 transition-all duration-300 shadow-sm"
+                  style={{ width: `${Math.max(progress?.percent ?? 5, 5)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+                <span className="font-semibold text-brand-300">{progress?.percent ?? 0}% completed</span>
+                <span>
+                  {progress && progress.total > 0
+                    ? `${(progress.downloaded / (1024 * 1024)).toFixed(1)} MB / ${(progress.total / (1024 * 1024)).toFixed(1)} MB`
+                    : 'Connecting to release server…'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rollback Success Screen & Automatic Restart */}
+        {completed && (
+          <div className="rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-6 space-y-4 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+              <RotateCcw className="h-7 w-7 animate-spin text-emerald-400" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-white text-base">
+                Restarting TINDA POS Automatically…
+              </h3>
+              <p className="text-xs text-emerald-300 font-medium">
+                Verified safety backup secured. Relaunching in version v{selectedTarget?.version}…
+              </p>
+            </div>
+            <div className="rounded-lg border border-emerald-500/20 bg-ink-950/60 p-2.5 text-[11px] text-slate-300 font-mono break-all select-all">
               {completed.backupPath}
-            </p>
-            <p>
-              The previous installer has been launched. Complete the installer prompt or run the downloaded file to finish rolling back to your chosen version.
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Your VIP Pro license and customer ledgers are automatically preserved.
             </p>
           </div>
         )}
@@ -188,8 +265,8 @@ export function RollbackModal({ open, onClose, currentVersion }: RollbackModalPr
           </div>
         )}
 
-        {/* Target Releases List */}
-        {!executing && !completed && (
+        {/* Target Releases List (Only for VIP Pro) */}
+        {isVip && !executing && !completed && (
           <div className="space-y-2">
             <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <History className="h-3.5 w-3.5" /> Available Previous Stable Releases

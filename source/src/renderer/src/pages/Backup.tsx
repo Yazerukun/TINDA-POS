@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save, HelpCircle } from 'lucide-react'
+import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save, HelpCircle, Crown } from 'lucide-react'
 import type { BackupInfo, StoreSettings } from '@shared/types'
 import { shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -75,8 +75,8 @@ export function Backup(): React.JSX.Element {
             <button onClick={() => useGuide.getState().openGuide('backup')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200">
               <HelpCircle className="h-4 w-4 text-amber-400" /> Backup Guide
             </button>
-            <button onClick={() => setRollbackOpen(true)} className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 border border-amber-500/20" title="Safely downgrade or restore a previous version of TINDA POS">
-              <RotateCcw className="h-3.5 w-3.5 text-amber-400" /> Version Rollback
+            <button onClick={() => setRollbackOpen(true)} className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 border border-amber-500/20" title="Safely downgrade or restore a previous version of TINDA POS (VIP Pro Protected)">
+              <RotateCcw className="h-3.5 w-3.5 text-amber-400" /> Version Rollback <Crown className="h-3 w-3 text-amber-400" />
             </button>
             <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
           </div>
