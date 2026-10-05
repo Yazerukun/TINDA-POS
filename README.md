@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.55-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.56-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -12,139 +12,30 @@
 
 ### Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses
 
-**Sell products · Track inventory · Manage customer Utang · VIP E-Wallet Reconciliation — all in one focused desktop app. No internet required.**
+**Sell products · Track inventory · Manage customer Utang · Reconcile cash — all in one focused desktop app. No internet required.**
 
 <br />
 
-[⬇️ Download v1.0.55 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Setup-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Portable-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-1.0.55-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.56 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Setup-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Portable-1.0.56.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-1.0.56-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
+## ✨ What's New in v1.0.56 (Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery)
 
-> **Zero Float Physical Cash Drawer Override, Dedicated Transactions Ledger, 1-Tap Void/Delete Management & Draggable Lounge**
+> **Quad-Vault Self-Healing VIP Licensing, Zero Machine ID Drift & 1-Tap Version Rollback Recovery**
 
-- 📱 **Zero Float & Physical Cash Drawer Override**: Cashiers can freely edit or 1-tap reset Expected Cash Drawer (`₱0.00 (Zero Float)`, `Sync POS Shift (₱...)`, `E-Wallet Net Only`). Completely eliminates false cash shortages when store keeps E-wallet money in a separate pouch or audits independently.
-- 📋 **Dedicated Transactions Ledger Tab**: Full-width tab with real-time search across Reference #, Customer Name, Phone, and Cashier; quick channel (`GCash`/`Maya`) and type (`Cash In`/`Cash Out`) filters; and instant thermal slip reprints.
-- 🗑️ **Accessible 1-Tap Void/Delete Management**: Prominent red `Void` buttons with Apple-design frosted confirmation modal and instant shift summary + drawer balance recalculation without ghost records.
-- 💬 **Enhanced Global Lounge**: Non-blocking draggable floating window, minimizable floating capsule pill, dual-tone Web Audio API chime with mute/unmute toggle, and self-message deletion.
-
----
-
-## ✨ What's New in v1.0.51 — Free Community Lounge, Red Unread Alerts & Linux Support
-
-> **100% Free Nationwide Merchant Chat, Red Pulse Unread Alerts, Streamlined Header & Multi-Platform Releases**
-
-- 💬 **100% Free Nationwide Community Lounge**:
-  - Real-time merchant messaging is now **completely free and accessible for all store owners** (both Free and VIP Pro tiers).
-  - Ask questions, share wholesale supplier deals, and collaborate with peers nationwide without paywalls.
-  - Verified **`👑 Ian (Founder / Dev) [VERIFIED]`** identity remains cryptographically secured.
-- 🔴 **Dynamic Red Pulse Unread Alert Indicator**:
-  - Non-blocking 12-second background heartbeat checks for new incoming merchant messages when the chat drawer is closed.
-  - The floating **Global Lounge** trigger button automatically pulses with a **glowing red beacon** and **`NEW`** badge whenever an unread message arrives.
-- 🧹 **Clean POS Header Toolbar**:
-  - Removed unclickable `+ add · F2 qty` informational clutter from the header navigation bar for a cleaner counter view.
-- 🐧 **Official Linux AppImage Distribution**:
-  - Official standalone **Linux AppImage** (`TindaPOS-1.0.51.AppImage`) with native Wayland support (`xwayland: 0`) and bundled SQLite binaries (`linux-x64.node`).
+- 💎 **Permanent Hardware-Anchored VIP Licensing**: Solved the issue where software updates or network switching caused VIP merchants to lose their license. The canonical Machine ID is calculated once from immutable hardware attributes (`MachineGuid` + Motherboard UUID) without volatile network interface dependencies, and locked across 4 durable storage locations (`machine.id`, registry, database).
+- 🛡️ **Quad-Vault Redundant Persistence & Self-Healing**: Licenses are mirrored synchronously across 4 vaults (`%USERPROFILE%/.tindapos/tinda_license.json`, `%APPDATA%/TINDA POS/tinda_license.json`, Windows Registry `HKCU\Software\TindaPOS\LicensePayload`, and SQLite DB `system_license_vault`). If any file is deleted or cleared by disk cleanup or updates, the system automatically detects, restores, and self-heals all vaults on startup.
+- 🔄 **Zero-Friction Legacy VIP Rescue**: Automatically detects and reconciles existing VIP Pro licenses and legacy candidate IDs, locking their status permanently so merchants never lose their VIP status and Dev Francis never has to re-issue keys.
+- ⏪ **Version Rollback & Safe Downgrade Recovery Manager (Client Requested)**:
+  - If a merchant encounters any issues or bugs with a newly installed update, they can safely 1-tap rollback to any previous version (`v1.0.55`, `v1.0.54`) directly from Settings > About or Backup & Restore.
+  - Automatically creates a verified SQLite safety backup (`createBackupSync`) before initiating rollback.
+  - Additive database migrations ensure previous versions open the existing database cleanly with zero data loss.
+  - Automatically downloads and launches the previous version's installer with real-time download tracking.
 
 ---
 
-## ✨ What's New in v1.0.50 — Global Community Lounge & Live Dev Announcements
-
-> **Real-Time VIP Community Chat, Live Developer Announcements, Verified Dev Badge & English Modals — Powered by Cloudflare**
-
-- 💬 **TINDA Global Community Lounge** (VIP Pro Exclusive):
-  - A floating **Global Lounge** button in the bottom-right corner opens a real-time community chat drawer.
-  - **VIP Pro members** can send messages to all stores worldwide; free-tier users have read-only access.
-  - Amber unread-message dot badge when there are new messages while the drawer is closed.
-  - Polling is active **only while the drawer is open** (every 6 seconds) — stops automatically to save bandwidth.
-  - **Zero-freeze architecture**: all Cloudflare network calls run with `AbortSignal` timeouts (4s GET / 5s POST) and fail silently — the POS never stalls.
-- 📢 **Live Developer Announcements**:
-  - Pinned announcement banner at the top of the Community Lounge always shows the latest official message from the developer.
-  - Used for update notices, downtime warnings, and feature previews.
-- 👑 **Dev/Owner Verified Badge**:
-  - Founder messages display as **`👑 Ian (Founder / Dev) [VERIFIED]`** in a distinct amber style.
-  - Badge is cryptographically verified **server-side** — cannot be spoofed by any regular user.
-- 🌐 **English Update Notification Modal**:
-  - The update pop-up is now 100% in English: **"New Update Available"**, **"Later"**, **"Download Update"**, **"Restart & Install"**.
-- 🏗️ **Quality**: 59/59 test suites passing · 0 TypeScript errors · all master invariants passed.
-
----
-
-## ✨ What's New in v1.0.49 (Extended Specifications Visibility & Manager Bargain Authorization)
-
-> **Multiline Technical Specs Wrap, Secondary Description Display, Manager-PIN Bargain Overrides & Purchase Cost Protection**
-
-- 📐 **Extended Product Name & Technical Specifications Visibility**:
-  - **Expanded POS Catalog Cards**: Grid card height increased from 160px to 185px with adaptive 3-line wrap (`break-words`), guaranteeing long hardware item names and millimeter suffixes (e.g. `1/2" x 100mm`, `3.2mm`, `Grade 40`) are never cut off.
-  - **Dedicated Secondary Specifications Display**: Directly shows product descriptions and technical dimensions in `text-[11px] text-slate-400` beneath the title on catalog cards for instant differentiation between millimeter size variants.
-  - **Inventory Specifications Input**: Added dedicated multiline description/specs field in `ProductModal` with zero disruptive schema changes (persists to core `products.description` column).
-  - **Cart & Held Sales Retention**: Line items in the cart and resumed held sales retain full technical specifications.
-- 🏷️ **Line-Item Custom Price Override & Manager Bargain Authorization ("Tawad")**:
-  - **Manager / Admin Security PIN Gate**: Cashiers attempting to modify an item's unit price are prompted for a 4-digit Manager or Admin PIN (`auth:verifyManagerPin`) without mutating the cashier's active session, user ID, or open shift.
-  - **Direct Manager Access**: Store owners and managers logged into an Admin/Manager account can edit line prices directly without redundant PIN prompts.
-  - **Visual Bargain Badge**: Overridden items feature an amber `✏️ Bargain / Custom Price` tag and struck-through original retail price.
-  - **Live Margin Protection Warning**: `PriceOverrideModal` alerts the manager if a negotiated price drops below product purchase cost (`cost_base_c`).
-  - **Seamless Reset**: One-click "Reset to normal" restores standard retail base price or wholesale volume tiering.
-  - **Transactional Ledger & Sync Integrity**: Custom unit prices and subtotals persist accurately in `sale_items` for correct profit calculations, X/Z-Read reports, and Cloudflare Sync.
-
----
-
-## ✨ What's New in v1.0.48 (Executive Cloud Dashboard Sync & Remote Sales Monitoring)
-
-> **Real-Time Live Sales Cloud Sync, Cloudflare Worker Backend, Multi-Branch Store ID & VIP Cloud Tab**
-
-- ☁️ **Executive Cloud Owner Dashboard Integration**: Store owners can view live sales, gross profit, active cashier shifts, and inventory levels from any smartphone or laptop anywhere in the world via the official Web Dashboard ([https://tinda-owner-dashboard.pages.dev/](https://tinda-owner-dashboard.pages.dev/)).
-- 🔄 **Automated Background Push Engine**: Completed transactions, Z-Read shift closures, and stock movements auto-sync to Cloudflare Workers with zero cashier latency. Offline queues ensure zero transaction drops if internet connectivity is intermittent.
-- ⚙️ **Dedicated Cloud Dashboard (VIP) Tab**: View connection status, copy Store ID & Sync Key, trigger manual synchronization, and test connection latency with 1-click.
-
----
-
-## ✨ What's New in v1.0.44 (Weighable & Fractional Decimal Quantity Mode)
-=======
-[⬇️ Download v1.0.55 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Setup-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-Portable-1.0.55.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux Package](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.55/TindaPOS-1.0.55-linux-x64.tar.gz)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.44/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
-
-</div>
-
-## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
-
-> **Zero Float Physical Cash Drawer Override, Dedicated Transactions Ledger, 1-Tap Void/Delete Management & Draggable Lounge**
-
-- 📱 **Zero Float & Physical Cash Drawer Override**: Cashiers can freely edit or 1-tap reset Expected Cash Drawer (`₱0.00 (Zero Float)`, `Sync POS Shift (₱...)`, `E-Wallet Net Only`). Completely eliminates false cash shortages when store keeps E-wallet money in a separate pouch or audits independently.
-- 📋 **Dedicated Transactions Ledger Tab**: Full-width tab with real-time search across Reference #, Customer Name, Phone, and Cashier; quick channel (`GCash`/`Maya`) and type (`Cash In`/`Cash Out`) filters; and instant thermal slip reprints.
-- 🗑️ **Accessible 1-Tap Void/Delete Management**: Prominent red `Void` buttons with Apple-design frosted confirmation modal and instant shift summary + drawer balance recalculation without ghost records.
-- 💬 **Enhanced Global Lounge**: Non-blocking draggable floating window, minimizable floating capsule pill, dual-tone Web Audio API chime with mute/unmute toggle, and self-message deletion.
->>>>>>> 8ae85ff (release: v1.0.55 - E-Wallet Reconciliation Hub Polish & Enhanced Lounge)
-
-> **Kilo & Scale Precision, Real-Time Peso Totaling, Fractional Inventory Deductions, Thermal Receipt & CFD Parity**
-
-- 🥩 **Weighable & Fractional Decimal Quantity Engine ("Kilo Mode")**: Tailored specifically for Philippine meat shops, fish vendors, vegetable stands, rice retailers, feeds stores, and sari-sari counters. Cashiers can now enter fractional weights directly into the POS cart (e.g. `2.5 kg`, `2.24 kg`, `2.25 kg`, `0.75 kg`) without integer truncation.
-- 🎯 **Intelligent Unit Detection (`isWeighableUnit`)**: Automatically recognizes weighable and measurable commodities (`kilo`, `kg`, `kls`, `kilogram`, `g`, `gram`, `liter`, `l`, `ml`, `m`). Packaged goods (`pc`, `bottle`, `can`, `sachet`, `box`) strictly retain whole-number stepping (+1 / -1) and discrete integer rules.
-- 🧮 **Instant Real-Time Peso Totaling**: Line subtotals dynamically compute on every keystroke:
-  $$\text{Subtotal} = \text{round}(\text{Unit Price} \times \text{Weight})$$
-  *Example:* Fresh Pork Liempo @ ₱180.00/kilo:
-  - `2.25 kg` $\rightarrow$ **₱405.00**
-  - `2.24 kg` $\rightarrow$ **₱403.20**
-  - `0.50 kg` $\rightarrow$ **₱90.00**
-  Centavo integer precision (`_c`) guarantees zero floating-point currency drift.
-- 🧾 **Thermal ESC/POS Receipt, CFD & Refund Parity**:
-  - Receipt printouts format clean lines (`2.24 x 180.00    403.20`) compatible with all 58mm/80mm thermal printers.
-  - Wireless Customer Facing Display (`/cfd`) presents live weight breakdown in real time.
-  - Partial weight returns supported via atomic inventory stock restoration (e.g. refunding 1.24 kg of 2.24 kg sale returns ₱223.20 to customer and restores 1.24 kg to stock).
-- 🛡️ **100% Cryptographic VIP Pro Preservation**: Existing customer VIP Pro licenses (`tinda_license.json`) remain 100% permanently valid and active across the upgrade with zero downtime or re-activation burden.
-- 🔄 **Seamless Auto-Update Compatibility**: Direct transition from v1.0.28–v1.0.43 to v1.0.44 via `electron-updater` and GitHub Releases.
-
-> **Petty Cash Out & True Net Profit, Expiry Management, Wireless Customer Screen (CFD) with Dynamic QR, Wholesale Tiering & Cross-Platform Parity**
-
-- 💸 **Store Petty Cash Out & True Net Profit Intelligence (`F7` Hotkey)**: Cashiers can record operational expenses directly at the counter (store supplies, electricity bills, helper wages, delivery fees). Shift expected cash accounts for cash disbursements ($$\text{Expected} = \text{Float} + \text{Sales} + \text{Repayments} - \text{Refunds} - \text{Expenses}$$) eliminating false shortages, and Dashboard calculates True Net Profit ($$\text{Net} = \text{Sales} - \text{COGS} - \text{Expenses}$$).
-- 📦 **Expiration & Spoilage Prevention Engine**: Supports single-item and multi-batch FIFO tracking (`product_batches`). Point-of-Sale gives soft toast warnings when scanning items near expiration (`SOON` within 7 days, `NEAR` within 30 days) and automatically quarantines expired stock from sellable inventory.
-- 📱 **Wireless Customer Facing Display (CFD) with Dynamic Offline QR**: Turns any spare smartphone, tablet, or iPad into a live counter-top customer screen on local Wi-Fi via Port 3112/3113 (`/cfd` and `/display`). Features zero-install in-memory SVG QR codes for exact-centavo GCash & Maya scanning and automatic screen wake lock.
-- 🏷️ **Wholesale Tiering & Automated Volume Discounts**: Migration 10 adds volume tier pricing (`wholesale_price_c`, `wholesale_min_qty`). Cart automatically drops unit price to wholesale upon reaching minimum quantity threshold, complete with visual badges and price strikethroughs.
-- 🛡️ **100% Cryptographic VIP Pro Preservation & Non-Destructive Storage**: Guaranteed zero data loss across upgrades. Customer databases (`tindapos.db`), credit ledgers, and VIP Pro machine licenses remain 100% permanently active and valid.
-
----
-
-## ✨ What's New in v1.0.42 (Instant Hardware Barcode Auto-Capture & Inventory Speed Cataloging)
+## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Zero Float)
 
 > **Zero-Typing Barcode Gun Auto-Capture, Active Input Contamination Sanitizer & Store Handbook Polish**
 
