@@ -8,13 +8,14 @@ interface AppLogoProps {
 }
 
 /**
- * TINDA POS "Mathematical Mass" Mark (The Quantum Summation T)
+ * TINDA POS "Ultra-Modern Quantum T" Mark (Mathematical Edition)
  * 
- * Geometry & Concept:
- * - Geometric Isometric Hexagon Block (Mass / Physical Store Density)
- * - Interlocking Golden Ratio (Φ = 1.618) Vector Beams
- * - Stylized Mathematical Summation (Σ) evolving into the Store Apex and Letter "T"
- * - High-precision Emerald + Teal + Cyan laser spectrum gradients
+ * Geometry & Aesthetics:
+ * - Apple-grade ultra-clean squircle container with inset glass bevel
+ * - Precision-engineered geometric "T" fused with summation (Σ) dynamic angles
+ * - Balanced mathematical proportions with subtle layered depth
+ * - Radiant Emerald-Cyan gradient (VIP Pro Gold gradient)
+ * - Scalable from 16px micro-icon to 512px retina display
  */
 export function AppLogo({
   size = 40,
@@ -33,77 +34,115 @@ export function AppLogo({
         height={size}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="overflow-visible drop-shadow-[0_2px_8px_rgba(16,185,129,0.25)]"
+        className="overflow-visible drop-shadow-[0_2px_10px_rgba(16,185,129,0.28)]"
       >
         <defs>
-          {/* Mathematical Mass Gradients */}
-          <linearGradient id="tindaMassPrimary" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#10b981" />
-            <stop offset="45%" stopColor="#059669" />
-            <stop offset="100%" stopColor="#047857" />
+          {/* Base Background Gradient */}
+          <linearGradient id="tindaModernBg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#0a231c" />
+            <stop offset="50%" stopColor="#061612" />
+            <stop offset="100%" stopColor="#020b08" />
           </linearGradient>
 
-          <linearGradient id="tindaMassHighlight" x1="20" y1="15" x2="80" y2="40" gradientUnits="userSpaceOnUse">
+          {/* Core Emerald Mark Gradient */}
+          <linearGradient id="tindaModernMark" x1="18" y1="18" x2="82" y2="82" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stopColor="#34d399" />
-            <stop offset="100%" stopColor="#10b981" />
+            <stop offset="45%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#059669" />
           </linearGradient>
 
-          <linearGradient id="tindaQuantumBeam" x1="50" y1="30" x2="50" y2="88" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#a7f3d0" />
+          {/* Crossbar Apex Gradient */}
+          <linearGradient id="tindaApexGlow" x1="20" y1="20" x2="80" y2="28" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#6ee7b7" />
             <stop offset="50%" stopColor="#34d399" />
             <stop offset="100%" stopColor="#059669" />
           </linearGradient>
 
-          <linearGradient id="tindaVipGlow" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#fbbf24" />
-            <stop offset="100%" stopColor="#d97706" />
+          {/* Stem Depth Gradient */}
+          <linearGradient id="tindaStemDepth" x1="50" y1="25" x2="50" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#a7f3d0" />
+            <stop offset="40%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#047857" />
+          </linearGradient>
+
+          {/* VIP Pro Gold Radiance */}
+          <linearGradient id="tindaVipModern" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#fef08a" />
+            <stop offset="35%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#b45309" />
+          </linearGradient>
+
+          {/* Glass Bevel Highlight */}
+          <linearGradient id="tindaGlassBevel" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.22" />
+            <stop offset="30%" stopColor="#ffffff" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
           </linearGradient>
         </defs>
 
-        {/* Outer Isometric Hexagonal Mass (Bounding Volume) */}
-        <polygon
-          points="50,6 88,28 88,72 50,94 12,72 12,28"
-          fill="#06120e"
-          stroke={isVip ? 'url(#tindaVipGlow)' : 'url(#tindaMassPrimary)'}
-          strokeWidth="3.5"
-          strokeLinejoin="round"
+        {/* 1. Cupertino Squircle Chassis */}
+        <rect
+          x="4"
+          y="4"
+          width="92"
+          height="92"
+          rx="22"
+          fill="url(#tindaModernBg)"
+          stroke={isVip ? 'url(#tindaVipModern)' : 'url(#tindaGlassBevel)'}
+          strokeWidth={isVip ? '2.5' : '1.5'}
         />
 
-        {/* Internal Sacred Geometry Grid Lines */}
-        <path
-          d="M50,6 L50,94 M12,28 L88,72 M12,72 L88,28"
-          stroke="#10b981"
-          strokeWidth="1"
-          strokeOpacity="0.18"
-          strokeDasharray="2 3"
+        {/* 2. Inner Radial Soft Glow */}
+        <circle
+          cx="50"
+          cy="46"
+          r="32"
+          fill={isVip ? '#f59e0b' : '#10b981'}
+          opacity="0.14"
+          filter="blur(10px)"
         />
 
-        {/* The Mathematical Summation Apex (Σ Top Shelf / Store Apex) */}
+        {/* 3. The Modern Iconic T Mark (Mathematical Precision) */}
+        {/* Top Horizontal Wing / Bar with precision rounded caps */}
         <path
-          d="M24,24 L76,24 L58,42 L76,42"
-          stroke="url(#tindaMassHighlight)"
-          strokeWidth="5"
+          d="M20 28 C20 24.686 22.686 22 26 22 H74 C77.314 22 80 24.686 80 28 C80 31.314 77.314 34 74 34 H61 V74 C61 77.314 58.314 80 55 80 H45 C41.686 80 39 77.314 39 74 V34 H26 C22.686 34 20 31.314 20 28 Z"
+          fill={isVip ? 'url(#tindaVipModern)' : 'url(#tindaModernMark)'}
+        />
+
+        {/* 4. Left Summation Winglet (Mathematical Σ Accent Angle) */}
+        <path
+          d="M20 40 L33 40 L26 49 L20 49 Z"
+          fill={isVip ? '#fde047' : '#34d399'}
+          opacity="0.85"
+        />
+
+        {/* 5. Right Summation Winglet (Symmetric Equilibrium Apex) */}
+        <path
+          d="M80 40 L67 40 L74 49 L80 49 Z"
+          fill={isVip ? '#d97706' : '#059669'}
+          opacity="0.85"
+        />
+
+        {/* 6. Vertical Light Spine Ray (Precision Optical Center) */}
+        <line
+          x1="50"
+          y1="23"
+          x2="50"
+          y2="78"
+          stroke={isVip ? '#fffbeb' : '#ecfdf5'}
+          strokeWidth="1.8"
           strokeLinecap="round"
-          strokeLinejoin="round"
+          opacity="0.5"
         />
 
-        {/* The Central Quantum Column (Letter 'T' Stem & Energy Pillar) */}
-        <path
-          d="M50,24 L50,82"
-          stroke="url(#tindaQuantumBeam)"
-          strokeWidth="6"
-          strokeLinecap="round"
+        {/* 7. Quantum Center Core Jewel */}
+        <circle
+          cx="50"
+          cy="28"
+          r="3"
+          fill="#ffffff"
+          className="drop-shadow-[0_0_5px_#34d399]"
         />
-
-        {/* Isometric Mass Base Pedestal (Balanced Checkout Equilibrium) */}
-        <polygon
-          points="32,82 68,82 62,88 38,88"
-          fill="url(#tindaMassHighlight)"
-          opacity="0.9"
-        />
-
-        {/* Quantum Vector Spark / Genius Intersection Node */}
-        <circle cx="50" cy="42" r="3.5" fill="#ffffff" className="drop-shadow-[0_0_6px_#34d399]" />
       </svg>
 
       {/* Real-time Hardware Pulse Badge */}
@@ -116,3 +155,4 @@ export function AppLogo({
     </div>
   )
 }
+

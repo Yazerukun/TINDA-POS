@@ -1007,16 +1007,23 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-3.5 text-xs text-teal-200 space-y-2">
           <div className="flex items-center gap-2 font-bold text-teal-300">
             <Printer className="h-4 w-4 text-teal-400" />
-            <span>58mm Thermal Printers (GOOJPRT PB-58H / POS-58 / Xprinter) Setup Tips:</span>
+            <span>GOOJPRT PB-58H (JK-5802H) &amp; 58mm Thermal Printers Guide:</span>
           </div>
           <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
             <li><strong>Paper Width:</strong> Select <strong>58mm</strong> below for 100% compact, zero-overflow thermal receipts.</li>
-            <li><strong>USB Connection:</strong> Plug in the USB cable, install the POS-58 / Xprinter 58mm Windows Driver, select your printer from the list, and tap <em>Test Print</em>.</li>
-            <li><strong>Bluetooth Connection:</strong> Pair the printer in Windows Bluetooth settings (default PIN: <code>0000</code> or <code>1234</code>). In Windows <em>Printers &amp; Scanners</em>, ensure the driver is assigned to the printer's Outgoing COM port.</li>
+            <li><strong>Official Driver:</strong> Download and install the <em>Xprinter Driver v7.77</em> (select <strong>POS-58</strong> model) or <em>GOOJPRT PB-58H USB Driver</em> from OEMDrivers / manufacturer.</li>
+            <li><strong>Walay mo-gawas nga papel o Blank Receipt? (Troubleshooting):</strong>
+              <ul className="list-circle pl-4 mt-1 space-y-0.5 text-amber-200">
+                <li><strong>Thermal Paper Roll Balit-ad:</strong> Ang thermal paper naay usa lang ka sensitive side. Scratch-i gamit ang kuko; kung mo-itom, mao to ang thermal side nga kinahanglan <em>mo-atubang sa heater/printhead</em>. Kung balit-ad ang papel, mo-feed lang o dili mo-init.</li>
+                <li><strong>Windows Printer Port:</strong> Sa Windows <em>Control Panel &rarr; Devices and Printers &rarr; Printer Properties &rarr; Ports</em>, siguroha nga naka-check ang saktong USB Virtual Port (e.g., <code>USB001</code> o <code>USB002</code>), dili LPT1 o COM port kung USB ang connection.</li>
+                <li><strong>Printer Preferences Paper Size:</strong> Sa Windows Printing Preferences, ibutang ang Default Paper Size sa <strong>58 x 297 mm</strong> o <strong>Roll Paper 58 x Continuous</strong>.</li>
+              </ul>
+            </li>
+            <li><strong>Bluetooth Connection:</strong> Pair sa Windows gamit ang PIN <code>0000</code>. Assign ang driver ngadto sa Outgoing COM port.</li>
           </ul>
         </div>
 
-        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. For automatic cutting, enable Auto Cut in the Windows driver/preferences of that printer. Sales still complete if the printer is missing or offline.</p>
+        <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. Zero-margin spooling and automatic paper-height tracking are calibrated for seamless thermal feed. Sales still complete safely if the printer is missing or offline.</p>
         <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
       </div>
     </div>

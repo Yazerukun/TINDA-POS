@@ -572,14 +572,16 @@ export function Handbook(): React.JSX.Element {
               </ol>
             </div>
 
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-1.5 text-amber-200">
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-2 text-amber-200">
               <div className="font-bold flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
-                <span>Tips para sa Tin-aw ug Hapsay nga Resibo:</span>
+                <span>Nganong "Print Successful" pero walay mogawas sa papel o blanko?</span>
               </div>
-              <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
-                <li><strong>Thermal Paper Roll:</strong> Siguroha nga ang papel nakatungod sa init nga printhead (ang glossy/sinaw nga side sa papel mao ang mo-atubang sa heater head).</li>
-                <li><strong>Zero-Overhead Formatting:</strong> Ang resibo sa TINDA POS gipahiangay para sa 58mm width aron dili maputol ang mga ngalan sa produkto ug sakto ang pagka-align sa kantidad ug sukli.</li>
+              <ul className="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px]">
+                <li><strong>1. Thermal Paper Roll Orientation (Pinaka-komon nga rason):</strong> Ang thermal paper naay usa lang ka chemically-treated heat-sensitive side. Scratch-i ang papel gamit ang imong kuko; kung mogawas ang itom nga linya, kana ang <em>thermal side</em>. Kinahanglan kana nga side ang <strong>naka-atubang sa heating printhead</strong>. Kung balit-ad ang papel, mosiga ang printer ug mag-feed pero 100% blanko o dili mo-reaksyon.</li>
+                <li><strong>2. USB Virtual Port Mapping:</strong> Sa Windows <em>Printers &amp; Scanners &rarr; Imong Thermal Printer &rarr; Printer Properties &rarr; Ports tab</em>, siguroha nga naka-check ang active <code>USB001</code> o <code>USB002</code> Virtual Printer Port. Kung nasayop kini ug nahimutang sa <code>LPT1</code> o <code>COM1</code>, mosulti ang Windows nga "Printing complete" pero dili makaabot ang signal sa USB hardware.</li>
+                <li><strong>3. Windows Driver Page Size Setting:</strong> Sa Windows Printing Preferences, i-set ang Paper Size ngadto sa <strong>58mm x 297mm</strong> o <strong>58 x Continuous</strong> imbes nga A4/Letter aron dili maglibog ang micro-controller sa printer.</li>
+                <li><strong>4. Printer Self-Test Verification:</strong> Aron masulayan kung buhi ba ang hardware: i-off ang printer, pindota ug kupti ang <strong>FEED button</strong>, unya i-on ang power samtang gikuptan ang FEED. Pagkahuman sa 2 segundos, buhii ang button. Kinahanglan mo-print ang printer ug diagnostic sheet nga naay printhead status ug font test.</li>
               </ul>
             </div>
           </div>

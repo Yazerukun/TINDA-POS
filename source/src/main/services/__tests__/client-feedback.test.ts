@@ -129,7 +129,10 @@ describe('receipt printing', () => {
     const failed = await submitPrint(webContents, { ...defaultSettings, receipt_printer: 'Receipt Printer', receipt_copies: 9 })
     expect(failed).toMatchObject({ ok: false, code: 'FAILED' })
     expect(failed.message).toContain('Printer is offline or out of paper')
-    expect(webContents.print).toHaveBeenCalledWith(expect.objectContaining({ copies: 3, silent: true, printBackground: false, deviceName: 'Receipt Printer' }), expect.any(Function))
+    expect(webContents.print).toHaveBeenCalledWith(
+      expect.objectContaining({ copies: 3, silent: true, printBackground: true, deviceName: 'Receipt Printer' }),
+      expect.any(Function)
+    )
   })
 
   it('sends exactly one silent auto-print job per sale when enabled', async () => {

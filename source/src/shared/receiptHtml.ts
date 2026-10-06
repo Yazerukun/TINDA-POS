@@ -200,7 +200,22 @@ export function receiptCss(width: ReceiptWidth): string {
   return `
     ${baseCss}
     @page { size: ${paperWidth} auto; margin: 0; }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm 0 4mm; font-size: ${fontSize}; }
+    @media print {
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .tp-sheet {
+        width: ${contentWidth} !important;
+        margin: 0 auto !important;
+        padding: 1mm 0 10mm !important;
+      }
+    }
+    .tp-sheet { width: ${contentWidth}; padding: 2mm 0 8mm; font-size: ${fontSize}; }
   `
 }
 

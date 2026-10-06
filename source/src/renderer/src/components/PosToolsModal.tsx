@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Camera,
   Smartphone,
@@ -14,11 +15,14 @@ import {
   Server,
   Loader2,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  CheckCircle2
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { useGuide } from '../stores/guide'
 import { useNav } from '../stores/nav'
+import { useSettings } from '../stores/settings'
+import { toastSuccess, toastError } from '../stores/toast'
 import type { LanStatus } from '@shared/types'
 import { AppLogo } from './AppLogo'
 
@@ -54,13 +58,32 @@ export function PosToolsModal({
   onOpenQuickExpense
 }: PosToolsModalProps): React.JSX.Element | null {
   const { setPage } = useNav()
+  const { settings } = useSettings()
+  const [printingTest, setPrintingTest] = useState(false)
 
   if (!open) return null
+
+  const handleTestPrint = async () => {
+    if (printingTest) return
+    setPrintingTest(true)
+    try {
+      const result = await window.api.printer.testPrint()
+      if (result.ok) {
+        toastSuccess('Test Print Sent', result.message || 'Check your thermal printer output.')
+      } else {
+        toastError('Printer Not Ready', result.message || 'Ensure thermal printer is turned on and selected in Settings.')
+      }
+    } catch (err) {
+      toastError('Print Error', String((err as Error)?.message || err))
+    } finally {
+      setPrintingTest(false)
+    }
+  }
 
   return (
     <Modal open onClose={onClose} title="Terminal Tools" maxWidth="max-w-2xl">
       <div className="space-y-4">
-        {/* Terminal Header & Mathematical Mass Badge */}
+        {/* Terminal Header & Modern Mark Badge */}
         <div className="flex items-center justify-between p-3 rounded-xl border border-brand-500/25 bg-gradient-to-r from-brand-950/60 via-ink-900 to-ink-950">
           <div className="flex items-center gap-3">
             <AppLogo size={36} showBadge={false} />
@@ -68,7 +91,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Hub</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v1.0.61
+                  v1.0.62
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -88,7 +111,7 @@ export function PosToolsModal({
         </div>
 
         {/* Hardware Status Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {/* USB Scanner Badge */}
           <div
             className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-300 shadow-sm"
@@ -101,6 +124,29 @@ export function PosToolsModal({
               <p className="text-[10px] text-emerald-400/80 truncate">Ready & Active</p>
             </div>
           </div>
+
+          {/* Quick Thermal Test Print Button */}
+          <button
+            type="button"
+            disabled={printingTest}
+            onClick={() => void handleTestPrint()}
+            className="flex items-center gap-2 rounded-xl border border-teal-500/35 bg-teal-500/10 p-2.5 text-xs text-teal-200 hover:bg-teal-500/20 transition-all text-left active:scale-[0.98] shadow-sm disabled:opacity-60"
+            title="Send test receipt directly to configured thermal printer (e.g. GOOJPRT PB-58H)"
+          >
+            {printingTest ? (
+              <Loader2 className="h-4 w-4 shrink-0 text-teal-300 animate-spin" />
+            ) : (
+              <Printer className="h-4 w-4 shrink-0 text-teal-300" />
+            )}
+            <div className="min-w-0">
+              <p className="font-bold leading-tight truncate">
+                {printingTest ? 'Printing...' : 'Thermal Print'}
+              </p>
+              <p className="text-[10px] text-teal-400/80 truncate">
+                {settings?.receipt_printer ? 'Tap to Test' : 'Configure'}
+              </p>
+            </div>
+          </button>
 
           {/* LAN Status */}
           {lanStatus?.role === 'master' && (

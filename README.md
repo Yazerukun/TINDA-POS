@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.61-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.62-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,24 @@
 
 <br />
 
-[⬇️ Download v1.0.61 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-Setup-1.0.61.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-Portable-1.0.61.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.62 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-Setup-1.0.62.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-Portable-1.0.62.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix Edition)
+
+> **Ultra-Modern Geometric Brand Mark, GOOJPRT PB-58H Zero-Margin Thermal Spooling & Blank Print Fix, Sidebar-Organized Terminal Tools [F3] & 1-Tap Diagnostic Print**
+
+- 💎 **Ultra-Modern Quantum Mark (Apple-Grade Cupertino Diamond-T)**:
+  - Completely redesigned `AppLogo.tsx` with hyper-clean Apple-grade aesthetics: translucent Cupertino squircle chassis, optical light spine ray, and balanced summation ($\Sigma$) winglets with radiant Emerald-Cyan laser gradients and VIP Pro Gold radiance.
+- 🖨️ **GOOJPRT PB-58H Zero-Margin Thermal Spooling & Blank Print Fix**:
+  - Traced and resolved the "print successful but no paper comes out" issue: eliminated hidden window premature destruction race condition during spooling, set explicit micron paper dimensions (`58,000 x 297,000 µm`), zero-margin `@page` and `@media print` CSS overrides, and 10mm bottom feed clearance.
+  - Added dedicated step-by-step diagnostic guidance in **Settings ⚙️ &rarr; Receipt** and **Handbook Chapter 10** covering thermal roll orientation (scratch test), Windows Virtual USB Port mapping (`USB001`), and feed button self-tests.
+- 🧰 **Sidebar-Organized Terminal Tools [F3] Hub**:
+  - Prominently organized the Sidebar footer with a full-width Cupertino pill button for **Terminal Tools [F3]** with hotkey badge and smooth hover micro-interactions.
+  - Added a 1-tap **Thermal Print** test action directly inside the hardware status strip for immediate printer diagnostics without switching screens.
+- 🛡️ **100% Quality Invariants Maintained**:
+  - All 411 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
 
 ## ✨ What's New in v1.0.61 (Mathematical Mass & GOOJPRT Desktop Thermal Edition)
 

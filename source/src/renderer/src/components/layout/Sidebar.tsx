@@ -171,25 +171,31 @@ export function Sidebar(): React.JSX.Element {
 
       {/* Utilities & Profile Footer */}
       <div className="border-t border-ink-line/70 bg-ink-950/40 p-3 space-y-2">
-        {/* Quick Screen Tools */}
-        <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              if (page !== 'pos') setPage('pos')
-              window.dispatchEvent(new CustomEvent('tinda-open-pos-tools'))
-            }}
-            className="flex items-center justify-center gap-1 rounded-lg border border-brand-500/30 bg-brand-500/15 px-1.5 py-1.5 text-[11px] font-semibold text-brand-300 hover:border-brand-500/50 hover:bg-brand-500/25 transition shadow-sm active:scale-95"
-            title="Open POS Terminal Tools (Scanner, Camera, CFD, Audio, Cash)"
-          >
-            <Wrench className="h-3.5 w-3.5 text-brand-400 shrink-0" />
-            <span className="truncate">Tools</span>
-          </button>
+        {/* Primary Terminal Tools Pill Button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (page !== 'pos') setPage('pos')
+            window.dispatchEvent(new CustomEvent('tinda-open-pos-tools'))
+          }}
+          className="group flex w-full items-center justify-between rounded-xl border border-brand-500/35 bg-gradient-to-r from-brand-600/20 via-brand-500/15 to-brand-600/10 px-3 py-2 text-xs font-bold text-brand-300 hover:border-brand-500/60 hover:bg-brand-500/25 transition-all shadow-sm active:scale-[0.98]"
+          title="Open POS Terminal Tools (Scanner, Camera, Thermal Printer, CFD, Audio, Cash) — [F3]"
+        >
+          <span className="flex items-center gap-2">
+            <Wrench className="h-4 w-4 text-brand-400 group-hover:rotate-45 transition-transform shrink-0" />
+            <span>Terminal Tools</span>
+          </span>
+          <span className="rounded bg-brand-500/25 px-1.5 py-0.5 text-[10px] font-mono text-brand-200 border border-brand-500/35 font-bold">
+            F3
+          </span>
+        </button>
 
+        {/* Secondary Utilities Strip */}
+        <div className="grid grid-cols-2 gap-1.5">
           <button
             type="button"
             onClick={() => void window.api.app.toggleSalesMonitor()}
-            className="flex items-center justify-center gap-1 rounded-lg border border-sky-500/25 bg-sky-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-sky-300 hover:border-sky-500/40 hover:bg-sky-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-sky-500/25 bg-sky-500/10 px-2 py-1.5 text-[11px] font-semibold text-sky-300 hover:border-sky-500/40 hover:bg-sky-500/20 transition shadow-sm active:scale-95"
             title="Open / Toggle Live Sales Monitor & Customer Display"
           >
             <Tv className="h-3.5 w-3.5 text-sky-400 shrink-0" />
@@ -199,7 +205,7 @@ export function Sidebar(): React.JSX.Element {
           <button
             type="button"
             onClick={() => useGuide.getState().openGuide('start')}
-            className="flex items-center justify-center gap-1 rounded-lg border border-amber-500/25 bg-amber-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
             title="Open User Guide & Cashier Instructions"
           >
             <HelpCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />

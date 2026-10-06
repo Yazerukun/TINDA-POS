@@ -37,20 +37,62 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
     return { ok: false, code: 'UNAVAILABLE', message: `The selected receipt printer "${selected}" is unavailable.` }
   }
   const copies = Math.min(3, Math.max(1, Math.trunc(settings.receipt_copies || 1)))
+  const is58mm = settings.receipt_paper_width === '58mm'
+  
+  // Custom paper size in microns: 58mm = 58,000 microns, 80mm = 80,000 microns
+  const pageSizeMicrons = is58mm
+    ? { width: 58000, height: 297000 }
+    : { width: 80000, height: 297000 }
+
   return new Promise((resolve) => {
-    webContents.print({ silent: true, deviceName: selected, printBackground: false, copies }, (success, failureReason) => {
-      resolve(success
-        ? { ok: true, code: 'PRINTED', message: 'Receipt printed successfully.' }
-        : { ok: false, code: 'FAILED', message: failureReason || 'Receipt printing failed.' })
-    })
+    webContents.print(
+      {
+        silent: true,
+        deviceName: selected,
+        printBackground: true,
+        color: true,
+        copies,
+        pageSize: pageSizeMicrons,
+        margins: {
+          marginType: 'none'
+        }
+      },
+      (success, failureReason) => {
+        resolve(
+          success
+            ? { ok: true, code: 'PRINTED', message: 'Receipt printed successfully.' }
+            : { ok: false, code: 'FAILED', message: failureReason || 'Receipt printing failed.' }
+        )
+      }
+    )
   })
 }
 
 export async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
-  const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } })
+  const window = new BrowserWindow({
+    show: false,
+    width: 320,
+    height: 600,
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
   try {
-    await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(receiptHtml(lines, settings.receipt_paper_width, settings.currency))}`)
-    return await submitPrint(window.webContents, settings)
+    const htmlPayload = receiptHtml(lines, settings.receipt_paper_width, settings.currency)
+    await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlPayload)}`)
+
+    // Wait 250ms buffer to guarantee the Chromium layout and fonts are 100% rasterized before spooling
+    await new Promise((r) => setTimeout(r, 250))
+
+    const result = await submitPrint(window.webContents, settings)
+
+    // Wait an additional 350ms so Windows Print Spooler finishes reading before destroying the WebContents
+    await new Promise((r) => setTimeout(r, 350))
+
+    return result
   } finally {
     if (!window.isDestroyed()) window.destroy()
   }
