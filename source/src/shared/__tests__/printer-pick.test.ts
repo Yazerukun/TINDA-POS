@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { printerPick, printerStatusLabel } from '../printer'
+import {
+  printerPick,
+  printerStatusLabel,
+  autoDetectThermalPrinter,
+  inferPaperWidth,
+  isThermalPrinterName
+} from '../printer'
 import type { PrinterChoiceLike } from '../printer'
+
 
 const none: PrinterChoiceLike[] = []
 const one = [{ name: 'Receipt Printer', displayName: 'Receipt Printer', isDefault: true }]
@@ -51,3 +58,38 @@ describe('printerPick', () => {
     expect(printerStatusLabel('NOT_CONFIGURED')).toBe('Not configured')
   })
 })
+
+describe('autoDetectThermalPrinter & paper width inference', () => {
+  it('prioritizes connected thermal printer over office default printer', () => {
+    const list = [
+      { name: 'Office LaserJet M102', displayName: 'Office LaserJet', isDefault: true },
+      { name: 'GOOJPRT PB-58H', displayName: 'GOOJPRT PB-58H', isDefault: false }
+    ]
+    const detected = autoDetectThermalPrinter(list, '')
+    expect(detected).not.toBeNull()
+    expect(detected?.name).toBe('GOOJPRT PB-58H')
+    expect(detected?.paperWidth).toBe('58mm')
+    expect(detected?.isAutoDetected).toBe(true)
+  })
+
+  it('infers 58mm for various 58mm models and 80mm for 80mm models', () => {
+    expect(inferPaperWidth('GOOJPRT PB-58H')).toBe('58mm')
+    expect(inferPaperWidth('POS-58')).toBe('58mm')
+    expect(inferPaperWidth('JK-5802H')).toBe('58mm')
+    expect(inferPaperWidth('XP-58')).toBe('58mm')
+    expect(inferPaperWidth('Xprinter XP-Q801K')).toBe('80mm')
+    expect(inferPaperWidth('POS-80 Series')).toBe('80mm')
+    expect(inferPaperWidth('Epson TM-T82IV')).toBe('80mm')
+  })
+
+  it('recognizes various thermal printer naming patterns', () => {
+    expect(isThermalPrinterName('GOOJPRT PB-58H')).toBe(true)
+    expect(isThermalPrinterName('POS-58 Thermal')).toBe(true)
+    expect(isThermalPrinterName('Xprinter Receipt')).toBe(true)
+    expect(isThermalPrinterName('Epson TM-T20II')).toBe(true)
+    expect(isThermalPrinterName('HP LaserJet Pro')).toBe(false)
+    expect(isThermalPrinterName('Canon PIXMA')).toBe(false)
+  })
+})
+
+

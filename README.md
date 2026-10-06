@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.62-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.63-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-414_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,9 +16,23 @@
 
 <br />
 
-[⬇️ Download v1.0.62 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-Setup-1.0.62.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-Portable-1.0.62.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.62/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.63 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-Setup-1.0.63.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-Portable-1.0.63.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
+
+> **Zero-Click Thermal Printer Auto-Detection, Automatic Paper Width Inference (58mm/80mm), Hardware Hub Auto-Detect Readiness & Zero-Config Plug-and-Play Checkout**
+
+- ⚡ **Zero-Click Thermal Printer Auto-Detection & Dynamic Binding**:
+  - Automatically identifies connected USB and Bluetooth POS receipt printers (GOOJPRT PB-58H, POS-58, JK-5802H, Xprinter, etc.) upon plug-in without requiring the user to navigate to Settings or click Save.
+  - Dynamically binds checkout receipts, shift summaries, and Z-readings to the detected printer, eliminating silent `NO_PRINTER` failures.
+- 📐 **Automatic Paper Width Inference (58mm vs 80mm)**:
+  - Smartly detects 58mm printer models (`pb-58`, `jk-58`, `pos-58`, `xp-58`, `58mm`) and auto-applies exact micron dimensions (`58,000 x 297,000 µm`) and font scaling.
+- 🧰 **Terminal Tools [F3] Auto-Detect Ready Status**:
+  - `PosToolsModal` and Sidebar tools display **Auto-Detect Ready** status and provide 1-tap thermal test printing straight from the cashier workspace.
+- 🛡️ **100% Quality Invariants Maintained**:
+  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
 
 ## ✨ What's New in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix Edition)
 
@@ -34,6 +48,7 @@
   - Added a 1-tap **Thermal Print** test action directly inside the hardware status strip for immediate printer diagnostics without switching screens.
 - 🛡️ **100% Quality Invariants Maintained**:
   - All 411 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
+
 
 ## ✨ What's New in v1.0.61 (Mathematical Mass & GOOJPRT Desktop Thermal Edition)
 

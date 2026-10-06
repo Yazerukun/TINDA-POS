@@ -550,12 +550,12 @@ export function Handbook(): React.JSX.Element {
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
                 <li>Saksak ang USB cable sa imong PC o laptop, unya i-on ang printer switch.</li>
                 <li>I-install ang <strong>POS-58 Driver</strong> o <strong>Xprinter 58mm Driver</strong> sa Windows.</li>
-                <li>Ablihi ang TINDA POS &rarr; <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
-                <li>Sa <strong>Paper Width</strong>, pilia ang <strong>58mm</strong>.</li>
-                <li>Sa <strong>Printer</strong> dropdown, pilia ang imong printer (pananglit: <em>POS-58</em> o <em>GOOJPRT</em>) unya tuploka ang <strong>Test Print</strong>.</li>
+                <li><strong>Bag-o sa v1.0.63 (Zero-Click Auto-Detect):</strong> Dili na kinahanglan mag-mano-mano ug pili o configure! Sa pagsaksak palang sa printer, automatic na kining i-detect ug gamiton sa TINDA POS kung mag-print ug resibo, Z-reading, o shift audit.</li>
+                <li>Kung gusto nimo usbon ang headers o footers, ablihi ang <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
                 <li>I-toggle ang <strong>Auto Print After Sale</strong> kung gusto nimo nga mo-print dayon ug resibo pagkahuman sa checkout.</li>
               </ol>
             </div>
+
 
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
               <Smartphone className="h-4 w-4 text-sky-400" />

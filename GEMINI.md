@@ -23,7 +23,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix Edition)**
+- Current Version: **v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)**
+
+## Key Features in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
+1. **Zero-Click Thermal Printer Auto-Detection & Self-Configuration**:
+   - Resolved the root cause where newly plugged-in thermal printers (e.g., GOOJPRT PB-58H, POS-58, JK-5802H, Xprinter) failed to print receipts because the user had not manually configured the printer in Settings.
+   - Built the `autoDetectThermalPrinter` engine in `printer.ts` and `printing.ts` that automatically scans connected USB/Bluetooth printers via `webContents.getPrintersAsync()`, matches thermal receipt device signatures (`/pos-?58|pos-?80|58mm|80mm|thermal|receipt|goojprt|xprinter|jk|zj|xp|rp/i`), and dynamically binds print jobs on the fly.
+   - Instant plug-and-play operation: merchants can plug in their thermal printer, ring up a sale, and receipts immediately print with zero settings configuration.
+2. **Automatic Paper Width Inference (58mm vs 80mm)**:
+   - Automatically detects 58mm printer models (`pb-58`, `jk-58`, `pos-58`, `xp-58`, `58mm`) and applies exact 58mm micron dimensions (`58000, 297000`) and typography scaling without manual selection.
+3. **Hardware Hub & Terminal Tools [F3] Auto-Detect Status**:
+   - `PosToolsModal` now dynamically displays **Auto-Detect Ready** when a thermal printer is present, allowing cashiers to trigger 1-tap test prints directly from the cashier register screen.
+4. **100% Automated Test Gate Passed**:
+   - Verified 414/414 unit tests and 0 TypeScript errors.
 
 ## Key Features in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix)
 1. **Ultra-Modern Quantum Mark (Apple-Grade Cupertino Diamond-T)**:

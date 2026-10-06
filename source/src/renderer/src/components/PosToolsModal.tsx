@@ -91,7 +91,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Hub</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v1.0.62
+                  v1.0.63
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -131,7 +131,7 @@ export function PosToolsModal({
             disabled={printingTest}
             onClick={() => void handleTestPrint()}
             className="flex items-center gap-2 rounded-xl border border-teal-500/35 bg-teal-500/10 p-2.5 text-xs text-teal-200 hover:bg-teal-500/20 transition-all text-left active:scale-[0.98] shadow-sm disabled:opacity-60"
-            title="Send test receipt directly to configured thermal printer (e.g. GOOJPRT PB-58H)"
+            title="Send test receipt directly to configured thermal printer (e.g. GOOJPRT PB-58H). Auto-detects on plug-in!"
           >
             {printingTest ? (
               <Loader2 className="h-4 w-4 shrink-0 text-teal-300 animate-spin" />
@@ -143,7 +143,7 @@ export function PosToolsModal({
                 {printingTest ? 'Printing...' : 'Thermal Print'}
               </p>
               <p className="text-[10px] text-teal-400/80 truncate">
-                {settings?.receipt_printer ? 'Tap to Test' : 'Configure'}
+                {settings?.receipt_printer ? settings.receipt_printer : 'Auto-Detect Ready'}
               </p>
             </div>
           </button>

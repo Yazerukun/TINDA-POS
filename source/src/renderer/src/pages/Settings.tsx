@@ -922,9 +922,15 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     if (!settings) return
     const pick = printerPick(printers, settings.receipt_printer)
     if (pick.status === 'NOT_CONFIGURED' && pick.name) {
-      setF((prev) => (prev.receipt_printer === settings.receipt_printer ? { ...prev, receipt_printer: pick.name } : prev))
+      const is58 = /(58|pb-?58|jk-?58|pos-?58|xp-?58)/i.test(pick.name)
+      setF((prev) => (prev.receipt_printer === settings.receipt_printer ? {
+        ...prev,
+        receipt_printer: pick.name,
+        receipt_paper_width: is58 ? '58mm' : prev.receipt_paper_width
+      } : prev))
     }
   }, [printers, settings])
+
 
   const pick = printerPick(printers, f.receipt_printer)
 

@@ -2,6 +2,7 @@ import { BrowserWindow } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
 import type { Sale, StoreSettings } from '@shared/types'
 import { receiptHtml } from '@shared/receiptHtml'
+import { autoDetectThermalPrinter, inferPaperWidth } from '@shared/printer'
 import { buildReceiptLines } from './checkout'
 
 // Re-exported so existing consumers keep importing from the printing service.
@@ -29,15 +30,53 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
   ]
 }
 
-export async function submitPrint(webContents: WebContents, settings: StoreSettings): Promise<PrintResult> {
-  const selected = settings.receipt_printer.trim()
-  if (!selected) return { ok: false, code: 'NO_PRINTER', message: 'No receipt printer is configured.' }
+export async function resolvePrinterTarget(webContents: WebContents, settings: StoreSettings): Promise<{
+  printerName: string
+  paperWidth: '58mm' | '80mm'
+} | null> {
   const printers = await webContents.getPrintersAsync()
-  if (!printers.some((printer) => printer.name === selected)) {
-    return { ok: false, code: 'UNAVAILABLE', message: `The selected receipt printer "${selected}" is unavailable.` }
+  if (!printers || printers.length === 0) return null
+
+  const saved = (settings.receipt_printer || '').trim()
+  const detected = autoDetectThermalPrinter(printers, saved)
+  if (!detected) return null
+
+  // If user explicitly configured paper width, keep it; otherwise use inferred width
+  const paperWidth = settings.receipt_paper_width || detected.paperWidth
+  return {
+    printerName: detected.name,
+    paperWidth
   }
+}
+
+export async function submitPrint(webContents: WebContents, settings: StoreSettings): Promise<PrintResult> {
+  const selected = (settings.receipt_printer || '').trim()
+  const printers = await webContents.getPrintersAsync()
+
+  // If a printer was explicitly configured by the merchant but is now missing/offline
+  if (selected && !printers.some((p) => p.name === selected)) {
+    // If an alternative thermal printer is connected, auto-recover to it; otherwise fail honestly with UNAVAILABLE
+    const fallback = autoDetectThermalPrinter(printers)
+    if (!fallback) {
+      return { ok: false, code: 'UNAVAILABLE', message: `The selected receipt printer "${selected}" is unavailable.` }
+    }
+  }
+
+  if (!printers || printers.length === 0) {
+    return { ok: false, code: 'NO_PRINTER', message: 'No printer found on this system. Please connect a thermal printer via USB or Bluetooth.' }
+  }
+
+  const target = autoDetectThermalPrinter(printers, settings.receipt_printer)
+  if (!target) {
+    return { ok: false, code: 'NO_PRINTER', message: 'No receipt printer is available.' }
+  }
+
+  const printerName = target.name
+
   const copies = Math.min(3, Math.max(1, Math.trunc(settings.receipt_copies || 1)))
-  const is58mm = settings.receipt_paper_width === '58mm'
+  // If paper width is configured use it, otherwise use auto-detected
+  const effectivePaperWidth = settings.receipt_paper_width || target.paperWidth
+  const is58mm = effectivePaperWidth === '58mm'
   
   // Custom paper size in microns: 58mm = 58,000 microns, 80mm = 80,000 microns
   const pageSizeMicrons = is58mm
@@ -48,7 +87,7 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
     webContents.print(
       {
         silent: true,
-        deviceName: selected,
+        deviceName: printerName,
         printBackground: true,
         color: true,
         copies,
@@ -60,12 +99,13 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
       (success, failureReason) => {
         resolve(
           success
-            ? { ok: true, code: 'PRINTED', message: 'Receipt printed successfully.' }
+            ? { ok: true, code: 'PRINTED', message: `Receipt printed successfully to "${printerName}".` }
             : { ok: false, code: 'FAILED', message: failureReason || 'Receipt printing failed.' }
         )
       }
     )
   })
+
 }
 
 export async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
@@ -81,7 +121,11 @@ export async function printLines(settings: StoreSettings, lines: string[]): Prom
   })
 
   try {
-    const htmlPayload = receiptHtml(lines, settings.receipt_paper_width, settings.currency)
+    const printers = await window.webContents.getPrintersAsync()
+    const target = autoDetectThermalPrinter(printers, settings.receipt_printer)
+    const effectiveWidth = settings.receipt_paper_width || (target ? target.paperWidth : '58mm')
+
+    const htmlPayload = receiptHtml(lines, effectiveWidth, settings.currency)
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlPayload)}`)
 
     // Wait 250ms buffer to guarantee the Chromium layout and fonts are 100% rasterized before spooling
@@ -128,5 +172,7 @@ export async function autoPrintAfterCheckout(settings: StoreSettings, sale: Sale
 }
 
 export async function printTest(settings: StoreSettings): Promise<PrintResult> {
-  return printLines(settings, testPrintLines(settings, settings.receipt_printer))
+  const targetPrinter = settings.receipt_printer || 'Auto-Detected Thermal Printer'
+  return printLines(settings, testPrintLines(settings, targetPrinter))
 }
+
