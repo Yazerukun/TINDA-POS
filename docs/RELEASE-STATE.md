@@ -4,28 +4,31 @@ CURRENT STABLE:
 - v1.0.59
 
 TARGET:
-- v1.0.59 (HIGH-DENSITY ENTERPRISE POS CASHIER LISTING ENGINE)
+- v1.0.60 (VIP CLIENT INFINITE SCROLL & 7 CORE ENHANCEMENTS EDITION)
 
 CURRENT STAGE:
-- Stage 09: Release Published & Verified
+- Stage 08: Production Packaging Completed (Ready for Owner Review & Release)
 
 COMPLETED:
-- Stage 01: Architecture Alignment & Layout Specification (Supermarket-grade high-density listing table, dual-mode switcher, keyboard navigation).
-- Stage 02: High-Density Listing Table Implementation (POS.tsx — 5-column responsive table with image thumbnail, SKU/barcode badges, category tag, exact stock & pulse safety indicators, retail/wholesale pricing, in-row quantity stepper).
-- Stage 03: Dual-Mode Switcher with Persistent Memory (POS.tsx — List vs Grid toggle saved in localStorage `tinda_pos_view_mode`, default List).
-- Stage 04: High-Speed Keyboard Navigation (POS.tsx — ArrowDown/ArrowUp row highlight with automatic smooth scroll follow, Enter to add).
-- Stage 05: Offline Rollback Continuity (rollbackService.ts — dynamic package version, added v1.0.58 fallback release target).
-- Stage 06: Quality Gates & Verification (TypeScript typecheck 0 errors, 63/63 test files & 411/411 unit tests passed).
-- Stage 07: Master Invariants Verification (tools/check_master_invariants.mjs passed with 0 errors).
-- Stage 08: Production Packaging (Built TindaPOS-Setup-1.0.59.exe and TindaPOS-Portable-1.0.59.exe with sha512 blockmaps).
-- Stage 09: Release Published (All binaries, blockmaps, user guide, and checksums uploaded to GitHub Releases).
+- Stage 01: VIP Client Scrolling & 7 Core Enhancements Architecture Specification.
+- Stage 02: Full Infinite Scrolling & Boundary Listener Engine (`POS.tsx` & `Shell.tsx` — eliminated double scroll trap, `PAGE_SIZE = 120`, seamless infinite auto-load).
+- Stage 03: Cash Register Synthesizer (`lib/sound.ts` — Web Audio API scan chimes, error buzzers, and checkout chime with mute toggle).
+- Stage 04: Multiplier Scan Engine & Rapid Entry (`5*BARCODE` and `10*PRODUCT` prefix support).
+- Stage 05: Statutory 20% Senior Citizen & PWD Discount System with OSCA/PWD booklet tracking.
+- Stage 06: Quick Cash Denomination Chips (`Exact`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, `+₱20`, `+₱50`, `+₱100`).
+- Stage 07: 1-Click Thermal Z-Reading / Daily Cash Balancing Printout & 7-Day Rolling Snapshot Pruning.
+- Stage 08: Production Packaging (`TindaPOS-Setup-1.0.60.exe` [112.3 MB], `TindaPOS-Portable-1.0.60.exe` [112.1 MB], blockmap, and SHA256 checksums generated and verified).
 
 PENDING APPROVAL:
-- None. v1.0.59 is live.
+- Owner explicit approval to publish release assets and tag `v1.0.60`.
 
 BLOCKERS:
-- None.
+- None. All quality gates, tests, and packaging passed.
 
-RELEASE PUBLISHED URL:
-- https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.59
+ARTIFACTS (v1.0.60):
+- Setup: `source/builds/TindaPOS-Setup-1.0.60.exe` (SHA256: `7805f1906d43c1a4af2ebb095bdf5e30c9df7902f27cd276f7b041655c14436a`)
+- Portable: `source/builds/TindaPOS-Portable-1.0.60.exe` (SHA256: `c9aba522fb9f99db1571a980d85f567161c402ec1fba831dc818b3173ab73faa`)
+- Blockmap: `source/builds/TindaPOS-Setup-1.0.60.exe.blockmap`
+- Checksums: `source/builds/SHA256SUMS-v1.0.60.txt`
+
 

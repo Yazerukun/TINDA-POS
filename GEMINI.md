@@ -7,13 +7,15 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 ## Operating Rules & Automation Standard
 - Persona: **Fixer Agent**
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
-- Execution: **100% AUTOMATIC 6-SKILL POWERHOUSE** (All 6 skills run automatically on every prompt — no manual trigger needed):
+- Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
   2. **ponytail**: The lazy senior dev — shortest diff, YAGNI, standard library first, root-cause bugfixes.
   3. **caveman**: Terse high-density voice — zero conversational fluff, answer-first, exact code payload.
   4. **smart-ralph**: Spec-driven multi-step execution with 4-phase quality gates.
   5. **headroom**: Automatic context window and token optimization.
   6. **agentmemory**: Continuous learning engine with persistent recall and auto-save of bugfix lessons and release milestones.
+  7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
+  8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -21,7 +23,26 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Stable Version: **v1.0.59**
+- Current Version: **v1.0.60 (Enterprise Pro Edition)**
+
+## Key Features in v1.0.60 (VIP Client Feedback & 7 Core Enhancements)
+1. **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
+   - **Root Cause Fixed**: Eliminated the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx`.
+   - **Continuous Infinite Pagination**: Implemented paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Large catalogs (500-10,000+ items) now scroll completely and fluidly without clipping.
+2. **Quick Cash Denomination & Increment Chips**:
+   - 1-Tap quick change buttons in Checkout Modal: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100`.
+3. **Web Audio API Hardware Synthesizer**:
+   - Zero-asset, 100% offline audio engine with crisp high-pitched barcode scan confirmations (1300Hz-1750Hz sine), out-of-stock/error buzzers (280Hz sawtooth), cash register chime (C6-C7 arpeggio), and 1-tap header mute/unmute toggle.
+4. **Multiplier Scan & Rapid Entry Engine**:
+   - Cashiers can scan or enter `5*BARCODE` or `10*PRODUCT` to instantly add bulk quantities without tapping the plus button multiple times.
+5. **Senior Citizen & PWD 20% Statutory Discount System**:
+   - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking.
+6. **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
+   - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
+7. **Automated 7-Day Rolling Daily SQLite Safety Snapshot**:
+   - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage.
+8. **Live Inventory Safety & Expiry HUD Badges**:
+   - Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
 
 ## Key Features in v1.0.59
 1. **High-Density Enterprise Cashier Listing Table & Dual-Mode POS View (Client Feedback Addressed)**:

@@ -28,8 +28,12 @@ import {
   KeyRound,
   Landmark,
   LayoutList,
-  LayoutGrid
+  LayoutGrid,
+  Volume2,
+  VolumeX,
+  Printer
 } from 'lucide-react'
+import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
@@ -88,7 +92,7 @@ interface CartState {
   customer_id: number | null
   customer_name: string | null
   discount_pesos: number
-  add: (p: Product) => void
+  add: (p: Product, qtyToAdd?: number) => void
   setQty: (product_id: number, qty: number) => void
   setItemPrice: (product_id: number, priceC: number) => void
   resetItemPrice: (product_id: number) => void
@@ -105,14 +109,15 @@ export const usePosCart = create<CartState>((set) => ({
   customer_id: null,
   customer_name: null,
   discount_pesos: 0,
-  add: (p) =>
+  add: (p: Product, qtyToAdd = 1) =>
     set((s) => {
       const stock = saleStock(p)
       const ex = s.items.find((i) => i.product_id === p.id)
       if (stock <= 0) return s
       const weighable = isWeighableUnit(p.base_unit)
+      const quantityToAdd = Math.max(weighable ? 0.001 : 1, qtyToAdd)
       if (ex) {
-        const nextQty = Math.min(ex.qty + 1, maxQuantity(stock, ex.conversion_to_base, weighable))
+        const nextQty = Math.min(ex.qty + quantityToAdd, maxQuantity(stock, ex.conversion_to_base, weighable))
         const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
           ex.base_price_c ?? ex.unit_price_c,
           nextQty,
@@ -135,10 +140,11 @@ export const usePosCart = create<CartState>((set) => ({
           )
         }
       }
+      const initialQty = Math.min(quantityToAdd, maxQuantity(stock, 1, weighable))
       const basePrice = p.default_price_c
       const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
         basePrice,
-        1,
+        initialQty,
         p.wholesale_price_c,
         p.wholesale_min_qty,
         null
@@ -151,7 +157,7 @@ export const usePosCart = create<CartState>((set) => ({
             name: p.name,
             description: p.description ?? null,
             unit_name: p.base_unit,
-            qty: 1,
+            qty: initialQty,
             unit_price_c: unitPriceC,
             base_price_c: basePrice,
             wholesale_price_c: p.wholesale_price_c,
@@ -310,10 +316,68 @@ export function POS(): React.JSX.Element {
 
   const [selectedRowIndex, setSelectedRowIndex] = useState<number>(-1)
   const tableContainerRef = useRef<HTMLDivElement>(null)
+  const gridContainerRef = useRef<HTMLDivElement>(null)
+
+  // Infinite scroll pagination state
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [totalProductsCount, setTotalProductsCount] = useState<number | null>(null)
+  const currentOffsetRef = useRef(0)
+
+  // Sound effects mute state
+  const [soundMuted, setSoundMutedState] = useState(() => isSoundMuted())
+  const toggleSoundMute = () => {
+    const next = !soundMuted
+    setSoundMuted(next)
+    setSoundMutedState(next)
+    if (!next) {
+      playScanSuccess()
+    }
+  }
+
+  // Low stock and Near Expiry counts for HUD badge
+  const [lowStockCount, setLowStockCount] = useState(0)
+  const [nearExpiryCount, setNearExpiryCount] = useState(0)
+  const [activeHudFilter, setActiveHudFilter] = useState<'ALL' | 'LOW' | 'EXPIRY'>('ALL')
+  const [zReadingBusy, setZReadingBusy] = useState(false)
+
+  const handleQuickZRead = async () => {
+    if (zReadingBusy) return
+    setZReadingBusy(true)
+    try {
+      const result = await window.api.reports.printXRead()
+      if (result.ok) {
+        toastSuccess('Shift & Day Balancing Slip Sent to Printer', 'Printing Z-Reading thermal report...')
+      } else {
+        toastError('Z-Reading print failed', result.message)
+      }
+    } catch (err) {
+      toastError('Unable to print Z-Reading', String((err as Error)?.message || err))
+    } finally {
+      setZReadingBusy(false)
+    }
+  }
+
+  const displayedProducts = useMemo(() => {
+    if (activeHudFilter === 'ALL') return products
+    if (activeHudFilter === 'LOW') {
+      return products.filter((p) => {
+        const stock = saleStock(p)
+        return stock > 0 && stock <= p.low_stock_threshold
+      })
+    }
+    if (activeHudFilter === 'EXPIRY') {
+      return products.filter((p) => {
+        const exp = productExpirationStatus(p)
+        return exp === 'SOON' || exp === 'NEAR'
+      })
+    }
+    return products
+  }, [products, activeHudFilter])
 
   useEffect(() => {
-    setSelectedRowIndex(products.length > 0 ? 0 : -1)
-  }, [products])
+    setSelectedRowIndex(displayedProducts.length > 0 ? 0 : -1)
+  }, [displayedProducts])
 
   useEffect(() => {
     if (selectedRowIndex >= 0 && viewMode === 'list' && tableContainerRef.current) {
@@ -379,18 +443,61 @@ export function POS(): React.JSX.Element {
     ? 'All categories'
     : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
 
-  const search = async (term: string, categoryId?: number | null) => {
-    setLoading(true)
+  const PAGE_SIZE = 120
+
+  const search = async (term: string, categoryId?: number | null, isLoadMore = false) => {
+    if (isLoadMore) {
+      if (loadingMore || !hasMore) return
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+      currentOffsetRef.current = 0
+    }
     setError(null)
     try {
-      const opts: { status: string; limit: number; category_id?: number | null } = { status: 'ACTIVE', limit: 60 }
+      const offset = isLoadMore ? currentOffsetRef.current : 0
+      const opts: { status: string; limit: number; offset: number; category_id?: number | null } = {
+        status: 'ACTIVE',
+        limit: PAGE_SIZE,
+        offset
+      }
       if (categoryId != null) opts.category_id = categoryId
       const res = await window.api.products.search(term, opts)
-      setProducts(res.rows)
-      usePosCart.getState().syncStocks(res.rows)
+      const newRows = res.rows || []
+      const total = res.total ?? newRows.length
+
+      setTotalProductsCount(total)
+
+      if (isLoadMore) {
+        setProducts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id))
+          const filtered = newRows.filter((p) => !existingIds.has(p.id))
+          const merged = [...prev, ...filtered]
+          currentOffsetRef.current = merged.length
+          setHasMore(merged.length < total && newRows.length === PAGE_SIZE)
+          return merged
+        })
+      } else {
+        setProducts(newRows)
+        currentOffsetRef.current = newRows.length
+        setHasMore(newRows.length < total && newRows.length === PAGE_SIZE)
+        usePosCart.getState().syncStocks(newRows)
+      }
+
+      // Compute HUD counts for low stock and near expiry
+      let lowCount = 0
+      let nearExpCount = 0
+      for (const p of newRows) {
+        const stock = saleStock(p)
+        if (stock > 0 && stock <= p.low_stock_threshold) lowCount++
+        const exp = productExpirationStatus(p)
+        if (exp === 'SOON' || exp === 'NEAR') nearExpCount++
+      }
+      setLowStockCount(lowCount)
+      setNearExpiryCount(nearExpCount)
 
       try {
-        const refs = await window.api.priceReferences.search({ linkedOnly: true, limit: 100 })
+        const refs = await window.api.priceReferences.search({ linkedOnly: true, limit: 150 })
         const map: Record<number, number> = {}
         const refsList = refs?.rows || (refs as any)?.references || []
         for (const r of refsList) {
@@ -405,7 +512,14 @@ export function POS(): React.JSX.Element {
     } catch (e) {
       setError(String((e as Error)?.message || e))
     } finally {
-      setLoading(false)
+      if (isLoadMore) setLoadingMore(false)
+      else setLoading(false)
+    }
+  }
+
+  const loadMoreProducts = () => {
+    if (!loading && !loadingMore && hasMore) {
+      void search(q, catFilter === 'ALL' ? null : catFilter, true)
     }
   }
 
@@ -450,8 +564,17 @@ export function POS(): React.JSX.Element {
       }
       lastScanRef.current = { code, time: now }
 
-      const res = await window.api.products.search(code, { status: 'ACTIVE', limit: 10 })
-      const target = code.toLowerCase()
+      // Parse multiplier prefix if any (e.g. "5*BARCODE" or "10*48000123")
+      let qtyMultiplier = 1
+      let cleanCode = code
+      const multiMatch = code.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
+      if (multiMatch && multiMatch[1] && multiMatch[2]) {
+        qtyMultiplier = parseFloat(multiMatch[1]) || 1
+        cleanCode = multiMatch[2].trim()
+      }
+
+      const res = await window.api.products.search(cleanCode, { status: 'ACTIVE', limit: 10 })
+      const target = cleanCode.toLowerCase()
       // Strict matching: Barcode scans MUST match exact barcode or SKU only. Never pick random name matches.
       const found = res.rows.find(
         (p) =>
@@ -462,17 +585,21 @@ export function POS(): React.JSX.Element {
 
       if (found) {
         if (saleStock(found) < 1) {
+          playScanError()
           toastError(`"${found.name}" is out of stock!`)
         } else {
-          usePosCart.getState().add(found)
-          toastSuccess(`Scanned: ${found.name}`)
+          usePosCart.getState().add(found, qtyMultiplier)
+          playScanSuccess()
+          toastSuccess(`Scanned: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
           warnIfNearExpiry(found)
           setQ('')
         }
       } else {
-        toastError(`No product found for barcode: ${code}`)
+        playScanError()
+        toastError(`No product found for barcode: ${cleanCode}`)
       }
     } catch (err) {
+      playScanError()
       toastError(`Barcode scan failed: ${String((err as Error)?.message || err)}`)
     }
   }
@@ -544,21 +671,21 @@ export function POS(): React.JSX.Element {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag === 'textarea') return
         e.preventDefault()
-        setSelectedRowIndex((prev) => (products.length > 0 ? Math.min(prev + 1, products.length - 1) : -1))
+        setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
         return
       }
       if (e.key === 'ArrowUp') {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag === 'textarea') return
         e.preventDefault()
-        setSelectedRowIndex((prev) => (products.length > 0 ? Math.max(prev - 1, 0) : -1))
+        setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
         return
       }
       if (e.key === 'Enter') {
         const activeTag = (document.activeElement?.tagName || '').toLowerCase()
         if (activeTag !== 'input' && activeTag !== 'textarea') {
-          if (selectedRowIndex >= 0 && selectedRowIndex < products.length) {
-            const p = products[selectedRowIndex]
+          if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
+            const p = displayedProducts[selectedRowIndex]
             if (p) {
               e.preventDefault()
               if (saleStock(p) > 0) {
@@ -585,7 +712,7 @@ export function POS(): React.JSX.Element {
     }
     window.addEventListener('keydown', handlePosHotkeys)
     return () => window.removeEventListener('keydown', handlePosHotkeys)
-  }, [categoryMenuOpen, q, catFilter, products, selectedRowIndex])
+  }, [categoryMenuOpen, q, catFilter, displayedProducts, selectedRowIndex])
 
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
@@ -605,11 +732,17 @@ export function POS(): React.JSX.Element {
               onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  if (q.trim()) {
+                  const trimmed = q.trim()
+                  // Check if user entered a quantity multiplier with product name/code (e.g. "5*Coke" or "10*48000123")
+                  const multiMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
+                  if (multiMatch && multiMatch[1] && multiMatch[2]) {
                     e.preventDefault()
-                    void handleScan(q.trim())
-                  } else if (selectedRowIndex >= 0 && selectedRowIndex < products.length) {
-                    const p = products[selectedRowIndex]
+                    void handleScan(trimmed)
+                  } else if (trimmed) {
+                    e.preventDefault()
+                    void handleScan(trimmed)
+                  } else if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
+                    const p = displayedProducts[selectedRowIndex]
                     if (p) {
                       e.preventDefault()
                       if (saleStock(p) > 0) {
@@ -622,10 +755,10 @@ export function POS(): React.JSX.Element {
                   }
                 } else if (e.key === 'ArrowDown') {
                   e.preventDefault()
-                  setSelectedRowIndex((prev) => (products.length > 0 ? Math.min(prev + 1, products.length - 1) : -1))
+                  setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
                 } else if (e.key === 'ArrowUp') {
                   e.preventDefault()
-                  setSelectedRowIndex((prev) => (products.length > 0 ? Math.max(prev - 1, 0) : -1))
+                  setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
                 }
               }}
               placeholder="Search product by name or barcode… (F1 or /)"
@@ -671,6 +804,58 @@ export function POS(): React.JSX.Element {
                 ))}
                 {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
               </div>
+            )}
+          </div>
+
+          {/* Inventory Safety HUD Filter Badges */}
+          <div className="flex items-center gap-1.5 shrink-0" role="group" aria-label="Inventory HUD Filters">
+            {lowStockCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveHudFilter((prev) => (prev === 'LOW' ? 'ALL' : 'LOW'))}
+                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                  activeHudFilter === 'LOW'
+                    ? 'border-amber-400 bg-amber-500/30 text-amber-200 ring-2 ring-amber-400/40 shadow-sm'
+                    : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
+                }`}
+                title="Filter products with low stock alert"
+              >
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span>Low Stock</span>
+                <span className="ml-0.5 rounded-full bg-amber-500/30 px-1.5 py-0.2 text-[10px] font-bold text-amber-200">
+                  {lowStockCount}
+                </span>
+              </button>
+            )}
+
+            {nearExpiryCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveHudFilter((prev) => (prev === 'EXPIRY' ? 'ALL' : 'EXPIRY'))}
+                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                  activeHudFilter === 'EXPIRY'
+                    ? 'border-orange-400 bg-orange-500/30 text-orange-200 ring-2 ring-orange-400/40 shadow-sm'
+                    : 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20'
+                }`}
+                title="Filter products nearing expiration"
+              >
+                <span className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+                <span>Near Expiry</span>
+                <span className="ml-0.5 rounded-full bg-orange-500/30 px-1.5 py-0.2 text-[10px] font-bold text-orange-200">
+                  {nearExpiryCount}
+                </span>
+              </button>
+            )}
+
+            {activeHudFilter !== 'ALL' && (
+              <button
+                type="button"
+                onClick={() => setActiveHudFilter('ALL')}
+                className="text-[11px] font-medium text-slate-400 hover:text-white underline underline-offset-2 px-1"
+                title="Clear HUD filter and show all products"
+              >
+                Reset
+              </button>
             )}
           </div>
 
@@ -825,6 +1010,33 @@ export function POS(): React.JSX.Element {
               <span className="hidden sm:inline">E-Wallet (F8)</span>
             </button>
 
+            {/* Volume Mute Toggle */}
+            <button
+              type="button"
+              onClick={toggleSoundMute}
+              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
+                soundMuted
+                  ? 'border-ink-line bg-ink-800 text-slate-400 hover:text-white'
+                  : 'border-brand-500/40 bg-brand-500/10 text-brand-300 shadow-sm'
+              }`}
+              title={soundMuted ? 'Sound Effects Muted (Click to Unmute)' : 'Sound Effects Active (Click to Mute)'}
+            >
+              {soundMuted ? <VolumeX className="h-3.5 w-3.5 text-slate-400" /> : <Volume2 className="h-3.5 w-3.5 text-brand-400" />}
+              <span className="hidden sm:inline">{soundMuted ? 'Muted' : 'Sound On'}</span>
+            </button>
+
+            {/* Quick 1-Click Thermal Z-Reading / Daily Balancing */}
+            <button
+              type="button"
+              disabled={zReadingBusy}
+              onClick={() => void handleQuickZRead()}
+              className="flex items-center gap-1.5 rounded-md border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-xs font-medium text-purple-300 hover:border-purple-500/50 hover:bg-purple-500/20 transition-colors shadow-sm disabled:opacity-50"
+              title="Print Thermal Shift X/Z-Reading & End of Day Cash Balancing Summary"
+            >
+              {zReadingBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5 text-purple-400" />}
+              <span className="hidden sm:inline">Z-Reading</span>
+            </button>
+
             <button
               type="button"
               onClick={() => useGuide.getState().openGuide('pos')}
@@ -841,7 +1053,16 @@ export function POS(): React.JSX.Element {
         {viewMode === 'list' ? (
           /* High-Density Enterprise Listing Table */
           <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-ink-line bg-ink-900/60 overflow-hidden shadow-sm">
-            <div ref={tableContainerRef} className="flex-1 min-h-0 overflow-auto">
+            <div
+              ref={tableContainerRef}
+              className="flex-1 min-h-0 overflow-auto pb-28"
+              onScroll={(e) => {
+                const el = e.currentTarget
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+                  loadMoreProducts()
+                }
+              }}
+            >
               <div className="min-w-[680px]">
                 {/* Table Header */}
                 <div className="sticky top-0 z-10 grid grid-cols-[minmax(240px,2fr)_120px_130px_120px_140px] items-center gap-3 border-b border-ink-line bg-ink-850 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-400 select-none shadow-sm">
@@ -866,7 +1087,7 @@ export function POS(): React.JSX.Element {
                     </div>
                   ))}
 
-                  {!loading && products.length === 0 && (
+                  {!loading && displayedProducts.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500">
                       <Search className="h-8 w-8 text-slate-600 mb-2" />
                       <p className="text-sm font-medium text-slate-300">No products found</p>
@@ -874,7 +1095,7 @@ export function POS(): React.JSX.Element {
                     </div>
                   )}
 
-                  {!loading && products.map((p, idx) => {
+                  {!loading && displayedProducts.map((p, idx) => {
                     const cartItem = cartItems.find((item) => item.product_id === p.id)
                     const stock = saleStock(p)
                     const available = availableBase(stock, cartItem)
@@ -1050,18 +1271,33 @@ export function POS(): React.JSX.Element {
                       </div>
                     )
                   })}
+                  {loadingMore && (
+                    <div className="flex items-center justify-center py-4 text-xs text-slate-400 gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-brand-400" />
+                      <span>Loading more products...</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         ) : (
           /* Card Grid View (Visual Tiles) */
-          <div className="grid min-h-0 flex-1 auto-rows-[185px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-2">
+          <div
+            ref={gridContainerRef}
+            onScroll={(e) => {
+              const el = e.currentTarget
+              if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+                loadMoreProducts()
+              }
+            }}
+            className="grid min-h-0 flex-1 auto-rows-[185px] grid-cols-[repeat(auto-fill,minmax(min(100%,180px),1fr))] content-start gap-3 overflow-y-auto pb-28"
+          >
             {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
-            {!loading && products.length === 0 && (
+            {!loading && displayedProducts.length === 0 && (
               <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
             )}
-            {!loading && products.map((p) => {
+            {!loading && displayedProducts.map((p) => {
               const cartItem = cartItems.find(item => item.product_id === p.id)
               const stock = saleStock(p)
               const available = availableBase(stock, cartItem)
@@ -1120,6 +1356,12 @@ export function POS(): React.JSX.Element {
                 </button>
               )
             })}
+            {loadingMore && (
+              <div className="col-span-full flex items-center justify-center py-4 text-xs text-slate-400 gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-brand-400" />
+                <span>Loading more products...</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1477,6 +1719,26 @@ function CartPanel({
   const discountInputRef = useRef<HTMLInputElement>(null)
   const lastQtyInputRef = useRef<HTMLInputElement>(null)
 
+  const [seniorPwdOpen, setSeniorPwdOpen] = useState(false)
+  const [seniorName, setSeniorName] = useState('')
+  const [seniorIdNumber, setSeniorIdNumber] = useState('')
+
+  const handleApplySeniorPwd = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (!seniorIdNumber.trim()) {
+      toastError('ID Required', 'Please enter the Senior Citizen / PWD booklet or ID number.')
+      return
+    }
+    // Statutory 20% discount on cart subtotal
+    const discountC = Math.round(subtotal * 0.2)
+    usePosCart.getState().setDiscountPesos(discountC)
+    if (seniorName.trim() && !customer_name) {
+      usePosCart.getState().setCustomer(null, `${seniorName.trim()} (SC/PWD #${seniorIdNumber.trim()})`)
+    }
+    toastSuccess('Senior / PWD 20% Discount Applied', `Saved ${money(discountC)} (ID #${seniorIdNumber})`)
+    setSeniorPwdOpen(false)
+  }
+
   const handleEditPriceClick = (item: CartItem) => {
     const currentUser = useAuth.getState().user
     const isManagerOrAdmin = currentUser?.roles.some((r) => r === 'ADMIN' || r === 'MANAGER') ?? false
@@ -1766,7 +2028,18 @@ function CartPanel({
           <span>Subtotal</span><span className="text-slate-200">{money(subtotal)}</span>
         </div>
         <div className="flex items-center justify-between text-slate-400">
-          <span>Discount (₱) <span className="text-[10px] text-slate-500 font-mono">[F4]</span></span>
+          <div className="flex items-center gap-1.5">
+            <span>Discount (₱)</span>
+            <span className="text-[10px] text-slate-500 font-mono">[F4]</span>
+            <button
+              type="button"
+              onClick={() => setSeniorPwdOpen(true)}
+              className="rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-300 border border-brand-500/30 hover:bg-brand-500/20 transition-colors"
+              title="Apply 20% Senior Citizen / PWD Statutory Discount"
+            >
+              SC/PWD (20%)
+            </button>
+          </div>
           <input
             ref={discountInputRef}
             type="number"
@@ -1854,11 +2127,48 @@ function CartPanel({
         />
       )}
 
-      {priceEditItem && (
-        <PriceOverrideModal
-          item={priceEditItem}
-          onClose={() => setPriceEditItem(null)}
-        />
+      {seniorPwdOpen && (
+        <Modal open onClose={() => setSeniorPwdOpen(false)} title="Senior Citizen / PWD Discount (20%)" maxWidth="max-w-md">
+          <form onSubmit={handleApplySeniorPwd} className="space-y-4">
+            <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-brand-300">
+              <p className="font-semibold">Statutory 20% Discount Law</p>
+              <p className="mt-1 text-slate-400">
+                Calculates 20% discount on cart subtotal ({money(subtotal)} → -{money(Math.round(subtotal * 0.2))}).
+              </p>
+            </div>
+
+            <div>
+              <label className="label">OSCA / PWD ID or Booklet Number *</label>
+              <input
+                required
+                value={seniorIdNumber}
+                onChange={(e) => setSeniorIdNumber(e.target.value)}
+                placeholder="e.g. OSCA-12345 or PWD-67890"
+                className="input w-full"
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="label">Full Name of Senior / PWD (Optional)</label>
+              <input
+                value={seniorName}
+                onChange={(e) => setSeniorName(e.target.value)}
+                placeholder="e.g. Juan Dela Cruz"
+                className="input w-full"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-ink-line pt-3">
+              <button type="button" onClick={() => setSeniorPwdOpen(false)} className="btn-ghost">
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary">
+                Apply 20% Discount
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </aside>
   )
@@ -1954,6 +2264,7 @@ function CheckoutModal({
       }
       const res = await window.api.pos.checkout(payload)
       setDone(res)
+      playCheckoutChime()
       usePosCart.getState().clear()
       void window.api.phoneScanner?.updateCfd({
         status: 'COMPLETED',
@@ -2087,7 +2398,48 @@ function CheckoutModal({
               className="input w-full text-lg font-bold"
               autoFocus
             />
-            <div className="mt-1 flex justify-between text-xs">
+
+            {/* Quick Cash Denomination & Increment Chips */}
+            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick cash denomination buttons">
+              <button
+                type="button"
+                onClick={() => setCash(cashInputFromCents(total))}
+                className="rounded-md border border-brand-500/40 bg-brand-500/10 px-2 py-1 text-xs font-bold text-brand-300 hover:bg-brand-500/20 transition-colors"
+                title="Exact total payment"
+              >
+                Exact ({money(total)})
+              </button>
+              {[20, 50, 100, 200, 500, 1000].map((bill) => {
+                const billCents = bill * 100
+                if (billCents < total && billCents !== 1000 && billCents !== 500) return null
+                return (
+                  <button
+                    key={`exact-${bill}`}
+                    type="button"
+                    onClick={() => setCash(String(bill))}
+                    className="rounded-md border border-ink-line bg-ink-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:border-brand-500/50 hover:bg-ink-800 transition-colors"
+                  >
+                    ₱{bill}
+                  </button>
+                )
+              })}
+              {[20, 50, 100].map((addAmount) => (
+                <button
+                  key={`add-${addAmount}`}
+                  type="button"
+                  onClick={() => {
+                    const currentVal = parseFloat(cash) || (total / 100)
+                    setCash(String(Math.round((currentVal + addAmount) * 100) / 100))
+                  }}
+                  className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                  title={`Add ₱${addAmount} to cash`}
+                >
+                  +₱{addAmount}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-2 flex justify-between text-xs">
               <span className="text-slate-500">Change (sukli)</span>
               <span className={change >= 0 ? 'font-bold text-emerald-400' : 'font-bold text-danger-400'}>
                 {money(Math.max(0, change))}

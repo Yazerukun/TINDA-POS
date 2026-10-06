@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.58-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.60-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,43 @@
 
 <br />
 
-[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Portable-1.0.58.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.60 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-Setup-1.0.60.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-Portable-1.0.60.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.60 (VIP Client Infinite Scroll & 7 Core Enhancements Edition)
+
+> **Seamless Infinite Catalog Scrolling, Quick Cash Denominations, Web Audio API Sound Synthesizer, Multiplier Scanning, Senior/PWD 20% Discount & 1-Click Thermal Z-Reading**
+
+- 📜 **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
+  - **Root Cause Solved**: Removed the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx` that previously caused catalog scrolling to abruptly stop after 60 items.
+  - **Continuous Infinite Pagination**: Implemented dynamic paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Catalogs with 500 to 10,000+ items now scroll completely and fluidly without clipping.
+- 💵 **Quick Cash Denomination & Increment Chips**:
+  - Added 1-Tap quick payment buttons in Cash Checkout: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100` for ultra-fast customer change calculations.
+- 🔊 **Web Audio API Hardware Synthesizer**:
+  - Zero-asset, 100% offline audio engine with crisp high-pitched barcode scan confirmations (1300Hz-1750Hz sine), out-of-stock/error buzzers (280Hz sawtooth), cash register chime (C6-C7 arpeggio), and 1-tap header mute/unmute toggle.
+- ⚡ **Multiplier Scan & Rapid Entry Engine**:
+  - Cashiers can scan or enter `5*BARCODE` or `10*PRODUCT` to instantly add bulk quantities without tapping the plus button multiple times.
+- 🏷️ **Senior Citizen & PWD 20% Statutory Discount System**:
+  - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking for tax compliance.
+- 🖨️ **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
+  - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
+- 🛡️ **Automated 7-Day Rolling Daily SQLite Safety Snapshot**:
+  - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage.
+- 🚨 **Live Inventory Safety & Expiry HUD Badges**:
+  - Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
+
+---
+
+## ✨ What's New in v1.0.59 (High-Density Enterprise Cashier Listing Table)
+
+> **Supermarket/Pharmacy Listing View, 1-Click Dual-Mode Switcher & Keyboard Navigation**
+
+- 📋 **High-Density Enterprise Cashier Listing Table**: 5-column supermarket listing displaying 36×36 product thumbnail avatar, product name, cyan mono SKU, barcode, category badge, real-time stock levels with safety pulse (🟢 Normal, 🟡 Low, 🔴 Out), wholesale/SRP/reference prices, in-line quantity steppers (`- count +`), and active in-cart counters.
+- 🔄 **1-Click Dual-Mode Switcher**: Instant switching between Table Listing and Card Grid modes with per-terminal persistent memory.
+- ⌨️ **High-Speed Keyboard Navigation**: `ArrowDown` / `ArrowUp` item navigation with auto-scrolling viewport and `Enter` key cart addition.
+
+---
 
 ## ✨ What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback Engine)
 

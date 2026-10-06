@@ -36,7 +36,7 @@ export function Shell(): React.JSX.Element {
       <Sidebar />
       <main className="flex min-w-0 flex-1 flex-col">
         {user && <ExpirationAlerts key={user.id} remind />}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className={`min-h-0 flex-1 ${page === 'pos' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'}`}>
         {user && page === 'dashboard' && <Dashboard />}
         {user && page === 'pos' && <POS />}
         {user && page === 'inventory' && <Inventory />}

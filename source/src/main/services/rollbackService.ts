@@ -61,6 +61,26 @@ export class RollbackService {
       // Offline fallback: provide documented stable fallback releases
       releases = [
         {
+          version: '1.0.59',
+          tag: 'v1.0.59',
+          title: 'TINDA POS v1.0.59 — High-Density Enterprise POS Cashier Listing Engine',
+          publishedAt: '2026-10-06T00:30:00Z',
+          releaseNotes: 'Supermarket-grade high-density listing table, 1-click dual-mode switcher, and high-speed keyboard navigation.',
+          stable: true,
+          assets: [
+            {
+              name: 'TindaPOS-Setup-1.0.59.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Setup-1.0.59.exe',
+              size: 112520000
+            },
+            {
+              name: 'TindaPOS-Portable-1.0.59.exe',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Portable-1.0.59.exe',
+              size: 112290000
+            }
+          ]
+        },
+        {
           version: '1.0.58',
           tag: 'v1.0.58',
           title: 'TINDA POS v1.0.58 — Profit Margins Restoration & Automated VIP Rollback Engine',

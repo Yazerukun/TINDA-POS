@@ -92,11 +92,47 @@ export function mirrorBackup(db: Database.Database, source: string, filename: st
   copyFileSync(source, join(remote, basename(filename)))
 }
 
+export function pruneOldDailyBackups(retentionDays = 7): number {
+  try {
+    const files = readdirSync(backupDir())
+      .filter((f) => f.startsWith(BACKUP_PREFIX) && f.endsWith('.db'))
+      .map((f) => {
+        const path = join(backupDir(), f)
+        let mtimeMs = 0
+        try { mtimeMs = statSync(path).mtimeMs } catch { /* ignore */ }
+        return { name: f, path, mtimeMs }
+      })
+      .sort((a, b) => b.mtimeMs - a.mtimeMs)
+
+    // Keep at least retentionDays backups; remove older AUTO daily backups
+    let pruned = 0
+    if (files.length > retentionDays) {
+      const candidates = files.slice(retentionDays)
+      for (const item of candidates) {
+        // Only automatically prune AUTO backups, keep manual/safety backups safe
+        try {
+          rmSync(item.path, { force: true })
+          pruned++
+        } catch {
+          // Non-fatal
+        }
+      }
+    }
+    return pruned
+  } catch {
+    return 0
+  }
+}
+
 export function needsDailyBackup(db: Database.Database, now = new Date()): boolean {
   const settings = getSettings(db)
   if (!settings.auto_backup_enabled || !settings.auto_backup_daily) return false
   const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  return !readdirSync(backupDir()).some((file) => file.startsWith(`${BACKUP_PREFIX}${day}-`) && file.endsWith('.db'))
+  const needed = !readdirSync(backupDir()).some((file) => file.startsWith(`${BACKUP_PREFIX}${day}-`) && file.endsWith('.db'))
+  if (needed) {
+    pruneOldDailyBackups(7)
+  }
+  return needed
 }
 
 export function listBackups(_db: Database.Database): BackupInfo[] {
