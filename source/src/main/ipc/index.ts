@@ -140,6 +140,14 @@ handle('app:salesMonitorSummary', () => {
     WHERE created_at LIKE ? AND status = 'COMPLETED'
   `).get(`${todayPrefix}%`) as { total_transactions: number; total_sales_c: number; subtotal_c: number; discount_c: number }
 
+  const todayRefunds = d.prepare(`
+    SELECT COALESCE(SUM(r.total_c), 0) AS total_refunds_c
+    FROM refunds r
+    JOIN sales s ON s.id = r.sale_id
+    WHERE s.created_at LIKE ?
+  `).get(`${todayPrefix}%`) as { total_refunds_c: number }
+
+
   const paymentsSummary = d.prepare(`
     SELECT 
       p.method,
@@ -162,7 +170,8 @@ handle('app:salesMonitorSummary', () => {
     else if (p.method === 'UTANG') utang_c = p.amount_c
   }
 
-  const realized_sales_c = cash_c + gcash_c + maya_c
+  const refunds_c = todayRefunds?.total_refunds_c ?? 0
+  const realized_sales_c = Math.max(0, cash_c + gcash_c + maya_c - refunds_c)
   const recentSales = listSales(d, { limit: 50 }).rows
   const settings = settingRepo.getSettings(d)
 
@@ -176,10 +185,12 @@ handle('app:salesMonitorSummary', () => {
       cash_c,
       gcash_c,
       maya_c,
-      utang_c
+      utang_c,
+      refunds_c
     },
     recent_sales: recentSales
   }
+
 })
 
 // ---- Auth ----

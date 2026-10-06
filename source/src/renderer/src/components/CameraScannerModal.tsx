@@ -618,20 +618,21 @@ export function CameraScannerModal({
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-200/90 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
               <div className="text-[11px] leading-relaxed">
-                <strong>Dili maka-connect ang phone?</strong>
+                <strong>Cannot connect your phone?</strong>
                 <span className="block mt-0.5 text-slate-300">
-                  1. Siguroha nga ang phone ug PC naa sa <strong>parehas nga Wi-Fi / Hotspot</strong>.
+                  1. Ensure your smartphone and PC are connected to the <strong>exact same Wi-Fi / Hotspot</strong> network.
                 </span>
                 <span className="block text-slate-300">
-                  2. Kung naay browser security warning sa phone o dili mo-load, tuploka ang <strong>"📸 Direct Snap Scanner"</strong> sa ibabaw (100% no warning & zero setup).
+                  2. If mobile browser displays an SSL security warning, switch to <strong>"📸 Direct Snap Scanner"</strong> above for instant 100% warning-free scanning.
                 </span>
                 {phoneStatus.availableIps && phoneStatus.availableIps.length > 1 && (
                   <span className="block text-slate-300">
-                    3. Kung naay Ethernet ug Wi-Fi ang PC, pilia ang tamang Wi-Fi IP address sa dropdown sa ibabaw.
+                    3. If your PC has both Ethernet and Wi-Fi, select the store Wi-Fi IP address in the dropdown above.
                   </span>
                 )}
               </div>
             </div>
+
 
             {/* Hands-Free Background Scanning Notice */}
             <div className="flex items-center gap-2.5 rounded-lg border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-brand-300">

@@ -16,6 +16,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   6. **agentmemory**: Continuous learning engine with persistent recall and auto-save of bugfix lessons and release milestones.
   7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
   8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
+  9. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -23,7 +24,24 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)**
+- Current Version: **v1.0.64 (VIP Custom Logo & Universal Discount Edition)**
+
+## Key Features in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
+1. **VIP Pro Custom Brand Identity & Store Logo Upload**:
+   - Merchants with active VIP Pro licenses can upload their custom business logo (PNG, JPG, SVG, WebP up to 2MB) stored locally in app settings.
+   - AppLogo component seamlessly renders their custom store logo encased in Apple-grade Cupertino squircle materials, with live fallback to Quantum Mark.
+   - Non-VIP users are cleanly prompted with a VIP Pro upgrade gate in Settings -> Store Profile.
+2. **Universal Custom Cart Discount Engine (% & ₱)**:
+   - Cashiers can apply flexible discounts directly from checkout: Statutory Senior Citizen / PWD 20% discount or custom percentage (5%, 10%, 15%, 20%, 50%, or custom %) or exact peso deduction (₱).
+   - Real-time subtotal calculation and clear display on both POS cart and thermal printed receipts.
+3. **100% Professional English System-Wide Localization**:
+   - Replaced all legacy Bisaya/Filipino text across receipt tickets (`Thank you for your purchase!`, `Change`), Handbook Chapter 10, printer troubleshooting guides, and camera companion pairing instructions with professional English.
+4. **POS Register Header Clutter Elimination**:
+   - Removed Terminal Tools button from POS register header for maximum product catalog visibility, while keeping global hotkey `F3` and permanent Cupertino pill button in the Sidebar footer.
+5. **Live Sales Monitor & Owner Dashboard 100% Metric Synchronization**:
+   - Re-aligned `app:salesMonitorSummary` to query refunds and calculate Net Realized Sales (`cash + gcash + maya - refunds`), matching Dashboard exactly and excluding uncollected customer credit (Utang).
+6. **100% Automated Test Gate Passed**:
+   - Verified 414/414 unit tests across 63 test suites with 0 TypeScript compilation errors.
 
 ## Key Features in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
 1. **Zero-Click Thermal Printer Auto-Detection & Self-Configuration**:

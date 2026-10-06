@@ -130,7 +130,7 @@ export function SalesMonitorScreen(): React.JSX.Element {
         return {
           ...prev,
           today: {
-            total_sales_c: prev.today.total_sales_c + sale.total_c,
+            total_sales_c: prev.today.total_sales_c + (addCash + addGcash + addMaya),
             total_transactions: prev.today.total_transactions + 1,
             cash_c: prev.today.cash_c + addCash,
             gcash_c: prev.today.gcash_c + addGcash,
@@ -141,6 +141,7 @@ export function SalesMonitorScreen(): React.JSX.Element {
         }
       })
     })
+
 
     return () => {
       unsub()

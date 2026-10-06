@@ -212,8 +212,9 @@ export function completeSetup(input: {
         address: input.store.address ?? '',
         phone: input.store.phone ?? '',
         receipt_header: input.receipt?.header ?? input.store.store_name.trim(),
-        receipt_footer: input.receipt?.footer ?? 'Salamat po!',
+        receipt_footer: input.receipt?.footer ?? 'Thank you for your purchase!',
         data_dir: input.data_dir
+
       })
       createUser(db, {
         username: input.admin.username.trim(),

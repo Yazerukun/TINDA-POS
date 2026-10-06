@@ -37,7 +37,9 @@ import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel } from '@shared/printer'
 import { Modal } from '../components/ui/Modal'
+import { AppLogo } from '../components/AppLogo'
 import { useSettings } from '../stores/settings'
+
 import { toastSuccess, toastError } from '../stores/toast'
 import { useUpdate } from '../stores/update'
 import { ReceiptPaper } from '../components/ReceiptPaper'
@@ -176,9 +178,10 @@ export function Settings(): React.JSX.Element {
             <div className="w-full max-w-2xl space-y-4">
               <ThemeSelector />
               <StartupSetting />
-              <StoreSettingsTab />
+              <StoreSettingsTab isVip={isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
             </div>
           )}
+
           {tab === 'RECEIPT' && (
             <div className="w-full max-w-2xl">
               <ReceiptSettingsTab isVip={isVip} onUpgradeClick={() => setUpgradeModalOpen(true)} />
@@ -843,7 +846,7 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }): React.JS
   )
 }
 
-function StoreSettingsTab(): React.JSX.Element {
+function StoreSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?: () => void }): React.JSX.Element {
   const { settings, update } = useSettings()
   const [f, setF] = useState({
     store_name: settings?.store_name ?? '',
@@ -853,22 +856,146 @@ function StoreSettingsTab(): React.JSX.Element {
     tin: settings?.tin ?? '',
     default_low_stock: settings?.default_low_stock ?? 5,
     allow_negative_inventory: settings?.allow_negative_inventory ?? false,
-    default_tax_c: settings?.default_tax_c ?? 0
+    default_tax_c: settings?.default_tax_c ?? 0,
+    logo_path: settings?.logo_path ?? null as string | null
   })
   const [saving, setSaving] = useState(false)
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
 
+  useEffect(() => {
+    if (settings) {
+      setF({
+        store_name: settings.store_name ?? '',
+        owner_name: settings.owner_name ?? '',
+        address: settings.address ?? '',
+        phone: settings.phone ?? '',
+        tin: settings.tin ?? '',
+        default_low_stock: settings.default_low_stock ?? 5,
+        allow_negative_inventory: settings.allow_negative_inventory ?? false,
+        default_tax_c: settings.default_tax_c ?? 0,
+        logo_path: settings.logo_path ?? null
+      })
+    }
+  }, [settings])
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Limit to 2MB for fast offline storage
+    if (file.size > 2 * 1024 * 1024) {
+      toastError('File Too Large', 'Please select a logo under 2MB (PNG, JPG, or SVG).')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result as string
+      set({ logo_path: base64 })
+      toastSuccess('Logo Selected', 'Click "Save Settings" below to apply your store logo across TINDA POS.')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveLogo = () => {
+    set({ logo_path: null })
+    toastSuccess('Logo Removed', 'Click "Save Settings" to revert to the default mark.')
+  }
+
   const save = async () => {
     setSaving(true)
     try {
-      await update({ store_name: f.store_name, owner_name: f.owner_name, address: f.address, phone: f.phone, tin: f.tin, default_low_stock: f.default_low_stock, allow_negative_inventory: f.allow_negative_inventory, default_tax_c: f.default_tax_c })
+      await update({
+        store_name: f.store_name,
+        owner_name: f.owner_name,
+        address: f.address,
+        phone: f.phone,
+        tin: f.tin,
+        default_low_stock: f.default_low_stock,
+        allow_negative_inventory: f.allow_negative_inventory,
+        default_tax_c: f.default_tax_c,
+        logo_path: f.logo_path
+      })
       toastSuccess('Settings saved')
-    } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
+    } catch (e) {
+      toastError('Save failed', String((e as Error)?.message || e))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <div className="card p-5">
-      <div className="space-y-3">
+      <div className="space-y-4">
+        {/* Custom Logo Upload Section */}
+        <div className="rounded-xl border border-ink-line bg-ink-950 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-sm font-semibold text-white flex items-center gap-2">
+                <span>Store Identity Logo</span>
+                {isVip && (
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
+                    VIP PRO
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-slate-400">
+                Displays in the sidebar header, hardware hub, and cashier terminal.
+              </p>
+            </div>
+            {!isVip && (
+              <button
+                type="button"
+                onClick={onUpgradeClick}
+                className="flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-amber-300"
+              >
+                <Crown className="h-3.5 w-3.5" /> Unlock with VIP Pro
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 mt-3">
+            {/* Logo Preview Square */}
+            <div className="h-16 w-16 rounded-xl border border-ink-line bg-ink-900 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+              {f.logo_path ? (
+                <img src={f.logo_path} alt="Custom Store Logo" className="h-full w-full object-contain p-1" />
+              ) : (
+                <AppLogo size={42} showBadge={false} isVip={isVip} />
+              )}
+            </div>
+
+            <div className="flex-1 space-y-2">
+              {isVip ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="btn-secondary text-xs px-3 py-1.5 cursor-pointer flex items-center gap-1.5">
+                    <span>Upload Image</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                  </label>
+                  {f.logo_path && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="btn-ghost text-xs text-rose-400 hover:text-rose-300 px-2.5 py-1.5"
+                    >
+                      Remove Logo
+                    </button>
+                  )}
+                  <span className="text-[11px] text-slate-500">Max 2MB (PNG, JPG, SVG)</span>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  Custom branding is exclusive to VIP Pro merchants. Upgrade once to upload your own official brand mark!
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div><label className="label">Store Name *</label><input value={f.store_name} onChange={(e) => set({ store_name: e.target.value })} className="input w-full" /></div>
         <div><label className="label">Owner Name</label><input value={f.owner_name} onChange={(e) => set({ owner_name: e.target.value })} className="input w-full" /></div>
         <div><label className="label">Address</label><input value={f.address} onChange={(e) => set({ address: e.target.value })} className="input w-full" /></div>
@@ -892,6 +1019,7 @@ function StoreSettingsTab(): React.JSX.Element {
     </div>
   )
 }
+
 
 function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?: () => void }): React.JSX.Element {
   const { settings, update } = useSettings()
@@ -1005,10 +1133,11 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
               '1 x Sample Item        10.00',
               'TOTAL                  10.00',
               '--------------------------------',
-              f.receipt_footer || 'Salamat po!',
+              f.receipt_footer || 'Thank you for your purchase!',
               ...(!isVip ? ['[ Powered by TINDA POS Free Community ]'] : [])
             ]}
           />
+
         </div>
         <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-3.5 text-xs text-teal-200 space-y-2">
           <div className="flex items-center gap-2 font-bold text-teal-300">
@@ -1018,16 +1147,17 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
           <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
             <li><strong>Paper Width:</strong> Select <strong>58mm</strong> below for 100% compact, zero-overflow thermal receipts.</li>
             <li><strong>Official Driver:</strong> Download and install the <em>Xprinter Driver v7.77</em> (select <strong>POS-58</strong> model) or <em>GOOJPRT PB-58H USB Driver</em> from OEMDrivers / manufacturer.</li>
-            <li><strong>Walay mo-gawas nga papel o Blank Receipt? (Troubleshooting):</strong>
+            <li><strong>Blank Receipt or Paper Does Not Feed? (Troubleshooting):</strong>
               <ul className="list-circle pl-4 mt-1 space-y-0.5 text-amber-200">
-                <li><strong>Thermal Paper Roll Balit-ad:</strong> Ang thermal paper naay usa lang ka sensitive side. Scratch-i gamit ang kuko; kung mo-itom, mao to ang thermal side nga kinahanglan <em>mo-atubang sa heater/printhead</em>. Kung balit-ad ang papel, mo-feed lang o dili mo-init.</li>
-                <li><strong>Windows Printer Port:</strong> Sa Windows <em>Control Panel &rarr; Devices and Printers &rarr; Printer Properties &rarr; Ports</em>, siguroha nga naka-check ang saktong USB Virtual Port (e.g., <code>USB001</code> o <code>USB002</code>), dili LPT1 o COM port kung USB ang connection.</li>
-                <li><strong>Printer Preferences Paper Size:</strong> Sa Windows Printing Preferences, ibutang ang Default Paper Size sa <strong>58 x 297 mm</strong> o <strong>Roll Paper 58 x Continuous</strong>.</li>
+                <li><strong>Thermal Paper Roll Reversed:</strong> Thermal paper only has one chemically-treated heat-sensitive side. Scratch the paper with your fingernail; if a dark mark appears, that side must <em>face the thermal printhead heater</em>. If reversed, the paper feeds blank.</li>
+                <li><strong>Windows Printer Port:</strong> In Windows <em>Control Panel &rarr; Devices and Printers &rarr; Printer Properties &rarr; Ports</em>, ensure the active Virtual USB Port (e.g., <code>USB001</code> or <code>USB002</code>) is checked instead of LPT1 or COM ports.</li>
+                <li><strong>Printer Preferences Paper Size:</strong> In Windows Printing Preferences, set the Default Paper Size to <strong>58 x 297 mm</strong> or <strong>Roll Paper 58 x Continuous</strong>.</li>
               </ul>
             </li>
-            <li><strong>Bluetooth Connection:</strong> Pair sa Windows gamit ang PIN <code>0000</code>. Assign ang driver ngadto sa Outgoing COM port.</li>
+            <li><strong>Bluetooth Connection:</strong> Pair in Windows using PIN <code>0000</code> or <code>1234</code>. Assign the driver to the Outgoing COM port.</li>
           </ul>
         </div>
+
 
         <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. Zero-margin spooling and automatic paper-height tracking are calibrated for seamless thermal feed. Sales still complete safely if the printer is missing or offline.</p>
         <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>

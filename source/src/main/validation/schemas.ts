@@ -81,8 +81,9 @@ export const validateSetup = (input: unknown) => {
     },
     receipt: {
       header: typeof receipt.header === 'string' ? receipt.header : '',
-      footer: typeof receipt.footer === 'string' ? receipt.footer : 'Salamat po!'
+      footer: typeof receipt.footer === 'string' ? receipt.footer : 'Thank you for your purchase!'
     },
+
     data_dir: typeof i.data_dir === 'string' ? i.data_dir : '',
     load_demo: !!i.load_demo
   }

@@ -12,7 +12,8 @@ export function FirstRun(): React.JSX.Element {
   // wizard form state
   const [store, setStore] = useState({ store_name: '', owner_name: '', address: '', phone: '' })
   const [admin, setAdmin] = useState({ username: 'admin', password: '', pin: '', full_name: 'Manager' })
-  const [receipt, setReceipt] = useState({ header: '', footer: 'Salamat po!' })
+  const [receipt, setReceipt] = useState({ header: '', footer: 'Thank you for your purchase!' })
+
   const [loadDemo, setLoadDemo] = useState(true)
 
   const steps: { icon: React.ReactNode; title: string; sub: string }[] = [

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.63-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.64-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-414_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,9 +16,28 @@
 
 <br />
 
-[⬇️ Download v1.0.63 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-Setup-1.0.63.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-Portable-1.0.63.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.63/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.64 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-Setup-1.0.64.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-Portable-1.0.64.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
+
+> **VIP Pro Custom Store Logo Upload, Universal Cart Discounts (% and ₱), 100% English Localization, POS Header Workspace Cleanup, and Live Sales Monitor Metric Alignment**
+
+- 🌟 **VIP Pro Custom Brand Identity & Store Logo Upload**:
+  - Store owners with active VIP Pro licenses can upload their personalized business logo (PNG, JPG, SVG, WebP up to 2MB).
+  - Stored securely in local settings and rendered within Apple-grade Cupertino squircle materials across the sidebar and headers, with live fallback to Quantum Mark.
+- 🏷️ **Universal Custom Cart Discount Engine (% and ₱)**:
+  - Cashiers can now apply flexible discounts right at the POS register: choose between statutory Senior Citizen / PWD 20% discount or custom percentage (5%, 10%, 15%, 20%, 50%, or custom input) or exact peso deduction (₱).
+  - Complete with real-time subtotal calculation and clear display on both POS cart and thermal printed tickets.
+- 🌐 **100% Professional English System-Wide Localization**:
+  - Replaced all legacy Bisaya/Filipino text across receipt tickets (`Thank you for your purchase!`, `Change`), Handbook Chapter 10, thermal printer troubleshooting, and wireless camera scanner pairing with clean professional English.
+- 🧹 **POS Register Header Workspace Cleanup**:
+  - Removed cluttered Terminal Tools button from the cashier register top bar for maximum catalog screen real estate, while retaining instant `F3` hotkey access and the permanent Sidebar footer button.
+- 📊 **Live Sales Monitor & Owner Dashboard 100% Alignment**:
+  - Re-synchronized `app:salesMonitorSummary` to query refunds and calculate Net Realized Sales (`cash + gcash + maya - refunds`), perfectly matching the Owner Dashboard metrics and strictly excluding uncollected customer credit (Utang).
+- 🛡️ **100% Quality Invariants Maintained**:
+  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
 
 ## ✨ What's New in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
 

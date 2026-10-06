@@ -544,18 +544,17 @@ export function Handbook(): React.JSX.Element {
           <div className="space-y-4">
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              Method 1: USB Connection (Most Stable &amp; Recommended)
+              Method 1: USB Connection (Recommended &amp; Most Reliable)
             </h4>
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
-                <li>Saksak ang USB cable sa imong PC o laptop, unya i-on ang printer switch.</li>
-                <li>I-install ang <strong>POS-58 Driver</strong> o <strong>Xprinter 58mm Driver</strong> sa Windows.</li>
-                <li><strong>Bag-o sa v1.0.63 (Zero-Click Auto-Detect):</strong> Dili na kinahanglan mag-mano-mano ug pili o configure! Sa pagsaksak palang sa printer, automatic na kining i-detect ug gamiton sa TINDA POS kung mag-print ug resibo, Z-reading, o shift audit.</li>
-                <li>Kung gusto nimo usbon ang headers o footers, ablihi ang <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
-                <li>I-toggle ang <strong>Auto Print After Sale</strong> kung gusto nimo nga mo-print dayon ug resibo pagkahuman sa checkout.</li>
+                <li>Plug the USB cable into your PC or laptop, then turn on the printer power switch.</li>
+                <li>Install the official <strong>POS-58 Driver</strong> or <strong>Xprinter 58mm Driver</strong> in Windows.</li>
+                <li><strong>Zero-Click Auto-Detect:</strong> No manual configuration needed! Once plugged in, TINDA POS automatically detects and binds your printer for receipts, shift audits, and Z-readings.</li>
+                <li>To customize receipt headers or footers, navigate to <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
+                <li>Toggle <strong>Auto Print After Sale</strong> if you want receipts to print immediately upon checkout completion.</li>
               </ol>
             </div>
-
 
             <h4 className="text-sm font-bold text-white flex items-center gap-2">
               <Smartphone className="h-4 w-4 text-sky-400" />
@@ -563,31 +562,32 @@ export function Handbook(): React.JSX.Element {
             </h4>
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
-                <li>I-on ang Bluetooth sa imong Windows laptop o PC.</li>
-                <li>Pangitaa ang Bluetooth device sa printer (kasagaran ang name kay <em>PB-58H</em>, <em>MTP-2</em>, o <em>RPP02N</em>).</li>
-                <li>I-pair gamit ang standard PIN: <strong>0000</strong> o <strong>1234</strong>.</li>
-                <li>Sa Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, susiha ang <strong>Outgoing COM Port</strong> sa printer (pananglit: COM3 o COM4).</li>
-                <li>I-install ang thermal driver ug itudlo ang port ngadto sa maong COM port.</li>
-                <li>Sa TINDA POS, pindota ang <strong>Refresh Printers</strong> unya pilia ang printer.</li>
+                <li>Turn on Bluetooth on your Windows PC or laptop.</li>
+                <li>Search for the printer Bluetooth device (usually named <em>PB-58H</em>, <em>MTP-2</em>, or <em>RPP02N</em>).</li>
+                <li>Pair using the standard PIN: <strong>0000</strong> or <strong>1234</strong>.</li>
+                <li>In Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, verify the printer's <strong>Outgoing COM Port</strong> (e.g., COM3 or COM4).</li>
+                <li>Assign the printer driver to this COM port.</li>
+                <li>In TINDA POS Settings, click <strong>Refresh Printers</strong> and select your Bluetooth device.</li>
               </ol>
             </div>
 
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-2 text-amber-200">
               <div className="font-bold flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
-                <span>Nganong "Print Successful" pero walay mogawas sa papel o blanko?</span>
+                <span>Troubleshooting: Print completes successfully but paper is blank or does not feed?</span>
               </div>
               <ul className="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px]">
-                <li><strong>1. Thermal Paper Roll Orientation (Pinaka-komon nga rason):</strong> Ang thermal paper naay usa lang ka chemically-treated heat-sensitive side. Scratch-i ang papel gamit ang imong kuko; kung mogawas ang itom nga linya, kana ang <em>thermal side</em>. Kinahanglan kana nga side ang <strong>naka-atubang sa heating printhead</strong>. Kung balit-ad ang papel, mosiga ang printer ug mag-feed pero 100% blanko o dili mo-reaksyon.</li>
-                <li><strong>2. USB Virtual Port Mapping:</strong> Sa Windows <em>Printers &amp; Scanners &rarr; Imong Thermal Printer &rarr; Printer Properties &rarr; Ports tab</em>, siguroha nga naka-check ang active <code>USB001</code> o <code>USB002</code> Virtual Printer Port. Kung nasayop kini ug nahimutang sa <code>LPT1</code> o <code>COM1</code>, mosulti ang Windows nga "Printing complete" pero dili makaabot ang signal sa USB hardware.</li>
-                <li><strong>3. Windows Driver Page Size Setting:</strong> Sa Windows Printing Preferences, i-set ang Paper Size ngadto sa <strong>58mm x 297mm</strong> o <strong>58 x Continuous</strong> imbes nga A4/Letter aron dili maglibog ang micro-controller sa printer.</li>
-                <li><strong>4. Printer Self-Test Verification:</strong> Aron masulayan kung buhi ba ang hardware: i-off ang printer, pindota ug kupti ang <strong>FEED button</strong>, unya i-on ang power samtang gikuptan ang FEED. Pagkahuman sa 2 segundos, buhii ang button. Kinahanglan mo-print ang printer ug diagnostic sheet nga naay printhead status ug font test.</li>
+                <li><strong>1. Thermal Paper Roll Orientation (Most Common Cause):</strong> Thermal paper only has one chemically-treated heat-sensitive side. Scratch the paper with your fingernail; if a black line appears, that is the <em>thermal side</em>. That side <strong>must face the heated printhead</strong>. If the roll is inserted backwards, the printer feeds blank paper with no print visible.</li>
+                <li><strong>2. Windows USB Virtual Port Mapping:</strong> In Windows <em>Printers &amp; Scanners &rarr; Your Thermal Printer &rarr; Printer Properties &rarr; Ports tab</em>, ensure that the active <code>USB001</code> or <code>USB002</code> Virtual Printer Port is selected. If set to an inactive <code>LPT1</code> or <code>COM1</code>, Windows will report "Printing complete" but the data never reaches the USB hardware.</li>
+                <li><strong>3. Windows Driver Page Size Setting:</strong> In Windows Printing Preferences, set the default Paper Size to <strong>58mm x 297mm</strong> or <strong>58 x Continuous</strong> rather than A4 or Letter.</li>
+                <li><strong>4. Hardware Self-Test Verification:</strong> To test physical printer hardware: turn off the printer, hold the <strong>FEED button</strong>, and turn on power while holding FEED. Release after 2 seconds. The printer should print an internal diagnostic self-test slip confirming the printhead is working.</li>
               </ul>
             </div>
           </div>
         </div>
       )
     }
+
   ], [])
 
   const filteredChapters = useMemo(() => {

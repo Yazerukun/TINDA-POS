@@ -904,28 +904,9 @@ export function POS(): React.JSX.Element {
               <span className="hidden sm:inline">Grid</span>
             </button>
           </div>
-          {/* POS Terminal Tools Trigger Button */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setPosToolsOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-brand-500/35 bg-gradient-to-r from-brand-600/20 via-brand-500/15 to-brand-600/10 px-3 py-2 text-xs font-bold text-brand-300 hover:border-brand-500/60 hover:bg-brand-500/25 transition-all shadow-sm active:scale-95"
-              title="Open Terminal Tools (Scanner, Camera, CFD, Petty Cash, Audio, Z-Reading) — Hotkey: F3"
-            >
-              <div className="relative flex items-center justify-center">
-                <Wrench className="h-4 w-4 text-brand-400" />
-                {(counterCameraEnabled || phoneConnected) && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-ink-900 animate-pulse" />
-                )}
-              </div>
-              <span>Terminal Tools</span>
-              <span className="rounded bg-brand-500/25 px-1.5 py-0.2 text-[10px] font-mono text-brand-200 border border-brand-500/35">
-                F3
-              </span>
-            </button>
-          </div>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
+
 
         {viewMode === 'list' ? (
           /* High-Density Enterprise Listing Table */
@@ -1619,8 +1600,12 @@ function CartPanel({
   const lastQtyInputRef = useRef<HTMLInputElement>(null)
 
   const [seniorPwdOpen, setSeniorPwdOpen] = useState(false)
+  const [discountType, setDiscountType] = useState<'SENIOR_PWD' | 'CUSTOM'>('SENIOR_PWD')
   const [seniorName, setSeniorName] = useState('')
   const [seniorIdNumber, setSeniorIdNumber] = useState('')
+  const [customMode, setCustomMode] = useState<'PERCENT' | 'PESOS'>('PERCENT')
+  const [customPercent, setCustomPercent] = useState('10')
+  const [customAmount, setCustomAmount] = useState('')
 
   const handleApplySeniorPwd = (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -1637,6 +1622,31 @@ function CartPanel({
     toastSuccess('Senior / PWD 20% Discount Applied', `Saved ${money(discountC)} (ID #${seniorIdNumber})`)
     setSeniorPwdOpen(false)
   }
+
+  const handleApplyCustomDiscount = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    let discountC = 0
+    if (customMode === 'PERCENT') {
+      const pct = Math.min(100, Math.max(0, parseFloat(customPercent) || 0))
+      if (pct <= 0) {
+        toastError('Invalid Percentage', 'Please enter a valid discount percentage.')
+        return
+      }
+      discountC = Math.round(subtotal * (pct / 100))
+    } else {
+      const amt = parseFloat(customAmount) || 0
+      if (amt <= 0) {
+        toastError('Invalid Amount', 'Please enter a valid discount peso amount.')
+        return
+      }
+      discountC = Math.min(subtotal, Math.round(amt * 100))
+    }
+
+    usePosCart.getState().setDiscountPesos(discountC)
+    toastSuccess('Custom Discount Applied', `Deducted ${money(discountC)} from cart total.`)
+    setSeniorPwdOpen(false)
+  }
+
 
   const handleEditPriceClick = (item: CartItem) => {
     const currentUser = useAuth.getState().user
@@ -1934,11 +1944,12 @@ function CartPanel({
               type="button"
               onClick={() => setSeniorPwdOpen(true)}
               className="rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-300 border border-brand-500/30 hover:bg-brand-500/20 transition-colors"
-              title="Apply 20% Senior Citizen / PWD Statutory Discount"
+              title="Apply Senior / PWD 20% or Custom Discount"
             >
-              SC/PWD (20%)
+              Discounts
             </button>
           </div>
+
           <input
             ref={discountInputRef}
             type="number"
@@ -2034,48 +2045,187 @@ function CartPanel({
       )}
 
       {seniorPwdOpen && (
-        <Modal open onClose={() => setSeniorPwdOpen(false)} title="Senior Citizen / PWD Discount (20%)" maxWidth="max-w-md">
-          <form onSubmit={handleApplySeniorPwd} className="space-y-4">
-            <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-brand-300">
-              <p className="font-semibold">Statutory 20% Discount Law</p>
-              <p className="mt-1 text-slate-400">
-                Calculates 20% discount on cart subtotal ({money(subtotal)} → -{money(Math.round(subtotal * 0.2))}).
-              </p>
-            </div>
-
-            <div>
-              <label className="label">OSCA / PWD ID or Booklet Number *</label>
-              <input
-                required
-                value={seniorIdNumber}
-                onChange={(e) => setSeniorIdNumber(e.target.value)}
-                placeholder="e.g. OSCA-12345 or PWD-67890"
-                className="input w-full"
-                autoFocus
-              />
-            </div>
-
-            <div>
-              <label className="label">Full Name of Senior / PWD (Optional)</label>
-              <input
-                value={seniorName}
-                onChange={(e) => setSeniorName(e.target.value)}
-                placeholder="e.g. Juan Dela Cruz"
-                className="input w-full"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 border-t border-ink-line pt-3">
-              <button type="button" onClick={() => setSeniorPwdOpen(false)} className="btn-ghost">
-                Cancel
+        <Modal open onClose={() => setSeniorPwdOpen(false)} title="Apply Cart Discount" maxWidth="max-w-md">
+          <div className="space-y-4">
+            {/* Discount Type Selector */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setDiscountType('SENIOR_PWD')}
+                className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all ${
+                  discountType === 'SENIOR_PWD'
+                    ? 'border-brand-500 bg-brand-500/20 text-brand-300 shadow-sm'
+                    : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                }`}
+              >
+                Senior Citizen / PWD (20%)
               </button>
-              <button type="submit" className="btn-primary">
-                Apply 20% Discount
+              <button
+                type="button"
+                onClick={() => setDiscountType('CUSTOM')}
+                className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all ${
+                  discountType === 'CUSTOM'
+                    ? 'border-brand-500 bg-brand-500/20 text-brand-300 shadow-sm'
+                    : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                }`}
+              >
+                Custom Discount (% or ₱)
               </button>
             </div>
-          </form>
+
+            {discountType === 'SENIOR_PWD' ? (
+              <form onSubmit={handleApplySeniorPwd} className="space-y-4">
+                <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 p-3 text-xs text-brand-300">
+                  <p className="font-semibold">Statutory 20% Discount Law</p>
+                  <p className="mt-1 text-slate-400">
+                    Calculates 20% discount on cart subtotal ({money(subtotal)} → -{money(Math.round(subtotal * 0.2))}).
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label">OSCA / PWD ID or Booklet Number *</label>
+                  <input
+                    required
+                    value={seniorIdNumber}
+                    onChange={(e) => setSeniorIdNumber(e.target.value)}
+                    placeholder="e.g. OSCA-12345 or PWD-67890"
+                    className="input w-full"
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Full Name of Senior / PWD (Optional)</label>
+                  <input
+                    value={seniorName}
+                    onChange={(e) => setSeniorName(e.target.value)}
+                    placeholder="e.g. Juan Dela Cruz"
+                    className="input w-full"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 border-t border-ink-line pt-3">
+                  <button type="button" onClick={() => setSeniorPwdOpen(false)} className="btn-ghost">
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Apply 20% Discount
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleApplyCustomDiscount} className="space-y-4">
+                <div className="rounded-lg border border-ink-line bg-ink-900 p-3 text-xs text-slate-300">
+                  <p className="font-semibold text-white">Custom Cart Discount</p>
+                  <p className="mt-1 text-slate-400">
+                    Apply custom percentage or exact peso deduction on current subtotal of <strong className="text-white">{money(subtotal)}</strong>.
+                  </p>
+                </div>
+
+                {/* Sub-mode: Percentage vs Fixed Pesos */}
+                <div className="flex rounded-lg border border-ink-line p-1 bg-ink-950">
+                  <button
+                    type="button"
+                    onClick={() => setCustomMode('PERCENT')}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${
+                      customMode === 'PERCENT' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Percentage (%)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomMode('PESOS')}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${
+                      customMode === 'PESOS' ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Exact Amount (₱)
+                  </button>
+                </div>
+
+                {customMode === 'PERCENT' ? (
+                  <div>
+                    <label className="label">Discount Percentage (%)</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        step="any"
+                        required
+                        value={customPercent}
+                        onChange={(e) => setCustomPercent(e.target.value)}
+                        placeholder="e.g. 10"
+                        className="input flex-1"
+                        autoFocus
+                      />
+                      <span className="text-sm font-bold text-slate-400">%</span>
+                    </div>
+                    {/* Quick percentage chips */}
+                    <div className="mt-2 flex gap-1.5">
+                      {['5', '10', '15', '20', '50'].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setCustomPercent(p)}
+                          className="rounded bg-ink-800 border border-ink-line px-2 py-1 text-[11px] font-bold text-brand-300 hover:bg-brand-500/20"
+                        >
+                          {p}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="label">Discount Amount (₱)</label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-slate-400">₱</span>
+                      <input
+                        type="number"
+                        min={0.01}
+                        step="0.01"
+                        required
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="input flex-1"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Live Preview */}
+                <div className="rounded-lg bg-ink-950 p-2.5 border border-ink-line text-xs flex justify-between items-center">
+                  <span className="text-slate-400">Estimated Total:</span>
+                  <span className="font-bold text-base text-emerald-400">
+                    {money(
+                      Math.max(
+                        0,
+                        subtotal -
+                          (customMode === 'PERCENT'
+                            ? Math.round(subtotal * (Math.min(100, Math.max(0, parseFloat(customPercent) || 0)) / 100))
+                            : Math.round((parseFloat(customAmount) || 0) * 100))
+                      )
+                    )}
+                  </span>
+                </div>
+
+                <div className="flex justify-end gap-2 border-t border-ink-line pt-3">
+                  <button type="button" onClick={() => setSeniorPwdOpen(false)} className="btn-ghost">
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Apply Custom Discount
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </Modal>
       )}
+
     </aside>
   )
 }

@@ -11,8 +11,9 @@ export const defaultSettings: StoreSettings = {
   receipt_header: '',
   receipt_title: '',
   receipt_show_app_name: true,
-  receipt_footer: 'Salamat po!',
+  receipt_footer: 'Thank you for your purchase!',
   logo_path: null,
+
   default_low_stock: 5,
   default_tax_c: 0,
   allow_negative_inventory: false,

@@ -30,10 +30,11 @@ function isSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|Change|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out)\s+(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   return { label: m[1]!.replace(/^./, (c) => c.toUpperCase()), amount: m[2]! }
 }
+
 
 // buildReceiptLines emits one plain name row followed by a detail row:
 // "  <qty> x <unit price>        <amount>"
@@ -111,13 +112,14 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     const money = isMoneyLine(raw)
     if (money) {
-      const cls = money.label === 'SUKLI' ? 'tp-sukli' : /^(TOTAL|TOTAL PAYMENTS|Total Payments|NET SALES|Actual Cash)$/i.test(money.label) ? 'tp-total' : 'tp-sum'
-      const label = money.label === 'SUKLI' ? 'Change / SUKLI' : money.label === 'Cash' ? 'Cash' : money.label
+      const cls = /^(SUKLI|Change)$/i.test(money.label) ? 'tp-sukli' : /^(TOTAL|TOTAL PAYMENTS|Total Payments|NET SALES|Actual Cash)$/i.test(money.label) ? 'tp-total' : 'tp-sum'
+      const label = /^(SUKLI|Change)$/i.test(money.label) ? 'Change' : money.label === 'Cash' ? 'Cash' : money.label
       pushRow(
         `<div class="${cls}"><span class="tp-lbl">${escapeHtml(label)}</span><span class="tp-amt">${fmtSigned(money.amount, symbol)}</span></div>`
       )
       continue
     }
+
 
     const statusMatch = trimmed.match(/^Status[:\s]+(BALANCED|OVER|SHORT)$/i)
     if (statusMatch) {

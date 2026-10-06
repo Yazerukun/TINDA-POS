@@ -1,28 +1,54 @@
 import React from 'react'
+import { useSettings } from '../stores/settings'
 
 interface AppLogoProps {
   size?: number
   className?: string
   showBadge?: boolean
   isVip?: boolean
+  customLogo?: string | null
 }
 
 /**
  * TINDA POS "Ultra-Modern Quantum T" Mark (Mathematical Edition)
- * 
- * Geometry & Aesthetics:
- * - Apple-grade ultra-clean squircle container with inset glass bevel
- * - Precision-engineered geometric "T" fused with summation (Σ) dynamic angles
- * - Balanced mathematical proportions with subtle layered depth
- * - Radiant Emerald-Cyan gradient (VIP Pro Gold gradient)
- * - Scalable from 16px micro-icon to 512px retina display
+ * With VIP Custom Store Logo Rendering Support
  */
 export function AppLogo({
   size = 40,
   className = '',
   showBadge = true,
-  isVip = false
+  isVip = false,
+  customLogo
 }: AppLogoProps): React.JSX.Element {
+  const { settings } = useSettings()
+  const effectiveCustomLogo = isVip ? (customLogo !== undefined ? customLogo : settings?.logo_path) : null
+
+  if (effectiveCustomLogo) {
+    return (
+      <div
+        className={`relative inline-flex items-center justify-center shrink-0 select-none ${className}`}
+        style={{ width: size, height: size }}
+      >
+        <div
+          className="w-full h-full rounded-xl overflow-hidden border border-amber-400/30 bg-ink-950 flex items-center justify-center shadow-[0_2px_10px_rgba(245,158,11,0.25)]"
+          style={{ width: size, height: size }}
+        >
+          <img
+            src={effectiveCustomLogo}
+            alt="Store Logo"
+            className="w-full h-full object-contain p-0.5"
+          />
+        </div>
+        {showBadge && (
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 pointer-events-none">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500 ring-2 ring-ink-900" />
+          </span>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div
       className={`relative inline-flex items-center justify-center shrink-0 select-none ${className}`}

@@ -83,16 +83,18 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
     const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
     lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }
+
   lines.push('--------------------------------')
   const totalCount = sale.items.reduce((total, item) => total + item.qty, 0)
   const totalCountStr = totalCount % 1 === 0 ? String(totalCount) : Number(totalCount.toFixed(3)).toString()
   lines.push(`Total Items: ${totalCountStr}`)
-  lines.push(store.footer || 'Salamat po!')
+  lines.push(store.footer || 'Thank you for your purchase!')
   if (!isVip) {
     lines.push('[ Powered by TINDA POS Free Community ]')
   }
   return lines
 }
+
 
 export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: string[] } {
   const db = getDb()
