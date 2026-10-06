@@ -442,6 +442,7 @@ export interface TindaApi {
       httpsUrl: string
       connected: boolean
       device?: string
+      availableIps?: { name: string; address: string }[]
     }>
     restart: () => Promise<number>
     getCfdState: () => Promise<Record<string, unknown>>

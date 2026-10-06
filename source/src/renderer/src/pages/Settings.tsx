@@ -1004,6 +1004,18 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
             ]}
           />
         </div>
+        <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-3.5 text-xs text-teal-200 space-y-2">
+          <div className="flex items-center gap-2 font-bold text-teal-300">
+            <Printer className="h-4 w-4 text-teal-400" />
+            <span>58mm Thermal Printers (GOOJPRT PB-58H / POS-58 / Xprinter) Setup Tips:</span>
+          </div>
+          <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+            <li><strong>Paper Width:</strong> Select <strong>58mm</strong> below for 100% compact, zero-overflow thermal receipts.</li>
+            <li><strong>USB Connection:</strong> Plug in the USB cable, install the POS-58 / Xprinter 58mm Windows Driver, select your printer from the list, and tap <em>Test Print</em>.</li>
+            <li><strong>Bluetooth Connection:</strong> Pair the printer in Windows Bluetooth settings (default PIN: <code>0000</code> or <code>1234</code>). In Windows <em>Printers &amp; Scanners</em>, ensure the driver is assigned to the printer's Outgoing COM port.</li>
+          </ul>
+        </div>
+
         <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. For automatic cutting, enable Auto Cut in the Windows driver/preferences of that printer. Sales still complete if the printer is missing or offline.</p>
         <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
       </div>

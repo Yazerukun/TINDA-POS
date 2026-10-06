@@ -41,3 +41,6 @@ desktop.ini
 *.swp
 *.swo
 *~
+
+# === Local agent skills reference libraries ===
+.agents/skills/logo-design/

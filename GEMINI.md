@@ -23,26 +23,49 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.60 (Enterprise Pro Edition)**
+- Current Version: **v1.0.61 (Mathematical Mass Edition)**
 
-## Key Features in v1.0.60 (VIP Client Feedback & 7 Core Enhancements)
+## Key Features in v1.0.61 (Mathematical Mass Mark & GOOJPRT Thermal Support)
+1. **Mathematical Mass Brand Mark (The Quantum Summation T)**:
+   - Designed a high-precision, genius-grade geometric vector brand identity (`AppLogo.tsx`) featuring an isometric hexagonal mass bounding volume, Golden Ratio ($\Phi = 1.618$) ray alignment, and a stylized mathematical summation ($\Sigma$) apex fused with the letter "T".
+   - Integrated into the Sidebar brand header, Hardware Hub, and Terminal Tools modal with active hardware pulse indicators and VIP Pro gold gradients.
+2. **GOOJPRT PB-58H (USB + Bluetooth) Desktop Thermal Printer Support**:
+   - Integrated full hardware optimization and documentation for 58mm retail thermal printers (GOOJPRT PB-58H / JK-5802H / POS-58 / Xprinter).
+   - Added in-app setup tips in `Settings` -> `Receipt` and published official **Chapter 10: Thermal Printers** in the offline `Handbook.tsx`.
+3. **Terminal Tools [F3] Consolidated Hardware Workspace**:
+   - Consolidated 10 cluttered header buttons into a single Cupertino glass pill `Terminal Tools [F3]` in the header and a permanent sidebar footer button.
+4. **Line Item Custom Unit Price Editing**:
+   - Direct in-cart unit selling price override for cashiers/managers with clean professional labels ("Edit Unit Price").
+5. **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery**:
+   - Traced and resolved network adapter order failures by auto-filtering virtual/APIPA interfaces (`169.254.*`), adding active Wi-Fi adapter dropdown switching, and providing a 1-tap Direct Snap (HTTP) fallback to bypass mobile browser SSL warnings.
+
+## Key Features in v1.0.60 (VIP Client Feedback & 10 Core Enhancements)
 1. **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
    - **Root Cause Fixed**: Eliminated the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx`.
    - **Continuous Infinite Pagination**: Implemented paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Large catalogs (500-10,000+ items) now scroll completely and fluidly without clipping.
-2. **Quick Cash Denomination & Increment Chips**:
+2. **Terminal Tools [F3] & Clean POS Workspace (Client Feedback Addressed)**:
+   - **Clutter Elimination**: Replaced the 10 crowded top-bar buttons (`Scanner Ready`, `Counter Camera`, `Pair Phone`, `Customer Screen`, `Sales Monitor`, `Petty Cash`, `E-Wallet`, `Sound On`, `Z-Reading`, `Guide`) with a single Cupertino glass pill **Terminal Tools [F3]** in the POS header and a permanent **Tools** button in the sidebar footer.
+   - **Centralized Hardware & Operations Modal**: Consolidates 1-tap toggles for barcode scanner, webcam, companion phone pairing, secondary customer display (CFD), sales monitor, shift cash in/out (`F7`/`F8`), thermal Z-Reading, sound toggle, and cashier shortcut guide.
+3. **Line Item Custom Unit Price Editing (Client Feedback Addressed)**:
+   - **Cashier & Manager In-Cart Price Override**: Cashiers can directly edit the unit selling price of any item currently in the cart with 1-click on the unit price tag or pencil icon.
+   - **Clean Terminology**: Replaced informal "Tawad / Custom price" labeling with professional **"Edit Unit Price"** and **"Custom Unit Price"** modal dialog with live subtotal calculation.
+4. **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery (Client Feedback Addressed)**:
+   - **Root Cause Fixed**: Traced and fixed pairing failures caused by arbitrary `os.networkInterfaces()` order picking inactive virtual adapters (Bluetooth PAN, WSL, Docker, VMware) or link-local APIPA addresses (`169.254.x.x`).
+   - **Smart Prioritized IP Selection**: Automatically excludes `169.254.*` and virtual adapters, prioritizing real Wi-Fi/Ethernet physical interfaces and standard private LAN subnets (`192.168.*`, `10.*`, `172.16-31.*`).
+   - **Multi-Adapter Network Dropdown**: When a PC has multiple active networks (e.g., wired Ethernet + store Wi-Fi), the companion QR screen provides an instant dropdown selector to switch the generated pairing link to the Wi-Fi subnet reachable by phones.
+   - **Instant Direct Snap (HTTP) Fallback**: Prominent 1-tap fallback that opens immediately in all mobile browsers (iOS Safari & Android Chrome) with 100% zero SSL certificate warnings.
+5. **Quick Cash Denomination & Increment Chips**:
    - 1-Tap quick change buttons in Checkout Modal: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100`.
-3. **Web Audio API Hardware Synthesizer**:
+6. **Web Audio API Hardware Synthesizer**:
    - Zero-asset, 100% offline audio engine with crisp high-pitched barcode scan confirmations (1300Hz-1750Hz sine), out-of-stock/error buzzers (280Hz sawtooth), cash register chime (C6-C7 arpeggio), and 1-tap header mute/unmute toggle.
-4. **Multiplier Scan & Rapid Entry Engine**:
+7. **Multiplier Scan & Rapid Entry Engine**:
    - Cashiers can scan or enter `5*BARCODE` or `10*PRODUCT` to instantly add bulk quantities without tapping the plus button multiple times.
-5. **Senior Citizen & PWD 20% Statutory Discount System**:
+8. **Senior Citizen & PWD 20% Statutory Discount System**:
    - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking.
-6. **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
+9. **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
    - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
-7. **Automated 7-Day Rolling Daily SQLite Safety Snapshot**:
-   - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage.
-8. **Live Inventory Safety & Expiry HUD Badges**:
-   - Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
+10. **Automated 7-Day Rolling Daily SQLite Safety Snapshot & Live Inventory HUD Badges**:
+    - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage. Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
 
 ## Key Features in v1.0.59
 1. **High-Density Enterprise Cashier Listing Table & Dual-Mode POS View (Client Feedback Addressed)**:

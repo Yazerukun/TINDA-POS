@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.60-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.61-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-411_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -16,17 +16,36 @@
 
 <br />
 
-[⬇️ Download v1.0.60 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-Setup-1.0.60.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-Portable-1.0.60.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.60/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.61 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-Setup-1.0.61.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-Portable-1.0.61.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.61/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.60 (VIP Client Infinite Scroll & 7 Core Enhancements Edition)
+## ✨ What's New in v1.0.61 (Mathematical Mass & GOOJPRT Desktop Thermal Edition)
 
-> **Seamless Infinite Catalog Scrolling, Quick Cash Denominations, Web Audio API Sound Synthesizer, Multiplier Scanning, Senior/PWD 20% Discount & 1-Click Thermal Z-Reading**
+> **Mathematical Mass Identity Mark, GOOJPRT PB-58H 58mm Thermal Printer Support, Terminal Tools [F3] Hardware Hub, In-Cart Custom Unit Price, Multi-Network Phone Scanner & 58mm Handbook Guide**
+
+- 📐 **Mathematical Mass Brand Mark (The Quantum Summation T)**:
+  - High-precision geometric vector identity mark featuring an isometric hexagonal mass bounding volume, Golden Ratio ($\Phi = 1.618$) optical alignment, and a stylized mathematical summation ($\Sigma$) apex fused with the letter "T". Integrated into the Sidebar brand header and Terminal Tools modal with live hardware status pulse indicators.
+- 🖨️ **GOOJPRT PB-58H (USB + Bluetooth) Desktop Thermal Support**:
+  - Full hardware support and documentation for popular 58mm retail thermal printers (GOOJPRT PB-58H / JK-5802H / POS-58 / Xprinter). Added in-app setup guide in **Settings ⚙️ &rarr; Receipt** and published official **Chapter 10: Thermal Printers** in the offline **Store Handbook**.
+- 🧰 **Terminal Tools [F3] & Clean POS Workspace**:
+  - Consolidated 10 cluttered top-bar buttons into a single sleek Cupertino pill **Terminal Tools [F3]** in the header plus a dedicated **Tools** button in the sidebar footer.
+- 🏷️ **Line Item Custom Unit Price Editing**:
+  - Direct 1-click in-cart unit selling price override for cashiers and managers, replacing informal labels with professional **"Edit Unit Price"** modal and live subtotal calculation.
+- 📱 **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery**:
+  - Automatically identifies physical Wi-Fi/Ethernet adapters, filters out ghost/APIPA (`169.254.*`) and virtual interfaces, and offers an active adapter dropdown plus a 1-tap **Direct Snap (HTTP)** fallback to bypass mobile browser SSL warnings on iOS Safari & Android Chrome.
+
+---
 
 - 📜 **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
   - **Root Cause Solved**: Removed the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx` that previously caused catalog scrolling to abruptly stop after 60 items.
   - **Continuous Infinite Pagination**: Implemented dynamic paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Catalogs with 500 to 10,000+ items now scroll completely and fluidly without clipping.
+- 🧰 **Terminal Tools [F3] & Clean POS Workspace (Client Feedback Addressed)**:
+  - Consolidated 10 cluttered top-bar buttons (`Scanner Ready`, `Counter Camera`, `Pair Phone`, `Customer Screen`, `Sales Monitor`, `Petty Cash`, `E-Wallet`, `Sound On`, `Z-Reading`, `Guide`) into a single sleek Cupertino pill **Terminal Tools [F3]** in the header plus a dedicated **Tools** button in the sidebar footer.
+- 🏷️ **Line Item Custom Unit Price Editing (Client Feedback Addressed)**:
+  - Direct 1-click in-cart unit selling price override for cashiers and managers, replacing informal labels with professional **"Edit Unit Price"** modal and live subtotal calculation.
+- 📱 **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery (Client Feedback Addressed)**:
+  - Automatically identifies physical Wi-Fi/Ethernet adapters, filters out ghost/APIPA (`169.254.*`) and virtual interfaces, and offers an active adapter dropdown plus a 1-tap **Direct Snap (HTTP)** fallback to bypass mobile browser SSL warnings on iOS Safari & Android Chrome.
 - 💵 **Quick Cash Denomination & Increment Chips**:
   - Added 1-Tap quick payment buttons in Cash Checkout: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100` for ultra-fast customer change calculations.
 - 🔊 **Web Audio API Hardware Synthesizer**:
@@ -37,10 +56,8 @@
   - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking for tax compliance.
 - 🖨️ **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
   - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
-- 🛡️ **Automated 7-Day Rolling Daily SQLite Safety Snapshot**:
-  - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage.
-- 🚨 **Live Inventory Safety & Expiry HUD Badges**:
-  - Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
+- 🛡️ **Automated 7-Day Rolling Daily SQLite Safety Snapshot & Live Inventory HUD**:
+  - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage. Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
 
 ---
 

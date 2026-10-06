@@ -13,6 +13,7 @@ export interface PhoneScannerStatus {
   httpsUrl: string
   connected: boolean
   device?: string
+  availableIps?: { name: string; address: string }[]
 }
 
 let httpServer: http.Server | null = null
@@ -76,14 +77,54 @@ Oki3LzMZqCV8t5b2/aePdlMfyfzq/A+J6OCxeBiSiTfoW0f0zi+hTwm7Mbx61zgW
 zZ4JgK4+0rL7MAC1JCNSMQw=
 -----END PRIVATE KEY-----`
 
-export function getLocalIpAddress(): string {
+export interface NetworkInterfaceInfo {
+  name: string
+  address: string
+}
+
+export function getAllLocalIpAddresses(): NetworkInterfaceInfo[] {
   const interfaces = os.networkInterfaces()
+  const results: NetworkInterfaceInfo[] = []
+
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name] || []) {
       if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address
+        // Exclude link-local / APIPA (169.254.x.x) which occurs when an adapter has no DHCP/network
+        if (!iface.address.startsWith('169.254.')) {
+          results.push({ name, address: iface.address })
+        }
       }
     }
+  }
+
+  // Sort prioritizing common active LAN subnets and real physical adapters
+  results.sort((a, b) => {
+    const isVirtual = (name: string) => /vEthernet|virtual|vmware|vbox|docker|wsl|loopback|pseudo/i.test(name)
+    const aVirt = isVirtual(a.name)
+    const bVirt = isVirtual(b.name)
+    if (aVirt !== bVirt) return aVirt ? 1 : -1
+
+    const isPhysical = (name: string) => /wi-?fi|wlan|ethernet|eth|en\d/i.test(name)
+    const aPhys = isPhysical(a.name)
+    const bPhys = isPhysical(b.name)
+    if (aPhys !== bPhys) return aPhys ? -1 : 1
+
+    const isPrivate = (ip: string) =>
+      ip.startsWith('192.168.') || ip.startsWith('10.') || /^172\.(1[6-9]|2\d|3[01])\./.test(ip)
+    const aPriv = isPrivate(a.address)
+    const bPriv = isPrivate(b.address)
+    if (aPriv !== bPriv) return aPriv ? -1 : 1
+
+    return 0
+  })
+
+  return results
+}
+
+export function getLocalIpAddress(): string {
+  const all = getAllLocalIpAddresses()
+  if (all.length > 0 && all[0]?.address) {
+    return all[0].address
   }
   return '127.0.0.1'
 }
@@ -186,6 +227,7 @@ export function updateCfdState(partial: Partial<CfdState>): CfdState {
 
 export function getPhoneScannerStatus(): PhoneScannerStatus {
   const isConnected = (!!httpServer || !!httpsServer) && Date.now() - lastClientPing < 8000
+  const allIps = getAllLocalIpAddresses()
   return {
     running: !!httpServer || !!httpsServer,
     port: currentPort,
@@ -194,7 +236,8 @@ export function getPhoneScannerStatus(): PhoneScannerStatus {
     url: getScannerUrl(),
     httpsUrl: getScannerHttpsUrl(),
     connected: isConnected,
-    device: isConnected ? connectedDevice : undefined
+    device: isConnected ? connectedDevice : undefined,
+    availableIps: allIps
   }
 }
 

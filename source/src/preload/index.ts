@@ -254,6 +254,7 @@ const api: TindaApi = {
       httpsUrl: string
       connected: boolean
       device?: string
+      availableIps?: { name: string; address: string }[]
     }>('phoneScanner:getStatus'),
     restart: () => invoke<number>('phoneScanner:restart'),
     getCfdState: () => invoke<Record<string, unknown>>('phoneScanner:getCfdState'),

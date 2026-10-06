@@ -81,6 +81,7 @@ export function CameraScannerModal({
 
   // Phone QR Scanner State
   const [phoneMode, setPhoneMode] = useState<'https' | 'http'>('https')
+  const [selectedIp, setSelectedIp] = useState<string>('')
   const [phoneStatus, setPhoneStatus] = useState<{
     running: boolean
     port: number
@@ -90,6 +91,7 @@ export function CameraScannerModal({
     httpsUrl: string
     connected: boolean
     device?: string
+    availableIps?: { name: string; address: string }[]
   }>({
     running: false,
     port: 3112,
@@ -132,7 +134,12 @@ export function CameraScannerModal({
     if (!open) return
 
     void window.api.phoneScanner?.getStatus().then((status) => {
-      if (status) setPhoneStatus(status)
+      if (status) {
+        setPhoneStatus(status)
+        if (!selectedIp && status.ip) {
+          setSelectedIp(status.ip)
+        }
+      }
     })
 
     const cleanupStatus = window.api.phoneScanner?.onStatus((status) => {
@@ -153,12 +160,25 @@ export function CameraScannerModal({
       cleanupStatus?.()
       cleanupScan?.()
     }
-  }, [open, onScan])
+  }, [open, onScan, selectedIp])
 
-  const activePhoneUrl = phoneMode === 'https' ? (phoneStatus.httpsUrl || phoneStatus.url) : phoneStatus.url
-  const activeCfdUrl = phoneMode === 'https'
-    ? (phoneStatus.httpsUrl ? phoneStatus.httpsUrl.replace(/\/scanner\?session=.*$/, '/cfd') : `https://${phoneStatus.ip}:${phoneStatus.httpsPort}/cfd`)
-    : `http://${phoneStatus.ip}:${phoneStatus.port}/cfd`
+  const effectiveIp = selectedIp || phoneStatus.ip || '127.0.0.1'
+  const sessionToken = useMemo(() => {
+    const match = phoneStatus.url?.match(/[?&]session=([^&]+)/)
+    return match ? match[1] : ''
+  }, [phoneStatus.url])
+
+  const activePhoneUrl = useMemo(() => {
+    const port = phoneMode === 'https' ? phoneStatus.httpsPort : phoneStatus.port
+    const protocol = phoneMode === 'https' ? 'https' : 'http'
+    return `${protocol}://${effectiveIp}:${port}/scanner?session=${sessionToken}`
+  }, [phoneMode, effectiveIp, phoneStatus.httpsPort, phoneStatus.port, sessionToken])
+
+  const activeCfdUrl = useMemo(() => {
+    const port = phoneMode === 'https' ? phoneStatus.httpsPort : phoneStatus.port
+    const protocol = phoneMode === 'https' ? 'https' : 'http'
+    return `${protocol}://${effectiveIp}:${port}/cfd`
+  }, [phoneMode, effectiveIp, phoneStatus.httpsPort, phoneStatus.port])
 
   // Render QR Code SVG whenever phone scanner URL is available
   useEffect(() => {
@@ -556,17 +576,60 @@ export function CameraScannerModal({
                   </ol>
                 )}
 
-                <div className="rounded-lg bg-ink-950 p-2.5 text-[11px] text-slate-400 border border-ink-line flex items-center justify-between">
-                  <span className="truncate">URL: <code className="text-brand-300 font-mono">{activePhoneUrl || 'Generating…'}</code></span>
-                  <button
-                    type="button"
-                    onClick={() => void window.api.phoneScanner?.restart().then(() => window.api.phoneScanner.getStatus().then(setPhoneStatus))}
-                    className="text-xs text-slate-400 hover:text-brand-300 ml-2"
-                    title="Restart local companion server"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                  </button>
+                <div className="rounded-lg bg-ink-950 p-2.5 text-[11px] text-slate-400 border border-ink-line space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="truncate">URL: <code className="text-brand-300 font-mono">{activePhoneUrl || 'Generating…'}</code></span>
+                    <button
+                      type="button"
+                      onClick={() => void window.api.phoneScanner?.restart().then(() => window.api.phoneScanner.getStatus().then((st) => {
+                        setPhoneStatus(st)
+                        if (st?.ip) setSelectedIp(st.ip)
+                      }))}
+                      className="text-xs text-slate-400 hover:text-brand-300 ml-2 shrink-0 flex items-center gap-1"
+                      title="Restart local companion server"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      <span>Restart</span>
+                    </button>
+                  </div>
+
+                  {/* Multi-Network Adapter Selector */}
+                  {phoneStatus.availableIps && phoneStatus.availableIps.length > 1 && (
+                    <div className="flex items-center gap-2 pt-1 border-t border-ink-line/50 text-[11px]">
+                      <span className="text-slate-400 shrink-0">Network / Wi-Fi:</span>
+                      <select
+                        value={effectiveIp}
+                        onChange={(e) => setSelectedIp(e.target.value)}
+                        className="bg-ink-900 border border-ink-line text-emerald-400 rounded px-2 py-0.5 text-[11px] font-mono flex-1 outline-none"
+                      >
+                        {phoneStatus.availableIps.map((adapter) => (
+                          <option key={adapter.address} value={adapter.address}>
+                            {adapter.name}: {adapter.address}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
+              </div>
+            </div>
+
+            {/* Quick Connection Help Callout */}
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-200/90 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+              <div className="text-[11px] leading-relaxed">
+                <strong>Dili maka-connect ang phone?</strong>
+                <span className="block mt-0.5 text-slate-300">
+                  1. Siguroha nga ang phone ug PC naa sa <strong>parehas nga Wi-Fi / Hotspot</strong>.
+                </span>
+                <span className="block text-slate-300">
+                  2. Kung naay browser security warning sa phone o dili mo-load, tuploka ang <strong>"📸 Direct Snap Scanner"</strong> sa ibabaw (100% no warning & zero setup).
+                </span>
+                {phoneStatus.availableIps && phoneStatus.availableIps.length > 1 && (
+                  <span className="block text-slate-300">
+                    3. Kung naay Ethernet ug Wi-Fi ang PC, pilia ang tamang Wi-Fi IP address sa dropdown sa ibabaw.
+                  </span>
+                )}
               </div>
             </div>
 

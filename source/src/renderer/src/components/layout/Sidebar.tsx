@@ -17,7 +17,8 @@ import {
   Crown,
   Tv,
   Landmark,
-  Sparkles
+  Sparkles,
+  Wrench
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -26,6 +27,7 @@ import { useSettings } from '../../stores/settings'
 import { useLicense } from '../../stores/license'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
+import { AppLogo } from '../AppLogo'
 
 interface NavItem {
   key: PageKey
@@ -101,13 +103,7 @@ export function Sidebar(): React.JSX.Element {
     <aside className="flex w-60 shrink-0 flex-col border-r border-ink-line bg-ink-900 select-none">
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-ink-line/50">
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-black text-white shadow-card ring-1 ring-white/10">
-          TP
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 ring-2 ring-ink-900" />
-          </span>
-        </div>
+        <AppLogo size={38} isVip={isVip} showBadge={true} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="truncate text-sm font-bold tracking-tight text-white">TINDA POS</p>
@@ -176,21 +172,34 @@ export function Sidebar(): React.JSX.Element {
       {/* Utilities & Profile Footer */}
       <div className="border-t border-ink-line/70 bg-ink-950/40 p-3 space-y-2">
         {/* Quick Screen Tools */}
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (page !== 'pos') setPage('pos')
+              window.dispatchEvent(new CustomEvent('tinda-open-pos-tools'))
+            }}
+            className="flex items-center justify-center gap-1 rounded-lg border border-brand-500/30 bg-brand-500/15 px-1.5 py-1.5 text-[11px] font-semibold text-brand-300 hover:border-brand-500/50 hover:bg-brand-500/25 transition shadow-sm active:scale-95"
+            title="Open POS Terminal Tools (Scanner, Camera, CFD, Audio, Cash)"
+          >
+            <Wrench className="h-3.5 w-3.5 text-brand-400 shrink-0" />
+            <span className="truncate">Tools</span>
+          </button>
+
           <button
             type="button"
             onClick={() => void window.api.app.toggleSalesMonitor()}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-brand-500/25 bg-brand-500/10 px-2 py-1.5 text-[11px] font-semibold text-brand-300 hover:border-brand-500/40 hover:bg-brand-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1 rounded-lg border border-sky-500/25 bg-sky-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-sky-300 hover:border-sky-500/40 hover:bg-sky-500/20 transition shadow-sm active:scale-95"
             title="Open / Toggle Live Sales Monitor & Customer Display"
           >
-            <Tv className="h-3.5 w-3.5 text-brand-400 shrink-0" />
+            <Tv className="h-3.5 w-3.5 text-sky-400 shrink-0" />
             <span className="truncate">Monitor</span>
           </button>
 
           <button
             type="button"
             onClick={() => useGuide.getState().openGuide('start')}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1 rounded-lg border border-amber-500/25 bg-amber-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
             title="Open User Guide & Cashier Instructions"
           >
             <HelpCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />

@@ -519,6 +519,72 @@ export function Handbook(): React.JSX.Element {
           </div>
         </div>
       )
+    },
+    {
+      id: 'printer',
+      number: 10,
+      title: 'Thermal Printers (GOOJPRT PB-58H & 58mm/80mm)',
+      subtitle: 'Setup guide for USB and Bluetooth desktop thermal receipt printers',
+      icon: <Printer className="h-4 w-4" />,
+      readTime: '4 min read',
+      relatedPage: 'settings',
+      relatedPageLabel: 'Open Printer Settings',
+      content: (
+        <div className="space-y-6 text-slate-300 leading-relaxed text-xs">
+          <div className="rounded-xl border border-teal-500/30 bg-gradient-to-br from-teal-950/60 to-ink-900 p-5">
+            <div className="flex items-center gap-2 text-teal-400 font-bold uppercase tracking-wider">
+              <Printer className="h-4 w-4" /> Thermal Printing Guide
+            </div>
+            <h3 className="mt-1 text-xl font-bold text-white">Setting up GOOJPRT PB-58H &amp; POS-58 Printers</h3>
+            <p className="mt-2 text-slate-300">
+              TINDA POS has built-in support for standard 58mm and 80mm thermal receipt printers, including popular models like <strong>GOOJPRT PB-58H (USB + Bluetooth)</strong>, Xprinter XP-58, and generic POS-58 printers.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              Method 1: USB Connection (Most Stable &amp; Recommended)
+            </h4>
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
+              <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
+                <li>Saksak ang USB cable sa imong PC o laptop, unya i-on ang printer switch.</li>
+                <li>I-install ang <strong>POS-58 Driver</strong> o <strong>Xprinter 58mm Driver</strong> sa Windows.</li>
+                <li>Ablihi ang TINDA POS &rarr; <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
+                <li>Sa <strong>Paper Width</strong>, pilia ang <strong>58mm</strong>.</li>
+                <li>Sa <strong>Printer</strong> dropdown, pilia ang imong printer (pananglit: <em>POS-58</em> o <em>GOOJPRT</em>) unya tuploka ang <strong>Test Print</strong>.</li>
+                <li>I-toggle ang <strong>Auto Print After Sale</strong> kung gusto nimo nga mo-print dayon ug resibo pagkahuman sa checkout.</li>
+              </ol>
+            </div>
+
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-sky-400" />
+              Method 2: Bluetooth Connection (Wireless Setup)
+            </h4>
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
+              <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
+                <li>I-on ang Bluetooth sa imong Windows laptop o PC.</li>
+                <li>Pangitaa ang Bluetooth device sa printer (kasagaran ang name kay <em>PB-58H</em>, <em>MTP-2</em>, o <em>RPP02N</em>).</li>
+                <li>I-pair gamit ang standard PIN: <strong>0000</strong> o <strong>1234</strong>.</li>
+                <li>Sa Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, susiha ang <strong>Outgoing COM Port</strong> sa printer (pananglit: COM3 o COM4).</li>
+                <li>I-install ang thermal driver ug itudlo ang port ngadto sa maong COM port.</li>
+                <li>Sa TINDA POS, pindota ang <strong>Refresh Printers</strong> unya pilia ang printer.</li>
+              </ol>
+            </div>
+
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-1.5 text-amber-200">
+              <div className="font-bold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-400" />
+                <span>Tips para sa Tin-aw ug Hapsay nga Resibo:</span>
+              </div>
+              <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
+                <li><strong>Thermal Paper Roll:</strong> Siguroha nga ang papel nakatungod sa init nga printhead (ang glossy/sinaw nga side sa papel mao ang mo-atubang sa heater head).</li>
+                <li><strong>Zero-Overhead Formatting:</strong> Ang resibo sa TINDA POS gipahiangay para sa 58mm width aron dili maputol ang mga ngalan sa produkto ug sakto ang pagka-align sa kantidad ug sukli.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
     }
   ], [])
 

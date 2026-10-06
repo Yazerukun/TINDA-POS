@@ -31,7 +31,8 @@ import {
   LayoutGrid,
   Volume2,
   VolumeX,
-  Printer
+  Printer,
+  Wrench
 } from 'lucide-react'
 import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
@@ -39,6 +40,7 @@ import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
 import { CounterCameraScanner } from '../components/CounterCameraScanner'
 import { QuickExpenseModal } from '../components/QuickExpenseModal'
+import { PosToolsModal } from '../components/PosToolsModal'
 import { useGuide } from '../stores/guide'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money, isWeighableUnit, formatQuantity } from '@shared/format'
@@ -289,12 +291,21 @@ export function POS(): React.JSX.Element {
     return localStorage.getItem('tinda_counter_camera_enabled') === 'true'
   })
 
+  const [posToolsOpen, setPosToolsOpen] = useState(false)
+
   useEffect(() => {
     const handleToggleEvent = () => {
       setCounterCameraEnabled(localStorage.getItem('tinda_counter_camera_enabled') === 'true')
     }
+    const handleOpenTools = () => {
+      setPosToolsOpen(true)
+    }
     window.addEventListener('tinda-counter-camera-toggle', handleToggleEvent)
-    return () => window.removeEventListener('tinda-counter-camera-toggle', handleToggleEvent)
+    window.addEventListener('tinda-open-pos-tools', handleOpenTools)
+    return () => {
+      window.removeEventListener('tinda-counter-camera-toggle', handleToggleEvent)
+      window.removeEventListener('tinda-open-pos-tools', handleOpenTools)
+    }
   }, [])
 
   const handleToggleCounterCamera = (val: boolean) => {
@@ -648,6 +659,11 @@ export function POS(): React.JSX.Element {
         searchInputRef.current?.select()
         return
       }
+      if (e.key === 'F3') {
+        e.preventDefault()
+        setPosToolsOpen((prev) => !prev)
+        return
+      }
       if (e.key === 'F7') {
         e.preventDefault()
         setExpenseModalOpen(true)
@@ -888,163 +904,24 @@ export function POS(): React.JSX.Element {
               <span className="hidden sm:inline">Grid</span>
             </button>
           </div>
+          {/* POS Terminal Tools Trigger Button */}
           <div className="flex items-center gap-2">
-            <div
-              className="flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400"
-              title="Universal USB Hardware Barcode Scanner Active (Driver-free)"
+            <button
+              type="button"
+              onClick={() => setPosToolsOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-brand-500/35 bg-gradient-to-r from-brand-600/20 via-brand-500/15 to-brand-600/10 px-3 py-2 text-xs font-bold text-brand-300 hover:border-brand-500/60 hover:bg-brand-500/25 transition-all shadow-sm active:scale-95"
+              title="Open Terminal Tools (Scanner, Camera, CFD, Petty Cash, Audio, Z-Reading) — Hotkey: F3"
             >
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <Barcode className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Scanner Ready</span>
-            </div>
-
-            {/* LAN Master / Satellite Status Badge */}
-            {lanStatus?.role === 'master' && (
-              <div
-                className="flex items-center gap-1.5 rounded-md border border-sky-500/40 bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-300 shadow-sm"
-                title={`Master Server Active (0.0.0.0:${lanStatus.port}) — ${lanStatus.connectedClients} connected satellite terminal(s)`}
-              >
-                <span className="h-2 w-2 rounded-full bg-sky-400 animate-pulse" />
-                <Server className="h-3.5 w-3.5 text-sky-400" />
-                <span className="hidden sm:inline">LAN Master {lanStatus.connectedClients > 0 ? `(${lanStatus.connectedClients})` : ''}</span>
+              <div className="relative flex items-center justify-center">
+                <Wrench className="h-4 w-4 text-brand-400" />
+                {(counterCameraEnabled || phoneConnected) && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-ink-900 animate-pulse" />
+                )}
               </div>
-            )}
-            {lanStatus?.role === 'satellite' && (
-              <div
-                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold shadow-sm ${
-                  lanStatus.satelliteConnected
-                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-300'
-                    : 'border-amber-500/40 bg-amber-500/15 text-amber-300'
-                }`}
-                title={lanStatus.satelliteConnected ? 'Connected to Store Master Server' : 'Reconnecting to Store Master Server...'}
-              >
-                <span className={`h-2 w-2 rounded-full ${lanStatus.satelliteConnected ? 'bg-sky-400 animate-pulse' : 'bg-amber-400'}`} />
-                <Laptop className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{lanStatus.satelliteConnected ? 'Satellite Linked' : 'LAN Reconnecting'}</span>
-              </div>
-            )}
-
-            {/* Hands-Free Counter Camera Toggle */}
-            <button
-              type="button"
-              onClick={() => handleToggleCounterCamera(!counterCameraEnabled)}
-              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
-                counterCameraEnabled
-                  ? 'border-emerald-500/50 bg-emerald-500/20 text-emerald-300 shadow-sm'
-                  : 'border-ink-line bg-ink-800 text-slate-300 hover:border-emerald-500/40 hover:bg-ink-700'
-              }`}
-              title={counterCameraEnabled ? 'Hands-Free Counter Camera is ON — wave items to auto-scan' : 'Turn On Hands-Free Counter Camera (Zero-click wave scan)'}
-            >
-              <span className={`h-2 w-2 rounded-full ${counterCameraEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-              <Camera className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{counterCameraEnabled ? 'Camera Active' : 'Counter Camera'}</span>
-            </button>
-
-            {/* Wireless Phone Scanner Status / Pair Button */}
-            {phoneConnected ? (
-              <button
-                type="button"
-                onClick={() => setCameraScannerOpen(true)}
-                className="flex items-center gap-1.5 rounded-md border border-brand-500/40 bg-brand-500/15 px-2.5 py-1 text-xs font-semibold text-brand-300 hover:bg-brand-500/25 transition-colors shadow-sm"
-                title="Wireless Phone Scanner Connected over Wi-Fi — Scans automatically beam to cart without clicking anything!"
-              >
-                <span className="h-2 w-2 rounded-full bg-brand-400 animate-pulse" />
-                <Smartphone className="h-3.5 w-3.5 text-brand-400" />
-                <span className="hidden sm:inline">Phone Ready</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setCameraScannerInitialTab('phone')
-                  setCameraScannerOpen(true)
-                }}
-                className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-brand-500/50 hover:bg-ink-700 hover:text-brand-300 transition-colors"
-                title="Pair Phone via QR Code or Open Fullscreen Scanner"
-              >
-                <Smartphone className="h-3.5 w-3.5 text-brand-400" />
-                <span className="hidden sm:inline">Pair Phone</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => {
-                setCameraScannerInitialTab('cfd')
-                setCameraScannerOpen(true)
-              }}
-              className="flex items-center gap-1.5 rounded-md border border-ink-line bg-ink-800 px-2.5 py-1 text-xs font-medium text-slate-200 hover:border-sky-500/50 hover:bg-ink-700 hover:text-sky-300 transition-colors"
-              title="Customer Facing Display (CFD) & Dynamic QR — Pair customer tablet or secondary screen"
-            >
-              <Monitor className="h-3.5 w-3.5 text-sky-400" />
-              <span className="hidden sm:inline">Customer Screen</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => void window.api.app.toggleSalesMonitor()}
-              className="flex items-center gap-1.5 rounded-md border border-brand-500/30 bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-300 hover:border-brand-500/50 hover:bg-brand-500/20 transition-colors shadow-sm"
-              title="Open / Toggle Live Sales Monitor Window"
-            >
-              <Tv className="h-3.5 w-3.5 text-brand-400" />
-              <span className="hidden sm:inline">Sales Monitor</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setExpenseModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:border-amber-500/50 hover:bg-amber-500/20 transition-colors shadow-sm"
-              title="Record Store Petty Cash / Cash Out (F7)"
-            >
-              <Receipt className="h-3.5 w-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Petty Cash (F7)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPage('ewallet')}
-              className="flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 hover:border-emerald-500/50 hover:bg-emerald-500/20 transition-colors shadow-sm"
-              title="Open E-Wallet & Cash Audit Hub (GCash, Maya, Cash In/Out & 3-Way Audit) (F8)"
-            >
-              <Landmark className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">E-Wallet (F8)</span>
-            </button>
-
-            {/* Volume Mute Toggle */}
-            <button
-              type="button"
-              onClick={toggleSoundMute}
-              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all ${
-                soundMuted
-                  ? 'border-ink-line bg-ink-800 text-slate-400 hover:text-white'
-                  : 'border-brand-500/40 bg-brand-500/10 text-brand-300 shadow-sm'
-              }`}
-              title={soundMuted ? 'Sound Effects Muted (Click to Unmute)' : 'Sound Effects Active (Click to Mute)'}
-            >
-              {soundMuted ? <VolumeX className="h-3.5 w-3.5 text-slate-400" /> : <Volume2 className="h-3.5 w-3.5 text-brand-400" />}
-              <span className="hidden sm:inline">{soundMuted ? 'Muted' : 'Sound On'}</span>
-            </button>
-
-            {/* Quick 1-Click Thermal Z-Reading / Daily Balancing */}
-            <button
-              type="button"
-              disabled={zReadingBusy}
-              onClick={() => void handleQuickZRead()}
-              className="flex items-center gap-1.5 rounded-md border border-purple-500/30 bg-purple-500/10 px-2.5 py-1 text-xs font-medium text-purple-300 hover:border-purple-500/50 hover:bg-purple-500/20 transition-colors shadow-sm disabled:opacity-50"
-              title="Print Thermal Shift X/Z-Reading & End of Day Cash Balancing Summary"
-            >
-              {zReadingBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Printer className="h-3.5 w-3.5 text-purple-400" />}
-              <span className="hidden sm:inline">Z-Reading</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => useGuide.getState().openGuide('pos')}
-              className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300 hover:border-amber-500/50 hover:bg-amber-500/20 transition-colors shadow-sm"
-              title="Open Cashier & POS Instructions Guide"
-            >
-              <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Guide</span>
+              <span>Terminal Tools</span>
+              <span className="rounded bg-brand-500/25 px-1.5 py-0.2 text-[10px] font-mono text-brand-200 border border-brand-500/35">
+                F3
+              </span>
             </button>
           </div>
         </div>
@@ -1383,6 +1260,28 @@ export function POS(): React.JSX.Element {
         open={expenseModalOpen}
         onClose={() => setExpenseModalOpen(false)}
       />
+
+      <PosToolsModal
+        open={posToolsOpen}
+        onClose={() => setPosToolsOpen(false)}
+        counterCameraEnabled={counterCameraEnabled}
+        onToggleCounterCamera={handleToggleCounterCamera}
+        phoneConnected={phoneConnected}
+        onOpenPhonePair={() => {
+          setCameraScannerInitialTab('phone')
+          setCameraScannerOpen(true)
+        }}
+        onOpenCfd={() => {
+          setCameraScannerInitialTab('cfd')
+          setCameraScannerOpen(true)
+        }}
+        lanStatus={lanStatus}
+        soundMuted={soundMuted}
+        onToggleSoundMute={toggleSoundMute}
+        onQuickZRead={() => void handleQuickZRead()}
+        zReadingBusy={zReadingBusy}
+        onOpenQuickExpense={() => setExpenseModalOpen(true)}
+      />
     </div>
   )
 }
@@ -1509,7 +1408,7 @@ function ManagerPinModal({
           <div className="text-xs">
             <p className="font-semibold text-sm">Manager / Admin PIN Required</p>
             <p className="text-amber-300/80 mt-0.5">
-              Custom price override / bargain discount for <strong>{item.name}</strong> requires manager authorization.
+              Price edit override for <strong>{item.name}</strong> requires manager authorization.
             </p>
           </div>
         </div>
@@ -1595,7 +1494,7 @@ function PriceOverrideModal({
   }
 
   return (
-    <Modal open title={`Custom Price / Tawad: ${item.name}`} onClose={onClose}>
+    <Modal open title={`Edit Unit Price: ${item.name}`} onClose={onClose}>
       <form onSubmit={handleSave} className="space-y-4">
         <div className="rounded-lg border border-ink-line bg-ink-900/50 p-3 text-xs space-y-1.5">
           <div className="flex justify-between items-center text-slate-300">
@@ -1626,7 +1525,7 @@ function PriceOverrideModal({
 
         <div>
           <label className="label flex items-center justify-between">
-            <span>New Custom Unit Price (₱) *</span>
+            <span>New Unit Price (₱) *</span>
             <span className="text-[11px] text-slate-500">Per 1 {item.unit_name}</span>
           </label>
           <div className="relative">
@@ -1945,7 +1844,7 @@ function CartPanel({
                 <div className="flex flex-wrap items-center gap-1.5 mt-1">
                   {i.is_custom_price && (
                     <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 border border-amber-500/30 text-[10px] font-bold text-amber-300">
-                      <Tag className="h-3 w-3" /> Bargain / Custom Price
+                      <Tag className="h-3 w-3" /> Custom Unit Price
                     </span>
                   )}
                   {i.is_wholesale && !i.is_custom_price && (
@@ -2001,7 +1900,7 @@ function CartPanel({
                     type="button"
                     onClick={() => handleEditPriceClick(i)}
                     className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold text-brand-400 hover:bg-brand-500/10 hover:text-brand-300 transition"
-                    title="Edit line item unit price (Tawad / Custom price)"
+                    title="Edit line item unit price"
                   >
                     <Edit3 className="h-3 w-3" />
                     <span>Edit</span>
@@ -2124,6 +2023,13 @@ function CartPanel({
             setPriceEditItem(itemToEdit)
           }}
           onClose={() => setPinPromptItem(null)}
+        />
+      )}
+
+      {priceEditItem && (
+        <PriceOverrideModal
+          item={priceEditItem}
+          onClose={() => setPriceEditItem(null)}
         />
       )}
 
