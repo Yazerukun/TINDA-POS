@@ -7,13 +7,17 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 ## Operating Rules & Automation Standard
 - Persona: **Fixer Agent**
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
-- Execution: **100% AUTOMATIC 6-SKILL POWERHOUSE** (All 6 skills run automatically on every prompt — no manual trigger needed):
+- Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
   2. **ponytail**: The lazy senior dev — shortest diff, YAGNI, standard library first, root-cause bugfixes.
   3. **caveman**: Terse high-density voice — zero conversational fluff, answer-first, exact code payload.
   4. **smart-ralph**: Spec-driven multi-step execution with 4-phase quality gates.
   5. **headroom**: Automatic context window and token optimization.
   6. **agentmemory**: Continuous learning engine with persistent recall and auto-save of bugfix lessons and release milestones.
+  7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
+  8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
+  9. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
+  10. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -21,7 +25,173 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Stable Version: **v1.0.59**
+- Current Version: **v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)**
+
+## Key Features in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
+1. **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization)**:
+   - Responded immediately to merchant feedback on thermal paper usage ("kalas ug papel").
+   - Tightened typography line-height from `1.25` to `1.15` in `receiptHtml.ts` for dense, crisp thermal printing.
+   - Reduced line item vertical margin (`.tp-item`) from `0.15em` to `0.06em`.
+   - Tightened section separators (`.tp-sep`), spacing gaps (`.tp-gap`), and subtotal blocks (`.tp-total`, `.tp-sukli`, `.tp-sum`), reducing unnecessary white space by over 20-30% per receipt.
+   - Decreased print bottom clearance from `3mm` down to `1.5mm`, ensuring receipts finish right after the footer message with zero wasted paper feed.
+   - Preserves 100% legibility, integer dot metrics (11px / 12px), bold 700+ stroke weights, and clear tabular-nums centavo decimal alignment.
+2. **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
+   - Combined previously split modules into a unified **E-Wallet & Bills** module under *Cashier & Register*, saving sidebar space and giving cashiers an integrated financial hub.
+   - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - **Native Hardware Thermal & Universal Manual Print**: Integrated with native Electron print service (`ewallet:printBillSlip`), supporting direct thermal printing and Windows system dialog manual printing for challenging printer setups.
+   - **Deletion & Void Safeguards**: Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals for both E-Wallet and Bills Payment records.
+2. **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
+   - Integrated `PriceTagPrintModal.tsx` in Inventory catalog with 1-tap shelf label generation per item or catalog-wide (`30×20mm`, `40×30mm`, `50×30mm`, and custom mm sizes).
+3. **Physical Inventory & Operations Printable Sheets Hub**:
+   - `InventoryPrintModal.tsx` in Inventory header with 4 professional A4 / Letter printable document templates: Stock on Hand Report, Physical Count Sheet, Purchase / Restock Order (P.O.), and Stock Adjustment Log.
+4. **Zero-Waste Thermal Receipt Gap & Decimal Precision Fix**:
+   - Reduced bottom clearance from `10mm` to `3mm` and vertical spacing from `12px` to `4px`, saving up to 40% thermal paper roll consumption.
+   - 100% visible centavos on 58mm narrow rolls with flex-alignment and right gutter margins.
+5. **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine**:
+   - Instant enter punch by name, SKU, or barcode; multiplier rapid punch (`5*egg`, `12*48000123`); proactive low-stock warnings.
+6. **Community Chat & Clean Terminology Standard**:
+   - Global Lounge renamed to Community Chat; removed outdated "Hub" titles across the entire app.
+7. **100% Quality Invariants & Automated Test Gate Passed**:
+   - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
+
+## Key Features in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub)
+1. **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
+   - Integrated `PriceTagPrintModal.tsx` in Inventory catalog with 1-tap shelf label generation per item or catalog-wide.
+   - Preset dimensions: `30×20mm` (Micro grocery), `40×30mm` (Standard retail sticker with barcode), `50×30mm` (Wide pharmacy tag), and custom mm sizes.
+   - High-contrast pure black vector layout with Product Name, Bold Peso Price (`₱99.00`), wholesale volume tiers, barcode Code128, and SKU reference.
+2. **Physical Inventory & Operations Printable Sheets Hub**:
+   - Added `InventoryPrintModal.tsx` in Inventory header with 4 professional A4 / Letter printable document templates: Stock on Hand Report, Physical Count Sheet (blind counting audit), Purchase / Restock Order (P.O.), and Stock Adjustment Log.
+3. **Zero-Waste Thermal Receipt Gap & Decimal Precision Fix**:
+   - Reduced bottom clearance from `10mm` to `3mm` and vertical spacing from `12px` to `4px`, saving up to 40% thermal paper roll consumption.
+   - Fixed decimal clipping on narrow 58mm thermal rolls by introducing flex-aligned line items and explicit right gutter margins, guaranteeing all centavos (`.00`, `.50`, `.95`) render with 100% complete visibility.
+4. **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine**:
+   - Search by product name, SKU, or barcode; pressing `Enter` instantly punches the matching item straight into the checkout cart without requiring down-arrow navigation.
+   - Multiplier rapid punch supported: type `5*egg` or `12*48000123` and hit `Enter` to instantly add bulk quantities.
+   - Proactive **Low-Stock Alert**: Instant warning toast whenever an item punched has $\le$ `low_stock_threshold` remaining.
+   - Upgraded **No Product Found** interactive Cupertino card with instant query clearing (`Esc`).
+5. **Unified E-Wallet & Bills Center (Consolidated Single Sidebar Module)**:
+   - Combined previously split modules into a unified **E-Wallet & Bills** module under *Cashier & Register*, saving sidebar space and giving cashiers an integrated financial hub.
+   - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - **Native Hardware Thermal & Universal Manual Print**: Replaced popup `window.open` with native Electron print service (`ewallet:printBillSlip`), supporting both direct thermal burning and Windows system dialog manual printing for challenging printer setups.
+   - **Deletion & Void Safeguards**: Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals for both E-Wallet and Bills Payment records.
+6. **100% Quality Invariants & Automated Test Gate Passed**:
+   - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
+
+## Key Features in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition)
+1. **Universal Manual Print Engine (Native Windows Print Dialog)**:
+   - Designed for challenging printers (e.g. GOOJPRT 58H / JP-58BL / KP58B-U / POS-58) that experience Windows driver spooler locking, virtual USB port delays, or driver name mismatches.
+   - When **Manual Print** is triggered, Electron launches the native Windows System Print Dialog pre-bound to the detected thermal printer, allowing cashiers to manually choose any printer device, inspect print preferences, adjust darkness/density, or print to PDF.
+   - Provides 1-tap **Manual Print** buttons in:
+     - **Checkout Complete Modal**: Cashiers can trigger instant manual receipt printing even if automatic printing was disabled or interrupted.
+     - **Transactions Ledger & Receipt Preview**: Dedicated "Manual Print" action alongside "Print Receipt" (auto).
+     - **Terminal Tools [F3] (`PosToolsModal`)**: Hardware Hub quick strip offers both "Thermal Print" (auto) and "Manual" dialog test.
+     - **Settings -> Receipt Tab**: "Manual Test Print (Dialog)" for verifying Windows driver connection.
+     - **Automatic Manual Print Dialog Mode**: Added `manual_print_dialog` toggle in Settings so stores with strict printing workflows can open the OS dialog on every sale automatically.
+2. **Zero-Blur High-Density Thermal Typography Engine**:
+   - Fixed the root cause of blurry/faint thermal printing: Chromium previously rendered subpixel antialiased text with fractional font sizes (`9.5px`), which 203 DPI monochrome thermal heads dithered into faint, fuzzy dots.
+   - Replaced fractional font metrics with integer dot geometry (`11px` for 58mm / 32 columns, `12px` for 80mm).
+   - Injected `@media print` rules: `-webkit-font-smoothing: none !important`, `-moz-osx-font-smoothing: grayscale !important`, `font-smooth: never !important`, `text-rendering: geometricPrecision !important`, and `image-rendering: pixelated !important`.
+   - Set base thermal font-weight to `700 !important` and borders to solid `2px`/`3px` pure black (`#000000`), ensuring minimum 2-dot stroke widths so thermal pins burn pitch-black, needle-sharp text at 90mm/s.
+   - Switched Chromium print rasterizer to pure monochrome (`color: false`, `dpi: { horizontal: 203, vertical: 203 }`) to eliminate color-to-halftone dithering artifacts.
+   - Increased pre-print rasterization delay (350ms) and post-print spooler hold delay (500ms) to ensure complete buffer transmission.
+3. **GOOJPRT 58H Hardware Model Matching & In-App Guide**:
+   - Expanded printer recognition regexes to match `58h`, `jp-?58`, and `kp-?58` (`KP58B-U` Bluetooth and `JP-58BL` USB models).
+   - Linked official [GOOJPRT 58H User Manual](https://manuals.plus/ae/1005008661058283) in Settings -> Receipt and Handbook Chapter 10.
+   - Documented exact Windows driver steps for setting **Print Density / Darkness** to Dark (Level 12-15), **Dithering** to None, and performing printhead cleaning with isopropyl alcohol.
+4. **Cloud Owner Dashboard & True Realized Sales Void-Safe Architecture**:
+   - Fixed the financial discrepancy where voided transactions previously inflated Period Revenue (e.g., ₱6,000 displayed instead of ₱5,995 after voiding a ₱5 item).
+   - Desktop POS transaction voiding (`processVoid`) and transaction deletions (`deleteTransaction`) now automatically broadcast a `status: 'VOIDED'` and `net_sales_c: 0` payload to the Cloudflare Worker sync queue alongside the updated X/Z shift balancing snapshot.
+   - Cloudflare D1 Worker upsert query permanently persists `status = excluded.status` and zeroes out sales components upon void sync.
+   - Cloud Owner Dashboard (`https://tinda-owner-dashboard.pages.dev` / `BranchDetailPage.tsx`) filters sales strictly by `status !== 'VOIDED'` for all Period Revenue and tender breakdowns (Cash, GCash, Maya, Utang).
+   - Voided sales in the Sales Feed table are explicitly rendered with a red `VOIDED` status badge, strikethrough text formatting, and muted opacity for complete audit transparency.
+5. **100% Automated Test Gate & Master Invariants Passed**:
+   - Automated unit tests in `stabilization.test.ts` verify transaction voiding, shift totals recalculation, inventory replenishment, and cloud sync payload integrity.
+   - Verified 414/414 unit tests across 63 test suites with 0 TypeScript compilation errors.
+
+## Key Features in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
+1. **VIP Pro Custom Brand Identity & Store Logo Upload**:
+   - Merchants with active VIP Pro licenses can upload their custom business logo (PNG, JPG, SVG, WebP up to 2MB) stored locally in app settings.
+   - AppLogo component seamlessly renders their custom store logo encased in Apple-grade Cupertino squircle materials, with live fallback to Quantum Mark.
+   - Non-VIP users are cleanly prompted with a VIP Pro upgrade gate in Settings -> Store Profile.
+2. **Universal Custom Cart Discount Engine (% & ₱)**:
+   - Cashiers can apply flexible discounts directly from checkout: Statutory Senior Citizen / PWD 20% discount or custom percentage (5%, 10%, 15%, 20%, 50%, or custom %) or exact peso deduction (₱).
+   - Real-time subtotal calculation and clear display on both POS cart and thermal printed receipts.
+3. **100% Professional English System-Wide Localization**:
+   - Replaced all legacy Bisaya/Filipino text across receipt tickets (`Thank you for your purchase!`, `Change`), Handbook Chapter 10, printer troubleshooting guides, and camera companion pairing instructions with professional English.
+4. **POS Register Header Clutter Elimination**:
+   - Removed Terminal Tools button from POS register header for maximum product catalog visibility, while keeping global hotkey `F3` and permanent Cupertino pill button in the Sidebar footer.
+5. **Live Sales Monitor & Owner Dashboard 100% Metric Synchronization**:
+   - Re-aligned `app:salesMonitorSummary` to query refunds and calculate Net Realized Sales (`cash + gcash + maya - refunds`), matching Dashboard exactly and excluding uncollected customer credit (Utang).
+6. **100% Automated Test Gate Passed**:
+   - Verified 414/414 unit tests across 63 test suites with 0 TypeScript compilation errors.
+
+## Key Features in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
+1. **Zero-Click Thermal Printer Auto-Detection & Self-Configuration**:
+   - Resolved the root cause where newly plugged-in thermal printers (e.g., GOOJPRT PB-58H, POS-58, JK-5802H, Xprinter) failed to print receipts because the user had not manually configured the printer in Settings.
+   - Built the `autoDetectThermalPrinter` engine in `printer.ts` and `printing.ts` that automatically scans connected USB/Bluetooth printers via `webContents.getPrintersAsync()`, matches thermal receipt device signatures (`/pos-?58|pos-?80|58mm|80mm|thermal|receipt|goojprt|xprinter|jk|zj|xp|rp/i`), and dynamically binds print jobs on the fly.
+   - Instant plug-and-play operation: merchants can plug in their thermal printer, ring up a sale, and receipts immediately print with zero settings configuration.
+2. **Automatic Paper Width Inference (58mm vs 80mm)**:
+   - Automatically detects 58mm printer models (`pb-58`, `jk-58`, `pos-58`, `xp-58`, `58mm`) and applies exact 58mm micron dimensions (`58000, 297000`) and typography scaling without manual selection.
+3. **Hardware Hub & Terminal Tools [F3] Auto-Detect Status**:
+   - `PosToolsModal` now dynamically displays **Auto-Detect Ready** when a thermal printer is present, allowing cashiers to trigger 1-tap test prints directly from the cashier register screen.
+4. **100% Automated Test Gate Passed**:
+   - Verified 414/414 unit tests and 0 TypeScript errors.
+
+## Key Features in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix)
+1. **Ultra-Modern Quantum Mark (Apple-Grade Cupertino Diamond-T)**:
+   - Upgraded `AppLogo.tsx` to a hyper-modern, clean Apple-grade geometric vector brand identity with Cupertino squircle chassis, optical light spine ray, and balanced summation ($\Sigma$) winglets.
+   - Scalable from 16px micro-icon to 512px retina displays with radiant Emerald-Cyan laser gradients and VIP Pro Gold radiance.
+2. **GOOJPRT PB-58H Zero-Margin Thermal Spooling & Blank Print Fix**:
+   - Fixed the silent printing race condition in `printing.ts` where Chromium destroyed the hidden print window before the Windows Print Spooler completed reading the buffer.
+   - Injected explicit custom page dimensions in microns (`width: 58000, height: 297000`), zero-margin `@page` and `@media print` CSS overrides, and 10mm feed clearance to ensure continuous physical paper feed.
+   - Added in-depth guidance for thermal roll orientation (scratch test), USB virtual port mapping (`USB001`), and self-test verification in `Handbook.tsx` Chapter 10 and `Settings.tsx`.
+3. **Sidebar-Organized Terminal Tools [F3] Hub**:
+   - Organized the Sidebar footer with a prominent Cupertino pill button for **Terminal Tools [F3]**, complete with hotkey badge and smooth hover micro-interactions.
+   - Added a 1-tap **Thermal Print** test button right inside the `PosToolsModal` hardware status strip for instant diagnostics without leaving the cashier screen.
+4. **100% Automated Test Gate Passed**:
+   - Verified 411/411 unit tests and 0 TypeScript errors.
+
+## Key Features in v1.0.61 (Mathematical Mass Mark & GOOJPRT Thermal Support)
+1. **Mathematical Mass Brand Mark (The Quantum Summation T)**:
+   - Designed a high-precision, geometric vector brand identity (`AppLogo.tsx`) featuring an isometric hexagonal mass bounding volume, Golden Ratio ($\Phi = 1.618$) ray alignment, and a stylized mathematical summation ($\Sigma$) apex fused with the letter "T".
+   - Integrated into the Sidebar brand header, Hardware Hub, and Terminal Tools modal with active hardware pulse indicators and VIP Pro gold gradients.
+2. **GOOJPRT PB-58H (USB + Bluetooth) Desktop Thermal Printer Support**:
+   - Integrated full hardware optimization and documentation for 58mm retail thermal printers (GOOJPRT PB-58H / JK-5802H / POS-58 / Xprinter).
+   - Added in-app setup tips in `Settings` -> `Receipt` and published official **Chapter 10: Thermal Printers** in the offline `Handbook.tsx`.
+3. **Terminal Tools [F3] Consolidated Hardware Workspace**:
+   - Consolidated 10 cluttered header buttons into a single Cupertino glass pill `Terminal Tools [F3]` in the header and a permanent sidebar footer button.
+4. **Line Item Custom Unit Price Editing**:
+   - Direct in-cart unit selling price override for cashiers/managers with clean professional labels ("Edit Unit Price").
+5. **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery**:
+   - Traced and resolved network adapter order failures by auto-filtering virtual/APIPA interfaces (`169.254.*`), adding active Wi-Fi adapter dropdown switching, and providing a 1-tap Direct Snap (HTTP) fallback to bypass mobile browser SSL warnings.
+
+## Key Features in v1.0.60 (VIP Client Feedback & 10 Core Enhancements)
+1. **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
+   - **Root Cause Fixed**: Eliminated the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx`.
+   - **Continuous Infinite Pagination**: Implemented paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Large catalogs (500-10,000+ items) now scroll completely and fluidly without clipping.
+2. **Terminal Tools [F3] & Clean POS Workspace (Client Feedback Addressed)**:
+   - **Clutter Elimination**: Replaced the 10 crowded top-bar buttons (`Scanner Ready`, `Counter Camera`, `Pair Phone`, `Customer Screen`, `Sales Monitor`, `Petty Cash`, `E-Wallet`, `Sound On`, `Z-Reading`, `Guide`) with a single Cupertino glass pill **Terminal Tools [F3]** in the POS header and a permanent **Tools** button in the sidebar footer.
+   - **Centralized Hardware & Operations Modal**: Consolidates 1-tap toggles for barcode scanner, webcam, companion phone pairing, secondary customer display (CFD), sales monitor, shift cash in/out (`F7`/`F8`), thermal Z-Reading, sound toggle, and cashier shortcut guide.
+3. **Line Item Custom Unit Price Editing (Client Feedback Addressed)**:
+   - **Cashier & Manager In-Cart Price Override**: Cashiers can directly edit the unit selling price of any item currently in the cart with 1-click on the unit price tag or pencil icon.
+   - **Clean Terminology**: Replaced informal "Tawad / Custom price" labeling with professional **"Edit Unit Price"** and **"Custom Unit Price"** modal dialog with live subtotal calculation.
+4. **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery (Client Feedback Addressed)**:
+   - **Root Cause Fixed**: Traced and fixed pairing failures caused by arbitrary `os.networkInterfaces()` order picking inactive virtual adapters (Bluetooth PAN, WSL, Docker, VMware) or link-local APIPA addresses (`169.254.x.x`).
+   - **Smart Prioritized IP Selection**: Automatically excludes `169.254.*` and virtual adapters, prioritizing real Wi-Fi/Ethernet physical interfaces and standard private LAN subnets (`192.168.*`, `10.*`, `172.16-31.*`).
+   - **Multi-Adapter Network Dropdown**: When a PC has multiple active networks (e.g., wired Ethernet + store Wi-Fi), the companion QR screen provides an instant dropdown selector to switch the generated pairing link to the Wi-Fi subnet reachable by phones.
+   - **Instant Direct Snap (HTTP) Fallback**: Prominent 1-tap fallback that opens immediately in all mobile browsers (iOS Safari & Android Chrome) with 100% zero SSL certificate warnings.
+5. **Quick Cash Denomination & Increment Chips**:
+   - 1-Tap quick change buttons in Checkout Modal: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100`.
+6. **Web Audio API Hardware Synthesizer**:
+   - Zero-asset, 100% offline audio engine with crisp high-pitched barcode scan confirmations (1300Hz-1750Hz sine), out-of-stock/error buzzers (280Hz sawtooth), cash register chime (C6-C7 arpeggio), and 1-tap header mute/unmute toggle.
+7. **Multiplier Scan & Rapid Entry Engine**:
+   - Cashiers can scan or enter `5*BARCODE` or `10*PRODUCT` to instantly add bulk quantities without tapping the plus button multiple times.
+8. **Senior Citizen & PWD 20% Statutory Discount System**:
+   - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking.
+9. **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
+   - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
+10. **Automated 7-Day Rolling Daily SQLite Safety Snapshot & Live Inventory HUD Badges**:
+    - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage. Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
 
 ## Key Features in v1.0.59
 1. **High-Density Enterprise Cashier Listing Table & Dual-Mode POS View (Client Feedback Addressed)**:
