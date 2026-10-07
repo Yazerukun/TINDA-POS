@@ -3477,9 +3477,9 @@ app.get("/api/chat/messages", async (c) => {
   const limit = Math.min(100, parseInt(c.req.query("limit") || "50", 10));
   try {
     const { results } = await c.env.DB.prepare(
-      "SELECT * FROM global_chat_messages ORDER BY created_at ASC LIMIT ?"
+      "SELECT * FROM global_chat_messages ORDER BY created_at DESC LIMIT ?"
     ).bind(limit).all();
-    const formatted = (results || []).map((m) => {
+    const formatted = (results || []).reverse().map((m) => {
       let seen = [];
       try { seen = m.seen_by ? JSON.parse(m.seen_by) : []; } catch {}
       return {

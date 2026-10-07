@@ -112,6 +112,7 @@ export function TindaCommunityChat(): React.JSX.Element {
   const [announcements, setAnnouncements] = useState<LiveAnnouncement[]>([])
   const [inputText, setInputText] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
 
@@ -211,7 +212,16 @@ export function TindaCommunityChat(): React.JSX.Element {
       if (res && res.ok && Array.isArray(res.messages)) {
         // Filter out locally deleted messages
         const validMessages = res.messages.filter((m) => !deletedIdsRef.current.has(m.id))
-        setMessages(validMessages)
+        setMessages((prev) => {
+          const serverIds = new Set(validMessages.map((m) => m.id))
+          const localPending = prev.filter(
+            (m) => !serverIds.has(m.id) && Date.now() - new Date(m.created_at).getTime() < 30000
+          )
+          if (localPending.length === 0) return validMessages
+          return [...validMessages, ...localPending].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          )
+        })
         setIsOnline(true)
 
         // Audio chime alert on new incoming message from someone else
@@ -359,6 +369,7 @@ export function TindaCommunityChat(): React.JSX.Element {
     if ((!trimmed && !attachedImage) || isSending) return
 
     setIsSending(true)
+    setSendError(null)
     try {
       const res = await window.api?.community?.sendMessage(
         trimmed,
@@ -371,12 +382,15 @@ export function TindaCommunityChat(): React.JSX.Element {
         setInputText('')
         setAttachedImage(null)
         setShowEmojiPicker(false)
+        setSendError(null)
         setTimeout(scrollToBottom, 100)
       } else {
-        alert(res?.error || 'Failed to send message. Please check connection.')
+        const errMsg = res?.error || 'Failed to send message. Please check connection.'
+        setSendError(errMsg)
       }
     } catch (err: unknown) {
-      alert('Error sending message: ' + ((err as Error)?.message || 'Network error'))
+      const errMsg = 'Error sending message: ' + ((err as Error)?.message || 'Network error')
+      setSendError(errMsg)
     } finally {
       setIsSending(false)
     }
@@ -947,6 +961,20 @@ export function TindaCommunityChat(): React.JSX.Element {
             </div>
           )}
 
+          {/* Send Error Notice */}
+          {sendError && (
+            <div className="flex items-center justify-between bg-red-950/90 border-t border-red-500/40 px-3 py-1.5 text-[11px] text-red-200 backdrop-blur">
+              <span className="truncate">{sendError}</span>
+              <button
+                type="button"
+                onClick={() => setSendError(null)}
+                className="ml-2 text-red-400 hover:text-white"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+
           {/* Input Bar */}
           <form
             onSubmit={handleSendMessage}
@@ -987,7 +1015,17 @@ export function TindaCommunityChat(): React.JSX.Element {
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => {
+                  setInputText(e.target.value)
+                  if (sendError) setSendError(null)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    void handleSendMessage()
+                  }
+                }}
                 onPaste={handlePaste}
                 maxLength={500}
                 placeholder={
@@ -1004,7 +1042,11 @@ export function TindaCommunityChat(): React.JSX.Element {
                 disabled={(!inputText.trim() && !attachedImage) || isSending}
                 className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500 text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:hover:bg-brand-500"
               >
-                <Send className="h-3.5 w-3.5" />
+                {isSending ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
               </button>
             </div>
             <div className="mt-1 flex items-center justify-between px-1 text-[9px] text-slate-500">

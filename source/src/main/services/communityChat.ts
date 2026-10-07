@@ -2,6 +2,7 @@ import type Database from 'better-sqlite3'
 import type { LiveAnnouncement, CommunityChatMessage, StoreSettings } from '@shared/types'
 import { getSettings } from '../repositories/settings'
 import { licenseService } from './licenseService'
+import { getSession } from './session'
 
 export function isVipActive(settings?: StoreSettings): boolean {
   if (process.env.NODE_ENV === 'test') return true
@@ -65,7 +66,7 @@ export async function getCommunityMessages(
       headers: {
         'User-Agent': 'TINDA-POS/CommunityChat (Windows NT 10.0; Win64; x64)'
       },
-      signal: AbortSignal.timeout(4000)
+      signal: AbortSignal.timeout(8000)
     })
 
     if (!res.ok) {
@@ -109,6 +110,11 @@ export async function sendCommunityMessage(
   const displayStoreName = address ? `${storeName} (${address})` : storeName
 
   const isVip = isVipActive(settings)
+  const session = getSession()
+  const activeUserName = session?.full_name || session?.username
+  const senderName = isDevAttempt
+    ? 'Ian (Dev / Owner)'
+    : (activeUserName || settings.owner_name?.trim() || 'Store Cashier')
 
   try {
     const headers: Record<string, string> = {
@@ -125,14 +131,14 @@ export async function sendCommunityMessage(
       body: JSON.stringify({
         store_id: storeId,
         store_name: displayStoreName,
-        sender_name: isDevAttempt ? 'Ian (Dev / Owner)' : (settings.owner_name?.trim() || 'Store Cashier'),
+        sender_name: senderName,
         role: isDevAttempt ? 'DEV' : 'MERCHANT',
         text: cleanText,
         image_url: imageUrl || null,
         dev_key: devKey,
         is_vip: isVip ? 1 : 0
       }),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(15000)
     })
 
     const data = (await res.json()) as { ok: boolean; message?: CommunityChatMessage; error?: string }

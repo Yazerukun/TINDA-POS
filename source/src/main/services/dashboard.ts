@@ -6,7 +6,7 @@ import { sumExpenses } from '../repositories/expenses'
 
 export function dashboardStats(): DashboardStats {
   const db = getDb()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = new Date().toLocaleDateString('en-CA')
 
   const sales = listSales(db, {
     from: `${today} 00:00:00`,

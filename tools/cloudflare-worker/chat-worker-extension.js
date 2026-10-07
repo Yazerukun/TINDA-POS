@@ -126,10 +126,10 @@ export async function handleCommunityChatRoutes(request, env) {
     if (env && env.DB) {
       try {
         const { results } = await env.DB.prepare(
-          'SELECT * FROM global_chat_messages ORDER BY created_at ASC LIMIT ?'
+          'SELECT * FROM global_chat_messages ORDER BY created_at DESC LIMIT ?'
         ).bind(limit).all()
 
-        const formatted = (results || []).map((m) => ({
+        const formatted = (results || []).reverse().map((m) => ({
           ...m,
           seen_by: m.seen_by ? JSON.parse(m.seen_by) : []
         }))
