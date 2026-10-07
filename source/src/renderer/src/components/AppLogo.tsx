@@ -21,7 +21,7 @@ export function AppLogo({
   customLogo
 }: AppLogoProps): React.JSX.Element {
   const { settings } = useSettings()
-  const effectiveCustomLogo = isVip ? (customLogo !== undefined ? customLogo : settings?.logo_path) : null
+  const effectiveCustomLogo = customLogo !== undefined ? customLogo : (settings?.logo_path ?? null)
 
   if (effectiveCustomLogo) {
     return (

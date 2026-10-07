@@ -17,10 +17,48 @@ import {
   Volume2,
   VolumeX,
   Trash2,
-  GripHorizontal
+  GripHorizontal,
+  Smile,
+  Image as ImageIcon
 } from 'lucide-react'
 import type { LiveAnnouncement, CommunityChatMessage } from '@shared/types'
 import { useSettings } from '../../stores/settings'
+
+function resizeImageToDataUrl(file: File, maxDim = 600, quality = 0.75): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        let width = img.width
+        let height = img.height
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width)
+            width = maxDim
+          } else {
+            width = Math.round((width * maxDim) / height)
+            height = maxDim
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(e.target?.result as string)
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = reject
+      img.src = e.target?.result as string
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
 
 function playNotificationChime(): void {
   try {
@@ -115,6 +153,12 @@ export function TindaCommunityChat(): React.JSX.Element {
     initPosX: number
     initPosY: number
   } | null>(null)
+  const hasDraggedRef = useRef(false)
+
+  // Photo attachment & Emoji states
+  const [attachedImage, setAttachedImage] = useState<string | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [devKey, setDevKey] = useState<string>(() => {
     return localStorage.getItem('tinda_dev_key') || ''
@@ -264,19 +308,69 @@ export function TindaCommunityChat(): React.JSX.Element {
     }
   }
 
+  // Quick Emojis
+  const QUICK_EMOJIS = ['😀', '😂', '😍', '👍', '🙏', '🏪', '📦', '💰', '🔥', '👏', '❤️', '🎉', '🚀', '🇵🇭']
+
+  // Handle Image Selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    resizeImageToDataUrl(file)
+      .then(setAttachedImage)
+      .catch(() => alert('Failed to process image attachment.'))
+    e.target.value = ''
+  }
+
+  // Handle Clipboard Paste (Support pasting images)
+  const handlePaste = (e: React.ClipboardEvent): void => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          e.preventDefault()
+          resizeImageToDataUrl(file)
+            .then(setAttachedImage)
+            .catch(() => alert('Failed to paste image attachment.'))
+          break
+        }
+      }
+    }
+  }
+
+  // Record Seen Status
+  useEffect(() => {
+    if (isOpen && !isMinimized && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1]
+      if (lastMsg && window.api?.community?.recordSeen) {
+        void window.api.community.recordSeen(
+          lastMsg.id,
+          settings?.owner_name || settings?.store_name || 'Cashier'
+        )
+      }
+    }
+  }, [isOpen, isMinimized, messages.length, settings?.owner_name, settings?.store_name])
+
   // Send message
   const handleSendMessage = async (e?: React.FormEvent): Promise<void> => {
     if (e) e.preventDefault()
     const trimmed = inputText.trim()
-    if (!trimmed || isSending) return
+    if ((!trimmed && !attachedImage) || isSending) return
 
     setIsSending(true)
     try {
-      const res = await window.api?.community?.sendMessage(trimmed, devKey || undefined)
+      const res = await window.api?.community?.sendMessage(
+        trimmed,
+        devKey || undefined,
+        attachedImage
+      )
       if (res && res.ok && res.message) {
         setMessages((prev) => [...prev, res.message!])
         prevMsgIdsRef.current.add(res.message.id)
         setInputText('')
+        setAttachedImage(null)
+        setShowEmojiPicker(false)
         setTimeout(scrollToBottom, 100)
       } else {
         alert(res?.error || 'Failed to send message. Please check connection.')
@@ -337,6 +431,7 @@ export function TindaCommunityChat(): React.JSX.Element {
     }
 
     e.preventDefault()
+    hasDraggedRef.current = false
     const currentX =
       position?.x ?? Math.max(16, window.innerWidth - (isMinimized ? 300 : 440))
     const currentY =
@@ -356,6 +451,10 @@ export function TindaCommunityChat(): React.JSX.Element {
       if (!dragRef.current) return
       const dx = e.clientX - dragRef.current.startX
       const dy = e.clientY - dragRef.current.startY
+
+      if (Math.hypot(dx, dy) > 5) {
+        hasDraggedRef.current = true
+      }
 
       const panelWidth = isMinimized ? 300 : 420
       const panelHeight = isMinimized ? 52 : 580
@@ -381,6 +480,9 @@ export function TindaCommunityChat(): React.JSX.Element {
           }
           return pos
         })
+        setTimeout(() => {
+          hasDraggedRef.current = false
+        }, 120)
       }
     }
 
@@ -404,6 +506,11 @@ export function TindaCommunityChat(): React.JSX.Element {
     if (currentStoreName && m.store_name?.includes(currentStoreName)) return true
     return false
   }
+
+  // Active online merchant calculation
+  const activeMerchants = new Set(messages.slice(-20).map((m) => m.store_name).filter(Boolean))
+  if (settings?.store_name) activeMerchants.add(settings.store_name)
+  const onlineCount = Math.max(1, activeMerchants.size)
 
   return (
     <>
@@ -442,7 +549,7 @@ export function TindaCommunityChat(): React.JSX.Element {
         </div>
       )}
 
-      {/* 2. MINIMIZED FLOATING PILL BAR (Draggable) */}
+      {/* 2. MINIMIZED FLOATING PILL BAR (Draggable & Drag-Protected) */}
       {isOpen && isMinimized && (
         <div
           style={{
@@ -457,11 +564,15 @@ export function TindaCommunityChat(): React.JSX.Element {
           className={`fixed z-50 flex items-center justify-between gap-2.5 rounded-full border border-ink-700/80 bg-ink-950/95 px-3 py-1.5 text-xs text-white shadow-2xl backdrop-blur-xl transition-shadow select-none ${
             isDragging ? 'cursor-grabbing ring-2 ring-brand-500/60 shadow-brand-500/20' : 'cursor-grab hover:border-ink-600'
           }`}
-          title="Click to restore or drag anywhere"
+          title="Click to restore or hold and drag anywhere"
         >
           <div
             className="flex items-center gap-2 cursor-pointer py-1 pl-1"
-            onClick={() => {
+            onClick={(e) => {
+              if (hasDraggedRef.current) {
+                e.stopPropagation()
+                return
+              }
               setIsMinimized(false)
               setHasUnreadMessages(false)
             }}
@@ -470,9 +581,12 @@ export function TindaCommunityChat(): React.JSX.Element {
               <MessageSquare className="h-3.5 w-3.5" />
             </div>
             <div className="flex items-center gap-1.5 font-bold">
-              <span>Lounge</span>
+              <span>Chat</span>
               {isOnline ? (
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="flex items-center gap-1 text-emerald-400 text-[10px]">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{onlineCount}</span>
+                </span>
               ) : (
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
               )}
@@ -500,10 +614,11 @@ export function TindaCommunityChat(): React.JSX.Element {
             <button
               type="button"
               onClick={() => {
+                if (hasDraggedRef.current) return
                 setIsMinimized(false)
                 setHasUnreadMessages(false)
               }}
-              title="Expand Lounge"
+              title="Expand Chat"
               className="rounded-full p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
             >
               <Maximize2 className="h-3.5 w-3.5" />
@@ -774,8 +889,24 @@ export function TindaCommunityChat(): React.JSX.Element {
                           : 'border border-ink-800 bg-ink-900 text-slate-200'
                       }`}
                     >
-                      {m.text}
+                      {m.text && <div>{m.text}</div>}
+                      {m.image_url && (
+                        <div className="mt-1.5 overflow-hidden rounded-lg border border-ink-700/60 max-w-[280px]">
+                          <img
+                            src={m.image_url}
+                            alt="Attachment"
+                            className="max-h-48 w-auto rounded object-contain cursor-pointer hover:opacity-95"
+                          />
+                        </div>
+                      )}
                     </div>
+
+                    {/* Seen Status Receipt */}
+                    {m.seen_by && m.seen_by.length > 0 && (
+                      <div className="mt-0.5 px-1 text-[9px] text-slate-500 flex items-center gap-1">
+                        <span>👁️ Seen by {m.seen_by.map((s) => `${s.name} · ${s.time}`).join(', ')}</span>
+                      </div>
+                    )}
                   </div>
                 )
               })
@@ -783,16 +914,81 @@ export function TindaCommunityChat(): React.JSX.Element {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Quick Emoji Bar */}
+          {showEmojiPicker && (
+            <div className="flex items-center gap-1 overflow-x-auto px-2 py-1.5 bg-ink-950 border-t border-ink-800 scrollbar-thin">
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setInputText((prev) => prev + emoji)}
+                  className="text-base p-1 hover:scale-125 transition-transform select-none"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Attached Photo Preview */}
+          {attachedImage && (
+            <div className="px-3 pt-2 bg-ink-900/90 flex items-center gap-2 border-t border-ink-800">
+              <div className="relative inline-block rounded-lg overflow-hidden border border-brand-500/40">
+                <img src={attachedImage} alt="Attachment" className="h-12 w-12 object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setAttachedImage(null)}
+                  className="absolute top-0.5 right-0.5 rounded-full bg-black/80 p-0.5 text-white hover:bg-red-600 transition"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+              <span className="text-[10px] text-slate-400">Photo attached · Ready to send</span>
+            </div>
+          )}
+
           {/* Input Bar */}
           <form
             onSubmit={handleSendMessage}
             className="border-t border-ink-800 bg-ink-900/90 p-2.5"
           >
-            <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              className="hidden"
+            />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+                title="Insert smiley"
+                className={`rounded-lg p-1.5 transition ${
+                  showEmojiPicker
+                    ? 'text-amber-400 bg-ink-800'
+                    : 'text-slate-400 hover:bg-ink-800 hover:text-amber-400'
+                }`}
+              >
+                <Smile className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach picture"
+                className={`rounded-lg p-1.5 transition ${
+                  attachedImage
+                    ? 'text-brand-400 bg-ink-800'
+                    : 'text-slate-400 hover:bg-ink-800 hover:text-brand-400'
+                }`}
+              >
+                <ImageIcon className="h-4 w-4" />
+              </button>
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+                onPaste={handlePaste}
                 maxLength={500}
                 placeholder={
                   isDevActive
@@ -805,7 +1001,7 @@ export function TindaCommunityChat(): React.JSX.Element {
               />
               <button
                 type="submit"
-                disabled={!inputText.trim() || isSending}
+                disabled={(!inputText.trim() && !attachedImage) || isSending}
                 className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500 text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:hover:bg-brand-500"
               >
                 <Send className="h-3.5 w-3.5" />

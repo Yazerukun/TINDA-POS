@@ -86,13 +86,14 @@ export async function getCommunityMessages(
 export async function sendCommunityMessage(
   db: Database.Database,
   text: string,
-  devKey?: string
+  devKey?: string,
+  imageUrl?: string | null
 ): Promise<{ ok: boolean; message?: CommunityChatMessage; error?: string }> {
   const settings = getSettings(db)
   const isDevAttempt = Boolean(devKey && devKey.trim().length > 0)
 
   const cleanText = text.trim()
-  if (!cleanText) {
+  if (!cleanText && !imageUrl) {
     return { ok: false, error: 'Message cannot be empty.' }
   }
   if (cleanText.length > 500) {
@@ -127,6 +128,7 @@ export async function sendCommunityMessage(
         sender_name: isDevAttempt ? 'Ian (Dev / Owner)' : (settings.owner_name?.trim() || 'Store Cashier'),
         role: isDevAttempt ? 'DEV' : 'MERCHANT',
         text: cleanText,
+        image_url: imageUrl || null,
         dev_key: devKey,
         is_vip: isVip ? 1 : 0
       }),
@@ -145,6 +147,44 @@ export async function sendCommunityMessage(
       error: 'Unable to send message: ' + ((err as Error)?.message || 'Network disconnected')
     }
   }
+}
+
+/**
+ * Record a message as seen by the current merchant / cashier.
+ * Non-blocking with 3s timeout.
+ */
+export async function recordMessageSeen(
+  db: Database.Database,
+  messageId: string,
+  userName?: string
+): Promise<{ ok: boolean }> {
+  const cleanId = String(messageId || '').trim()
+  if (!cleanId) return { ok: true }
+
+  const settings = getSettings(db)
+  const apiUrl = getCloudApiUrl(db)
+  const storeId = settings.cloud_store_id || 'unregistered'
+
+  try {
+    const url = `${apiUrl.replace(/\/+$/, '')}/api/chat/messages/seen`
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'TINDA-POS/CommunityChat (Windows NT 10.0; Win64; x64)'
+      },
+      body: JSON.stringify({
+        message_id: cleanId,
+        seen_by: userName || settings.owner_name?.trim() || 'Cashier',
+        store_id: storeId,
+        timestamp: new Date().toISOString()
+      }),
+      signal: AbortSignal.timeout(3000)
+    })
+  } catch {
+    // Non-blocking catch
+  }
+  return { ok: true }
 }
 
 /**

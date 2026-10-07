@@ -700,7 +700,7 @@ export function EwalletAudit(): React.JSX.Element {
                       onClick={() => setFeeStr(String(f))}
                       className="px-2.5 py-1 text-xs font-semibold rounded-xl border border-ink-line bg-ink-950 text-slate-300 hover:border-emerald-500 hover:text-emerald-300 transition"
                     >
-                      +₱{f}
+                      ₱{f}
                     </button>
                   ))}
                 </div>
@@ -830,7 +830,7 @@ export function EwalletAudit(): React.JSX.Element {
                 <div>
                   <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Tubo (Fees Earned)</p>
                   <p className="text-lg font-black text-amber-400">
-                    +₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1081,7 +1081,7 @@ export function EwalletAudit(): React.JSX.Element {
                       </p>
                     </div>
                     <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
-                      Tubo: +₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
+                      Tubo: ₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
                     </span>
                   </div>
 
@@ -1197,7 +1197,7 @@ export function EwalletAudit(): React.JSX.Element {
                                 ₱{b.amount.toFixed(2)}
                               </td>
                               <td className="py-2.5 px-3 text-right tabular-nums text-emerald-400 font-semibold">
-                                +₱{b.serviceFee.toFixed(2)}
+                                ₱{b.serviceFee.toFixed(2)}
                               </td>
                               <td className="py-2.5 px-3 text-right tabular-nums font-bold text-white">
                                 ₱{(b.amount + b.serviceFee).toFixed(2)}
@@ -1262,7 +1262,7 @@ export function EwalletAudit(): React.JSX.Element {
               <span className="text-xs text-slate-400">
                 Total Tubo Earned:{' '}
                 <strong className="text-amber-400 font-bold">
-                  +₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}
+                  ₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}
                 </strong>
               </span>
               <span className="rounded-full bg-ink-950 px-2.5 py-1 text-xs font-semibold text-slate-300 border border-ink-line">
@@ -1408,7 +1408,7 @@ export function EwalletAudit(): React.JSX.Element {
                         ₱{(tx.amount_c / 100).toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-400">
-                        +₱{(tx.fee_c / 100).toFixed(2)}
+                        ₱{(tx.fee_c / 100).toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-slate-400 text-[11px]">
                         {tx.fee_collected_via === 'WALLET' ? (
@@ -1800,7 +1800,7 @@ export function EwalletAudit(): React.JSX.Element {
                         ₱{(a.maya_difference_c / 100).toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-right font-bold text-amber-400">
-                        +₱{(a.total_fees_c / 100).toFixed(2)}
+                        ₱{(a.total_fees_c / 100).toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-center">
                         <span
@@ -1877,7 +1877,7 @@ export function EwalletAudit(): React.JSX.Element {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Service Fee (Tubo):</span>
-                <span className="font-bold text-amber-400">+₱{(txToDelete.fee_c / 100).toFixed(2)}</span>
+                <span className="font-bold text-amber-400">₱{(txToDelete.fee_c / 100).toFixed(2)}</span>
               </div>
               {txToDelete.reference_no && (
                 <div className="flex justify-between">
@@ -1949,7 +1949,7 @@ export function EwalletAudit(): React.JSX.Element {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Convenience Fee:</span>
-                <span className="font-bold text-emerald-400">+₱{billToDelete.serviceFee.toFixed(2)}</span>
+                <span className="font-bold text-emerald-400">₱{billToDelete.serviceFee.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Processed Via:</span>

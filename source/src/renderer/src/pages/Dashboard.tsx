@@ -21,6 +21,9 @@ import type { Product, Sale, ReportSummary } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
 import { productExpirationStatus } from '@shared/expiration'
 import { useUpdate } from '../stores/update'
+import { useAuth } from '../stores/auth'
+import { useSettings } from '../stores/settings'
+import { AppLogo } from '../components/AppLogo'
 
 function StatCard({
   label,
@@ -28,7 +31,8 @@ function StatCard({
   sub,
   icon,
   valueColor = 'text-white',
-  iconClass = 'bg-ink-700 text-brand-400'
+  iconClass = 'bg-ink-700 text-brand-400',
+  className = ''
 }: {
   label: string
   value: string
@@ -36,9 +40,10 @@ function StatCard({
   icon: React.ReactNode
   valueColor?: string
   iconClass?: string
+  className?: string
 }): React.JSX.Element {
   return (
-    <div className="card p-4">
+    <div className={`card p-4 transition-all duration-300 hover:border-brand-500/30 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
@@ -52,6 +57,8 @@ function StatCard({
 }
 
 export function Dashboard(): React.JSX.Element | null {
+  const { user, shiftOpen } = useAuth()
+  const { settings } = useSettings()
   const [summary, setSummary] = useState<ReportSummary | null>(null)
   const [recent, setRecent] = useState<Sale[]>([])
   const [alertProducts, setAlertProducts] = useState<Product[]>([])
@@ -65,6 +72,10 @@ export function Dashboard(): React.JSX.Element | null {
   const [expiryAlerts, setExpiryAlerts] = useState<{ expired: Product[]; soon: Product[] }>({ expired: [], soon: [] })
 
   const { event, download, install, dismiss } = useUpdate()
+
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+  const cashierName = user?.full_name || user?.username || settings?.owner_name || 'Cashier'
 
   useEffect(() => {
     let alive = true
@@ -162,8 +173,37 @@ export function Dashboard(): React.JSX.Element | null {
   const version = event?.available?.version ?? ''
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-4">
       <PageHeader title="Dashboard" subtitle="Sales Overview" />
+
+      {/* Executive Welcome & Shift Status Banner */}
+      <div className="animate-fadeInUp rounded-2xl border border-ink-line bg-gradient-to-r from-ink-900 via-ink-850 to-ink-900 p-4 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <AppLogo size={42} showBadge={false} />
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base md:text-lg font-black text-white tracking-tight">
+                {greeting}, <span className="text-brand-400">{cashierName}</span>!
+              </h2>
+              <span className={`badge text-[10px] uppercase font-bold tracking-wider ${
+                shiftOpen
+                  ? 'border border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
+                  : 'border border-amber-500/40 bg-amber-500/10 text-amber-400'
+              }`}>
+                {shiftOpen ? '🟢 Shift Active' : '🟡 Shift Closed'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {settings?.store_name || 'TINDA Store'} · POS Terminal Active · Ready for transactions
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="rounded-lg bg-ink-800/80 px-3 py-1.5 border border-ink-line text-slate-300 font-medium">
+            📅 {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+          </span>
+        </div>
+      </div>
 
       {/* Dashboard Prominent Update Banner */}
       {showBanner && (
@@ -395,6 +435,7 @@ export function Dashboard(): React.JSX.Element | null {
           icon={<TrendingUp className="h-5 w-5" />}
           valueColor="text-emerald-400"
           iconClass="bg-emerald-500/10 text-emerald-400"
+          className="animate-fadeInUp stagger-1"
         />
         <StatCard
           label="True Net Profit"
@@ -403,6 +444,7 @@ export function Dashboard(): React.JSX.Element | null {
           icon={<Banknote className="h-5 w-5" />}
           valueColor="text-teal-400"
           iconClass="bg-teal-500/10 text-teal-400"
+          className="animate-fadeInUp stagger-2"
         />
         <StatCard
           label="Outstanding Utang"
@@ -411,6 +453,7 @@ export function Dashboard(): React.JSX.Element | null {
           icon={<Wallet className="h-5 w-5" />}
           valueColor="text-rose-400"
           iconClass="bg-rose-500/10 text-rose-400"
+          className="animate-fadeInUp stagger-3"
         />
         <StatCard
           label="Operating Expenses"
@@ -419,10 +462,11 @@ export function Dashboard(): React.JSX.Element | null {
           icon={<Receipt className="h-5 w-5" />}
           valueColor="text-amber-400"
           iconClass="bg-amber-500/10 text-amber-400"
+          className="animate-fadeInUp stagger-4"
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fadeInUp stagger-5">
         <div className="space-y-4">
           <SectionCard title="LOW / OUT OF STOCK" action={<span className="text-xs text-slate-500">{out.length} out · {low.length} low</span>}>
             {alertProducts.length === 0 ? (

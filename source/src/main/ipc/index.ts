@@ -247,7 +247,22 @@ handle('users:roles', () => userRepo.listRoles(db()))
 handle('settings:get', () => settingRepo.getSettings(db()))
 handle('settings:update', (_e: IpcMainInvokeEvent, patch: unknown) => {
   user()
-  return settingRepo.updateSettings(db(), patch as Partial<import('@shared/types').StoreSettings>)
+  const p = patch as Partial<import('@shared/types').StoreSettings>
+  if (p.logo_path) {
+    try {
+      const { BrowserWindow, nativeImage } = require('electron')
+      const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+      if (win) {
+        const img = p.logo_path.startsWith('data:')
+          ? nativeImage.createFromDataURL(p.logo_path)
+          : nativeImage.createFromPath(p.logo_path)
+        if (!img.isEmpty()) {
+          win.setIcon(img)
+        }
+      }
+    } catch {}
+  }
+  return settingRepo.updateSettings(db(), p)
 })
 
 // ---- Categories ----
@@ -1082,9 +1097,13 @@ handle('community:getMessages', async (_e: IpcMainInvokeEvent, limit?: number) =
   const { getCommunityMessages } = require('../services/communityChat')
   return await getCommunityMessages(db(), limit)
 })
-handle('community:sendMessage', async (_e: IpcMainInvokeEvent, text: string, devKey?: string) => {
+handle('community:sendMessage', async (_e: IpcMainInvokeEvent, text: string, devKey?: string, imageUrl?: string | null) => {
   const { sendCommunityMessage } = require('../services/communityChat')
-  return await sendCommunityMessage(db(), text, devKey)
+  return await sendCommunityMessage(db(), text, devKey, imageUrl)
+})
+handle('community:recordSeen', async (_e: IpcMainInvokeEvent, messageId: string, userName?: string) => {
+  const { recordMessageSeen } = require('../services/communityChat')
+  return await recordMessageSeen(db(), messageId, userName)
 })
 handle('community:deleteMessage', async (_e: IpcMainInvokeEvent, messageId: string, devKey?: string) => {
   const { deleteCommunityMessage } = require('../services/communityChat')

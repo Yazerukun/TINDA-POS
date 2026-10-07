@@ -305,7 +305,8 @@ const api: TindaApi = {
   community: {
     getAnnouncements: () => invoke<{ ok: boolean; announcements: import('@shared/types').LiveAnnouncement[] }>('community:getAnnouncements'),
     getMessages: (limit) => invoke<{ ok: boolean; messages: import('@shared/types').CommunityChatMessage[] }>('community:getMessages', limit),
-    sendMessage: (text, devKey) => invoke<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>('community:sendMessage', text, devKey),
+    sendMessage: (text, devKey, imageUrl) => invoke<{ ok: boolean; message?: import('@shared/types').CommunityChatMessage; error?: string }>('community:sendMessage', text, devKey, imageUrl),
+    recordSeen: (messageId, userName) => invoke<{ ok: boolean }>('community:recordSeen', messageId, userName),
     deleteMessage: (messageId, devKey) => invoke<{ ok: boolean; error?: string }>('community:deleteMessage', messageId, devKey),
     postAnnouncement: (title, message, devKey) => invoke<{ ok: boolean; announcement?: import('@shared/types').LiveAnnouncement; error?: string }>('community:postAnnouncement', title, message, devKey)
   },

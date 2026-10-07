@@ -282,6 +282,13 @@ export function receiptHtml(lines: string[], width: ReceiptWidth, currency = '')
   return `<!doctype html><html><head><meta charset="utf-8"><style>${docReset}${receiptCss(width)}</style></head><body>${receiptBodyHtml(lines, width, currency)}</body></html>`
 }
 
+export function formatReceiptDate(d: string | Date | undefined | null): string {
+  if (!d) return ''
+  const dt = typeof d === 'string' ? new Date(d.replace(' ', 'T')) : d
+  if (Number.isNaN(dt.getTime())) return String(d)
+  return dt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
 export function formatEwalletSlipLines(
   tx: import('./types').EwalletTransactionRecord,
   storeName?: string | null
@@ -294,7 +301,7 @@ export function formatEwalletSlipLines(
     '--------------------------------',
     `Transaction: ${isCashIn ? 'CASH IN' : 'CASH OUT'}`,
     `Channel: ${tx.channel}`,
-    `Date: ${tx.created_at}`,
+    `Date: ${formatReceiptDate(tx.created_at)}`,
     `Reference: ${tx.reference_no || 'N/A'}`
   ]
   if (tx.customer_name) lines.push(`Customer: ${tx.customer_name}`)
@@ -376,7 +383,7 @@ export function formatBillSlipLines(
     storeName || 'TINDA POS',
     'BILLS & E-LOAD RECEIPT',
     '--------------------------------',
-    `Date: ${new Date(b.createdAt).toLocaleString('en-PH')}`,
+    `Date: ${formatReceiptDate(b.createdAt)}`,
     `Ref #: ${b.referenceNo || 'N/A'}`,
     `Biller: ${b.biller}`,
     `Acct / No: ${b.accountNo}`
@@ -387,7 +394,7 @@ export function formatBillSlipLines(
   lines.push(`Processed: ${b.sourceWallet} Business`)
   lines.push('--------------------------------')
   lines.push(`Bill Amount    P${moneyStr(b.amount)}`)
-  lines.push(`Service Fee   +P${moneyStr(b.serviceFee)}`)
+  lines.push(`Service Fee    P${moneyStr(b.serviceFee)}`)
   lines.push('================================')
   lines.push(`TOTAL PAID     P${moneyStr(b.amount + b.serviceFee)}`)
   lines.push('--------------------------------')

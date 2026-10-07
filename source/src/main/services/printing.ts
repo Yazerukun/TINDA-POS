@@ -27,7 +27,7 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
     `Store: ${settings.store_name}`,
     `Printer: ${printer}`,
     `Paper: ${settings.receipt_paper_width}`,
-    `Date: ${now.toLocaleString('en-PH')}`,
+    `Date: ${now.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })}`,
     '--------------------------',
     'Printer configuration successful',
     '--------------------------',

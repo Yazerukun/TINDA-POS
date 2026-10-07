@@ -754,6 +754,8 @@ export interface CommunityChatMessage {
   sender_name: string
   role: string
   text: string
+  image_url?: string | null
+  seen_by?: { name: string; time: string }[]
   is_dev: number
   is_vip?: number
   created_at: string
