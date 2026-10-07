@@ -13,6 +13,7 @@ export type PageKey =
   | 'settings'
   | 'customers'
   | 'ewallet'
+  | 'bills'
   | 'handbook'
 
 interface NavState {

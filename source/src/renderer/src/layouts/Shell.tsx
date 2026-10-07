@@ -18,6 +18,7 @@ import { Backup } from '../pages/Backup'
 import { Settings } from '../pages/Settings'
 import { Handbook } from '../pages/Handbook'
 import { EwalletAudit } from '../pages/EwalletAudit'
+import { BillsLoadHub } from '../pages/BillsLoadHub'
 import { ExpirationAlerts } from '../components/Expiration'
 import { HelpGuideModal } from '../components/HelpGuideModal'
 import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
@@ -49,6 +50,7 @@ export function Shell(): React.JSX.Element {
         {user && page === 'backup' && <Backup />}
         {user && page === 'settings' && <Settings />}
         {user && page === 'ewallet' && <EwalletAudit />}
+        {user && page === 'bills' && <BillsLoadHub />}
         {user && page === 'handbook' && <Handbook />}
         </div>
       </main>

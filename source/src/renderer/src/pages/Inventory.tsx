@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -14,6 +14,8 @@ import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
 import { PriceGuideModal } from '../components/PriceGuideModal'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { CameraScannerModal } from '../components/CameraScannerModal'
+import { PriceTagPrintModal } from '../components/PriceTagPrintModal'
+import { InventoryPrintModal } from '../components/InventoryPrintModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
   createProductInput,
@@ -42,6 +44,9 @@ export function Inventory(): React.JSX.Element {
   const [defaultThreshold, setDefaultThreshold] = useState(5)
   const [expirationOpen, setExpirationOpen] = useState(false)
   const [priceGuideOpen, setPriceGuideOpen] = useState(false)
+  const [printPriceTagsOpen, setPrintPriceTagsOpen] = useState(false)
+  const [selectedTagProduct, setSelectedTagProduct] = useState<Product | null>(null)
+  const [printInventoryOpen, setPrintInventoryOpen] = useState(false)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
@@ -216,6 +221,8 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => useGuide.getState().openGuide('inventory')} className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"><HelpCircle className="h-4 w-4 text-amber-400" /> Guide</button>
           <button onClick={() => setExpirationOpen(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Expiration Dates</button>
           <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
+          <button onClick={() => { setSelectedTagProduct(null); setPrintPriceTagsOpen(true) }} className="btn-ghost flex items-center gap-2 text-sky-300 hover:text-sky-200"><Tag className="h-4 w-4 text-sky-400" /> Print Price Tags</button>
+          <button onClick={() => setPrintInventoryOpen(true)} className="btn-ghost flex items-center gap-2 text-emerald-300 hover:text-emerald-200"><Printer className="h-4 w-4 text-emerald-400" /> Print Sheets / P.O.</button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
@@ -354,6 +361,7 @@ export function Inventory(): React.JSX.Element {
                   <p className="text-xs text-slate-500">{money(p.purchase_cost_c)} cost</p>
                 </div>
                 <div className="flex gap-1">
+                  <button onClick={() => { setSelectedTagProduct(p); setPrintPriceTagsOpen(true) }} className="btn-ghost-2 rounded-lg p-2 text-sky-400" title="Print Shelf Price Tag"><Tag className="h-4 w-4" /></button>
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
                   <button onClick={() => setEditing(editProductForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
@@ -368,6 +376,21 @@ export function Inventory(): React.JSX.Element {
       {editing && <ProductModal form={editing} categories={categories} products={products} onSave={saveProduct} onClose={() => setEditing(null)} />}
       {expirationOpen && <ExpirationList onClose={() => setExpirationOpen(false)} />}
       {priceGuideOpen && <PriceGuideModal open={priceGuideOpen} onClose={() => setPriceGuideOpen(false)} products={products} onProductsChanged={() => void load()} />}
+      {printPriceTagsOpen && (
+        <PriceTagPrintModal
+          open={printPriceTagsOpen}
+          products={products}
+          selectedProduct={selectedTagProduct}
+          onClose={() => { setPrintPriceTagsOpen(false); setSelectedTagProduct(null) }}
+        />
+      )}
+      {printInventoryOpen && (
+        <InventoryPrintModal
+          open={printInventoryOpen}
+          products={products}
+          onClose={() => setPrintInventoryOpen(false)}
+        />
+      )}
       {managingCategories && <CategoryModal categories={categories} onChanged={load} onClose={() => setManagingCategories(false)} />}
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}

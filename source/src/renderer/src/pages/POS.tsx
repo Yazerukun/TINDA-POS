@@ -569,13 +569,13 @@ export function POS(): React.JSX.Element {
       if (!code) return
 
       const now = Date.now()
-      // Enforce 2.5s debounce for identical barcode scans to prevent accidental duplicate cart additions
-      if (lastScanRef.current.code.toLowerCase() === code.toLowerCase() && now - lastScanRef.current.time < 2500) {
+      // Enforce 1.2s debounce for identical barcode scans to prevent accidental duplicate cart additions
+      if (lastScanRef.current.code.toLowerCase() === code.toLowerCase() && now - lastScanRef.current.time < 1200) {
         return
       }
       lastScanRef.current = { code, time: now }
 
-      // Parse multiplier prefix if any (e.g. "5*BARCODE" or "10*48000123")
+      // Parse multiplier prefix if any (e.g. "5*BARCODE" or "10*48000123" or "5*egg")
       let qtyMultiplier = 1
       let cleanCode = code
       const multiMatch = code.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
@@ -584,34 +584,57 @@ export function POS(): React.JSX.Element {
         cleanCode = multiMatch[2].trim()
       }
 
-      const res = await window.api.products.search(cleanCode, { status: 'ACTIVE', limit: 10 })
+      const res = await window.api.products.search(cleanCode, { status: 'ACTIVE', limit: 20 })
       const target = cleanCode.toLowerCase()
-      // Strict matching: Barcode scans MUST match exact barcode or SKU only. Never pick random name matches.
-      const found = res.rows.find(
+      // Smart matching priority:
+      // 1. Exact Barcode match
+      // 2. Exact SKU match
+      // 3. Multi-unit barcode match
+      // 4. Exact product name match
+      // 5. First item in search results if user pressed Enter on query
+      let found = res.rows.find(
         (p) =>
           p.barcode?.toLowerCase() === target ||
           p.sku?.toLowerCase() === target ||
           p.units?.some((u) => u.barcode?.toLowerCase() === target)
       )
 
+      if (!found) {
+        found = res.rows.find((p) => p.name.toLowerCase() === target)
+      }
+      if (!found && res.rows.length === 1) {
+        found = res.rows[0]
+      }
+      if (!found && res.rows.length > 0) {
+        // Find product starting with or containing cleanCode
+        found = res.rows.find((p) => p.name.toLowerCase().startsWith(target)) || res.rows[0]
+      }
+
       if (found) {
-        if (saleStock(found) < 1) {
+        const stockLeft = saleStock(found)
+        if (stockLeft < 1) {
           playScanError()
-          toastError(`"${found.name}" is out of stock!`)
+          toastError(`"${found.name}" is out of stock!`, 'Available for sale: 0 units')
         } else {
           usePosCart.getState().add(found, qtyMultiplier)
           playScanSuccess()
-          toastSuccess(`Scanned: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
+          toastSuccess(`Added to cart: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
+          // Proactive low-stock notification
+          if (stockLeft <= found.low_stock_threshold) {
+            toastError(`⚠️ Low Stock Alert`, `"${found.name}" has only ${stockLeft} ${found.base_unit} remaining!`)
+          }
           warnIfNearExpiry(found)
           setQ('')
+          // Keep search box ready
+          setTimeout(() => searchInputRef.current?.focus(), 50)
         }
       } else {
         playScanError()
-        toastError(`No product found for barcode: ${cleanCode}`)
+        toastError(`No product found for "${cleanCode}"`, 'Check product name, SKU, or barcode.')
       }
     } catch (err) {
       playScanError()
-      toastError(`Barcode scan failed: ${String((err as Error)?.message || err)}`)
+      toastError(`Search / scan failed: ${String((err as Error)?.message || err)}`)
     }
   }
 
@@ -947,9 +970,32 @@ export function POS(): React.JSX.Element {
 
                   {!loading && displayedProducts.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16 text-center text-slate-500">
-                      <Search className="h-8 w-8 text-slate-600 mb-2" />
-                      <p className="text-sm font-medium text-slate-300">No products found</p>
-                      <p className="text-xs text-slate-500 mt-1">Try searching by product name, SKU, or scanning a barcode.</p>
+                      <div className="h-12 w-12 rounded-2xl bg-ink-800/80 border border-ink-line flex items-center justify-center text-2xl mb-3 shadow-inner">
+                        🔍
+                      </div>
+                      <p className="text-sm font-bold text-white">
+                        {q.trim() ? `No product found for "${q.trim()}"` : 'No products found'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                        {q.trim()
+                          ? 'Press Enter to re-scan, or click below to register this new item into inventory.'
+                          : 'Try searching by product name, SKU, or scanning a barcode.'}
+                      </p>
+                      {q.trim() && (
+                        <div className="mt-4 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setQ('')
+                              void search('', catFilter === 'ALL' ? null : catFilter)
+                              searchInputRef.current?.focus()
+                            }}
+                            className="btn-ghost text-xs px-3 py-1.5 rounded-lg border border-ink-line text-slate-300 hover:text-white"
+                          >
+                            Clear Search (Esc)
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1153,7 +1199,34 @@ export function POS(): React.JSX.Element {
           >
             {loading && Array.from({ length: 12 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
             {!loading && displayedProducts.length === 0 && (
-              <div className="col-span-full py-12 text-center text-sm text-slate-500">No products found.</div>
+              <div className="col-span-full py-16 text-center text-slate-500 flex flex-col items-center justify-center">
+                <div className="h-12 w-12 rounded-2xl bg-ink-800/80 border border-ink-line flex items-center justify-center text-2xl mb-3 shadow-inner">
+                  🔍
+                </div>
+                <p className="text-sm font-bold text-white">
+                  {q.trim() ? `No product found for "${q.trim()}"` : 'No products found'}
+                </p>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                  {q.trim()
+                    ? 'Press Enter to re-scan, or click below to clear and view catalog.'
+                    : 'Try searching by product name, SKU, or scanning a barcode.'}
+                </p>
+                {q.trim() && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQ('')
+                        void search('', catFilter === 'ALL' ? null : catFilter)
+                        searchInputRef.current?.focus()
+                      }}
+                      className="btn-ghost text-xs px-3 py-1.5 rounded-lg border border-ink-line text-slate-300 hover:text-white"
+                    >
+                      Clear Search (Esc)
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
             {!loading && displayedProducts.map((p) => {
               const cartItem = cartItems.find(item => item.product_id === p.id)

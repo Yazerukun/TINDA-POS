@@ -253,7 +253,12 @@ describe('Hold Sale regression', () => {
     expect(() => processRefund({
       sale_id: sale.id,
       reason: 'Refund attempt',
-      items: [{ sale_item_id: voided.items[0]!.id, qty: 1 }]
+      items: [{
+        sale_item_id: voided.items[0]!.id,
+        product_id: product.id,
+        qty_base: 1,
+        unit_name: 'pc'
+      }]
     })).toThrow(/voided/i)
   })
 

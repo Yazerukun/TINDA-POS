@@ -163,33 +163,33 @@ const baseCss = `
   .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 600; }
   .tp-sheet * { box-sizing: border-box; }
   .tp-community-tag { font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; margin-top: 0.4em; }
-  .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
   .tp-row { font-size: 1em; }
   .tp-center { text-align: center; }
-  .tp-heading { font-size: 1.3em; font-weight: 900; }
+  .tp-heading { font-size: 1.25em; font-weight: 900; }
   .tp-item, .tp-sum, .tp-total, .tp-sukli, .tp-denomline { break-inside: avoid; }
-  .tp-gap { height: 0.5em; }
-  .tp-sep { border-top: 2px dashed black; margin: 0.35em 0; }
-  .tp-section-head { font-size: 1em; font-weight: 800; text-transform: uppercase; margin-top: 0.3em; letter-spacing: 0.03em; }
-  .tp-section-head.tp-sub { font-size: 0.9em; font-weight: 700; margin-top: 0.2em; color: #000; }
-  .tp-item .tp-name { font-size: 1em; font-weight: 700; }
-  .tp-itemline { display: table; width: 100%; table-layout: auto; }
-  .tp-itemline > span { display: table-cell; }
-  .tp-qty { font-size: 0.95em; white-space: nowrap; font-weight: 600; }
-  .tp-amt { font-variant-numeric: tabular-nums; text-align: right; width: 1%; white-space: nowrap; padding-left: 0.5em; font-weight: 700; }
+  .tp-gap { height: 0.25em; }
+  .tp-sep { border-top: 2px dashed black; margin: 0.2em 0; }
+  .tp-section-head { font-size: 0.95em; font-weight: 800; text-transform: uppercase; margin-top: 0.2em; letter-spacing: 0.03em; }
+  .tp-section-head.tp-sub { font-size: 0.88em; font-weight: 700; margin-top: 0.15em; color: #000; }
+  .tp-item { margin-bottom: 0.15em; }
+  .tp-item .tp-name { font-size: 0.95em; font-weight: 700; }
+  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
+  .tp-qty { font-size: 0.9em; white-space: nowrap; font-weight: 600; shrink: 0; }
+  .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 700; padding-right: 1px; }
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 800; }
-  .tp-sum, .tp-total, .tp-sukli { display: table; width: 100%; table-layout: auto; }
-  .tp-lbl { display: table-cell; }
-  .tp-sum { font-size: 1em; }
-  .tp-total { font-size: 1.2em; font-weight: 900; border-top: 3px double black; border-bottom: 3px double black; margin-top: 0.3em; padding: 0.3em 0; }
-  .tp-total .tp-amt { font-weight: 900; display: table-cell; text-align: right; }
-  .tp-sukli { font-size: 1.1em; font-weight: 900; margin-top: 0.12em; padding: 0.1em 0; }
-  .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 900; display: table-cell; }
-  .tp-sukli .tp-amt { text-align: right; }
-  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 0.95em; line-height: 1.35; }
+  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
+  .tp-lbl { flex: 1; min-width: 0; }
+  .tp-sum { font-size: 0.95em; margin: 0.08em 0; }
+  .tp-total { font-size: 1.15em; font-weight: 900; border-top: 3px double black; border-bottom: 3px double black; margin-top: 0.2em; padding: 0.18em 0; }
+  .tp-total .tp-amt { font-weight: 900; text-align: right; padding-right: 1px; }
+  .tp-sukli { font-size: 1.05em; font-weight: 900; margin-top: 0.1em; padding: 0.08em 0; }
+  .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 900; }
+  .tp-sukli .tp-amt { text-align: right; padding-right: 1px; }
+  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 0.9em; line-height: 1.25; }
   .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 700; }
   .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
-  .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; }
+  .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; padding-right: 1px; }
   .tp-badge-status { font-weight: 900; letter-spacing: 0.05em; }
   .tp-status-balanced { color: #000; }
   .tp-status-over { color: #000; }
@@ -226,12 +226,12 @@ export function receiptCss(width: ReceiptWidth): string {
       .tp-sheet {
         width: ${contentWidth} !important;
         margin: 0 auto !important;
-        padding: 1mm 0 10mm !important;
+        padding: 0.5mm 0 3mm !important;
         font-weight: 700 !important;
         letter-spacing: 0.01em !important;
       }
       .tp-heading {
-        font-size: 1.3em !important;
+        font-size: 1.25em !important;
         font-weight: 900 !important;
       }
       .tp-total {
@@ -243,7 +243,7 @@ export function receiptCss(width: ReceiptWidth): string {
         border-top: 2px dashed #000000 !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm 0 8mm; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 1mm 0 4mm; font-size: ${fontSize}; }
   `
 }
 

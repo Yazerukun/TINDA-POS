@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.65-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.66-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-414_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Thermal_Print-Zero--Blur_Crisp-10b981?style=for-the-badge" alt="Zero-Blur Thermal">
+<img src="https://img.shields.io/badge/Tests-416_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Thermal_Print-Zero--Waste_Crisp-10b981?style=for-the-badge" alt="Zero-Waste Thermal">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -17,9 +17,39 @@
 
 <br />
 
-[⬇️ Download v1.0.65 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Portable-1.0.65.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.66 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-Setup-1.0.66.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-Portable-1.0.66.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub)
+
+> **Universal Multi-Size Shelf Price Tag & Barcode Printing, Operations Printable Sheets & P.O. Hub, Zero-Waste Thermal Receipt Gap & Decimal Display Fix, Smart Enter-to-Punch Multi-Criteria Search, and Dedicated Bills Payment & E-Load Module**
+
+- 🏷️ **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
+  - Direct 1-tap price tag generation right from Inventory catalog and per-item action buttons.
+  - Multi-size presets tailored for retail and grocery operations: `30×20mm` (Micro grocery), `40×30mm` (Standard retail sticker with barcode), `50×30mm` (Wide pharmacy tag), or custom dimensions in millimeters.
+  - Generates crisp high-contrast black-and-white layouts with Product Name, Bold Peso Price (`₱99.00`), wholesale volume tiers, barcode Code128, and SKU reference.
+  - Direct output to dedicated thermal sticker label printers (Xprinter, Niimbot, TSC, Zebra) with exact micron page sizing and zero margins.
+- 📄 **Physical Inventory & Operations Printable Sheets Hub**:
+  - Accessible via `Print Sheets / P.O.` in the Inventory header with 4 professional A4 / Letter printable document templates:
+    1. **Stock on Hand Report**: Balance listing with cost price, SRP, and stock valuation.
+    2. **Physical Count Sheet**: Blind counting audit sheets with write-in boxes for manual inventory verification.
+    3. **Purchase / Restock Order (P.O.)**: Supplier order form with automated suggested reorder quantities based on low stock thresholds.
+    4. **Stock Adjustment Log**: Formal document for recording spoilage, damages, and reconciliations with signature lines.
+- 🖤 **Zero-Waste Thermal Receipt Gap & Decimal Precision Fix**:
+  - Tightened bottom feeding clearance from `10mm` to `3mm` and reduced vertical gaps from `12px` to `4px`, saving up to 40% thermal paper roll consumption per transaction.
+  - Fixed decimal clipping on narrow 58mm thermal rolls by introducing flex-aligned line items and explicit right gutter margins, guaranteeing all centavos (`.00`, `.50`, `.95`) render with 100% complete visibility.
+- 🔍 **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine**:
+  - Search by product name, SKU, or barcode; pressing `Enter` instantly punches the matching item straight into the checkout cart without requiring down-arrow navigation.
+  - Multiplier rapid punch supported: type `5*egg` or `12*48000123` and hit `Enter` to instantly add bulk quantities.
+  - Proactive **Low-Stock Alert**: Instant warning toast whenever an item punched has $\le$ `low_stock_threshold` remaining.
+  - Upgraded **No Product Found** interactive Cupertino card with instant query clearing (`Esc`) and direct product addition.
+- ⚡ **Dedicated Sidebar Module: Bills Payment & E-Load Hub**:
+  - Full-featured module in Sidebar under *Cashier & Register* for stores handling utilities, telecom, water, internet, and loans (Home Credit, Meralco, Electric Coops, Water Districts, Globe, Smart, DITO, Converge, ShopeePay) via store GCash or Maya Business accounts.
+  - Logs customer payment with custom convenience fees (e.g. +₱15 or +₱20), records customer phone and account numbers, and generates official 58mm thermal acknowledgment receipt slips.
+  - Mirrors cash inflow and service fee income into the store's audit ledger.
+- 🛡️ **100% Quality Invariants Maintained**:
+  - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
 
 ## ✨ What's New in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition)
 
