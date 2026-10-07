@@ -25,7 +25,17 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)**
+- Current Version: **v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)**
+
+## Key Features in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)
+1. **E-Wallet & Bills Responsiveness for Laptop Resolutions**:
+   - Layout automatically stacks on standard laptop displays ($1366\times 768$, $1280\times 720$) via `2xl:grid-cols-12`, providing full table width without horizontal squishing.
+   - Pinned sticky Actions column (`sticky right-0`) with drop shadow for both Bills and Transactions ledgers, ensuring Print, Manual Print, and Void/Delete buttons remain visible at all times.
+2. **First-Run Setup Lockout Fix & Auto-Healing**:
+   - Resolved `SqliteError: UNIQUE constraint failed: users.username` by making `completeSetup` idempotent (upserting existing admin user).
+   - Auto-heals blank or missing `store_name` in `firstRunComplete` so existing installations never falsely trap users in the setup wizard on restart or update.
+3. **Receipt 58mm & 80mm Alignment**:
+   - Monospace font, right-aligned tabular numerals, double-line total borders, and ultra-compact zero-waste thermal spacing verified for automatic and manual printing paths.
 
 ## Key Features in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
 1. **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization)**:

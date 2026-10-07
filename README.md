@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.68-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.69-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-416_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-417_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Thermal_Print-Ultra--Compact_Zero--Waste-10b981?style=for-the-badge" alt="Ultra-Compact Thermal">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,22 @@
 
 <br />
 
-[⬇️ Download v1.0.68 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-Setup-1.0.68.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-Portable-1.0.68.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.69 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.69/TindaPOS-Setup-1.0.69.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.69/TindaPOS-Portable-1.0.69.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.69/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)
+
+> **Auto-Adjusting Laptop Screen Layout, Pinned Sticky Actions in E-Wallet & Bills, Idempotent Auth Setup Wizard, and Resilient First-Run Auto-Healing.**
+
+- 💻 **E-Wallet & Bills Responsiveness for Laptop Resolutions**:
+  - Automatically stacks forms and ledgers into full width on standard laptop displays ($1366\times 768$, $1280\times 720$) via `2xl:grid-cols-12`, eliminating horizontal table squishing.
+  - Sticky Actions column (`sticky right-0`) with drop shadow for both Bills and Transactions ledgers guarantees **Print**, **Manual Print**, and **Void / Delete** buttons remain perpetually pinned on-screen and never clipped.
+- 🛡️ **First-Run Setup Lockout Fix & Auto-Healing**:
+  - Solved `SqliteError: UNIQUE constraint failed: users.username` crash when restarting or updating into the setup wizard. Upserts existing admin credentials safely without SQLite constraint violations.
+  - Auto-heals empty or blank `store_name` in `firstRunComplete` so existing databases never falsely trap merchants in the setup wizard on restart or update.
+- 🧾 **58mm & 80mm Thermal Receipt Layout Alignment**:
+  - Clean monospace layout with right-aligned tabular numerals and double-line total borders for both automatic ESC/POS and manual Windows system dialog printing.
 
 ## ✨ What's New in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
 
