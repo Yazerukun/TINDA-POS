@@ -89,7 +89,7 @@ export function PosToolsModal({
             <AppLogo size={36} showBadge={false} />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-white text-sm">TINDA POS Hardware Hub</span>
+                <span className="font-extrabold text-white text-sm">TINDA POS Hardware Center</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
                   v1.0.66
                 </span>

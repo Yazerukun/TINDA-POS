@@ -85,7 +85,7 @@ export function Settings(): React.JSX.Element {
               )}
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Store preferences, thermal printers, staff accounts, database, multi-counter hub, and VIP license.
+              Store preferences, thermal printers, staff accounts, database, multi-counter network, and VIP license.
             </p>
           </div>
 
@@ -144,7 +144,7 @@ export function Settings(): React.JSX.Element {
               tab === 'NETWORK' ? '!border-brand-500 !text-brand-400 !bg-brand-500/10' : ''
             }`}
           >
-            <Network className="h-4 w-4" /> Multi-PC Hub
+            <Network className="h-4 w-4" /> Multi-PC Network
           </button>
           <button
             onClick={() => setTab('CLOUD')}
@@ -940,7 +940,7 @@ function StoreSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
                 )}
               </p>
               <p className="text-xs text-slate-400">
-                Displays in the sidebar header, hardware hub, and cashier terminal.
+                Displays in the sidebar header, hardware tools, and cashier terminal.
               </p>
             </div>
             {!isVip && (

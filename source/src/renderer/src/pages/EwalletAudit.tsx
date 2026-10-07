@@ -276,7 +276,7 @@ export function EwalletAudit(): React.JSX.Element {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
               <Smartphone className="h-6 w-6 text-emerald-400" />
-              E-Wallet & Cash Audit Hub
+              E-Wallet & Cash Audit
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 border border-amber-500/30">
               <Crown className="h-3 w-3" /> VIP PRO EXCLUSIVE

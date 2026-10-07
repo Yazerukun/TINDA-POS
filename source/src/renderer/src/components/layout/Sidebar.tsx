@@ -255,7 +255,7 @@ export function Sidebar(): React.JSX.Element {
             type="button"
             onClick={() => setPage('settings')}
             className="group flex w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 via-amber-400/20 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-400/30 py-1.5 px-2 text-[11px] font-bold text-amber-300 border border-amber-500/40 shadow-sm transition active:scale-95"
-            title="Unlock unlimited products, LAN hub, and VIP features for ₱500 lifetime"
+            title="Unlock unlimited products, multi-counter sync, and VIP features for ₱500 lifetime"
           >
             <Sparkles className="h-3.5 w-3.5 text-amber-400 transition-transform group-hover:rotate-12" />
             <span>Upgrade to VIP (₱500)</span>

@@ -243,7 +243,7 @@ export function BillsLoadHub(): React.JSX.Element {
   return (
     <div className="p-6 space-y-6">
       <PageHeader
-        title="Bills Payment & E-Load Hub"
+        title="Bills Payment & E-Load"
         subtitle="Process Home Credit, Utilities, Water & Mobile E-Load via GCash & Maya"
         actions={
           <div className="flex items-center gap-2">

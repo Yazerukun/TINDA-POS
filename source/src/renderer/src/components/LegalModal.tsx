@@ -147,7 +147,7 @@ export function LegalModal({ open, initialTab = 'privacy', onClose }: LegalModal
                     <strong className="text-white">Community Edition:</strong> 100% Free lifetime access with single-counter operation, up to 50 active products, and standard receipt watermarks.
                   </li>
                   <li>
-                    <strong className="text-white">VIP Pro Edition:</strong> One-time ₱500 payment via Maya (0991 225 5156) for a perpetual, lifetime hardware-locked license per PC. Unlocks unlimited products, Multi-PC LAN Hub, Suki Trust Scorecard, 1-Click SMS collection reminders, and custom receipt branding. No recurring monthly or annual fees.
+                    <strong className="text-white">VIP Pro Edition:</strong> One-time ₱500 payment via Maya (0991 225 5156) for a perpetual, lifetime hardware-locked license per PC. Unlocks unlimited products, Multi-PC LAN Network, Suki Trust Scorecard, 1-Click SMS collection reminders, and custom receipt branding. No recurring monthly or annual fees.
                   </li>
                 </ul>
               </section>

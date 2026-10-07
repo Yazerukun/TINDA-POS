@@ -179,7 +179,7 @@ export function VipUpgradeModal({ open, onClose, onActivated }: VipUpgradeModalP
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div className="flex items-center gap-2 p-2.5 rounded-lg bg-ink-800/60 border border-ink-line">
                   <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
-                  <span className="font-medium text-slate-200">Multi-PC LAN Hub</span>
+                  <span className="font-medium text-slate-200">Multi-PC LAN Network</span>
                 </div>
                 <div className="flex items-center gap-2 p-2.5 rounded-lg bg-ink-800/60 border border-ink-line">
                   <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />

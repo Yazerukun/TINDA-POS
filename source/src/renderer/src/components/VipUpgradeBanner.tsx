@@ -30,7 +30,7 @@ export function VipUpgradeBanner({ onUpgradeClick, isVip }: VipUpgradeBannerProp
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              Unlock Multi-PC LAN Hub · Paperless QR Receipts · Utang Suki Scorecard · Store Branding · Maya 09912255156
+              Unlock Multi-PC LAN Network · Paperless QR Receipts · Utang Suki Scorecard · Store Branding · Maya 09912255156
             </p>
           </div>
         </div>

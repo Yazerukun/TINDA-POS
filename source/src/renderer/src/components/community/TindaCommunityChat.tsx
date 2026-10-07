@@ -290,7 +290,7 @@ export function TindaCommunityChat(): React.JSX.Element {
 
   // Delete message
   const handleDeleteMessage = async (msgId: string): Promise<void> => {
-    if (!window.confirm('Delete this message from TINDA Global Lounge?')) {
+    if (!window.confirm('Delete this message from TINDA Community Chat?')) {
       return
     }
 
@@ -418,10 +418,10 @@ export function TindaCommunityChat(): React.JSX.Element {
                 ? 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 shadow-red-500/50 ring-4 ring-red-400/60 animate-pulse'
                 : 'bg-gradient-to-r from-brand-600 to-indigo-600 hover:shadow-brand-500/25'
             }`}
-            title="Open TINDA Global Community Lounge"
+            title="Open TINDA Community Chat"
           >
             <MessageSquare className="h-4 w-4" />
-            <span>Global Lounge</span>
+            <span>Community Chat</span>
             {hasUnreadMessages ? (
               <span className="flex items-center gap-1.5 ml-1">
                 <span className="flex h-2.5 w-2.5 relative">
@@ -549,7 +549,7 @@ export function TindaCommunityChat(): React.JSX.Element {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-white text-xs">TINDA Global Lounge</h3>
+                  <h3 className="font-bold text-white text-xs">TINDA Community Chat</h3>
                   {isDevActive && (
                     <span className="flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-bold text-amber-300 border border-amber-500/30">
                       <Crown className="h-2.5 w-2.5" /> DEV
@@ -704,7 +704,7 @@ export function TindaCommunityChat(): React.JSX.Element {
               <div className="flex h-full flex-col items-center justify-center text-center p-6 text-slate-500 text-xs">
                 <MessageSquare className="h-8 w-8 text-slate-700 mb-2" />
                 <p className="font-semibold text-slate-400">No messages yet</p>
-                <p className="mt-1 text-[11px]">Be the first merchant to post in the Global Lounge!</p>
+                <p className="mt-1 text-[11px]">Be the first merchant to post in Community Chat!</p>
               </div>
             ) : (
               messages.map((m) => {
