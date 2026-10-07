@@ -162,17 +162,17 @@ function rowsToHtml(lines: string[], currency: string): string {
 const baseCss = `
   .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 600; }
   .tp-sheet * { box-sizing: border-box; }
-  .tp-community-tag { font-size: 0.85em; font-weight: 600; letter-spacing: 0.04em; margin-top: 0.4em; }
-  .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.25; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  .tp-community-tag { font-size: 0.82em; font-weight: 600; letter-spacing: 0.03em; margin-top: 0.25em; }
+  .tp-sheet { font-family: Consolas, "Courier New", "Lucida Console", monospace; line-height: 1.15; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
   .tp-row { font-size: 1em; }
   .tp-center { text-align: center; }
-  .tp-heading { font-size: 1.25em; font-weight: 900; }
+  .tp-heading { font-size: 1.2em; font-weight: 900; }
   .tp-item, .tp-sum, .tp-total, .tp-sukli, .tp-denomline { break-inside: avoid; }
-  .tp-gap { height: 0.25em; }
-  .tp-sep { border-top: 2px dashed black; margin: 0.2em 0; }
-  .tp-section-head { font-size: 0.95em; font-weight: 800; text-transform: uppercase; margin-top: 0.2em; letter-spacing: 0.03em; }
-  .tp-section-head.tp-sub { font-size: 0.88em; font-weight: 700; margin-top: 0.15em; color: #000; }
-  .tp-item { margin-bottom: 0.15em; }
+  .tp-gap { height: 0.1em; }
+  .tp-sep { border-top: 2px dashed black; margin: 0.1em 0; }
+  .tp-section-head { font-size: 0.95em; font-weight: 800; text-transform: uppercase; margin-top: 0.12em; letter-spacing: 0.03em; }
+  .tp-section-head.tp-sub { font-size: 0.88em; font-weight: 700; margin-top: 0.1em; color: #000; }
+  .tp-item { margin-bottom: 0.06em; }
   .tp-item .tp-name { font-size: 0.95em; font-weight: 700; }
   .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
   .tp-qty { font-size: 0.9em; white-space: nowrap; font-weight: 600; shrink: 0; }
@@ -180,13 +180,13 @@ const baseCss = `
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 800; }
   .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
   .tp-lbl { flex: 1; min-width: 0; }
-  .tp-sum { font-size: 0.95em; margin: 0.08em 0; }
-  .tp-total { font-size: 1.15em; font-weight: 900; border-top: 3px double black; border-bottom: 3px double black; margin-top: 0.2em; padding: 0.18em 0; }
+  .tp-sum { font-size: 0.95em; margin: 0.04em 0; }
+  .tp-total { font-size: 1.12em; font-weight: 900; border-top: 3px double black; border-bottom: 3px double black; margin-top: 0.12em; padding: 0.1em 0; }
   .tp-total .tp-amt { font-weight: 900; text-align: right; padding-right: 1px; }
-  .tp-sukli { font-size: 1.05em; font-weight: 900; margin-top: 0.1em; padding: 0.08em 0; }
+  .tp-sukli { font-size: 1.05em; font-weight: 900; margin-top: 0.08em; padding: 0.05em 0; }
   .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 900; }
   .tp-sukli .tp-amt { text-align: right; padding-right: 1px; }
-  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 0.9em; line-height: 1.25; }
+  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 0.9em; line-height: 1.15; }
   .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 700; }
   .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
   .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; padding-right: 1px; }
@@ -226,12 +226,12 @@ export function receiptCss(width: ReceiptWidth): string {
       .tp-sheet {
         width: ${contentWidth} !important;
         margin: 0 auto !important;
-        padding: 0.5mm 0 3mm !important;
+        padding: 0.3mm 0 1.5mm !important;
         font-weight: 700 !important;
         letter-spacing: 0.01em !important;
       }
       .tp-heading {
-        font-size: 1.25em !important;
+        font-size: 1.2em !important;
         font-weight: 900 !important;
       }
       .tp-total {
@@ -243,7 +243,7 @@ export function receiptCss(width: ReceiptWidth): string {
         border-top: 2px dashed #000000 !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 1mm 0 4mm; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 0.5mm 0 2mm; font-size: ${fontSize}; }
   `
 }
 

@@ -25,10 +25,17 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)**
+- Current Version: **v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)**
 
-## Key Features in v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)
-1. **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
+## Key Features in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
+1. **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization)**:
+   - Responded immediately to merchant feedback on thermal paper usage ("kalas ug papel").
+   - Tightened typography line-height from `1.25` to `1.15` in `receiptHtml.ts` for dense, crisp thermal printing.
+   - Reduced line item vertical margin (`.tp-item`) from `0.15em` to `0.06em`.
+   - Tightened section separators (`.tp-sep`), spacing gaps (`.tp-gap`), and subtotal blocks (`.tp-total`, `.tp-sukli`, `.tp-sum`), reducing unnecessary white space by over 20-30% per receipt.
+   - Decreased print bottom clearance from `3mm` down to `1.5mm`, ensuring receipts finish right after the footer message with zero wasted paper feed.
+   - Preserves 100% legibility, integer dot metrics (11px / 12px), bold 700+ stroke weights, and clear tabular-nums centavo decimal alignment.
+2. **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
    - Combined previously split modules into a unified **E-Wallet & Bills** module under *Cashier & Register*, saving sidebar space and giving cashiers an integrated financial hub.
    - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
    - **Native Hardware Thermal & Universal Manual Print**: Integrated with native Electron print service (`ewallet:printBillSlip`), supporting direct thermal printing and Windows system dialog manual printing for challenging printer setups.

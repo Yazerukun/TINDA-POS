@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.67-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.68-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-416_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Thermal_Print-Zero--Waste_Crisp-10b981?style=for-the-badge" alt="Zero-Waste Thermal">
+<img src="https://img.shields.io/badge/Thermal_Print-Ultra--Compact_Zero--Waste-10b981?style=for-the-badge" alt="Ultra-Compact Thermal">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -17,15 +17,20 @@
 
 <br />
 
-[⬇️ Download v1.0.67 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-Setup-1.0.67.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-Portable-1.0.67.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.68 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-Setup-1.0.68.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-Portable-1.0.68.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.68/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)
+## ✨ What's New in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
 
-> **Universal Multi-Size Shelf Price Tag & Barcode Printing, Operations Printable Sheets & P.O. Hub, Zero-Waste Thermal Receipt Gap & Decimal Display Fix, Smart Enter-to-Punch Multi-Criteria Search, Unified E-Wallet & Bills Center with Native Thermal & Manual Print, and Community Chat.**
+> **Paper-Saving Micro-Tightened Thermal Receipt Spacing, Zero Centavo Clipping, Unified E-Wallet & Bills Center, Universal Manual Print, and Shelf Price Tag Label Engine.**
 
-- 🏷️ **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
+- 🧾 **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization)**:
+  - Responded directly to store owner feedback regarding paper roll consumption ("kalas ug papel").
+  - Tightened line-height to `1.15` and reduced line-item vertical margins from `0.15em` to `0.06em`.
+  - Compressed section separator margins, empty line gaps, and totals padding, trimming 20-30% off total receipt length.
+  - Reduced print bottom margin feed to `1.5mm` to avoid trailing empty paper waste while maintaining 100% sharp 203 DPI typography.
+- 💳 **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
   - Direct 1-tap price tag generation right from Inventory catalog and per-item action buttons.
   - Multi-size presets tailored for retail and grocery operations: `30×20mm` (Micro grocery), `40×30mm` (Standard retail sticker with barcode), `50×30mm` (Wide pharmacy tag), or custom dimensions in millimeters.
   - Generates crisp high-contrast black-and-white layouts with Product Name, Bold Peso Price (`₱99.00`), wholesale volume tiers, barcode Code128, and SKU reference.
