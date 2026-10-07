@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.66-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.67-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-416_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,11 @@
 
 <br />
 
-[⬇️ Download v1.0.66 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-Setup-1.0.66.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-Portable-1.0.66.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.66/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.67 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-Setup-1.0.67.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-Portable-1.0.67.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.67/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Unified Bills Center)
+## ✨ What's New in v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)
 
 > **Universal Multi-Size Shelf Price Tag & Barcode Printing, Operations Printable Sheets & P.O. Hub, Zero-Waste Thermal Receipt Gap & Decimal Display Fix, Smart Enter-to-Punch Multi-Criteria Search, Unified E-Wallet & Bills Center with Native Thermal & Manual Print, and Community Chat.**
 

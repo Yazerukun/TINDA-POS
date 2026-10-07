@@ -17,6 +17,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
   8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
   9. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
+  10. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -24,7 +25,27 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub)**
+- Current Version: **v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)**
+
+## Key Features in v1.0.67 (Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal)
+1. **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
+   - Combined previously split modules into a unified **E-Wallet & Bills** module under *Cashier & Register*, saving sidebar space and giving cashiers an integrated financial hub.
+   - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - **Native Hardware Thermal & Universal Manual Print**: Integrated with native Electron print service (`ewallet:printBillSlip`), supporting direct thermal printing and Windows system dialog manual printing for challenging printer setups.
+   - **Deletion & Void Safeguards**: Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals for both E-Wallet and Bills Payment records.
+2. **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
+   - Integrated `PriceTagPrintModal.tsx` in Inventory catalog with 1-tap shelf label generation per item or catalog-wide (`30×20mm`, `40×30mm`, `50×30mm`, and custom mm sizes).
+3. **Physical Inventory & Operations Printable Sheets Hub**:
+   - `InventoryPrintModal.tsx` in Inventory header with 4 professional A4 / Letter printable document templates: Stock on Hand Report, Physical Count Sheet, Purchase / Restock Order (P.O.), and Stock Adjustment Log.
+4. **Zero-Waste Thermal Receipt Gap & Decimal Precision Fix**:
+   - Reduced bottom clearance from `10mm` to `3mm` and vertical spacing from `12px` to `4px`, saving up to 40% thermal paper roll consumption.
+   - 100% visible centavos on 58mm narrow rolls with flex-alignment and right gutter margins.
+5. **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine**:
+   - Instant enter punch by name, SKU, or barcode; multiplier rapid punch (`5*egg`, `12*48000123`); proactive low-stock warnings.
+6. **Community Chat & Clean Terminology Standard**:
+   - Global Lounge renamed to Community Chat; removed outdated "Hub" titles across the entire app.
+7. **100% Quality Invariants & Automated Test Gate Passed**:
+   - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
 
 ## Key Features in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub)
 1. **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
