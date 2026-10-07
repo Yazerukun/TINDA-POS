@@ -70,7 +70,9 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   lines.push('--------------------------------')
   lines.push(`Subtotal      ${(sale.subtotal_c / 100).toFixed(2)}`)
   lines.push(`Discount      ${(sale.discount_c / 100).toFixed(2)}`)
+  lines.push('================================')
   lines.push(`TOTAL         ${(sale.total_c / 100).toFixed(2)}`)
+  lines.push('--------------------------------')
   const cash = sale.payments.find((p) => p.method === 'CASH')
   if (cash) {
     lines.push(`Cash          ${(cash.amount_c / 100).toFixed(2)}`)
@@ -88,7 +90,7 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   const totalCount = sale.items.reduce((total, item) => total + item.qty, 0)
   const totalCountStr = totalCount % 1 === 0 ? String(totalCount) : Number(totalCount.toFixed(3)).toString()
   lines.push(`Total Items: ${totalCountStr}`)
-  lines.push(store.footer || 'Thank you for your purchase!')
+  lines.push(store.footer || 'Thank you! Please come again.')
   if (!isVip) {
     lines.push('[ Powered by TINDA POS Free Community ]')
   }

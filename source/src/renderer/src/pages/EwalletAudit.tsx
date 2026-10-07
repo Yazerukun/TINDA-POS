@@ -897,11 +897,19 @@ export function EwalletAudit(): React.JSX.Element {
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => void window.api.ewallet.printSlip(tx.id)}
+                          onClick={() => void printEwalletReceipt(tx.id, false)}
                           className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
-                          title="Reprint Claim Slip"
+                          title="Print Thermal Slip (Auto)"
                         >
                           <Printer className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void printEwalletReceipt(tx.id, true)}
+                          className="px-1.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 border border-ink-line transition"
+                          title="Manual Print (System Dialog)"
+                        >
+                          Manual
                         </button>
                         <button
                           type="button"
