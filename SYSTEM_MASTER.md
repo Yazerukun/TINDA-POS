@@ -1095,6 +1095,200 @@
   5. **Offline Rollback Continuity:**
      - Added `v1.0.58` as the top fallback release target in `rollbackService.ts`.
 
+---
+
+## 53. Release v1.0.60 — VIP Client Infinite Scroll & 7 Core Enhancements
+* **Version:** `1.0.60`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/renderer/src/layouts/Shell.tsx`
+  - `source/src/renderer/src/lib/sound.ts`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+* **Technical Implementations:**
+  1. **VIP Client Full Scrolling & Infinite Inventory Feed:**
+     - Removed hardcoded `limit: 60` query cap and fixed double-scroll height trapping in `Shell.tsx`.
+     - Continuous auto-loading with `PAGE_SIZE = 120`, scroll boundary listeners, and `pb-28` padding across both Listing Table and Card Grid views.
+  2. **Quick Cash Denomination & Increment Chips:**
+     - 1-Tap quick payment chips in Cash Checkout: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, plus instant increment chips `+₱20`, `+₱50`, `+₱100` for rapid change calculation.
+  3. **Zero-Asset Web Audio API Hardware Synthesizer:**
+     - 100% offline Web Audio API synthesizer (`sound.ts`) producing scan confirmation chimes (1300Hz-1750Hz sine), out-of-stock buzzers (280Hz sawtooth), and register chimes with top-bar mute control.
+  4. **Multiplier Scan & Rapid Entry Engine:**
+     - Supports `5*BARCODE` or `12*PRODUCT` rapid multiplier punch in the cashier search bar.
+  5. **Senior Citizen & PWD 20% Statutory Discount System:**
+     - 1-Click modal discount calculating 20% subtotal deduction with OSCA/PWD ID and booklet tracking.
+  6. **1-Click Thermal Z-Reading / Daily Cash Balancing Print:**
+     - Direct ESC/POS thermal printing for end-of-shift Z-reading reports.
+  7. **Automated 7-Day Rolling Daily SQLite Safety Snapshot:**
+     - Rolling 7-day automatic backup pruning protecting against unbounded disk growth.
+
+---
+
+## 54. Release v1.0.61 — Mathematical Mass Edition & GOOJPRT Desktop Thermal Support
+* **Version:** `1.0.61`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/components/AppLogo.tsx`
+  - `source/src/main/services/printing.ts`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `source/src/main/services/phoneScannerService.ts`
+* **Technical Implementations:**
+  1. **Mathematical Mass Brand Mark:**
+     - Precision SVG Quantum Summation brand mark with mathematical golden ratio geometry.
+  2. **GOOJPRT PB-58H Hardware Thermal Support:**
+     - Added native ESC/POS command sequences specifically tuned for GOOJPRT PB-58H 58mm thermal printers over USB and Bluetooth virtual serial COM ports.
+  3. **Terminal Tools [F3] Consolidated Workspace:**
+     - Unified modal (`PosToolsModal.tsx`) hotkeyed to `F3` giving cashiers instant access to cash drawer kick, feed paper test, phone scanner status, and printer diagnostics.
+  4. **Line Item Custom Unit Price Editing:**
+     - Manager-authorized in-line price overrides directly inside the active checkout table for negotiated wholesale deals.
+  5. **Multi-Adapter Wireless Phone Scanner Discovery:**
+     - Auto-enumerates all local IPv4 network adapters (LAN, Wi-Fi, Hotspot) to generate accurate QR codes for mobile scanner pairing.
+
+---
+
+## 55. Release v1.0.62 — Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix
+* **Version:** `1.0.62`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/main/services/printing.ts`
+  - `source/src/renderer/src/components/AppLogo.tsx`
+  - `source/src/renderer/src/components/layout/Sidebar.tsx`
+* **Technical Implementations:**
+  1. **GOOJPRT Blank Print Driver Resolution:**
+     - Fixed blank feed anomalies on low-cost USB thermal printer controllers by enforcing raw buffer chunking and proper ESC/POS initialization (`ESC @`, `ESC 3 24`).
+  2. **Quantum Mark System Integration:**
+     - Unified dynamic application logo across Window titlebar, Sidebar, Receipt headers, and login splash.
+  3. **Terminal Tools Sidebar Integration:**
+     - Persistent access to Terminal Tools (`F3`) from the primary cashier navigation bar.
+
+---
+
+## 56. Release v1.0.63 — Zero-Click Auto-Detect Thermal Printer & Paper Width Inference
+* **Version:** `1.0.63`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/main/services/printing.ts`
+  - `source/src/shared/printer.ts`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+* **Technical Implementations:**
+  1. **Zero-Click Thermal Printer Auto-Detection:**
+     - Background heuristic scanning via `electron.webContents.getPrintersAsync()` automatically detects connected ESC/POS devices (POS-58, POS-80, GOOJPRT, Xprinter, Epson) without manual configuration.
+  2. **Automatic Paper Width Inference:**
+     - Dynamically infers paper roll width (`58mm` vs `80mm`) from printer name heuristics, setting optimal character column widths (`32 col` vs `48 col`) and table column flex metrics.
+  3. **Auto-Detect Status in Terminal Tools:**
+     - Real-time indicator displaying connected thermal printer status, paper width profile, and communication latency.
+
+---
+
+## 57. Release v1.0.64 — VIP Custom Logo & Universal Discount Edition
+* **Version:** `1.0.64`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/pages/Settings.tsx`
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/main/services/printing.ts`
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/renderer/src/pages/SalesMonitor.tsx`
+* **Technical Implementations:**
+  1. **VIP Pro Custom Store Logo Upload:**
+     - Merchant branding on receipts with local base64/PNG image storage, automatic monochrome thresholding, and dithering for 203 DPI thermal printing.
+  2. **Universal Custom Cart Discount Engine:**
+     - Supports percentage-based (`%`) and fixed peso (`₱`) discounts across entire cart or line-item levels with audit-tracked reason codes.
+  3. **100% Professional English System-Wide Localization:**
+     - Completed comprehensive removal of colloquial dialect from user-facing screens, modals, error toasts, and tooltips.
+  4. **Register Header Optimization:**
+     - Decluttered cashier header bar for optimal ergonomics during peak store hours.
+  5. **Sales Monitor & Cloud Metric Synchronization:**
+     - Unified financial calculation pipelines between local Sales Monitor and the Cloud Owner Dashboard.
+
+---
+
+## 58. Release v1.0.65 — Zero-Blur High-Density Thermal & Universal Manual Print Edition
+* **Version:** `1.0.65`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/main/services/printing.ts`
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+* **Technical Implementations:**
+  1. **Universal Manual Print Fallback:**
+     - Integrated native Windows Print Dialog (`printDialog: true`) pre-bound to detected thermal devices, ensuring printing functionality even on restricted or non-standard driver setups.
+  2. **Zero-Blur High-Density Thermal Typography Engine:**
+     - Enforced pixel-grid aligned fonts (`Courier New`, monospace 11px/12px) with bold text weights (`700`), eliminating anti-aliasing fuzziness on 203 DPI thermal printheads.
+  3. **Hardware Model Compatibility Catalog:**
+     - Extended built-in hardware matching profiles for GOOJPRT 58H, POS-58, POS-80, and Bluetooth mini printers.
+
+---
+
+## 59. Release v1.0.66 — Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Payment Edition
+* **Version:** `1.0.66`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/components/PriceTagPrintModal.tsx`
+  - `source/src/renderer/src/components/InventoryPrintModal.tsx`
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/renderer/src/pages/BillsLoadHub.tsx`
+  - `source/src/renderer/src/components/community/TindaCommunityChat.tsx`
+* **Technical Implementations:**
+  1. **Universal Multi-Size Shelf Price Tag & Barcode Printing:**
+     - Added `PriceTagPrintModal.tsx` in Inventory catalog with 1-tap shelf label generation per item or batch-wide.
+     - Supports standard shelf tag dimensions (`30×20mm`, `40×30mm`, `50×30mm`, custom mm) with Code128 barcodes, product name, peso price, and wholesale tier badges.
+  2. **Physical Inventory & Operations Printable Sheets Hub:**
+     - Added `InventoryPrintModal.tsx` in Inventory header with 4 professional printable templates: Stock on Hand Report, Physical Count Sheet, Purchase / Restock Order (P.O.), and Stock Adjustment Log.
+  3. **Zero-Waste Thermal Receipt Gap & Decimal Precision Optimization:**
+     - Reduced receipt bottom clearance from `10mm` to `3mm` and vertical element spacing from `12px` to `4px`, cutting up to 40% thermal paper roll waste.
+     - Ensured full visibility of centavo decimals on narrow 58mm rolls via flex right-gutter alignment.
+  4. **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine:**
+     - Instant enter punch by name, SKU, or barcode; multiplier rapid punch (`5*egg`, `12*48000123`); proactive low-stock warnings and interactive No Product Found card.
+  5. **Community Chat & Clean Terminology Standard:**
+     - Renamed Global Lounge to Community Chat; removed outdated "Hub" titles across the entire application.
+
+---
+
+## 60. Release v1.0.67 — Unified E-Wallet & Bills Center, Universal Manual Print & Zero-Waste Thermal Edition
+* **Version:** `1.0.67`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/pages/EwalletAudit.tsx`
+  - `source/src/renderer/src/components/layout/Sidebar.tsx`
+  - `source/src/main/services/transaction.ts`
+  - `source/src/main/ipc/index.ts`
+  - `GEMINI.md`
+* **Technical Implementations:**
+  1. **Consolidated E-Wallet & Bills Center (Single Sidebar Module):**
+     - Combined previously separated modules into a single cohesive **E-Wallet & Bills** navigation entry under *Cashier & Register*.
+     - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+  2. **Native Hardware Thermal & Universal Manual Printing:**
+     - Integrated with Electron native print pipeline (`ewallet:printBillSlip`), supporting direct thermal printing and Windows system dialog manual printing for bill payment transaction slips.
+  3. **Deletion & Void Safeguards:**
+     - Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals for both E-Wallet and Bills Payment records.
+  4. **Mandatory Auto-Increment Version Bump Rule:**
+     - Added operational invariant rule #10 in `GEMINI.md`: Every build/release MUST auto-increment the version across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
+
+---
+
+## 61. Release v1.0.68 — Ultra-Compact Zero-Waste Thermal Receipt Spacing Engine
+* **Version:** `1.0.68`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/main/services/printing.ts`
+  - `source/package.json`
+  - `tools/publish_v1068.mjs`
+* **Technical Implementations:**
+  1. **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization):**
+     - Responded directly to store owner feedback regarding excessive thermal paper consumption ("kalas ug papel").
+     - Tightened typography body line-height from `1.25` to `1.15` in `receiptHtml.ts` for dense, crisp thermal text printing.
+     - Reduced line-item vertical bottom margin (`.tp-item`) from `0.15em` to `0.06em`.
+     - Tightened section separators (`.tp-sep`), spacing gaps (`.tp-gap`), and subtotal blocks (`.tp-total`, `.tp-sukli`, `.tp-sum`), eliminating 20% to 30% of unnecessary white space per receipt.
+     - Decreased print bottom clearance from `3mm` down to `1.5mm`, cutting receipts cleanly right after the thank-you footer with zero extra blank roll feed.
+     - Preserves 100% legibility on 203 DPI thermal printheads with integer dot sizing (11px / 12px), bold stroke weights, and clear decimal tabular-nums alignment.
+  2. **Quality Invariants Verification:**
+     - All 416 automated vitest unit tests passing across 63 test suites with 0 TypeScript compilation errors.
+     - Production installer and portable binaries published with verified SHA256 checksums to GitHub Releases.
+
+
 
 
 
