@@ -25,7 +25,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)**
+- Current Version: **v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)**
+
+## Key Features in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
+1. **Clean Fee Notation & No-Seconds Receipt Timestamps**:
+   - Removed `+` sign from all E-Wallet and Bills fee displays, chips, summaries, and receipt slips (`Service Fee    P20.00`).
+   - Standardized all thermal receipt date/time formatters across sales, E-Wallet, and Bills slips to `{ dateStyle: 'medium', timeStyle: 'short' }`, producing clean timestamps with zero seconds (e.g., `Oct 7, 2026, 10:07 PM`).
+2. **Next-Gen Community Chat Overhaul**:
+   - Fixed hold-and-drag accidental expansion on minimized floating pill via movement threshold checks and dedicated drag handle.
+   - Renamed minimized label to **Chat**.
+   - Added instant Emoji Picker (`😀 😂 😍 👍 🙏 🏪 📦 💰 🔥 👏 ❤️ 🎉 🚀 🇵🇭`) and image attachment upload/paste support.
+   - Added Seen Receipts (`👁️ Seen by Cashier · 10:07 PM`) and live online merchant counter (`🟢 X Online`).
+3. **Universal Store Logo Upload & Window Icon**:
+   - Unlocked store logo customization for all merchants without VIP restrictions; dynamically updates the Windows desktop taskbar and window frame icon.
+4. **Cinematic Staggered Dashboard Login Animations**:
+   - Smooth CSS keyframe fade-in-up animations and personalized time-of-day store welcome banner.
 
 ## Key Features in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)
 1. **7-Eleven Micro Thermal Spacing & Double-Divider Receipts**:

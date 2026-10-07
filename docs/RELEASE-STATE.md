@@ -1,6 +1,26 @@
 # TINDA POS RELEASE STATE
 
-## v1.0.27 PUBLISHED & LIVE - 2026-09-20 (Ian GO)
+## v1.0.71 PUBLISHED & LIVE - 2026-10-07 (Ian GO)
+
+- Tag: `v1.0.71`
+- Release Name: TINDA POS v1.0.71 — Next-Gen Community Chat & Universal Store Branding Edition
+- Features & Highlights:
+  * Clean Fee Notation: Removed all `+` symbols across E-Wallet and Bills UI elements and thermal receipt slips (`Service Fee    P20.00`).
+  * Zero-Second Receipt Timestamps: Formatted all thermal receipt timestamps strictly to medium date with short time (`Oct 7, 2026, 10:07 PM`), eliminating cluttering seconds.
+  * Next-Gen Community Chat: Drag-suppressed minimized pill (`Chat`), 14 quick emojis bar, photo attachments and clipboard paste support, seen receipts with timestamp, live `🟢 X Online` merchant counter, and graceful edge resilience.
+  * Universal Store Branding & Dynamic Window Icon: Unlocked custom logo upload in settings for all merchants without VIP restrictions; dynamic window icon synchronization.
+  * Executive Dashboard Experience: Time-of-day greeting ("Good morning / afternoon / evening, [Cashier Name]!"), active shift status pill, and smooth CSS fadeInUp animations with micro-delays.
+  * Enterprise N-Tier Architecture Standard: Codified PAL -> BLL -> DAL architecture and data flow in SYSTEM_MASTER.md Section 65.
+- Quality Gates:
+  * 417/417 vitest unit tests PASS across 63 test suites.
+  * TypeScript typecheck PASS (0 errors).
+  * Master codebase invariants PASS.
+- Production Artifacts:
+  * TindaPOS-Setup-1.0.71.exe          (SHA256 3fa95b689d391c6cd7a90ca988a19cc9281d92e3171040a853657fd9ae8dbc7b)
+  * TindaPOS-Portable-1.0.71.exe       (SHA256 10085f6a6e1b01b44dc928f7564a14451a93c90cda05ecd4c9a0f83cfbe0d431)
+  * TindaPOS-Setup-1.0.71.exe.blockmap (SHA256 1d5089bea2ac771a8e2a2dbae8dfe60240c961e913160d02758f8bfe8fc465324)
+  * latest.yml                        (version 1.0.71)
+- Release URL: https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.71
 
 - Branch: `v1.0.19-dev` (tag `v1.0.27`).
 - Features & Fixes (TINDA BANTAY: Complete 172-Item Market Catalog):

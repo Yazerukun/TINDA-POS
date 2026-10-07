@@ -1,8 +1,8 @@
-version: 1.0.70
+version: 1.0.71
 files:
-  - url: TindaPOS-Setup-1.0.70.exe
-    sha512: bV5i+4+iRH+z/GTsys5aUMtM+hIl6rImoB8m3o4LfkJXFbPCsTQU4eVrs/oybrO6WZXuuWZNpL+9MsJyfZ1x2g==
-    size: 112529697
-path: TindaPOS-Setup-1.0.70.exe
-sha512: bV5i+4+iRH+z/GTsys5aUMtM+hIl6rImoB8m3o4LfkJXFbPCsTQU4eVrs/oybrO6WZXuuWZNpL+9MsJyfZ1x2g==
-releaseDate: '2026-10-07T13:23:43.247Z'
+  - url: TindaPOS-Setup-1.0.71.exe
+    sha512: P3RJ3ALV8RjNMEJIlP0RRtDZ4COttW1u2d1Uia5jO4S5xqaTz8i9xa073Mpw7vqyuhqAcZUJjX3LL74BOkk0VA==
+    size: 112532086
+path: TindaPOS-Setup-1.0.71.exe
+sha512: P3RJ3ALV8RjNMEJIlP0RRtDZ4COttW1u2d1Uia5jO4S5xqaTz8i9xa073Mpw7vqyuhqAcZUJjX3LL74BOkk0VA==
+releaseDate: '2026-10-07T15:00:04.930Z'
