@@ -18,7 +18,7 @@ import { requirePermission, setSession } from '../session'
 import { mayReplaceCart } from '../../../shared/pos'
 import type { CheckoutPayload } from '../../../shared/ipc'
 import type { ProductInput, SessionUser } from '../../../shared/types'
-import { processRefund } from '../transaction'
+import { processRefund, processVoid, deleteTransaction } from '../transaction'
 import { autoPrintAfterCheckout } from '../printing'
 import { defaultSettings } from '../../repositories/settings'
 
@@ -230,6 +230,50 @@ describe('Hold Sale regression', () => {
     expect(mayReplaceCart(0, false)).toBe(true)
     expect(mayReplaceCart(1, false)).toBe(false)
     expect(mayReplaceCart(1, true)).toBe(true)
+  })
+
+  it('safely voids a completed transaction, updates shift, restores inventory, and handles void cloud sync permanently', () => {
+    const admin = setupStore()
+    const db = getDb()
+    setSession(admin)
+    const product = createProduct(db, productInput('VOID-TEST', 10), admin.id)
+    openShift(db, admin.id, 10000)
+
+    const { sale } = checkout({
+      ...cart(product.id, 1),
+      payments: [{ method: 'CASH', amount_c: 2500 }]
+    })
+    expect(getProduct(db, product.id).stock).toBe(9)
+
+    const voided = processVoid({ sale_id: sale.id, reason: 'Customer changed mind' })
+    expect(voided.status).toBe('VOIDED')
+    expect(getProduct(db, product.id).stock).toBe(10)
+
+    // Cannot refund an already voided sale
+    expect(() => processRefund({
+      sale_id: sale.id,
+      reason: 'Refund attempt',
+      items: [{ sale_item_id: voided.items[0]!.id, qty: 1 }]
+    })).toThrow(/voided/i)
+  })
+
+  it('permanently deletes an erroneous transaction and verifies cloud sync invariant', () => {
+    const admin = setupStore()
+    const db = getDb()
+    setSession(admin)
+    const product = createProduct(db, productInput('DEL-TEST', 5), admin.id)
+    openShift(db, admin.id, 10000)
+
+    const { sale } = checkout({
+      ...cart(product.id, 1),
+      payments: [{ method: 'CASH', amount_c: 2500 }]
+    })
+    expect(getProduct(db, product.id).stock).toBe(4)
+
+    const res = deleteTransaction(sale.id, { restoreStock: true })
+    expect(res.ok).toBe(true)
+    expect(getProduct(db, product.id).stock).toBe(5)
+    expect(listSales(db).total).toBe(0)
   })
 })
 
