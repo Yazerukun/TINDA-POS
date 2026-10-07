@@ -25,7 +25,16 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)**
+- Current Version: **v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)**
+
+## Key Features in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)
+1. **7-Eleven Micro Thermal Spacing & Double-Divider Receipts**:
+   - Monospace font stack standardized to `'Courier New', Courier, Consolas, monospace` across all thermal printouts.
+   - Introduced authentic double-line divider `================================` (`border-top: 3px double #000000`) before grand totals in both print CSS and screen preview.
+   - Ultra-compact vertical padding and micro-margins (`1mm 1mm 2mm 1mm`), reducing thermal roll consumption to 7-Eleven retail standards.
+   - Expanded `isMoneyLine` parser to right-align tabular numerals for E-Wallet and Bills lines (`Amount`, `Service Fee`, `Bill Amount`, `TOTAL PAID`, `TOTAL CASH RECEIVED`, `TOTAL CASH RELEASED`).
+2. **Express Manual Print in Cash In / Out Register**:
+   - Added direct **Manual** print button (`printEwalletReceipt(tx.id, true)`) and **Auto** print button to Recent E-Wallet Transactions on the Cash In / Out register page, allowing one-tap system print dialog invocation.
 
 ## Key Features in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)
 1. **E-Wallet & Bills Responsiveness for Laptop Resolutions**:

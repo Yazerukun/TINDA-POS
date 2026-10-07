@@ -1318,3 +1318,34 @@
      - 417 automated vitest unit tests passing across 63 test suites (100%).
      - Zero TypeScript compilation errors on both Node and Web targets.
      - Verified master codebase invariants prior to packaging.
+
+---
+
+## 63. Release v1.0.70 — 7-Eleven Micro Thermal Spacing & Express Manual Print Edition
+* **Version:** `1.0.70`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/main/services/checkout.ts`
+  - `source/src/renderer/src/pages/EwalletAudit.tsx`
+  - `source/package.json`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+* **Technical Implementations:**
+  1. **7-Eleven Retail Micro Thermal Spacing & Monospace Standard:**
+     - Standardized receipt typography to pure monospace font family (`'Courier New', Courier, Consolas, monospace`) matching commercial 7-Eleven retail slips.
+     - Reduced page margins and vertical padding to ultra-dense micro-spacing (`1mm 1mm 2mm 1mm`), eliminating unnecessary white space on 58mm and 80mm rolls.
+     - Implemented authentic double-line divider `================================` via `.tp-sep-double` (`border-top: 3px double #000000; margin: 3px 0;`) right before grand totals in both preview DOM and `@media print` CSS overrides.
+     - Updated default receipt footer text to standard retail greeting: `'Thank you! Please come again.'`.
+  2. **E-Wallet & Bills Slip Tabular Numerals Alignment:**
+     - Expanded `isMoneyLine` parser in `receiptHtml.ts` to identify `Amount`, `Service Fee`, `Bill Amount`, `TOTAL PAID`, `TOTAL CASH RECEIVED`, and `TOTAL CASH RELEASED`.
+     - Automatically renders monetary rows as `.tp-split` with tabular numerals (`font-variant-numeric: tabular-nums`) flush to the right margin, preventing ragged alignment on thermal printouts and manual print windows.
+  3. **Express Manual & Auto Print for Recent Cash In / Out Register:**
+     - Added dedicated Auto Print (`Printer`) and Manual Print (`Manual`) action buttons to Recent E-Wallet Transactions on the Cash In / Out register tab in `EwalletAudit.tsx`.
+     - Directly calls `printEwalletReceipt(tx.id, false)` and `printEwalletReceipt(tx.id, true)` for instant print dialog invocation without navigating away to the history tab.
+  4. **Quality Invariants & Build Verification:**
+     - 417 automated unit tests passing across 63 test suites with 0 TypeScript compiler errors.
+     - Master invariants verified 100%.
+
