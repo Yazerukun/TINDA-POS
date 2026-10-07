@@ -146,7 +146,64 @@ export function processVoid(payload: VoidPayload): import('@shared/types').Sale 
 
     if (sale.shift_id) updateShiftTotals(db, sale.shift_id)
     audit(db, { action: 'VOID_SALE', user_id: user.id, entity_type: 'SALE', entity_id: sale.id, reason: payload.reason })
-    return getSale(db, sale.id)
+    const voidedSale = getSale(db, sale.id)
+
+    // Sync voided status to Cloud Owner Dashboard asynchronously
+    try {
+      const { pushSaleToCloud, pushShiftToCloud } = require('./cloudSync')
+      const payments = (voidedSale as any).payments || []
+      const getAmt = (m: string): number =>
+        payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
+
+      pushSaleToCloud(db, {
+        local_sale_id: voidedSale.id,
+        transaction_no: voidedSale.transaction_no,
+        cashier_name: user.full_name || user.username,
+        customer_name: (voidedSale as any).customer_name || null,
+        subtotal_c: voidedSale.subtotal_c,
+        discount_c: voidedSale.discount_c,
+        total_c: voidedSale.total_c,
+        status: voidedSale.status, // 'VOIDED'
+        cash_c: getAmt('CASH'),
+        gcash_c: getAmt('GCASH'),
+        maya_c: getAmt('MAYA'),
+        utang_c: getAmt('UTANG'),
+        net_sales_c: 0,
+        local_shift_id: voidedSale.shift_id,
+        sold_at: voidedSale.created_at,
+        items: ((voidedSale as any).items || []).map((it: any) => ({
+          product_name: it.product_name || it.name || 'Item',
+          unit_name: it.unit_name || 'pc',
+          qty: it.qty,
+          unit_price_c: it.unit_price_c,
+          subtotal_c: it.subtotal_c
+        }))
+      }).catch(() => {})
+
+      if (voidedSale.shift_id) {
+        const { calculateRead } = require('./readReports')
+        const snap = calculateRead(db, voidedSale.shift_id, 'X')
+        pushShiftToCloud(db, {
+          local_shift_id: voidedSale.shift_id,
+          cashier_name: snap.cashier_name || 'Cashier',
+          shift_date: (snap.opened_at || new Date().toISOString()).slice(0, 10),
+          opened_at: snap.opened_at || '',
+          closed_at: snap.closed_at || '',
+          gross_sales_c: snap.gross_sales_c || 0,
+          cash_c: snap.cash_c || 0,
+          gcash_c: snap.gcash_c || 0,
+          maya_c: snap.maya_c || 0,
+          utang_c: snap.utang_c || 0,
+          refund_total_c: snap.refunds_c || 0,
+          void_count: snap.void_count || 0,
+          transaction_count: snap.transaction_count || 0,
+          expenses_c: snap.expenses_c || 0,
+          net_sales_c: Math.max(0, (snap.net_sales_c || 0) - (snap.utang_c || 0))
+        }).catch(() => {})
+      }
+    } catch {}
+
+    return voidedSale
   })
   return tx()
 }
@@ -224,6 +281,29 @@ export function deleteTransaction(saleId: number, options?: { restoreStock?: boo
     })
 
     const product_ids = sale.items.flatMap((item) => item.product_id ? [item.product_id] : [])
+
+    // Sync deleted sale to Cloud Owner Dashboard as VOIDED so it is dropped from cloud totals
+    try {
+      const { pushSaleToCloud } = require('./cloudSync')
+      pushSaleToCloud(db, {
+        local_sale_id: sale.id,
+        transaction_no: sale.transaction_no,
+        cashier_name: user.full_name || user.username,
+        customer_name: (sale as any).customer_name || null,
+        subtotal_c: sale.subtotal_c,
+        discount_c: sale.discount_c,
+        total_c: sale.total_c,
+        status: 'VOIDED',
+        cash_c: 0,
+        gcash_c: 0,
+        maya_c: 0,
+        utang_c: 0,
+        net_sales_c: 0,
+        local_shift_id: sale.shift_id,
+        sold_at: sale.created_at,
+        items: []
+      }).catch(() => {})
+    } catch {}
 
     return { ok: true, transaction_no: sale.transaction_no, product_ids }
   })
