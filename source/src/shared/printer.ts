@@ -15,10 +15,10 @@ export interface PrinterPick {
 }
 
 export const THERMAL_KEYWORD_REGEX =
-  /(pos-?\s*58|pos-?\s*80|58mm|80mm|thermal|receipt|goojprt|xprinter|jk-?\s*58|zj-?\s*58|xp-?\s*58|xp-?\s*80|rp-?\s*58|rp-?\s*80|black copper|printer-?\s*58|printer-?\s*80|tm-?t\d+|bixolon|hprt|munbyn|snappy|rongta|gprinter|sunmi)/i
+  /(pos-?\s*58|pos-?\s*80|58mm|80mm|58h|thermal|receipt|goojprt|xprinter|jk-?\s*58|zj-?\s*58|xp-?\s*58|xp-?\s*80|rp-?\s*58|rp-?\s*80|jp-?\s*58|kp-?\s*58|black copper|printer-?\s*58|printer-?\s*80|tm-?t\d+|bixolon|hprt|munbyn|snappy|rongta|gprinter|sunmi)/i
 
 export const FIFTY_EIGHT_MM_REGEX =
-  /(58|58mm|pb-?58|jk-?58|zj-?58|pos-?58|xp-?58|rp-?58|mini)/i
+  /(58|58mm|58h|pb-?58|jk-?58|zj-?58|pos-?58|xp-?58|rp-?58|jp-?58|kp-?58|mini)/i
 
 export function isThermalPrinterName(name: string): boolean {
   if (!name) return false

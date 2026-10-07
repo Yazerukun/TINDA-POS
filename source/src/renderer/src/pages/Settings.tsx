@@ -1023,14 +1023,36 @@ function StoreSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
 
 function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?: () => void }): React.JSX.Element {
   const { settings, update } = useSettings()
-  const [f, setF] = useState({ receipt_header: settings?.receipt_header ?? '', receipt_title: settings?.receipt_title ?? '', receipt_show_app_name: settings?.receipt_show_app_name ?? true, receipt_footer: settings?.receipt_footer ?? '', receipt_printer: settings?.receipt_printer ?? '', auto_print_after_sale: settings?.auto_print_after_sale ?? false, receipt_paper_width: settings?.receipt_paper_width ?? '80mm' as '58mm' | '80mm', receipt_copies: settings?.receipt_copies ?? 1 })
+  const [f, setF] = useState({
+    receipt_header: settings?.receipt_header ?? '',
+    receipt_title: settings?.receipt_title ?? '',
+    receipt_show_app_name: settings?.receipt_show_app_name ?? true,
+    receipt_footer: settings?.receipt_footer ?? '',
+    receipt_printer: settings?.receipt_printer ?? '',
+    auto_print_after_sale: settings?.auto_print_after_sale ?? false,
+    receipt_paper_width: settings?.receipt_paper_width ?? ('80mm' as '58mm' | '80mm'),
+    receipt_copies: settings?.receipt_copies ?? 1,
+    manual_print_dialog: settings?.manual_print_dialog ?? false
+  })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [printers, setPrinters] = useState<PrinterChoice[]>([])
 
   useEffect(() => {
-    if (settings) setF({ receipt_header: settings.receipt_header, receipt_title: settings.receipt_title, receipt_show_app_name: settings.receipt_show_app_name, receipt_footer: settings.receipt_footer, receipt_printer: settings.receipt_printer, auto_print_after_sale: settings.auto_print_after_sale, receipt_paper_width: settings.receipt_paper_width, receipt_copies: settings.receipt_copies })
+    if (settings) {
+      setF({
+        receipt_header: settings.receipt_header,
+        receipt_title: settings.receipt_title,
+        receipt_show_app_name: settings.receipt_show_app_name,
+        receipt_footer: settings.receipt_footer,
+        receipt_printer: settings.receipt_printer,
+        auto_print_after_sale: settings.auto_print_after_sale,
+        receipt_paper_width: settings.receipt_paper_width,
+        receipt_copies: settings.receipt_copies,
+        manual_print_dialog: settings.manual_print_dialog ?? false
+      })
+    }
   }, [settings])
 
   const loadPrinters = async (): Promise<void> => {
@@ -1050,7 +1072,7 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     if (!settings) return
     const pick = printerPick(printers, settings.receipt_printer)
     if (pick.status === 'NOT_CONFIGURED' && pick.name) {
-      const is58 = /(58|pb-?58|jk-?58|pos-?58|xp-?58)/i.test(pick.name)
+      const is58 = /(58|pb-?58|jk-?58|pos-?58|xp-?58|58h|jp-?58|kp-?58)/i.test(pick.name)
       setF((prev) => (prev.receipt_printer === settings.receipt_printer ? {
         ...prev,
         receipt_printer: pick.name,
@@ -1059,24 +1081,41 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     }
   }, [printers, settings])
 
-
   const pick = printerPick(printers, f.receipt_printer)
 
   const save = async () => {
     setSaving(true)
     try {
-      await update({ receipt_header: f.receipt_header, receipt_title: f.receipt_title, receipt_show_app_name: f.receipt_show_app_name, receipt_footer: f.receipt_footer })
-      await window.api.printer.save({ name: f.receipt_printer, autoPrint: f.auto_print_after_sale, paperWidth: f.receipt_paper_width, copies: f.receipt_copies })
+      await update({
+        receipt_header: f.receipt_header,
+        receipt_title: f.receipt_title,
+        receipt_show_app_name: f.receipt_show_app_name,
+        receipt_footer: f.receipt_footer,
+        manual_print_dialog: f.manual_print_dialog
+      })
+      await window.api.printer.save({
+        name: f.receipt_printer,
+        autoPrint: f.auto_print_after_sale,
+        paperWidth: f.receipt_paper_width,
+        copies: f.receipt_copies,
+        manualPrintDialog: f.manual_print_dialog
+      })
       toastSuccess('Receipt settings saved')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
   }
 
-  const testPrint = async () => {
+  const testPrint = async (manual = false) => {
     try {
-      await window.api.printer.save({ name: f.receipt_printer, autoPrint: f.auto_print_after_sale, paperWidth: f.receipt_paper_width, copies: f.receipt_copies })
-      const result = await window.api.printer.testPrint()
-      if (result.ok) toastSuccess('Test print sent', result.message)
-      else toastError('Test print failed', result.message)
+      await window.api.printer.save({
+        name: f.receipt_printer,
+        autoPrint: f.auto_print_after_sale,
+        paperWidth: f.receipt_paper_width,
+        copies: f.receipt_copies,
+        manualPrintDialog: f.manual_print_dialog
+      })
+      const result = await window.api.printer.testPrint({ manual })
+      if (result.ok) toastSuccess(manual ? 'Manual print dialog opened' : 'Test print sent', result.message)
+      else if (result.code !== 'DISABLED') toastError('Test print failed', result.message)
     } catch (e) { toastError('Test print failed', String((e as Error)?.message || e)) }
   }
 
@@ -1117,7 +1156,8 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         </div>
         {pick.status === 'UNAVAILABLE' && <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">Selected receipt printer is unavailable: <span className="font-mono">{pick.name}</span>. Refresh Printers or choose another printer before printing — sales are never blocked or rolled back.</p>}
         {pick.status === 'NOT_CONFIGURED' && printers.length === 0 && <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">No receipt printer configured. Install a thermal receipt printer in Windows, then press Refresh Printers.</p>}
-        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">One silent print job, sent only after the sale commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">One silent print job, sent automatically after checkout commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
+        <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Always Open Manual Print Dialog</p><p className="text-xs text-slate-500">Opens the Windows System Print Dialog on checkout so you can manually select the printer and verify settings.</p></div><Toggle on={f.manual_print_dialog} onClick={() => set({ manual_print_dialog: !f.manual_print_dialog })} /></div>
         <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm (default)</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={3} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Math.min(3, Math.trunc(Number(e.target.value) || 1))) })} className="input w-full" /></div></div>
         <div>
           <p className="label">Live Receipt Preview</p>
@@ -1140,27 +1180,50 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
 
         </div>
         <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-3.5 text-xs text-teal-200 space-y-2">
-          <div className="flex items-center gap-2 font-bold text-teal-300">
-            <Printer className="h-4 w-4 text-teal-400" />
-            <span>GOOJPRT PB-58H (JK-5802H) &amp; 58mm Thermal Printers Guide:</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-teal-300">
+              <Printer className="h-4 w-4 text-teal-400" />
+              <span>GOOJPRT 58H (JP-58BL / POS-58) Zero-Blur Hardware Guide:</span>
+            </div>
+            <span className="text-[10px] text-teal-400/80 font-mono">203 DPI / 90mm/s</span>
           </div>
           <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
-            <li><strong>Paper Width:</strong> Select <strong>58mm</strong> below for 100% compact, zero-overflow thermal receipts.</li>
-            <li><strong>Official Driver:</strong> Download and install the <em>Xprinter Driver v7.77</em> (select <strong>POS-58</strong> model) or <em>GOOJPRT PB-58H USB Driver</em> from OEMDrivers / manufacturer.</li>
-            <li><strong>Blank Receipt or Paper Does Not Feed? (Troubleshooting):</strong>
-              <ul className="list-circle pl-4 mt-1 space-y-0.5 text-amber-200">
-                <li><strong>Thermal Paper Roll Reversed:</strong> Thermal paper only has one chemically-treated heat-sensitive side. Scratch the paper with your fingernail; if a dark mark appears, that side must <em>face the thermal printhead heater</em>. If reversed, the paper feeds blank.</li>
-                <li><strong>Windows Printer Port:</strong> In Windows <em>Control Panel &rarr; Devices and Printers &rarr; Printer Properties &rarr; Ports</em>, ensure the active Virtual USB Port (e.g., <code>USB001</code> or <code>USB002</code>) is checked instead of LPT1 or COM ports.</li>
-                <li><strong>Printer Preferences Paper Size:</strong> In Windows Printing Preferences, set the Default Paper Size to <strong>58 x 297 mm</strong> or <strong>Roll Paper 58 x Continuous</strong>.</li>
+            <li><strong>Official User Manual:</strong> Refer to the official <a href="https://manuals.plus/ae/1005008661058283" target="_blank" rel="noreferrer" className="text-teal-300 underline font-semibold">GOOJPRT 58H User Manual</a> for complete specifications and port diagrams.</li>
+            <li><strong>How to Eliminate Blurry or Faint Text:</strong>
+              <ul className="list-circle pl-4 mt-0.5 space-y-0.5 text-emerald-200">
+                <li>TINDA POS automatically applies <strong>Zero-Blur 203 DPI Monochrome Typography</strong> (disables subpixel antialiasing and dithering so dots burn solid pitch black).</li>
+                <li>In Windows: Go to <em>Printers &amp; Scanners &rarr; Your Printer &rarr; Printing Preferences &rarr; Advanced / Options</em>. Set <strong>Print Density / Darkness</strong> to <strong>Dark (Level 12-15)</strong> and <strong>Dithering / Halftone</strong> to <strong>None</strong>.</li>
+                <li>Clean the thermal printhead periodically with a cotton swab lightly dampened with isopropyl alcohol (Section 7.1).</li>
               </ul>
             </li>
-            <li><strong>Bluetooth Connection:</strong> Pair in Windows using PIN <code>0000</code> or <code>1234</code>. Assign the driver to the Outgoing COM port.</li>
+            <li><strong>Blank Receipt or Paper Does Not Feed? (Troubleshooting):</strong>
+              <ul className="list-circle pl-4 mt-0.5 space-y-0.5 text-amber-200">
+                <li><strong>Thermal Paper Scratch Test:</strong> Thermal paper only reacts on one chemically-treated side. Scratch the paper with your fingernail; if a dark mark appears, that side must <em>face the thermal printhead heater</em>. If reversed, the paper feeds blank.</li>
+                <li><strong>Windows USB Port Mapping:</strong> In Windows <em>Printer Properties &rarr; Ports</em>, ensure the active Virtual USB Port (e.g., <code>USB001</code>) is checked.</li>
+                <li><strong>Hardware Self-Test:</strong> Power off printer, hold the <strong>FEED button</strong>, and turn on power while holding FEED. Release after 2 seconds to print an internal test slip confirming printhead health.</li>
+              </ul>
+            </li>
+            <li><strong>Manual Print Mode:</strong> If your thermal printer experiences driver communication lag, click <strong>Manual Test Print (Dialog)</strong> below or use <strong>Manual Print</strong> in Checkout to send receipts directly through the Windows Print Spooler.</li>
           </ul>
         </div>
 
-
         <p className="rounded-lg border border-ink-line bg-ink-900 px-3 py-2 text-xs text-slate-400">Prints through the Windows printer driver using the exact device name Electron reports. Zero-margin spooling and automatic paper-height tracking are calibrated for seamless thermal feed. Sales still complete safely if the printer is missing or offline.</p>
-        <div className="flex gap-2"><button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2"><Save className="h-4 w-4" /> Save Receipt</button><button onClick={() => void testPrint()} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2"><Printer className="h-4 w-4" /> Test Print</button></div>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2">
+            <Save className="h-4 w-4" /> Save Receipt
+          </button>
+          <button onClick={() => void testPrint(false)} disabled={!f.receipt_printer} className="btn-ghost flex items-center gap-2">
+            <Printer className="h-4 w-4" /> Auto Test Print
+          </button>
+          <button
+            type="button"
+            onClick={() => void testPrint(true)}
+            className="btn-ghost flex items-center gap-2 text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+            title="Open Windows Print Dialog to test printer selection and darkness settings"
+          >
+            <Printer className="h-4 w-4" /> Manual Test Print (Dialog)
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -14,6 +14,11 @@ export interface PrintResult {
   message: string
 }
 
+export interface PrintOptions {
+  manual?: boolean
+  deviceName?: string
+}
+
 export function testPrintLines(settings: StoreSettings, printer: string, now = new Date()): string[] {
   return [
     'TINDA POS',
@@ -49,12 +54,17 @@ export async function resolvePrinterTarget(webContents: WebContents, settings: S
   }
 }
 
-export async function submitPrint(webContents: WebContents, settings: StoreSettings): Promise<PrintResult> {
-  const selected = (settings.receipt_printer || '').trim()
+export async function submitPrint(
+  webContents: WebContents,
+  settings: StoreSettings,
+  options?: PrintOptions
+): Promise<PrintResult> {
+  const isManual = options?.manual === true
+  const selected = (options?.deviceName || settings.receipt_printer || '').trim()
   const printers = await webContents.getPrintersAsync()
 
   // If a printer was explicitly configured by the merchant but is now missing/offline
-  if (selected && !printers.some((p) => p.name === selected)) {
+  if (!isManual && selected && !printers.some((p) => p.name === selected)) {
     // If an alternative thermal printer is connected, auto-recover to it; otherwise fail honestly with UNAVAILABLE
     const fallback = autoDetectThermalPrinter(printers)
     if (!fallback) {
@@ -62,20 +72,20 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
     }
   }
 
-  if (!printers || printers.length === 0) {
+  if (!isManual && (!printers || printers.length === 0)) {
     return { ok: false, code: 'NO_PRINTER', message: 'No printer found on this system. Please connect a thermal printer via USB or Bluetooth.' }
   }
 
-  const target = autoDetectThermalPrinter(printers, settings.receipt_printer)
-  if (!target) {
+  const target = autoDetectThermalPrinter(printers, selected || settings.receipt_printer)
+  const printerName = isManual ? (selected || (target ? target.name : undefined)) : (target ? target.name : undefined)
+
+  if (!isManual && !printerName) {
     return { ok: false, code: 'NO_PRINTER', message: 'No receipt printer is available.' }
   }
 
-  const printerName = target.name
-
   const copies = Math.min(3, Math.max(1, Math.trunc(settings.receipt_copies || 1)))
   // If paper width is configured use it, otherwise use auto-detected
-  const effectivePaperWidth = settings.receipt_paper_width || target.paperWidth
+  const effectivePaperWidth = settings.receipt_paper_width || (target ? target.paperWidth : '58mm')
   const is58mm = effectivePaperWidth === '58mm'
   
   // Custom paper size in microns: 58mm = 58,000 microns, 80mm = 80,000 microns
@@ -86,10 +96,11 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
   return new Promise((resolve) => {
     webContents.print(
       {
-        silent: true,
+        silent: !isManual,
         deviceName: printerName,
         printBackground: true,
-        color: true,
+        color: false, // Monochrome: avoids chromatic dithering and blur on 203 DPI thermal printheads
+        dpi: { horizontal: 203, vertical: 203 },
         copies,
         pageSize: pageSizeMicrons,
         margins: {
@@ -97,22 +108,42 @@ export async function submitPrint(webContents: WebContents, settings: StoreSetti
         }
       },
       (success, failureReason) => {
-        resolve(
-          success
-            ? { ok: true, code: 'PRINTED', message: `Receipt printed successfully to "${printerName}".` }
-            : { ok: false, code: 'FAILED', message: failureReason || 'Receipt printing failed.' }
-        )
+        if (success) {
+          resolve({
+            ok: true,
+            code: 'PRINTED',
+            message: isManual
+              ? 'Print job completed successfully via system print dialog.'
+              : `Receipt printed successfully to "${printerName || 'thermal printer'}".`
+          })
+        } else {
+          const reason = failureReason || ''
+          const isCancelled = /cancel/i.test(reason)
+          resolve({
+            ok: false,
+            code: isCancelled ? 'DISABLED' : 'FAILED',
+            message: isCancelled ? 'Print dialog cancelled by user.' : (reason || 'Receipt printing failed.')
+          })
+        }
       }
     )
   })
-
 }
 
-export async function printLines(settings: StoreSettings, lines: string[]): Promise<PrintResult> {
+export async function printLines(
+  settings: StoreSettings,
+  lines: string[],
+  options?: PrintOptions
+): Promise<PrintResult> {
+  const isManual = options?.manual ?? settings.manual_print_dialog ?? false
   const window = new BrowserWindow({
-    show: false,
-    width: 320,
-    height: 600,
+    show: isManual,
+    width: 380,
+    height: 640,
+    center: true,
+    title: 'TINDA POS - Print Receipt',
+    autoHideMenuBar: true,
+    alwaysOnTop: isManual,
     webPreferences: {
       sandbox: true,
       contextIsolation: true,
@@ -122,19 +153,26 @@ export async function printLines(settings: StoreSettings, lines: string[]): Prom
 
   try {
     const printers = await window.webContents.getPrintersAsync()
-    const target = autoDetectThermalPrinter(printers, settings.receipt_printer)
+    const target = autoDetectThermalPrinter(printers, options?.deviceName || settings.receipt_printer)
     const effectiveWidth = settings.receipt_paper_width || (target ? target.paperWidth : '58mm')
 
     const htmlPayload = receiptHtml(lines, effectiveWidth, settings.currency)
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlPayload)}`)
 
-    // Wait 250ms buffer to guarantee the Chromium layout and fonts are 100% rasterized before spooling
-    await new Promise((r) => setTimeout(r, 250))
-
-    const result = await submitPrint(window.webContents, settings)
-
-    // Wait an additional 350ms so Windows Print Spooler finishes reading before destroying the WebContents
+    // Wait 350ms buffer to guarantee the Chromium layout and fonts are 100% rasterized before spooling
     await new Promise((r) => setTimeout(r, 350))
+
+    if (window.isDestroyed()) {
+      return { ok: false, code: 'FAILED', message: 'Print window closed before printing.' }
+    }
+
+    const result = await submitPrint(window.webContents, settings, {
+      ...options,
+      manual: isManual
+    })
+
+    // Wait an additional 500ms so Windows Print Spooler finishes reading before destroying the WebContents
+    await new Promise((r) => setTimeout(r, 500))
 
     return result
   } finally {
@@ -146,7 +184,11 @@ export async function listPrinters(webContents: WebContents): Promise<PrinterInf
   return webContents.getPrintersAsync()
 }
 
-export async function printSale(settings: StoreSettings, sale: Sale): Promise<PrintResult> {
+export async function printSale(
+  settings: StoreSettings,
+  sale: Sale,
+  options?: PrintOptions
+): Promise<PrintResult> {
   const lines = buildReceiptLines({
     header: settings.receipt_header,
     title: settings.receipt_title,
@@ -159,20 +201,27 @@ export async function printSale(settings: StoreSettings, sale: Sale): Promise<Pr
     currency: settings.currency,
     footer: settings.receipt_footer
   }, sale)
-  return printLines(settings, lines)
+  return printLines(settings, lines, options)
 }
 
-export async function autoPrintAfterCheckout(settings: StoreSettings, sale: Sale, printer = printSale): Promise<PrintResult> {
+export async function autoPrintAfterCheckout(
+  settings: StoreSettings,
+  sale: Sale,
+  printer = printSale
+): Promise<PrintResult> {
   if (!settings.auto_print_after_sale) return { ok: true, code: 'DISABLED', message: 'Automatic receipt printing is off.' }
   try {
-    return await printer(settings, sale)
+    return await printer(settings, sale, { manual: settings.manual_print_dialog })
   } catch (error) {
     return { ok: false, code: 'FAILED', message: error instanceof Error ? error.message : String(error) }
   }
 }
 
-export async function printTest(settings: StoreSettings): Promise<PrintResult> {
-  const targetPrinter = settings.receipt_printer || 'Auto-Detected Thermal Printer'
-  return printLines(settings, testPrintLines(settings, targetPrinter))
+export async function printTest(
+  settings: StoreSettings,
+  options?: PrintOptions
+): Promise<PrintResult> {
+  const targetPrinter = options?.deviceName || settings.receipt_printer || 'Auto-Detected Thermal Printer'
+  return printLines(settings, testPrintLines(settings, targetPrinter), options)
 }
 

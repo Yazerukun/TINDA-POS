@@ -122,7 +122,7 @@ describe('Client Feedback: UTANG exclusion from Today Net Sales', () => {
       ]
     })
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     const rep = salesReport({ from: today, to: today })
 
     // Gross total of all transactions = 100 + 100 + 100 = ₱300 (30,000c)

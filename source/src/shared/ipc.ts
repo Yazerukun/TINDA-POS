@@ -315,9 +315,10 @@ export interface TindaApi {
 
   printer: {
     list: () => Promise<PrinterChoice[]>
-    save: (input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number }) => Promise<StoreSettings>
-    testPrint: () => Promise<PrintResult>
-    printReceipt: (saleId: number) => Promise<PrintResult>
+    save: (input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number; manualPrintDialog?: boolean }) => Promise<StoreSettings>
+    testPrint: (options?: { manual?: boolean }) => Promise<PrintResult>
+    printReceipt: (saleId: number, options?: { manual?: boolean }) => Promise<PrintResult>
+    printLines: (lines: string[], options?: { manual?: boolean }) => Promise<PrintResult>
   }
 
   transactions: {

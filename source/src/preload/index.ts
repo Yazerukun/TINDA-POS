@@ -159,8 +159,9 @@ const api: TindaApi = {
   printer: {
     list: () => invoke<import('@shared/ipc').PrinterChoice[]>('printer:list'),
     save: (input) => invoke<import('@shared/types').StoreSettings>('printer:save', input),
-    testPrint: () => invoke<import('@shared/ipc').PrintResult>('printer:testPrint'),
-    printReceipt: (saleId) => invoke<import('@shared/ipc').PrintResult>('printer:printReceipt', saleId)
+    testPrint: (options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:testPrint', options),
+    printReceipt: (saleId: number, options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printReceipt', saleId, options),
+    printLines: (lines: string[], options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printLines', lines, options)
   },
   transactions: {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),

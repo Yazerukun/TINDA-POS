@@ -25,6 +25,7 @@ export const defaultSettings: StoreSettings = {
   auto_print_after_sale: false,
   receipt_paper_width: '80mm',
   receipt_copies: 1,
+  manual_print_dialog: false,
   theme: 'dark',
   data_dir: '',
   lan_network_mode: 'standalone',

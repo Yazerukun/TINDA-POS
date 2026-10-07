@@ -85,7 +85,7 @@ describe('Refunds reduce estimated profit (Refund -> Profit fix)', () => {
       items: [{ sale_item_id: saleItem.id, product_id: p.id, qty_base: 1, unit_name: 'sachet' }]
     })
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     const { summary } = salesReport({ from: today, to: today })
     expect(summary.profit_c).toBe(300) // (1800-900) - (1200-600)
   })

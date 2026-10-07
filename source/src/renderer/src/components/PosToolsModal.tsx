@@ -63,14 +63,14 @@ export function PosToolsModal({
 
   if (!open) return null
 
-  const handleTestPrint = async () => {
+  const handleTestPrint = async (manual = false) => {
     if (printingTest) return
     setPrintingTest(true)
     try {
-      const result = await window.api.printer.testPrint()
+      const result = await window.api.printer.testPrint({ manual })
       if (result.ok) {
-        toastSuccess('Test Print Sent', result.message || 'Check your thermal printer output.')
-      } else {
+        toastSuccess(manual ? 'Manual Print Dialog' : 'Test Print Sent', result.message || 'Check your thermal printer output.')
+      } else if (result.code !== 'DISABLED') {
         toastError('Printer Not Ready', result.message || 'Ensure thermal printer is turned on and selected in Settings.')
       }
     } catch (err) {
@@ -91,7 +91,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Hub</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v1.0.63
+                  v1.0.65
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -126,27 +126,40 @@ export function PosToolsModal({
           </div>
 
           {/* Quick Thermal Test Print Button */}
-          <button
-            type="button"
-            disabled={printingTest}
-            onClick={() => void handleTestPrint()}
-            className="flex items-center gap-2 rounded-xl border border-teal-500/35 bg-teal-500/10 p-2.5 text-xs text-teal-200 hover:bg-teal-500/20 transition-all text-left active:scale-[0.98] shadow-sm disabled:opacity-60"
+          <div
+            className="flex items-center justify-between rounded-xl border border-teal-500/35 bg-teal-500/10 p-2 text-xs text-teal-200 shadow-sm"
             title="Send test receipt directly to configured thermal printer (e.g. GOOJPRT PB-58H). Auto-detects on plug-in!"
           >
-            {printingTest ? (
-              <Loader2 className="h-4 w-4 shrink-0 text-teal-300 animate-spin" />
-            ) : (
-              <Printer className="h-4 w-4 shrink-0 text-teal-300" />
-            )}
-            <div className="min-w-0">
-              <p className="font-bold leading-tight truncate">
-                {printingTest ? 'Printing...' : 'Thermal Print'}
-              </p>
-              <p className="text-[10px] text-teal-400/80 truncate">
-                {settings?.receipt_printer ? settings.receipt_printer : 'Auto-Detect Ready'}
-              </p>
-            </div>
-          </button>
+            <button
+              type="button"
+              disabled={printingTest}
+              onClick={() => void handleTestPrint(false)}
+              className="flex items-center gap-2 text-left hover:text-white transition-colors active:scale-[0.98] disabled:opacity-60 min-w-0 flex-1 py-0.5"
+            >
+              {printingTest ? (
+                <Loader2 className="h-4 w-4 shrink-0 text-teal-300 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4 shrink-0 text-teal-300" />
+              )}
+              <div className="min-w-0">
+                <p className="font-bold leading-tight truncate">
+                  {printingTest ? 'Printing...' : 'Thermal Print'}
+                </p>
+                <p className="text-[10px] text-teal-400/80 truncate">
+                  {settings?.receipt_printer ? settings.receipt_printer : 'Auto-Detect Ready'}
+                </p>
+              </div>
+            </button>
+            <button
+              type="button"
+              disabled={printingTest}
+              onClick={() => void handleTestPrint(true)}
+              className="shrink-0 ml-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-teal-500/20 text-teal-300 hover:bg-teal-500/35 hover:text-white border border-teal-400/30 transition-all active:scale-95"
+              title="Open Windows Print Dialog for manual printer selection and darkness adjustment"
+            >
+              Manual
+            </button>
+          </div>
 
           {/* LAN Status */}
           {lanStatus?.role === 'master' && (

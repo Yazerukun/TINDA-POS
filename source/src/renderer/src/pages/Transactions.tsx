@@ -234,11 +234,11 @@ export function Transactions(): React.JSX.Element {
 
 function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React.JSX.Element {
   const [receiptLines, setReceiptLines] = useState<string[] | null>(null)
-  const print = async () => {
+  const print = async (manual = false) => {
     try {
-      const result = await window.api.printer.printReceipt(sale.id)
-      if (result.ok) toastSuccess('Receipt printed successfully')
-      else toastError('Receipt printing failed', result.message)
+      const result = await window.api.printer.printReceipt(sale.id, { manual })
+      if (result.ok) toastSuccess(manual ? 'Print job submitted via dialog' : 'Receipt printed successfully')
+      else if (result.code !== 'DISABLED') toastError('Receipt printing failed', result.message)
     } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) }
   }
   const openReceiptPreview = async () => {
@@ -251,7 +251,21 @@ function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React
   return (
     <>
       <Modal open onClose={onClose} title={sale.transaction_no} maxWidth="max-w-md" footer={
-        <><button onClick={() => void openReceiptPreview()} className="btn-ghost flex items-center gap-2"><ReceiptText className="h-4 w-4" /> View Receipt</button><button onClick={() => void print()} className="btn-primary flex items-center gap-2"><Printer className="h-4 w-4" /> Print Receipt</button></>
+        <>
+          <button onClick={() => void openReceiptPreview()} className="btn-ghost flex items-center gap-2">
+            <ReceiptText className="h-4 w-4" /> View Receipt
+          </button>
+          <button
+            onClick={() => void print(true)}
+            className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+            title="Open native Windows Print Dialog for manual printer selection and darkness adjustment"
+          >
+            <Printer className="h-4 w-4" /> Manual Print
+          </button>
+          <button onClick={() => void print(false)} className="btn-primary flex items-center gap-2">
+            <Printer className="h-4 w-4" /> Print Receipt
+          </button>
+        </>
       }>
       <div className="mb-3 flex justify-between text-sm text-slate-400">
         <span>{shortDateTime(sale.created_at)}</span><span>{sale.cashier_name}</span>
@@ -278,7 +292,21 @@ function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React
       </Modal>
       {receiptLines && (
         <Modal open onClose={() => setReceiptLines(null)} title={`Receipt — ${sale.transaction_no}`} maxWidth="max-w-lg" footer={
-          <button onClick={() => setReceiptLines(null)} className="btn-primary">Close</button>
+          <div className="flex items-center justify-between w-full">
+            <button
+              onClick={() => void print(true)}
+              className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+              title="Open Windows System Print Dialog for manual printer selection and darkness adjustment"
+            >
+              <Printer className="h-4 w-4" /> Manual Print
+            </button>
+            <div className="flex gap-2">
+              <button onClick={() => void print(false)} className="btn-primary flex items-center gap-1.5">
+                <Printer className="h-4 w-4" /> Print
+              </button>
+              <button onClick={() => setReceiptLines(null)} className="btn-ghost">Close</button>
+            </div>
+          </div>
         }>
           <ReceiptPaper lines={receiptLines} />
         </Modal>

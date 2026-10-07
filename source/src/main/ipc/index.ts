@@ -563,19 +563,29 @@ handle('printer:list', async (event: IpcMainInvokeEvent) => {
   // Windows default so Settings can suggest it on first setup.
   return printers.map((printer) => ({ name: printer.name, displayName: printer.displayName || printer.name, isDefault: (printer as { isDefault?: boolean }).isDefault === true }))
 })
-handle('printer:save', (_e: IpcMainInvokeEvent, input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number }) => {
+handle('printer:save', (_e: IpcMainInvokeEvent, input: { name: string; autoPrint: boolean; paperWidth: '58mm' | '80mm'; copies: number; manualPrintDialog?: boolean }) => {
   sessionSvc.requirePermission('settings:manage')
   if (!['58mm', '80mm'].includes(input.paperWidth)) throw new Error('Invalid receipt paper width.')
   const copies = Math.min(3, Math.max(1, Math.trunc(input.copies)))
-  return settingRepo.updateSettings(db(), { receipt_printer: input.name, auto_print_after_sale: input.autoPrint, receipt_paper_width: input.paperWidth, receipt_copies: copies })
+  return settingRepo.updateSettings(db(), {
+    receipt_printer: input.name,
+    auto_print_after_sale: input.autoPrint,
+    receipt_paper_width: input.paperWidth,
+    receipt_copies: copies,
+    manual_print_dialog: input.manualPrintDialog ?? false
+  })
 })
-handle('printer:testPrint', async () => {
+handle('printer:testPrint', async (_e: IpcMainInvokeEvent, options?: { manual?: boolean }) => {
   sessionSvc.requirePermission('settings:manage')
-  return printingSvc.printTest(settingRepo.getSettings(db()))
+  return printingSvc.printTest(settingRepo.getSettings(db()), options)
 })
-handle('printer:printReceipt', async (_e: IpcMainInvokeEvent, saleId: number) => {
+handle('printer:printReceipt', async (_e: IpcMainInvokeEvent, saleId: number, options?: { manual?: boolean }) => {
   sessionSvc.requirePermission('transactions:view')
-  return printingSvc.printSale(settingRepo.getSettings(db()), getSale(db(), saleId))
+  return printingSvc.printSale(settingRepo.getSettings(db()), getSale(db(), saleId), options)
+})
+handle('printer:printLines', async (_e: IpcMainInvokeEvent, lines: string[], options?: { manual?: boolean }) => {
+  sessionSvc.requirePermission('transactions:view')
+  return printingSvc.printLines(settingRepo.getSettings(db()), lines, options)
 })
 
 // ---- Transactions ----

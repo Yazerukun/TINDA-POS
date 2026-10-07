@@ -74,6 +74,9 @@ describe('autoDetectThermalPrinter & paper width inference', () => {
 
   it('infers 58mm for various 58mm models and 80mm for 80mm models', () => {
     expect(inferPaperWidth('GOOJPRT PB-58H')).toBe('58mm')
+    expect(inferPaperWidth('GOOJPRT 58H')).toBe('58mm')
+    expect(inferPaperWidth('JP-58BL')).toBe('58mm')
+    expect(inferPaperWidth('KP58B-U')).toBe('58mm')
     expect(inferPaperWidth('POS-58')).toBe('58mm')
     expect(inferPaperWidth('JK-5802H')).toBe('58mm')
     expect(inferPaperWidth('XP-58')).toBe('58mm')
@@ -84,6 +87,9 @@ describe('autoDetectThermalPrinter & paper width inference', () => {
 
   it('recognizes various thermal printer naming patterns', () => {
     expect(isThermalPrinterName('GOOJPRT PB-58H')).toBe(true)
+    expect(isThermalPrinterName('GOOJPRT 58H')).toBe(true)
+    expect(isThermalPrinterName('JP-58BL')).toBe(true)
+    expect(isThermalPrinterName('KP58B-U')).toBe(true)
     expect(isThermalPrinterName('POS-58 Thermal')).toBe(true)
     expect(isThermalPrinterName('Xprinter Receipt')).toBe(true)
     expect(isThermalPrinterName('Epson TM-T20II')).toBe(true)

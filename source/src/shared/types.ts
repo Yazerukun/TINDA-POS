@@ -434,6 +434,7 @@ export interface StoreSettings {
   auto_print_after_sale: boolean
   receipt_paper_width: '58mm' | '80mm'
   receipt_copies: number
+  manual_print_dialog: boolean
   theme: string
   data_dir: string
   lan_network_mode: 'standalone' | 'master' | 'satellite'

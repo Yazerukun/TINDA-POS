@@ -58,8 +58,10 @@ describe('thermal receipt HTML layout', () => {
   it('optimizes 80mm for ~72mm and 58mm for ~48mm printable content', () => {
     expect(receiptCss('80mm')).toContain('.tp-sheet { width: 72mm')
     expect(receiptCss('58mm')).toContain('.tp-sheet { width: 48mm')
-    expect(receiptCss('58mm')).toContain('font-size: 9.5px')
-    expect(receiptCss('80mm')).toContain('font-size: 11.5px')
+    expect(receiptCss('58mm')).toContain('font-size: 11px')
+    expect(receiptCss('80mm')).toContain('font-size: 12px')
+    expect(receiptCss('58mm')).toContain('-webkit-font-smoothing: none')
+    expect(receiptCss('58mm')).toContain('text-rendering: geometricPrecision')
   })
 
   it('renders header/footer, wrapped long names, totals, and a prominent SUKLI', () => {

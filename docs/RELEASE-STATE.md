@@ -4,31 +4,35 @@ CURRENT STABLE:
 - v1.0.64 (VIP CUSTOM LOGO & UNIVERSAL DISCOUNT EDITION)
 
 TARGET:
-- None (v1.0.64 Released Successfully)
+- v1.0.65 (ZERO-BLUR HIGH-DENSITY THERMAL & UNIVERSAL MANUAL PRINT EDITION)
 
 CURRENT STAGE:
-- Stage 09: Release Publication & GitHub Verification (Complete)
+- Stage 08: Production Packaging (Complete) -> Awaiting Boss Review for Stage 09 Publication
 
 COMPLETED:
-- Stage 01: VIP Pro Custom Brand Identity & Store Logo Upload Engine.
-- Stage 02: Universal Cart Discounts (% & ₱) with Statutory Senior/PWD Integration.
-- Stage 03: 100% Professional English System-Wide Localization (Receipts, Handbook, Guides).
-- Stage 04: POS Cashier Header Workspace Cleanup (Terminal Tools Hotkey & Sidebar Retention).
-- Stage 05: Live Sales Monitor Realized Revenue Synchronization (Excluding Utang Credit).
-- Stage 06: Version Bump to v1.0.64 across package.json, GEMINI.md, and README.md.
-- Stage 07: Automated QA & Invariants Verification (414/414 vitest tests passed, 0 TypeScript errors).
-- Stage 08: Production Packaging (`TindaPOS-Setup-1.0.64.exe` [107.11 MB], `TindaPOS-Portable-1.0.64.exe` [106.91 MB], blockmap, and SHA256 checksums generated and verified).
-- Stage 09: Release Publication & GitHub Sync (`https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.64` published and verified with 6 assets).
+- Stage 01: Root-Cause Investigation & Resolution of Thermal Blurriness (Disabling subpixel dithering, 11px/12px integer geometry, 700 bold stroke, pure monochrome 203 DPI rasterizer).
+- Stage 02: Universal Manual Print Engine via Native Windows Print Dialog (Auto & Manual Print support across POS Checkout Modal, Transactions ledger, PosToolsModal F3, and Settings).
+- Stage 03: Printer Signature Matching & Guide updates for GOOJPRT 58H / JP-58BL / KP58B-U (In-app Handbook Chapter 10 & Settings links).
+- Stage 04: Configurable Setting `manual_print_dialog` with IPC wiring.
+- Stage 05: Version Bump to v1.0.65 across package.json, GEMINI.md, and README.md.
+- Stage 06: Comprehensive Automated Quality Assurance (414/414 vitest tests passing across 63 suites, 0 TypeScript compiler errors).
+- Stage 07: Master Codebase Invariants Verification (`tools/check_master_invariants.mjs` passed).
+- Stage 08: Production Packaging:
+  - `TindaPOS-Setup-1.0.65.exe` (107.11 MB, SHA256: `3504bfb594f2c79959c9b432324dfba715df3214fe457d7aee5a6b37de4ff4ce`)
+  - `TindaPOS-Portable-1.0.65.exe` (106.91 MB, SHA256: `f3a8096cdf92a251c6d13b02f456177c24d0448738c167c3c0d744bf8bdae4e4`)
+  - `TindaPOS-Setup-1.0.65.exe.blockmap` (SHA256: `c23cbfc69664af9bf96256e7c3ce16c491a7464ddbfd1cb3b739a09c6433e3d4`)
+  - `latest.yml` (SHA256: `0375decff6bd787ba25f701827c6c514fa7fcc9ebab4df03506ddd7582103d1e`)
+  - `SHA256SUMS-v1.0.65.txt` generated in `source/builds/`.
 
 PENDING APPROVAL:
-- None (All release stages passed and verified).
+- Stage 09: Release Publication & GitHub Sync (Awaiting explicit Boss approval per AGENTS.md rules).
 
 BLOCKERS:
 - None.
 
-ARTIFACTS (v1.0.64):
-- Setup: `source/builds/TindaPOS-Setup-1.0.64.exe` (SHA256: `78de90f20ca5ab5a8a4be28b3543af56d42b3e1a04b469fd7c99ac39158793fa`)
-- Portable: `source/builds/TindaPOS-Portable-1.0.64.exe` (SHA256: `d17a92c05689733d5ec8c6888d5b63b8e5262f602699c9cc5217592d9a4781b4`)
-- Blockmap: `source/builds/TindaPOS-Setup-1.0.64.exe.blockmap` (SHA256: `cdf306c81ac7af817d8cf85892df987c3dd2a76c839e1de2d5a7ccb3875dc63f`)
-- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `6385460bb198484f25feba7aabedbd1d4e603b8a118b92822ccf763120170c08`)
-- Checksums: `source/builds/SHA256SUMS-v1.0.64.txt`
+ARTIFACTS (v1.0.65):
+- Setup: `source/builds/TindaPOS-Setup-1.0.65.exe` (SHA256: `3504bfb594f2c79959c9b432324dfba715df3214fe457d7aee5a6b37de4ff4ce`)
+- Portable: `source/builds/TindaPOS-Portable-1.0.65.exe` (SHA256: `f3a8096cdf92a251c6d13b02f456177c24d0448738c167c3c0d744bf8bdae4e4`)
+- Blockmap: `source/builds/TindaPOS-Setup-1.0.65.exe.blockmap` (SHA256: `c23cbfc69664af9bf96256e7c3ce16c491a7464ddbfd1cb3b739a09c6433e3d4`)
+- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `0375decff6bd787ba25f701827c6c514fa7fcc9ebab4df03506ddd7582103d1e`)
+- Checksums: `source/builds/SHA256SUMS-v1.0.65.txt`

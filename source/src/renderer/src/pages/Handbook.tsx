@@ -535,9 +535,9 @@ export function Handbook(): React.JSX.Element {
             <div className="flex items-center gap-2 text-teal-400 font-bold uppercase tracking-wider">
               <Printer className="h-4 w-4" /> Thermal Printing Guide
             </div>
-            <h3 className="mt-1 text-xl font-bold text-white">Setting up GOOJPRT PB-58H &amp; POS-58 Printers</h3>
+            <h3 className="mt-1 text-xl font-bold text-white">Setting up GOOJPRT 58H (JP-58BL / PB-58H) &amp; 58mm Thermal Printers</h3>
             <p className="mt-2 text-slate-300">
-              TINDA POS has built-in support for standard 58mm and 80mm thermal receipt printers, including popular models like <strong>GOOJPRT PB-58H (USB + Bluetooth)</strong>, Xprinter XP-58, and generic POS-58 printers.
+              TINDA POS has built-in support for standard 58mm and 80mm thermal receipt printers, including popular models like <strong>GOOJPRT 58H (JP-58BL / PB-58H)</strong>, Xprinter XP-58, and POS-58 printers. Official manual reference: <a href="https://manuals.plus/ae/1005008661058283" target="_blank" rel="noreferrer" className="text-teal-300 underline font-semibold">GOOJPRT 58H User Manual</a>.
             </p>
           </div>
 
@@ -550,9 +550,8 @@ export function Handbook(): React.JSX.Element {
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
                 <li>Plug the USB cable into your PC or laptop, then turn on the printer power switch.</li>
                 <li>Install the official <strong>POS-58 Driver</strong> or <strong>Xprinter 58mm Driver</strong> in Windows.</li>
-                <li><strong>Zero-Click Auto-Detect:</strong> No manual configuration needed! Once plugged in, TINDA POS automatically detects and binds your printer for receipts, shift audits, and Z-readings.</li>
-                <li>To customize receipt headers or footers, navigate to <strong>Settings</strong> &rarr; <strong>Receipt tab</strong>.</li>
-                <li>Toggle <strong>Auto Print After Sale</strong> if you want receipts to print immediately upon checkout completion.</li>
+                <li><strong>Zero-Click Auto-Detect:</strong> Once plugged in, TINDA POS automatically detects and binds your printer for receipts, shift audits, and Z-readings.</li>
+                <li><strong>Universal Manual Print Fallback:</strong> If your printer does not print automatically due to Windows spooler port locking, tap <strong>Manual Print</strong> in Checkout or Terminal Tools [F3] to send the receipt directly through the native Windows Print Dialog.</li>
               </ol>
             </div>
 
@@ -563,12 +562,23 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
               <ol className="list-decimal pl-4 space-y-1.5 text-slate-300">
                 <li>Turn on Bluetooth on your Windows PC or laptop.</li>
-                <li>Search for the printer Bluetooth device (usually named <em>PB-58H</em>, <em>MTP-2</em>, or <em>RPP02N</em>).</li>
+                <li>Search for the printer Bluetooth device (usually named <em>KP58B-U</em>, <em>PB-58H</em>, or <em>MTP-2</em>).</li>
                 <li>Pair using the standard PIN: <strong>0000</strong> or <strong>1234</strong>.</li>
                 <li>In Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, verify the printer's <strong>Outgoing COM Port</strong> (e.g., COM3 or COM4).</li>
-                <li>Assign the printer driver to this COM port.</li>
-                <li>In TINDA POS Settings, click <strong>Refresh Printers</strong> and select your Bluetooth device.</li>
+                <li>Assign the printer driver to this COM port, then click <strong>Refresh Printers</strong> in TINDA POS Settings.</li>
               </ol>
+            </div>
+
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3.5 space-y-2 text-emerald-200">
+              <div className="font-bold flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <span>Zero-Blur Guide: How to Fix Blurry or Faint Print Output</span>
+              </div>
+              <ul className="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px]">
+                <li><strong>1. Zero-Blur Typography Engine:</strong> TINDA POS automatically applies integer font geometry and disables subpixel grayscale anti-aliasing so monochrome thermal pins only burn pure black dots.</li>
+                <li><strong>2. Windows Driver Darkness &amp; Halftone:</strong> In Windows <em>Settings &rarr; Bluetooth &amp; devices &rarr; Printers &amp; scanners &rarr; Your Printer &rarr; Printing preferences &rarr; Advanced</em>, set <strong>Print Density / Darkness</strong> to <strong>Dark (Level 12-15)</strong> and set <strong>Dithering / Halftone</strong> to <strong>None</strong>.</li>
+                <li><strong>3. Print Head Maintenance:</strong> Turn off the printer and use a cotton swab lightly dampened with isopropyl alcohol to gently wipe the thermal print head surface (Section 7.1 of manual). Let dry before printing.</li>
+              </ul>
             </div>
 
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 space-y-2 text-amber-200">
@@ -577,10 +587,10 @@ export function Handbook(): React.JSX.Element {
                 <span>Troubleshooting: Print completes successfully but paper is blank or does not feed?</span>
               </div>
               <ul className="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px]">
-                <li><strong>1. Thermal Paper Roll Orientation (Most Common Cause):</strong> Thermal paper only has one chemically-treated heat-sensitive side. Scratch the paper with your fingernail; if a black line appears, that is the <em>thermal side</em>. That side <strong>must face the heated printhead</strong>. If the roll is inserted backwards, the printer feeds blank paper with no print visible.</li>
-                <li><strong>2. Windows USB Virtual Port Mapping:</strong> In Windows <em>Printers &amp; Scanners &rarr; Your Thermal Printer &rarr; Printer Properties &rarr; Ports tab</em>, ensure that the active <code>USB001</code> or <code>USB002</code> Virtual Printer Port is selected. If set to an inactive <code>LPT1</code> or <code>COM1</code>, Windows will report "Printing complete" but the data never reaches the USB hardware.</li>
+                <li><strong>1. Thermal Paper Roll Orientation (Scratch Test):</strong> Thermal paper only has one chemically-treated heat-sensitive side. Scratch the paper with your fingernail; if a black line appears, that is the <em>thermal side</em>. That side <strong>must face the heated printhead</strong>. If reversed, the paper feeds blank.</li>
+                <li><strong>2. Windows USB Virtual Port Mapping:</strong> In Windows <em>Printer Properties &rarr; Ports tab</em>, ensure that the active <code>USB001</code> Virtual Printer Port is selected instead of LPT1 or COM1.</li>
                 <li><strong>3. Windows Driver Page Size Setting:</strong> In Windows Printing Preferences, set the default Paper Size to <strong>58mm x 297mm</strong> or <strong>58 x Continuous</strong> rather than A4 or Letter.</li>
-                <li><strong>4. Hardware Self-Test Verification:</strong> To test physical printer hardware: turn off the printer, hold the <strong>FEED button</strong>, and turn on power while holding FEED. Release after 2 seconds. The printer should print an internal diagnostic self-test slip confirming the printhead is working.</li>
+                <li><strong>4. Hardware Self-Test Verification:</strong> Turn off the printer, hold the <strong>FEED button</strong>, and turn on power while holding FEED. Release after 2 seconds. The printer should print an internal diagnostic self-test slip confirming the printhead is working.</li>
               </ul>
             </div>
           </div>

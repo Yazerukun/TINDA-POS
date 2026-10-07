@@ -2377,21 +2377,39 @@ function CheckoutModal({
   }, [done, pickerOpen, method, cash, reference, items, customer_id, total, submitting])
 
   if (done) {
-    const retryPrint = async () => {
+    const retryPrint = async (manual = false) => {
       setPrinting(true)
       try {
-        const result = await window.api.printer.printReceipt(done.sale.id)
+        const result = await window.api.printer.printReceipt(done.sale.id, { manual })
         setDone({ ...done, print: result })
-        if (result.ok) toastSuccess('Receipt printed successfully')
-        else toastError('Receipt printing failed', result.message)
+        if (result.ok) toastSuccess(manual ? 'Print job submitted via dialog' : 'Receipt printed successfully')
+        else if (result.code !== 'DISABLED') toastError('Receipt printing failed', result.message)
       } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) } finally { setPrinting(false) }
     }
     return (
       <Modal open onClose={onClose} title="Sale Complete" footer={
         <>
-          {!done.print.ok && done.print.code !== 'DISABLED' && <button onClick={() => void retryPrint()} disabled={printing} className="btn-ghost">Retry Print</button>}
-          {(done.print.code === 'NO_PRINTER' || done.print.code === 'UNAVAILABLE') && <button onClick={() => { onClose(); setPage('settings') }} className="btn-ghost">Configure Printer</button>}
-          <button onClick={onClose} className="btn-primary">Done</button>
+          <button
+            type="button"
+            onClick={() => void retryPrint(true)}
+            disabled={printing}
+            className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+            title="Open Windows System Print Dialog to manually select printer, adjust darkness/density, or paper size"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            <span>Manual Print</span>
+          </button>
+          {!done.print.ok && done.print.code !== 'DISABLED' && (
+            <button type="button" onClick={() => void retryPrint(false)} disabled={printing} className="btn-ghost">
+              Auto Retry
+            </button>
+          )}
+          {(done.print.code === 'NO_PRINTER' || done.print.code === 'UNAVAILABLE') && (
+            <button type="button" onClick={() => { onClose(); setPage('settings') }} className="btn-ghost">
+              Configure Printer
+            </button>
+          )}
+          <button type="button" onClick={onClose} className="btn-primary">Done</button>
         </>
       }>
         <div className="mb-3 text-center">
