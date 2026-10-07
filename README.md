@@ -21,9 +21,9 @@
 
 </div>
 
-## ✨ What's New in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub)
+## ✨ What's New in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Unified Bills Center)
 
-> **Universal Multi-Size Shelf Price Tag & Barcode Printing, Operations Printable Sheets & P.O. Hub, Zero-Waste Thermal Receipt Gap & Decimal Display Fix, Smart Enter-to-Punch Multi-Criteria Search, and Dedicated Bills Payment & E-Load Module**
+> **Universal Multi-Size Shelf Price Tag & Barcode Printing, Operations Printable Sheets & P.O. Hub, Zero-Waste Thermal Receipt Gap & Decimal Display Fix, Smart Enter-to-Punch Multi-Criteria Search, Unified E-Wallet & Bills Center with Native Thermal & Manual Print, and Community Chat.**
 
 - 🏷️ **Universal Multi-Size Shelf Price Tag & Barcode Sticker Printing**:
   - Direct 1-tap price tag generation right from Inventory catalog and per-item action buttons.
@@ -44,10 +44,14 @@
   - Multiplier rapid punch supported: type `5*egg` or `12*48000123` and hit `Enter` to instantly add bulk quantities.
   - Proactive **Low-Stock Alert**: Instant warning toast whenever an item punched has $\le$ `low_stock_threshold` remaining.
   - Upgraded **No Product Found** interactive Cupertino card with instant query clearing (`Esc`) and direct product addition.
-- ⚡ **Dedicated Sidebar Module: Bills Payment & E-Load Hub**:
-  - Full-featured module in Sidebar under *Cashier & Register* for stores handling utilities, telecom, water, internet, and loans (Home Credit, Meralco, Electric Coops, Water Districts, Globe, Smart, DITO, Converge, ShopeePay) via store GCash or Maya Business accounts.
-  - Logs customer payment with custom convenience fees (e.g. +₱15 or +₱20), records customer phone and account numbers, and generates official 58mm thermal acknowledgment receipt slips.
-  - Mirrors cash inflow and service fee income into the store's audit ledger.
+- ⚡ **Unified E-Wallet & Bills Center (Consolidated Single Sidebar Module)**:
+  - Unified into a single **E-Wallet & Bills** module under *Cashier & Register*, saving valuable sidebar space while centralizing store financial services.
+  - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+  - **Native Hardware Thermal & Universal Manual Print**: Fully integrated with Electron's hardware printing engine (`ewallet:printBillSlip`), supporting direct thermal printing and Windows OS System Print Dialog for challenging printer setups.
+  - **Deletion & Void Safeguards**: Added interactive Cupertino confirmation modals for deleting or voiding e-wallet and bill payment records.
+- 💬 **TINDA Community Chat & Polished UI Standard**:
+  - Renamed Global Lounge to **Community Chat** across floating capsules, dialog headers, and empty states.
+  - Removed outdated "Hub" labels from user-facing navigation in favor of clean terminology (**Bills Payment & E-Load**, **TINDA POS Hardware Center**, **E-Wallet & Cash Audit**, **Multi-PC Network**).
 - 🛡️ **100% Quality Invariants Maintained**:
   - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
 
