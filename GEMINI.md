@@ -47,8 +47,15 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
    - Expanded printer recognition regexes to match `58h`, `jp-?58`, and `kp-?58` (`KP58B-U` Bluetooth and `JP-58BL` USB models).
    - Linked official [GOOJPRT 58H User Manual](https://manuals.plus/ae/1005008661058283) in Settings -> Receipt and Handbook Chapter 10.
    - Documented exact Windows driver steps for setting **Print Density / Darkness** to Dark (Level 12-15), **Dithering** to None, and performing printhead cleaning with isopropyl alcohol.
-4. **100% Automated Test Gate Passed**:
-   - Verified 414/414 unit tests across 63 test suites with 0 TypeScript errors.
+4. **Cloud Owner Dashboard & True Realized Sales Void-Safe Architecture**:
+   - Fixed the financial discrepancy where voided transactions previously inflated Period Revenue (e.g., ₱6,000 displayed instead of ₱5,995 after voiding a ₱5 item).
+   - Desktop POS transaction voiding (`processVoid`) and transaction deletions (`deleteTransaction`) now automatically broadcast a `status: 'VOIDED'` and `net_sales_c: 0` payload to the Cloudflare Worker sync queue alongside the updated X/Z shift balancing snapshot.
+   - Cloudflare D1 Worker upsert query permanently persists `status = excluded.status` and zeroes out sales components upon void sync.
+   - Cloud Owner Dashboard (`https://tinda-owner-dashboard.pages.dev` / `BranchDetailPage.tsx`) filters sales strictly by `status !== 'VOIDED'` for all Period Revenue and tender breakdowns (Cash, GCash, Maya, Utang).
+   - Voided sales in the Sales Feed table are explicitly rendered with a red `VOIDED` status badge, strikethrough text formatting, and muted opacity for complete audit transparency.
+5. **100% Automated Test Gate & Master Invariants Passed**:
+   - Automated unit tests in `stabilization.test.ts` verify transaction voiding, shift totals recalculation, inventory replenishment, and cloud sync payload integrity.
+   - Verified 414/414 unit tests across 63 test suites with 0 TypeScript compilation errors.
 
 ## Key Features in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
 1. **VIP Pro Custom Brand Identity & Store Logo Upload**:
