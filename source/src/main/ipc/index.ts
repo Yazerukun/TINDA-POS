@@ -1152,7 +1152,7 @@ handle('ewallet:listAudits', (_e: IpcMainInvokeEvent, opts?: unknown) => {
   const ewalletRepo = require('../repositories/ewallet')
   return ewalletRepo.listEwalletAudits(db(), (opts ?? {}) as object)
 })
-handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number) => {
+handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number, options?: { manual?: boolean }) => {
   const isVip = licenseService.getStatus().isVip
   if (!isVip && process.env.NODE_ENV !== 'test') {
     throw new Error('VIP_LOCKED: E-Wallet slip printing is a VIP Pro feature.')
@@ -1161,7 +1161,7 @@ handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number) => {
   const tx = ewalletRepo.getEwalletTransaction(db(), id)
   const settings = settingRepo.getSettings(db())
   const { formatEwalletSlipLines } = require('../../shared/receiptHtml')
-  return await printingSvc.printLines(settings, formatEwalletSlipLines(tx, settings.store_name))
+  return await printingSvc.printLines(settings, formatEwalletSlipLines(tx, settings.store_name), options)
 })
 handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number) => {
   const isVip = licenseService.getStatus().isVip
@@ -1173,6 +1173,15 @@ handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number) =>
   const settings = settingRepo.getSettings(db())
   const { formatEwalletAuditLines } = require('../../shared/receiptHtml')
   return await printingSvc.printLines(settings, formatEwalletAuditLines(audit, settings.store_name))
+})
+handle('ewallet:printBillSlip', async (_e: IpcMainInvokeEvent, payload: import('../../shared/receiptHtml').BillSlipPayload, options?: { manual?: boolean }) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP_LOCKED: Bills receipt printing is a VIP Pro feature.')
+  }
+  const settings = settingRepo.getSettings(db())
+  const { formatBillSlipLines } = require('../../shared/receiptHtml')
+  return await printingSvc.printLines(settings, formatBillSlipLines(payload, settings.store_name), options)
 })
 
 export function registerIpcHandlers(): void {

@@ -50,7 +50,7 @@ export function Shell(): React.JSX.Element {
         {user && page === 'backup' && <Backup />}
         {user && page === 'settings' && <Settings />}
         {user && page === 'ewallet' && <EwalletAudit />}
-        {user && page === 'bills' && <BillsLoadHub />}
+        {user && page === 'bills' && <EwalletAudit />}
         {user && page === 'handbook' && <Handbook />}
         </div>
       </main>

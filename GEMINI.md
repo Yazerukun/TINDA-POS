@@ -41,9 +41,11 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
    - Multiplier rapid punch supported: type `5*egg` or `12*48000123` and hit `Enter` to instantly add bulk quantities.
    - Proactive **Low-Stock Alert**: Instant warning toast whenever an item punched has $\le$ `low_stock_threshold` remaining.
    - Upgraded **No Product Found** interactive Cupertino card with instant query clearing (`Esc`).
-5. **Dedicated Sidebar Module: Bills Payment & E-Load Hub**:
-   - Added dedicated `BillsLoadHub.tsx` under *Cashier & Register* for stores handling utilities, telecom, water, internet, and loans (Home Credit, Meralco, Electric Coops, Water Districts, Globe, Smart, DITO, Converge, ShopeePay) via store GCash or Maya Business accounts.
-   - Logs customer payment with custom convenience fees, customer phone, and generates official 58mm thermal acknowledgment receipt slips.
+5. **Unified E-Wallet & Bills Center (Consolidated Single Sidebar Module)**:
+   - Combined previously split modules into a unified **E-Wallet & Bills** module under *Cashier & Register*, saving sidebar space and giving cashiers an integrated financial hub.
+   - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - **Native Hardware Thermal & Universal Manual Print**: Replaced popup `window.open` with native Electron print service (`ewallet:printBillSlip`), supporting both direct thermal burning and Windows system dialog manual printing for challenging printer setups.
+   - **Deletion & Void Safeguards**: Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals for both E-Wallet and Bills Payment records.
 6. **100% Quality Invariants & Automated Test Gate Passed**:
    - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
 

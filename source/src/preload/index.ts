@@ -316,8 +316,9 @@ const api: TindaApi = {
     getShiftSummary: (shiftId) => invoke<import('@shared/types').EwalletShiftSummary>('ewallet:getShiftSummary', shiftId),
     saveAudit: (input) => invoke<import('@shared/types').EwalletAuditRecord>('ewallet:saveAudit', input),
     listAudits: (opts) => invoke<import('@shared/types').EwalletAuditRecord[]>('ewallet:listAudits', opts),
-    printSlip: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printSlip', id),
-    printAuditReport: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id)
+    printSlip: (id, options) => invoke<{ ok: boolean; message: string }>('ewallet:printSlip', id, options),
+    printAuditReport: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id),
+    printBillSlip: (payload, options) => invoke<{ ok: boolean; message: string }>('ewallet:printBillSlip', payload, options)
   }
 }
 

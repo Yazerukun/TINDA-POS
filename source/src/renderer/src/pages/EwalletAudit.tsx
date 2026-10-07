@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Smartphone,
+  Zap,
   ArrowDownLeft,
   ArrowUpRight,
   Printer,
@@ -35,10 +36,64 @@ const toast = {
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { useLicense } from '../stores/license'
 
+const BILLER_PRESETS = [
+  { name: 'Meralco', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
+  { name: 'Electric Cooperative', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
+  { name: 'VECO / Visayan Electric', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
+  { name: 'Maynilad / Manila Water', category: 'WATER', defaultFee: 15, icon: '💧' },
+  { name: 'Local Water District', category: 'WATER', defaultFee: 15, icon: '💧' },
+  { name: 'Home Credit', category: 'LOANS', defaultFee: 20, icon: '💳' },
+  { name: 'Cashalo / Tala', category: 'LOANS', defaultFee: 20, icon: '💳' },
+  { name: 'ShopeePay / SPayLater', category: 'LOANS', defaultFee: 15, icon: '🛍️' },
+  { name: 'Globe / TM Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
+  { name: 'Smart / TNT Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
+  { name: 'DITO Telecommunity', category: 'TELCO', defaultFee: 5, icon: '📶' },
+  { name: 'Converge ICT', category: 'INTERNET', defaultFee: 20, icon: '🌐' },
+  { name: 'PLDT Home / Smart Bro', category: 'INTERNET', defaultFee: 20, icon: '🌐' }
+]
+
+const BILLS_STORAGE_KEY = 'tinda_bills_load_records'
+
+export interface BillRecord {
+  id: string
+  category: 'UTILITIES' | 'WATER' | 'LOANS' | 'TELCO' | 'INTERNET'
+  biller: string
+  accountNo: string
+  customerName: string
+  customerPhone?: string
+  amount: number
+  serviceFee: number
+  paidVia: 'CASH'
+  sourceWallet: 'GCASH' | 'MAYA'
+  status: 'COMPLETED'
+  createdAt: string
+  referenceNo: string
+}
+
 export function EwalletAudit(): React.JSX.Element {
   const { isVip, loadLicense } = useLicense()
   const [vipModalOpen, setVipModalOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'register' | 'transactions' | 'audit' | 'history'>('register')
+  const [activeTab, setActiveTab] = useState<'register' | 'bills' | 'transactions' | 'audit' | 'history'>('register')
+
+  // Bills & E-Load State
+  const [billRecords, setBillRecords] = useState<BillRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem(BILLS_STORAGE_KEY)
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [selectedBiller, setSelectedBiller] = useState(BILLER_PRESETS[0]?.name || 'Meralco')
+  const [billAccountNo, setBillAccountNo] = useState('')
+  const [billCustomerName, setBillCustomerName] = useState('')
+  const [billCustomerPhone, setBillCustomerPhone] = useState('')
+  const [billAmountStr, setBillAmountStr] = useState('')
+  const [billFeeStr, setBillFeeStr] = useState(String(BILLER_PRESETS[0]?.defaultFee || 15))
+  const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA'>('GCASH')
+  const [billReferenceNo, setBillReferenceNo] = useState('')
+  const [billSearchQuery, setBillSearchQuery] = useState('')
+  const [billToDelete, setBillToDelete] = useState<BillRecord | null>(null)
 
   // Register Form State
   const [channel, setChannel] = useState<EwalletChannel>('GCASH')
@@ -218,6 +273,126 @@ export function EwalletAudit(): React.JSX.Element {
     }
   }
 
+  // Bills & E-Load Handlers
+  const saveBillRecords = (next: BillRecord[]) => {
+    setBillRecords(next)
+    try {
+      localStorage.setItem(BILLS_STORAGE_KEY, JSON.stringify(next))
+    } catch {}
+  }
+
+  const handleProcessBill = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const amt = parseFloat(billAmountStr)
+    if (!amt || amt <= 0) {
+      toast.error('Please enter a valid bill amount.')
+      return
+    }
+    if (!billAccountNo.trim()) {
+      toast.error('Please provide an account number or mobile phone.')
+      return
+    }
+    const fee = parseFloat(billFeeStr) || 0
+
+    const newTx: BillRecord = {
+      id: 'BL-' + Date.now().toString(36).toUpperCase(),
+      category: (BILLER_PRESETS.find((b) => b.name === selectedBiller)?.category as any) || 'UTILITIES',
+      biller: selectedBiller,
+      accountNo: billAccountNo.trim(),
+      customerName: billCustomerName.trim() || 'Walk-in Customer',
+      customerPhone: billCustomerPhone.trim(),
+      amount: amt,
+      serviceFee: fee,
+      paidVia: 'CASH',
+      sourceWallet: billSourceWallet,
+      status: 'COMPLETED',
+      createdAt: new Date().toISOString(),
+      referenceNo: billReferenceNo.trim() || 'REF-' + Math.floor(100000 + Math.random() * 900000)
+    }
+
+    // Auto-record E-Wallet transaction into database
+    try {
+      if (window.api?.ewallet?.createTransaction) {
+        await window.api.ewallet.createTransaction({
+          channel: billSourceWallet,
+          type: 'CASH_IN',
+          amount_c: Math.round(amt * 100),
+          fee_c: Math.round(fee * 100),
+          fee_collected_via: 'CASH',
+          reference_no: newTx.referenceNo,
+          customer_name: newTx.customerName,
+          customer_phone: newTx.customerPhone || undefined,
+          notes: `Bills/Load: ${selectedBiller} (Acct: ${billAccountNo.trim()})`
+        })
+      }
+    } catch (err) {
+      console.warn('Could not mirror to ewallet table:', err)
+    }
+
+    const next = [newTx, ...billRecords]
+    saveBillRecords(next)
+    toast.success('Transaction Recorded', `${selectedBiller} payment of ₱${amt.toFixed(2)} logged!`)
+
+    // Reset Form
+    setBillAccountNo('')
+    setBillCustomerName('')
+    setBillCustomerPhone('')
+    setBillAmountStr('')
+    setBillReferenceNo('')
+    void loadData()
+  }
+
+  const printBillReceipt = async (tx: BillRecord, manual = false) => {
+    try {
+      const res = await window.api.ewallet.printBillSlip(
+        {
+          biller: tx.biller,
+          referenceNo: tx.referenceNo,
+          accountNo: tx.accountNo,
+          customerName: tx.customerName,
+          customerPhone: tx.customerPhone,
+          amount: tx.amount,
+          serviceFee: tx.serviceFee,
+          sourceWallet: tx.sourceWallet,
+          createdAt: tx.createdAt
+        },
+        { manual }
+      )
+      if (res.ok) {
+        toast.success(manual ? 'Manual print dialog opened' : 'Receipt printed successfully')
+      } else {
+        toast.error('Printing failed', res.message)
+      }
+    } catch (e) {
+      toast.error('Printing error', String((e as Error)?.message || e))
+    }
+  }
+
+  const printEwalletReceipt = async (id: number, manual = false) => {
+    try {
+      const res = await window.api.ewallet.printSlip(id, { manual })
+      if (res.ok) {
+        toast.success(manual ? 'Manual print dialog opened' : 'Claim slip printed successfully')
+      } else {
+        toast.error('Printing failed', res.message)
+      }
+    } catch (e) {
+      toast.error('Printing error', String((e as Error)?.message || e))
+    }
+  }
+
+  const handleDeleteBill = (tx: BillRecord) => {
+    setBillToDelete(tx)
+  }
+
+  const confirmDeleteBill = () => {
+    if (!billToDelete) return
+    const next = billRecords.filter((b) => b.id !== billToDelete.id)
+    saveBillRecords(next)
+    toast.success('Deleted', 'Bills payment transaction removed.')
+    setBillToDelete(null)
+  }
+
   const handleDeleteTransaction = (id: number): void => {
     const tx = transactions.find((t) => t.id === id)
     if (tx) {
@@ -276,14 +451,14 @@ export function EwalletAudit(): React.JSX.Element {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
               <Smartphone className="h-6 w-6 text-emerald-400" />
-              E-Wallet & Cash Audit
+              E-Wallet &amp; Bills Center
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 border border-amber-500/30">
               <Crown className="h-3 w-3" /> VIP PRO EXCLUSIVE
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Complete Cash In / Cash Out bookkeeping, instant customer receipt printing, and 3-Way End-of-Day Reconciliation.
+            GCash &amp; Maya Cash In / Cash Out, Utilities &amp; Loan Bills Payment, Instant Thermal &amp; Manual Printing, and 3-Way Audit.
           </p>
         </div>
 
@@ -301,6 +476,18 @@ export function EwalletAudit(): React.JSX.Element {
             >
               <Smartphone className="h-3.5 w-3.5" />
               Cash In / Out
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('bills')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                activeTab === 'bills'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              Bills &amp; E-Load ({billRecords.length})
             </button>
             <button
               type="button"
@@ -735,6 +922,319 @@ export function EwalletAudit(): React.JSX.Element {
         </div>
       )}
 
+      {/* Tab: Bills Payment & E-Load Hub */}
+      {isVip && activeTab === 'bills' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: Express Bills Payment Form */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="card p-5 border border-ink-line bg-ink-900/90 rounded-2xl shadow-card space-y-4">
+                <div className="flex items-center justify-between border-b border-ink-line/60 pb-3">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-400" />
+                    New Bill / E-Load Entry
+                  </h3>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Customer Cash
+                  </span>
+                </div>
+
+                <form onSubmit={(e) => void handleProcessBill(e)} className="space-y-4">
+                  {/* Source Wallet (What the merchant pays out with) */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                      Store Wallet Used to Process:
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBillSourceWallet('GCASH')}
+                        className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold transition ${
+                          billSourceWallet === 'GCASH'
+                            ? 'border-sky-500 bg-sky-500/15 text-sky-400 ring-2 ring-sky-500/20'
+                            : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Smartphone className="h-3.5 w-3.5" /> GCash Business
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillSourceWallet('MAYA')}
+                        className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold transition ${
+                          billSourceWallet === 'MAYA'
+                            ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 ring-2 ring-emerald-500/20'
+                            : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Smartphone className="h-3.5 w-3.5" /> Maya Business
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Biller Preset Selector */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                      Biller / Telecom Network:
+                    </label>
+                    <select
+                      value={selectedBiller}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setSelectedBiller(val)
+                        const preset = BILLER_PRESETS.find((p) => p.name === val)
+                        if (preset) setBillFeeStr(String(preset.defaultFee))
+                      }}
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-xs font-semibold text-white outline-none focus:border-brand-500 transition"
+                    >
+                      {BILLER_PRESETS.map((p) => (
+                        <option key={p.name} value={p.name}>
+                          {p.icon} {p.name} ({p.category}) — Default Fee: ₱{p.defaultFee}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Account / Mobile Number */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 block mb-1">
+                      Account # / Loan # / Mobile # <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={billAccountNo}
+                      onChange={(e) => setBillAccountNo(e.target.value)}
+                      placeholder="e.g. 09171234567 or Account/Contract #"
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-xs font-mono font-bold text-brand-300 outline-none focus:border-brand-500 transition"
+                      required
+                    />
+                  </div>
+
+                  {/* Customer Information */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">Customer Name</label>
+                      <input
+                        type="text"
+                        value={billCustomerName}
+                        onChange={(e) => setBillCustomerName(e.target.value)}
+                        placeholder="Walk-in Customer"
+                        className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-1.5 text-xs text-white outline-none focus:border-brand-500 transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">Phone (Optional)</label>
+                      <input
+                        type="text"
+                        value={billCustomerPhone}
+                        onChange={(e) => setBillCustomerPhone(e.target.value)}
+                        placeholder="09..."
+                        className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-1.5 text-xs font-mono text-white outline-none focus:border-brand-500 transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bill & Fee Calculation */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-300 block mb-1">
+                        Principal Amount (₱) <span className="text-rose-400">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={billAmountStr}
+                        onChange={(e) => setBillAmountStr(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-brand-500 transition"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-300 block mb-1">
+                        Convenience Fee (₱)
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={billFeeStr}
+                        onChange={(e) => setBillFeeStr(e.target.value)}
+                        placeholder="15.00"
+                        className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-sm font-bold text-emerald-400 outline-none focus:border-brand-500 transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Total to Collect */}
+                  <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-brand-300">Total Customer Cash to Collect</p>
+                      <p className="text-lg font-black text-white">
+                        ₱{((parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)).toFixed(2)}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
+                      Tubo: +₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Reference Number */}
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                      App Trace / Reference # (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={billReferenceNo}
+                      onChange={(e) => setBillReferenceNo(e.target.value)}
+                      placeholder="e.g. 1002345892 (from GCash/Maya screen)"
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-1.5 text-xs font-mono text-slate-300 outline-none focus:border-brand-500 transition"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 py-3 text-xs font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95 transition"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Record &amp; Log Payment
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Right: Bills Ledger with Search, Thermal Print, Manual Print & Delete */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ink-line/60 pb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Receipt className="h-4 w-4 text-brand-400" />
+                      Bills &amp; E-Load Transactions ({billRecords.length})
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Print official thermal stubs, trigger manual print dialog, or void entries.
+                    </p>
+                  </div>
+                  <div className="relative w-full sm:w-56">
+                    <Search className="absolute left-3 top-2 h-3.5 w-3.5 text-slate-500" />
+                    <input
+                      type="text"
+                      value={billSearchQuery}
+                      onChange={(e) => setBillSearchQuery(e.target.value)}
+                      placeholder="Search biller, account, ref..."
+                      className="w-full rounded-xl border border-ink-line bg-ink-950 pl-8 pr-3 py-1.5 text-xs text-white outline-none focus:border-brand-500 transition"
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-ink-line text-slate-400 uppercase text-[10px] tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Biller &amp; Account</th>
+                        <th className="py-2.5 px-3">Wallet</th>
+                        <th className="py-2.5 px-3 text-right">Amount</th>
+                        <th className="py-2.5 px-3 text-right">Fee</th>
+                        <th className="py-2.5 px-3 text-right">Total Cash</th>
+                        <th className="py-2.5 px-3 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-ink-line/50">
+                      {billRecords.filter((b) =>
+                        b.biller.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                        b.accountNo.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                        b.customerName.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                        b.referenceNo.toLowerCase().includes(billSearchQuery.toLowerCase())
+                      ).length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-slate-500">
+                            No bills payment or E-load transactions recorded yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        billRecords
+                          .filter((b) =>
+                            b.biller.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                            b.accountNo.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                            b.customerName.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
+                            b.referenceNo.toLowerCase().includes(billSearchQuery.toLowerCase())
+                          )
+                          .map((b) => (
+                            <tr key={b.id} className="hover:bg-ink-800/50 transition">
+                              <td className="py-2.5 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                {new Date(b.createdAt).toLocaleString('en-PH', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </td>
+                              <td className="py-2.5 px-3 whitespace-nowrap">
+                                <p className="font-bold text-white">{b.biller}</p>
+                                <p className="text-[11px] font-mono text-brand-300">{b.accountNo}</p>
+                              </td>
+                              <td className="py-2.5 px-3 whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                    b.sourceWallet === 'GCASH'
+                                      ? 'bg-sky-500/20 text-sky-300'
+                                      : 'bg-emerald-500/20 text-emerald-300'
+                                  }`}
+                                >
+                                  {b.sourceWallet}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-3 text-right tabular-nums text-slate-200">
+                                ₱{b.amount.toFixed(2)}
+                              </td>
+                              <td className="py-2.5 px-3 text-right tabular-nums text-emerald-400 font-semibold">
+                                +₱{b.serviceFee.toFixed(2)}
+                              </td>
+                              <td className="py-2.5 px-3 text-right tabular-nums font-bold text-white">
+                                ₱{(b.amount + b.serviceFee).toFixed(2)}
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => void printBillReceipt(b, false)}
+                                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
+                                    title="Thermal Print Receipt (Auto)"
+                                  >
+                                    <Printer className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void printBillReceipt(b, true)}
+                                    className="px-1.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 border border-ink-line transition"
+                                    title="Manual Print (System Dialog)"
+                                  >
+                                    Manual
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteBill(b)}
+                                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-rose-400 hover:text-rose-300 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition"
+                                    title="Delete Transaction"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                    <span>Delete</span>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tab: Dedicated Transactions Ledger with Void/Delete & Filter */}
       {isVip && activeTab === 'transactions' && (
         <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
@@ -934,11 +1434,19 @@ export function EwalletAudit(): React.JSX.Element {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => void window.api.ewallet.printSlip(tx.id)}
+                            onClick={() => void printEwalletReceipt(tx.id, false)}
                             className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
-                            title="Reprint Thermal Claim Slip"
+                            title="Print Thermal Slip (Auto)"
                           >
                             <Printer className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void printEwalletReceipt(tx.id, true)}
+                            className="px-1.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 border border-ink-line transition"
+                            title="Manual Print (System Dialog)"
+                          >
+                            Manual
                           </button>
                           <button
                             type="button"
@@ -1398,6 +1906,68 @@ export function EwalletAudit(): React.JSX.Element {
               >
                 <Trash2 className="h-4 w-4" />
                 {isDeleting ? 'Voiding...' : 'Yes, Void & Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete / Void Bill Confirmation Modal */}
+      {billToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-sm rounded-2xl border border-rose-500/30 bg-ink-900 p-5 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="rounded-xl bg-rose-500/10 p-2.5 border border-rose-500/20">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">Delete Bills Payment</h3>
+                <p className="text-[11px] text-slate-400">Confirm transaction removal</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-ink-950 p-3.5 space-y-2 text-xs border border-ink-line">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Biller & Service:</span>
+                <span className="font-bold text-white">{billToDelete.biller}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Account / Mobile #:</span>
+                <span className="font-mono text-brand-300">{billToDelete.accountNo}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Bill Amount:</span>
+                <span className="font-bold text-white">₱{billToDelete.amount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Convenience Fee:</span>
+                <span className="font-bold text-emerald-400">+₱{billToDelete.serviceFee.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Processed Via:</span>
+                <span className="font-semibold text-slate-200">{billToDelete.sourceWallet} Business</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-rose-300/80 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              ⚠️ Warning: This will permanently remove this record from your Bills Payment ledger.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setBillToDelete(null)}
+                className="flex-1 rounded-xl border border-ink-line bg-ink-950 py-2.5 text-xs font-semibold text-slate-300 hover:bg-ink-800 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => confirmDeleteBill()}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-600/30 active:scale-95 transition"
+              >
+                <Trash2 className="h-4 w-4" />
+                Yes, Delete Record
               </button>
             </div>
           </div>

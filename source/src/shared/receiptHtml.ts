@@ -330,3 +330,44 @@ export function formatEwalletAuditLines(
   return lines
 }
 
+export interface BillSlipPayload {
+  biller: string
+  referenceNo: string
+  accountNo: string
+  customerName: string
+  customerPhone?: string
+  amount: number
+  serviceFee: number
+  sourceWallet: string
+  createdAt: string
+}
+
+export function formatBillSlipLines(
+  b: BillSlipPayload,
+  storeName?: string | null
+): string[] {
+  const moneyStr = (val: number): string => (val || 0).toFixed(2)
+  const lines: string[] = [
+    storeName || 'TINDA POS',
+    'BILLS & E-LOAD RECEIPT',
+    '--------------------------------',
+    `Date: ${new Date(b.createdAt).toLocaleString('en-PH')}`,
+    `Ref #: ${b.referenceNo || 'N/A'}`,
+    `Biller: ${b.biller}`,
+    `Acct / No: ${b.accountNo}`
+  ]
+  if (b.customerName) lines.push(`Customer: ${b.customerName}`)
+  if (b.customerPhone) lines.push(`Mobile: ${b.customerPhone}`)
+  lines.push('Paid Via: Customer Cash')
+  lines.push(`Processed: ${b.sourceWallet} Business`)
+  lines.push('--------------------------------')
+  lines.push(`Bill Amount    P${moneyStr(b.amount)}`)
+  lines.push(`Service Fee   +P${moneyStr(b.serviceFee)}`)
+  lines.push('--------------------------------')
+  lines.push(`TOTAL PAID     P${moneyStr(b.amount + b.serviceFee)}`)
+  lines.push('--------------------------------')
+  lines.push('OFFICIAL ACKNOWLEDGMENT')
+  lines.push('Please keep this receipt as proof')
+  lines.push('of payment. Thank you!')
+  return lines
+}
