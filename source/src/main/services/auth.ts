@@ -1,7 +1,7 @@
 import { getDb } from '../database/connection'
 import { getSettings, updateSettings } from '../repositories/settings'
 import { hashSecret, verifySecret } from '../security/passwords'
-import { createUser, updatePassword, updateUser, userCount } from '../repositories/users'
+import { createUser, getUserByUsername, updatePassword, updateUser, userCount } from '../repositories/users'
 import { getSession, requirePermission, requireUser, setSession } from './session'
 import { createBackupSync } from '../repositories/backup'
 import { audit } from '../repositories/audit'
@@ -27,7 +27,13 @@ export function toSession(db: DB, id: number): SessionUser {
 }
 
 export function firstRunComplete(db: DB): boolean {
-  return userCount(db) > 0 && !!getSettings(db).store_name
+  const count = userCount(db)
+  if (count <= 0) return false
+  const settings = getSettings(db)
+  if (!settings.store_name || !settings.store_name.trim()) {
+    updateSettings(db, { store_name: 'My Sari-Sari Store' })
+  }
+  return true
 }
 
 // M7.2 — Case-insensitive login by either username OR full_name
@@ -202,41 +208,52 @@ export function completeSetup(input: {
   }
 
   const db = getDb()
-  const wasFirstRun = !firstRunComplete(db)
+  const isInitialFirstRun = userCount(db) === 0
 
   const runSetup = db.transaction(() => {
-    if (wasFirstRun) {
-      updateSettings(db, {
-        store_name: input.store.store_name.trim(),
-        owner_name: input.store.owner_name ?? '',
-        address: input.store.address ?? '',
-        phone: input.store.phone ?? '',
-        receipt_header: input.receipt?.header ?? input.store.store_name.trim(),
-        receipt_footer: input.receipt?.footer ?? 'Thank you for your purchase!',
-        data_dir: input.data_dir
-
+    updateSettings(db, {
+      store_name: input.store.store_name.trim(),
+      owner_name: input.store.owner_name ?? '',
+      address: input.store.address ?? '',
+      phone: input.store.phone ?? '',
+      receipt_header: input.receipt?.header ?? input.store.store_name.trim(),
+      receipt_footer: input.receipt?.footer ?? 'Thank you for your purchase!',
+      data_dir: input.data_dir
+    })
+    const cleanUsername = input.admin.username.trim()
+    const existingUser = getUserByUsername(db, cleanUsername)
+    if (existingUser) {
+      updateUser(db, existingUser.id, {
+        username: cleanUsername,
+        passwordHash: hashSecret(input.admin.password),
+        pinHash: hashSecret(input.admin.pin),
+        full_name: input.admin.full_name?.trim() || existingUser.full_name || 'Administrator',
+        roles: ['ADMIN'],
+        is_active: true
       })
+    } else {
       createUser(db, {
-        username: input.admin.username.trim(),
+        username: cleanUsername,
         passwordHash: hashSecret(input.admin.password),
         pinHash: hashSecret(input.admin.pin),
         full_name: input.admin.full_name?.trim() || 'Administrator',
         roles: ['ADMIN'],
         is_active: true
       })
-      if (input.load_demo) loadDemoData(db)
-      audit(db, { action: 'SETUP_COMPLETE', user_id: 1, reason: 'First-run wizard finished' })
     }
+    if (input.load_demo) loadDemoData(db)
+    audit(db, { action: 'SETUP_COMPLETE', user_id: 1, reason: 'First-run wizard finished' })
   })
 
   runSetup()
 
-  if (wasFirstRun) {
+  if (isInitialFirstRun) {
     createBackupSync(db, 'MANUAL')
   }
 
-  const users = db.prepare('SELECT id FROM users ORDER BY id LIMIT 1').get() as { id: number }
-  return finalize(db, users.id)
+  const adminUser = getUserByUsername(db, input.admin.username.trim())
+  const targetId = adminUser ? adminUser.id : (db.prepare('SELECT id FROM users ORDER BY id LIMIT 1').get() as { id: number }).id
+  return finalize(db, targetId)
 }
 
 export function authStatus(): SessionUser | null {

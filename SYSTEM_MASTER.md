@@ -1288,15 +1288,33 @@
      - All 416 automated vitest unit tests passing across 63 test suites with 0 TypeScript compilation errors.
      - Production installer and portable binaries published with verified SHA256 checksums to GitHub Releases.
 
+---
 
-
-
-
-
-
-
-
-
-
-
-
+## 62. Release v1.0.69 — Laptop Responsive Layout & Auth Setup Resilience Edition
+* **Version:** `1.0.69`
+* **Release Date:** October 2026
+* **Key Components Modified:**
+  - `source/src/renderer/src/pages/EwalletAudit.tsx`
+  - `source/src/main/services/auth.ts`
+  - `source/src/main/services/__tests__/stabilization.test.ts`
+  - `source/package.json`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `tools/publish_v1069.mjs`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+* **Technical Implementations:**
+  1. **E-Wallet & Bills Laptop Resolution Responsiveness:**
+     - Replaced `lg:grid-cols-12` split layouts with `2xl:grid-cols-12` across the Register and Bills Payment tabs in `EwalletAudit.tsx`. On laptop screens ($1366\times 768$, $1280\times 720$, $1280\times 800$), the input form and ledger tables stack vertically in full width, preventing column truncation.
+     - Pinned the Actions column (`sticky right-0 z-10`) with solid container backgrounds (`bg-ink-900`, `bg-ink-950`), custom left borders, and drop shadow depth for both Bills and Transactions ledgers. Even when users zoom or display on narrow viewport widths, the **Print**, **Manual Print**, and **Void / Delete** buttons remain perpetually anchored on-screen and never hidden.
+  2. **First-Run Auth Setup Lockout Fix & Auto-Healing:**
+     - Resolved the `SqliteError: UNIQUE constraint failed: users.username` crash when users restarted or updated into the setup wizard.
+     - In `auth.ts`, refactored `completeSetup` to be fully idempotent: when an existing user is detected via `getUserByUsername`, the setup transaction securely upserts and updates their credentials, full name, and active admin roles rather than throwing SQLite uniqueness constraint errors.
+     - Enhanced `firstRunComplete(db)` to return `userCount(db) > 0` directly and auto-heal blank or missing `store_name` settings with default metadata, ensuring existing stores never get mistakenly flagged as unconfigured first-run states.
+  3. **Thermal Receipt Monospace & Double-Line Formatting Alignment:**
+     - Verified thermal receipt styling in `receiptHtml.ts` for 58mm and 80mm paper rolls: monospace font stack (`Consolas, "Courier New", monospace`), exact right-aligned tabular numerals (`font-variant-numeric: tabular-nums; text-align: right`), double-line total borders (`border-top: 3px double black`), and compact zero-waste vertical spacing.
+     - Validated consistency across both automated ESC/POS hardware burning and manual Windows system dialog print routes.
+  4. **Quality Invariants & Automated Verification:**
+     - 417 automated vitest unit tests passing across 63 test suites (100%).
+     - Zero TypeScript compilation errors on both Node and Web targets.
+     - Verified master codebase invariants prior to packaging.

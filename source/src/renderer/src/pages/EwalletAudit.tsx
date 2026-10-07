@@ -572,9 +572,9 @@ export function EwalletAudit(): React.JSX.Element {
 
       {/* Main Content Area */}
       {isVip && activeTab === 'register' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
           {/* Left Form: Express Cash In / Cash Out Register */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="2xl:col-span-7 space-y-6">
             <div className="card p-5 border border-ink-line bg-ink-900/90 rounded-2xl shadow-card space-y-5">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Banknote className="h-4 w-4 text-emerald-400" />
@@ -783,7 +783,7 @@ export function EwalletAudit(): React.JSX.Element {
           </div>
 
           {/* Right Summary & Live Transaction Feed */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="2xl:col-span-5 space-y-6">
             {/* Shift Snapshot Card */}
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
@@ -925,9 +925,9 @@ export function EwalletAudit(): React.JSX.Element {
       {/* Tab: Bills Payment & E-Load Hub */}
       {isVip && activeTab === 'bills' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
             {/* Left: Express Bills Payment Form */}
-            <div className="lg:col-span-5 space-y-4">
+            <div className="2xl:col-span-5 space-y-4">
               <div className="card p-5 border border-ink-line bg-ink-900/90 rounded-2xl shadow-card space-y-4">
                 <div className="flex items-center justify-between border-b border-ink-line/60 pb-3">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -1103,7 +1103,7 @@ export function EwalletAudit(): React.JSX.Element {
             </div>
 
             {/* Right: Bills Ledger with Search, Thermal Print, Manual Print & Delete */}
-            <div className="lg:col-span-7 space-y-4">
+            <div className="2xl:col-span-7 space-y-4">
               <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ink-line/60 pb-3">
                   <div>
@@ -1137,7 +1137,7 @@ export function EwalletAudit(): React.JSX.Element {
                         <th className="py-2.5 px-3 text-right">Amount</th>
                         <th className="py-2.5 px-3 text-right">Fee</th>
                         <th className="py-2.5 px-3 text-right">Total Cash</th>
-                        <th className="py-2.5 px-3 text-center">Actions</th>
+                        <th className="py-2.5 px-3 text-center sticky right-0 z-10 bg-ink-900 border-l border-ink-line shadow-[-4px_0_8px_rgba(0,0,0,0.5)]">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-line/50">
@@ -1194,7 +1194,7 @@ export function EwalletAudit(): React.JSX.Element {
                               <td className="py-2.5 px-3 text-right tabular-nums font-bold text-white">
                                 ₱{(b.amount + b.serviceFee).toFixed(2)}
                               </td>
-                              <td className="py-2.5 px-3 text-center">
+                              <td className="py-2.5 px-3 text-center sticky right-0 z-10 bg-ink-900 border-l border-ink-line shadow-[-4px_0_8px_rgba(0,0,0,0.3)]">
                                 <div className="flex items-center justify-center gap-1.5">
                                   <button
                                     type="button"
@@ -1340,7 +1340,7 @@ export function EwalletAudit(): React.JSX.Element {
                   <th className="py-2.5 px-3">Fee Paid Via</th>
                   <th className="py-2.5 px-3">Reference No</th>
                   <th className="py-2.5 px-3">Customer</th>
-                  <th className="py-2.5 px-3 text-center">Actions</th>
+                  <th className="py-2.5 px-3 text-center sticky right-0 z-10 bg-ink-950 border-l border-ink-line shadow-[-4px_0_8px_rgba(0,0,0,0.5)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-line">
@@ -1430,7 +1430,7 @@ export function EwalletAudit(): React.JSX.Element {
                           <span className="text-slate-600">Walk-in</span>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center sticky right-0 z-10 bg-ink-950 border-l border-ink-line shadow-[-4px_0_8px_rgba(0,0,0,0.3)]">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             type="button"

@@ -350,4 +350,33 @@ describe('Backup restore regression', () => {
     expect(getProduct(recovered, product.id).stock).toBe(7)
     expect(integrityCheck().ok).toBe(true)
   })
+
+  it('completeSetup is idempotent and updates existing user without SQLite UNIQUE constraint error', () => {
+    const initialSession = setupStore('Store A')
+    expect(initialSession.username).toBe('admin')
+
+    const db = getDb()
+    expect(firstRunComplete(db)).toBe(true)
+
+    // Simulate blank store_name to test auto-heal
+    updateSettings(db, { store_name: '' })
+    expect(firstRunComplete(db)).toBe(true)
+    expect(getSettings(db).store_name).toBe('My Sari-Sari Store')
+
+    // Run completeSetup again with same admin username - must NOT throw UNIQUE constraint error
+    expect(() => {
+      completeSetup({
+        store: { store_name: 'Store Re-Setup', owner_name: 'Owner B', address: 'B', phone: '111' },
+        admin: { username: 'admin', password: 'newpassword', pin: '5678', full_name: 'Updated Admin' },
+        receipt: { header: 'Re-Setup', footer: 'Thanks' },
+        data_dir: dataDir,
+        load_demo: false
+      })
+    }).not.toThrow()
+
+    const updatedUsers = listUsers(db)
+    const admin = updatedUsers.find((u) => u.username === 'admin')
+    expect(admin).toBeDefined()
+    expect(admin?.full_name).toBe('Updated Admin')
+  })
 })
