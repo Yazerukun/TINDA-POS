@@ -4,7 +4,9 @@ dist/
 *.log
 .DS_Store
 release/
-build/
+build/*
+!build/icon.ico
+!build/icon.png
 /dist/
 
 # Local runtime dev data (kept off system drive intentionally)
