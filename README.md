@@ -1,9 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.64-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.65-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-414_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Thermal_Print-Zero--Blur_Crisp-10b981?style=for-the-badge" alt="Zero-Blur Thermal">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -16,9 +17,36 @@
 
 <br />
 
-[⬇️ Download v1.0.64 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-Setup-1.0.64.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-Portable-1.0.64.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.64/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.65 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Portable-1.0.65.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition)
+
+> **Universal Manual Print Engine (Native Windows Print Dialog), Zero-Blur High-Density Thermal Typography Engine, and GOOJPRT 58H Hardware Model Support**
+
+- 🖨️ **Universal Manual Print Engine (Native Windows Print Dialog)**:
+  - Designed for challenging printers (e.g. GOOJPRT 58H / JP-58BL / KP58B-U / POS-58) that experience Windows driver spooler locking, virtual USB port delays, or driver name mismatches.
+  - Launches the native Windows System Print Dialog pre-bound to the detected thermal printer, allowing cashiers to manually choose any printer device, inspect print preferences, adjust darkness/density, or print to PDF.
+  - Added dedicated 1-tap **Manual Print** action buttons in:
+    - **Checkout Complete Modal**: Cashiers can trigger instant manual receipt printing even if automatic printing was disabled or interrupted.
+    - **Transactions Ledger & Receipt Preview**: Dedicated "Manual Print" action alongside "Print Receipt" (auto).
+    - **Terminal Tools [F3] (`PosToolsModal`)**: Hardware Hub quick strip offers both "Thermal Print" (auto) and "Manual" dialog test.
+    - **Settings -> Receipt Tab**: "Manual Test Print (Dialog)" for verifying Windows driver connection.
+    - **Automatic Manual Print Dialog Mode**: Added `manual_print_dialog` toggle in Settings so stores with strict printing workflows can open the OS dialog on every sale automatically.
+- 🖤 **Zero-Blur High-Density Thermal Typography Engine**:
+  - Fixed the root cause of blurry/faint thermal printing: Chromium previously rendered subpixel antialiased text with fractional font sizes (`9.5px`), which 203 DPI monochrome thermal heads dithered into faint, fuzzy dots.
+  - Replaced fractional font metrics with integer dot geometry (`11px` for 58mm / 32 columns, `12px` for 80mm).
+  - Injected print rules: `-webkit-font-smoothing: none !important`, `-moz-osx-font-smoothing: grayscale !important`, `font-smooth: never !important`, `text-rendering: geometricPrecision !important`, and `image-rendering: pixelated !important`.
+  - Set base thermal font-weight to `700 !important` and borders to solid `2px`/`3px` pure black (`#000000`), ensuring minimum 2-dot stroke widths so thermal pins burn pitch-black, needle-sharp text at 90mm/s.
+  - Switched Chromium print rasterizer to pure monochrome (`color: false`, `dpi: { horizontal: 203, vertical: 203 }`) to eliminate color-to-halftone dithering artifacts.
+  - Increased pre-print rasterization delay (350ms) and post-print spooler hold delay (500ms) to ensure complete buffer transmission.
+- 📖 **GOOJPRT 58H Hardware Model Matching & In-App Guide**:
+  - Expanded printer recognition regexes to match `58h`, `jp-?58`, and `kp-?58` (`KP58B-U` Bluetooth and `JP-58BL` USB models).
+  - Linked official [GOOJPRT 58H User Manual](https://manuals.plus/ae/1005008661058283) in Settings -> Receipt and Handbook Chapter 10.
+  - Documented exact Windows driver steps for setting **Print Density / Darkness** to Dark (Level 12-15), **Dithering** to None, and performing printhead cleaning with isopropyl alcohol.
+- 🛡️ **100% Quality Invariants Maintained**:
+  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
 
 ## ✨ What's New in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
 
@@ -366,10 +394,10 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 | Deliverable | Description | Download Link |
 |---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Setup-1.0.27.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-Portable-1.0.27.exe) |
-| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.27/SHA256SUMS-v1.0.27.txt) |
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Portable-1.0.65.exe) |
+| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/SHA256SUMS-v1.0.65.txt) |
 
 > ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
 
@@ -510,6 +538,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.58 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Setup-1.0.58.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.65 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
