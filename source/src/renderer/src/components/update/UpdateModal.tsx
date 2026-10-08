@@ -20,12 +20,12 @@ import { useUpdate } from '../../stores/update'
  * guaranteeing zero data loss with automated database safety guarantees.
  */
 export function UpdateModal(): React.JSX.Element | null {
-  const { event, download, install, dismiss } = useUpdate()
+  const { event, download, install, dismiss, modalDismissed } = useUpdate()
   const [busy, setBusy] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
   const [installError, setInstallError] = useState<string | null>(null)
 
-  if (!event) return null
+  if (!event || modalDismissed) return null
 
   const s = event.status
   const visibleStatuses: UpdateStatusEvent['status'][] = [

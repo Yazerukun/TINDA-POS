@@ -58,7 +58,7 @@ export interface UpdateStatusEvent {
   updateType?: 'PATCH' | 'FULL'
 }
 
-export const UPDATE_CHECK_THROTTLE_MS = 15 * 60 * 1000 // 15 minutes
+export const UPDATE_CHECK_THROTTLE_MS = 10 * 1000 // 10 seconds (near real-time fast updates)
 export const UPDATE_OWNER = 'Yazerukun'
 export const UPDATE_REPO = 'TINDA-POS'
 

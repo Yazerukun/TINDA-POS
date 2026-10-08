@@ -70,7 +70,11 @@ export class ElectronUpdateTransport implements UpdateTransport {
       }
       throw new UpdateCheckError('NETWORK', err instanceof Error ? err.message : 'network failure')
     }
-    if (res.status === 403 || res.status === 429) throw new UpdateCheckError('RATE_LIMIT', `GitHub ${res.status}`)
+    if (res.status === 403 || res.status === 429) {
+      const fallback = await this.fetchManifestFallback()
+      if (fallback) return [fallback]
+      throw new UpdateCheckError('RATE_LIMIT', `GitHub ${res.status}`)
+    }
     if (!res.ok) throw new UpdateCheckError('HTTP', `GitHub ${res.status}`)
     const finalUrl = res.url || githubReleasesApiUrl()
     if (!officialResponseUrl(finalUrl)) throw new UpdateCheckError('INVALID', 'unexpected update source')
@@ -84,6 +88,46 @@ export class ElectronUpdateTransport implements UpdateTransport {
     const releases = parseGitHubReleases(parsed)
     if (releases.length === 0) throw new UpdateCheckError('INVALID', 'no valid releases')
     return releases
+  }
+
+  private async fetchManifestFallback(): Promise<ReleaseInfo | null> {
+    try {
+      const manifestUrl = `https://raw.githubusercontent.com/${UPDATE_OWNER}/${UPDATE_REPO}/master/latest.yml`
+      const res = await fetchWithStartTimeout(manifestUrl, { headers: { 'User-Agent': 'TINDA-POS' } })
+      if (!res.ok) return null
+      const text = await res.text()
+      const match = text.match(/^version:\s*([^\s]+)/m)
+      if (!match || !match[1]) return null
+      const v = match[1]
+      return {
+        version: v,
+        tag: `v${v}`,
+        title: `TINDA POS v${v}`,
+        publishedAt: new Date().toISOString(),
+        releaseNotes: `Fast Feature Update v${v}`,
+        stable: true,
+        assets: [
+          {
+            name: `TindaPOS-Feature-Patch-${v}.zip`,
+            url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Feature-Patch-${v}.zip`,
+            size: 850000
+          },
+          {
+            name: `TindaPOS-Setup-${v}.exe`,
+            url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Setup-${v}.exe`,
+            size: 112000000
+          }
+        ],
+        hasPatch: true,
+        patchAsset: {
+          name: `TindaPOS-Feature-Patch-${v}.zip`,
+          url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Feature-Patch-${v}.zip`,
+          size: 850000
+        }
+      }
+    } catch {
+      return null
+    }
   }
 
   /**

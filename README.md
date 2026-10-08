@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.77-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.78-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,7 +17,29 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.77](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Feature-Patch-1.0.77.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.77 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Setup-1.0.77.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Portable-1.0.77.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.78](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Feature-Patch-1.0.78.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.78 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Setup-1.0.78.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Portable-1.0.78.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+
+</div>
+
+## ✨ What's New in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
+
+> **Dedicated Real-Time Sidebar Update Center Widget, 10-Second High-Frequency Proactive Pop-up Engine, Instant GitHub CDN Raw Fallback (Bypassing API Rate Limits), and One-Tap Live Hot-Patching.**
+
+- 📱 **Dedicated Sidebar Fast Update Center Widget (`Sidebar.tsx`)**:
+  - Permanently mounted in the lower navigation sidebar directly above the cashier identity card with Cupertino translucent materials and glowing state indicators.
+  - Dynamically transitions through 4 interactive operational states:
+    - `Update Available`: Pulsing cyan status orb, `⚡ Fast Update` badge, new version pill, and 1-tap `Update Now` button.
+    - `Downloading...`: Live percentage ticker (`X%`) and animated gradient progress bar.
+    - `Ready to Apply`: Emerald glow card with 1-tap `Apply Patch (Live · 0.3s)` button.
+    - `Up to date`: Clean compact card with subtle version pill and instant manual check button (`RotateCcw`).
+- ⚡ **10-Second Proactive Pop-up Engine (`Shell.tsx` & `UpdateModal.tsx`)**:
+  - Automatically pops up the center Cupertino update modal front-and-center across all screens when an update is released.
+  - Periodic background polling reduced to 10 seconds with automatic triggers on application launch (1.5s post-boot), window focus (`focus`), and network reconnection (`online`).
+  - Cashiers never need to navigate into Settings or click "Check for Updates" manually.
+- 🛡️ **Rate-Limit-Free CDN Fallback Engine (`updateTransport.ts`)**:
+  - Added direct fallback manifest fetching from `raw.githubusercontent.com/.../latest.yml`, bypassing GitHub's unauthenticated REST API 60 req/hr rate limits during rapid polling.
+- 🚀 **Fast Hot-Patch First Pipeline**:
+  - Delivers rapid UI and bugfix updates in ~1.3 seconds via `npm run build:patch` (compressed ~0.8 MB) without requiring full 107 MB installer downloads or Windows UAC elevation.
 
 </div>
 

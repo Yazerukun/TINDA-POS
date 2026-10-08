@@ -166,11 +166,11 @@ describe('auto-check throttle', () => {
   it('runs when never checked', () => {
     expect(shouldAutoCheck(null, now)).toBe(true)
   })
-  it('runs after the 24h window', () => {
+  it('runs after the throttle window', () => {
     expect(shouldAutoCheck(now - UPDATE_CHECK_THROTTLE_MS - 1, now)).toBe(true)
   })
   it('skips when checked recently', () => {
-    expect(shouldAutoCheck(now - 60_000, now)).toBe(false)
+    expect(shouldAutoCheck(now - 2_000, now)).toBe(false)
   })
   it('respects a custom throttle window', () => {
     expect(shouldAutoCheck(now - 3_600_000, now, 3_600_000)).toBe(true)

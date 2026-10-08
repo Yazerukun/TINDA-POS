@@ -32,9 +32,40 @@ export function Shell(): React.JSX.Element {
 
   useEffect(() => {
     load().catch(() => console.error('settings load failed'))
-    void useUpdate.getState().init().then(() => {
-      void useUpdate.getState().check(false)
-    })
+
+    // Initialize update store and run immediate check after mount (1.5 seconds)
+    const initTimer = setTimeout(() => {
+      void useUpdate.getState().init().then(() => {
+        void useUpdate.getState().check(true)
+      })
+    }, 1500)
+
+    // Real-time background check every 10 seconds
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void useUpdate.getState().check(false)
+      }
+    }, 10000)
+
+    // Real-time check on window focus (when cashier switches back or clicks app)
+    const onFocus = () => {
+      void useUpdate.getState().check(true)
+    }
+
+    // Real-time check on network reconnect
+    const onOnline = () => {
+      void useUpdate.getState().check(true)
+    }
+
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('online', onOnline)
+
+    return () => {
+      clearTimeout(initTimer)
+      clearInterval(interval)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('online', onOnline)
+    }
   }, [load])
 
   return (

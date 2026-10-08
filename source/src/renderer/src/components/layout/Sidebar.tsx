@@ -19,13 +19,16 @@ import {
   Landmark,
   Sparkles,
   Wrench,
-  Zap
+  Zap,
+  RefreshCw,
+  Loader2
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
 import { useAuth } from '../../stores/auth'
 import { useSettings } from '../../stores/settings'
 import { useLicense } from '../../stores/license'
+import { useUpdate } from '../../stores/update'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 import { AppLogo } from '../AppLogo'
@@ -90,6 +93,7 @@ export function Sidebar(): React.JSX.Element {
   const { user, logout } = useAuth()
   const { settings } = useSettings()
   const { isVip } = useLicense()
+  const { event, checking, check, download, install, showModal } = useUpdate()
 
   // Filter sections by user permissions, keeping only sections that have at least one visible item
   const filteredSections = SECTIONS.map((sec) => ({
@@ -212,6 +216,90 @@ export function Sidebar(): React.JSX.Element {
             <HelpCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span className="truncate">Guide</span>
           </button>
+        </div>
+
+        {/* Fast In-App Update Center Widget */}
+        <div className="rounded-xl border border-ink-line bg-ink-850/90 p-2 shadow-sm space-y-1.5 transition-all">
+          {event?.status === 'UPDATE_AVAILABLE' ? (
+            <div className="space-y-1.5 animate-in fade-in">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                  <Zap className="h-3.5 w-3.5 text-emerald-400 animate-pulse fill-emerald-400/20" />
+                  Fast Update
+                </span>
+                <span className="font-mono text-[9px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                  v{event.available?.version}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  showModal()
+                  void download()
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] py-1.5 shadow-md shadow-emerald-600/30 active:scale-95 transition"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                <span>Update Now (Takes 2s)</span>
+              </button>
+            </div>
+          ) : event?.status === 'DOWNLOADING' ? (
+            <div className="space-y-1.5 animate-in fade-in">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="flex items-center gap-1.5 text-slate-200 font-medium">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-400" />
+                  Downloading…
+                </span>
+                <span className="font-mono text-[10px] font-bold text-white">
+                  {event.progress?.percent ?? 0}%
+                </span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-950">
+                <div
+                  className="h-full bg-gradient-to-r from-brand-500 to-emerald-400 transition-all duration-300"
+                  style={{ width: `${event.progress?.percent ?? 0}%` }}
+                />
+              </div>
+            </div>
+          ) : event?.status === 'READY_TO_INSTALL' ? (
+            <div className="space-y-1.5 animate-in fade-in">
+              <button
+                type="button"
+                onClick={() => void install()}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-ink-950 font-extrabold text-[11px] py-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition"
+              >
+                <Zap className="h-3.5 w-3.5 fill-current" />
+                <span>Apply Patch (Live · 0.3s)</span>
+              </button>
+            </div>
+          ) : event?.status === 'ERROR' ? (
+            <div className="flex items-center justify-between text-[11px] text-rose-300">
+              <span className="truncate">Update error</span>
+              <button
+                type="button"
+                onClick={() => void check(true)}
+                className="text-[10px] font-bold text-rose-400 hover:text-rose-300 underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-[10px]">
+              <div className="flex items-center gap-1.5 text-slate-400 min-w-0">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0" />
+                <span className="truncate font-mono">v1.0.78 · Up to date</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => void check(true)}
+                disabled={checking}
+                title="Check for Fast Updates Now"
+                className="p-1 rounded text-slate-400 hover:text-white hover:bg-ink-800 transition shrink-0"
+              >
+                <RefreshCw className={`h-3 w-3 ${checking ? 'animate-spin text-emerald-400' : ''}`} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Staff Identity Card */}

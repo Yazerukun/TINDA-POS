@@ -26,10 +26,17 @@ export function getUpdateService(): UpdateService {
 }
 
 export function startAutoUpdateCheck(): void {
-  // Fire-and-forget: the check runs async after startup and never blocks the UI.
+  // Initial check at 1.5s after startup
   setTimeout(() => {
+    getUpdateService()
+      .check({ manual: true })
+      .catch(() => undefined)
+  }, 1500)
+
+  // Real-time background check every 10 seconds
+  setInterval(() => {
     getUpdateService()
       .check({ manual: false })
       .catch(() => undefined)
-  }, 4000)
+  }, 10000)
 }
