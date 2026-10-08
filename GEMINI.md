@@ -9,15 +9,16 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
 - Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
-  2. **ponytail**: The lazy senior dev — shortest diff, YAGNI, standard library first, root-cause bugfixes.
+  2. **ponytail & ponytail-review**: The lazy senior dev — shortest diff, YAGNI, standard library first, native platform features, root-cause bugfixes, and bloat-hunting reviews in `.agents/skills/ponytail-review/`.
   3. **caveman**: Terse high-density voice — zero conversational fluff, answer-first, exact code payload.
   4. **smart-ralph**: Spec-driven multi-step execution with 4-phase quality gates.
   5. **headroom**: Automatic context window and token optimization.
-  6. **agentmemory**: Continuous learning engine with persistent recall and auto-save of bugfix lessons and release milestones.
-  7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
-  8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
-  9. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
-  10. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
+  6. **agentmemory & hindsight**: Continuous learning engine with persistent recall, auto-save of bugfix lessons, and Hindsight v0.10.2 embedded memory (`tinda-pos` profile) for hardware profiling and architectural continuity.
+  7. **agency-agents & autoskills**: Curated specialist skills in `.agents/skills/` (14 agency specialists + 13 autoskills v0.3.6 audited stack skills: React 19 best practices, Tailwind patterns, Hook Form, Zod, Vitest, Vite, Node patterns) with integrity locks in `skills-lock.json`.
+  8. **graphify**: Offline deterministic AST knowledge graph (v0.9.80) in `graphify-out/graph.json` for instant call-path tracing (`graphify query`, `graphify path`), zero-token architecture navigation, and pre-refactoring impact analysis.
+  9. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
+  10. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
+  11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
