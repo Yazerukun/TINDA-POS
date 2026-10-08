@@ -73,7 +73,23 @@ const db = () => getDb()
 const user = () => sessionSvc.requireUser()
 
 // ---- App ----
-handle('app:info', () => ({ name: 'TINDA POS', version: app.getVersion() ?? '1.0.0', offline: true }))
+handle('app:info', () => {
+  // Return the active patch version if a stable patch is loaded, so the UI
+  // reflects the true running version after an Apply Live hot-patch.
+  let version = app.getVersion() ?? '1.0.0'
+  try {
+    const { getPatchManifest, getPatchSentinel } = require('../services/patchService') as typeof import('../services/patchService')
+    const manifest = getPatchManifest()
+    const sentinel = getPatchSentinel()
+    if (manifest?.version && sentinel?.status === 'STABLE') {
+      const { compareSemver } = require('@shared/update') as typeof import('@shared/update')
+      if (compareSemver(manifest.version, version) > 0) {
+        version = manifest.version
+      }
+    }
+  } catch { /* fall back to base version */ }
+  return { name: 'TINDA POS', version, offline: true }
+})
 handle('app:startup', (_e, enabled?: boolean) => {
   sessionSvc.requirePermission('settings:manage')
   return startupSetting(enabled)
