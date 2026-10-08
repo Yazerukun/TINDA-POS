@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   Printer,
   Trash2,
-  Crown,
   Sparkles,
   Calculator,
   History,
@@ -33,8 +32,6 @@ const toast = {
   success: (title: string, msg?: string) => toastSuccess(title, msg),
   error: (title: string, msg?: string) => toastError(title, msg)
 }
-import { VipUpgradeModal } from '../components/VipUpgradeModal'
-import { useLicense } from '../stores/license'
 
 const BILLER_PRESETS = [
   { name: 'Meralco', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
@@ -73,8 +70,6 @@ export interface BillRecord {
 }
 
 export function EwalletAudit(): React.JSX.Element {
-  const { isVip, loadLicense } = useLicense()
-  const [vipModalOpen, setVipModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'register' | 'bills' | 'transactions' | 'audit' | 'history'>('register')
 
   // Bills & E-Load State
@@ -168,9 +163,8 @@ export function EwalletAudit(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    void loadLicense()
     void loadData()
-  }, [loadLicense, loadData])
+  }, [loadData])
 
   // Denomination calculations
   const actualCashC = useMemo(() => {
@@ -532,125 +526,79 @@ export function EwalletAudit(): React.JSX.Element {
               <Smartphone className="h-6 w-6 text-emerald-400" />
               E-Wallet &amp; Bills Center
             </h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 border border-amber-500/30">
-              <Crown className="h-3 w-3" /> VIP PRO EXCLUSIVE
-            </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            GCash &amp; Maya Cash In / Cash Out, Utilities &amp; Loan Bills Payment, Instant Thermal &amp; Manual Printing, and 3-Way Audit.
+            GCash, Maya &amp; MariBank Cash In / Cash Out, Utilities &amp; Loan Bills Payment, Instant Thermal &amp; Manual Printing, and 3-Way Audit.
           </p>
         </div>
 
         {/* Navigation Tabs */}
-        {isVip && (
-          <div className="flex rounded-xl bg-ink-900 p-1 border border-ink-line">
-            <button
-              type="button"
-              onClick={() => setActiveTab('register')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                activeTab === 'register'
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Smartphone className="h-3.5 w-3.5" />
-              Cash In / Out
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('bills')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                activeTab === 'bills'
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Zap className="h-3.5 w-3.5 text-amber-400" />
-              Bills &amp; E-Load ({billRecords.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('transactions')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                activeTab === 'transactions'
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Receipt className="h-3.5 w-3.5" />
-              Transactions ({transactions.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('audit')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                activeTab === 'audit'
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Calculator className="h-3.5 w-3.5" />
-              Audit Sheet
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('history')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                activeTab === 'history'
-                  ? 'bg-brand-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <History className="h-3.5 w-3.5" />
-              Audit History
-            </button>
-          </div>
-        )}
+        <div className="flex rounded-xl bg-ink-900 p-1 border border-ink-line">
+          <button
+            type="button"
+            onClick={() => setActiveTab('register')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              activeTab === 'register'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Smartphone className="h-3.5 w-3.5" />
+            Cash In / Out
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('bills')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              activeTab === 'bills'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Zap className="h-3.5 w-3.5 text-amber-400" />
+            Bills &amp; E-Load ({billRecords.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('transactions')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              activeTab === 'transactions'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Receipt className="h-3.5 w-3.5" />
+            Transactions ({transactions.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('audit')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              activeTab === 'audit'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Calculator className="h-3.5 w-3.5" />
+            Audit Sheet
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+              activeTab === 'history'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <History className="h-3.5 w-3.5" />
+            Audit History
+          </button>
+        </div>
       </div>
 
-      {/* Free Community Edition Preview Lock Banner */}
-      {!isVip && (
-        <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-950/30 via-ink-900 to-ink-900 p-6 shadow-xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/40">
-                <Sparkles className="h-3.5 w-3.5" /> Stop Using Manual Notebooks
-              </div>
-              <h2 className="text-lg font-bold text-white">
-                Unlock GCash & Maya Cash-In/Out Ledger with Automatic 3-Way Audit
-              </h2>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Eliminate cashier cash shortages, lost paper notes, and calculation errors. VIP Pro empowers your store to log customer Cash In/Out, collect custom service fees, print 58mm/80mm claim slips, and balance your physical cash drawer vs GCash & Maya wallet apps every day.
-              </p>
-              <div className="pt-2 flex flex-wrap gap-4 text-xs text-amber-200/90 font-medium">
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> GCash & Maya 1-Click Logger</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Total Service Fees Tracker</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Physical Cash Drawer Reconciliation</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Thermal Claim Stubs & End-of-Day Reports</span>
-              </div>
-            </div>
-
-            <div className="shrink-0 flex flex-col items-center gap-2.5 bg-ink-950/80 p-5 rounded-2xl border border-amber-500/30">
-              <div className="text-center">
-                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">One-Time Lifetime Access</p>
-                <p className="text-2xl font-black text-amber-400">₱500 <span className="text-xs font-normal text-slate-400">/ PC</span></p>
-                <p className="text-[10px] text-slate-400">Send to Maya: 0991 225 5156</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setVipModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-5 py-2.5 text-xs font-bold text-ink-950 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition"
-              >
-                <Crown className="h-4 w-4" />
-                Upgrade to VIP Pro Now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main Content Area */}
-      {isVip && activeTab === 'register' && (
+      {activeTab === 'register' && (
         <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
           {/* Left Form: Express Cash In / Cash Out Register */}
           <div className="2xl:col-span-7 space-y-6">
@@ -1024,7 +972,7 @@ export function EwalletAudit(): React.JSX.Element {
       )}
 
       {/* Tab: Bills Payment & E-Load Hub */}
-      {isVip && activeTab === 'bills' && (
+      {activeTab === 'bills' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 2xl:grid-cols-12 gap-6">
             {/* Left: Express Bills Payment Form */}
@@ -1375,7 +1323,7 @@ export function EwalletAudit(): React.JSX.Element {
       )}
 
       {/* Tab: Dedicated Transactions Ledger with Void/Delete & Filter */}
-      {isVip && activeTab === 'transactions' && (
+      {activeTab === 'transactions' && (
         <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink-line pb-4">
             <div>
@@ -1610,7 +1558,7 @@ export function EwalletAudit(): React.JSX.Element {
       )}
 
       {/* Tab 2: Audit Sheet (Multi-Wallet & Cash) */}
-      {isVip && activeTab === 'audit' && (
+      {activeTab === 'audit' && (
         <div className="space-y-6">
           {/* Today's Existing Audit Status Banner */}
           {todayAudit && (
@@ -2023,7 +1971,7 @@ export function EwalletAudit(): React.JSX.Element {
       )}
 
       {/* Tab 3: Audit History */}
-      {isVip && activeTab === 'history' && (
+      {activeTab === 'history' && (
         <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -2133,19 +2081,6 @@ export function EwalletAudit(): React.JSX.Element {
         </div>
       )}
 
-      {/* Upgrade Modal */}
-      <VipUpgradeModal
-        open={vipModalOpen}
-        onClose={() => {
-          setVipModalOpen(false)
-          void loadLicense()
-        }}
-        onActivated={() => {
-          void loadLicense()
-          setVipModalOpen(false)
-          void loadData()
-        }}
-      />
 
       {/* Apple Design Void Transaction Confirmation Modal */}
       {txToDelete && (

@@ -50,7 +50,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { key: 'pos', label: 'POS Cashier', icon: <ShoppingCart className="h-4 w-4" />, permission: 'pos:use', isHot: true },
       { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
-      { key: 'ewallet', label: 'E-Wallet & Bills', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use', badge: 'VIP' }
+      { key: 'ewallet', label: 'E-Wallet & Bills', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use' }
     ]
   },
   {

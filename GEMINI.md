@@ -26,7 +26,18 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)**
+- Current Version: **v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)**
+
+## Key Features in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
+1. **Unrestricted E-Wallet & Bills Center Access for All Merchants**:
+   - Completely removed the VIP crystal badge (`💎 VIP`) from the left sidebar navigation and module header.
+   - Permanently unlocked all 5 core operational tabs for all merchants and cashiers: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - Cashiers can immediately record cash-ins, cash-outs, utility bills, and e-load without requiring VIP Pro license activation or paywalls.
+2. **Clean Apple Cupertino Layout & Zero-Distraction Workflow**:
+   - Stripped away license gating banners and paywall locks inside the E-Wallet & Bills module.
+   - Provided direct, uninterrupted access to financial registers, transaction history, thermal receipt burning, manual print dialogs, and shift reconciliation.
+3. **100% Strict English Standard & Zero-Waste Receipt Integrity**:
+   - Fully standardized terminology across all tabs, modals, and print stubs with zero dialect strings.
 
 ## Key Features in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
 1. **Fast In-App Feature Hot-Patch Engine (Dual-Track Architecture)**:
