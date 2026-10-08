@@ -6,6 +6,7 @@ import { getDb, closeDb, appDirs } from './database/connection'
 import { getSettings } from './repositories/settings'
 import { startAutoUpdateCheck } from './services/updateRuntime'
 import { applyDefaultStartup } from './services/startup'
+import { getPatchedEntryHtml, markPatchStable } from './services/patchService'
 
 // Register custom protocol for local product images before app is ready
 protocol.registerSchemesAsPrivileged([
@@ -65,18 +66,28 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => mainWindow?.show())
+  mainWindow.on('ready-to-show', () => {
+    mainWindow?.show()
+    setTimeout(() => {
+      try { markPatchStable() } catch {}
+    }, 4000)
+  })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
 
-  // Load renderer (dev server vs built files).
+  // Load renderer (dev server vs built files vs verified feature patch).
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    const patchedEntry = getPatchedEntryHtml()
+    if (patchedEntry) {
+      mainWindow.loadFile(patchedEntry)
+    } else {
+      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    }
   }
 }
 

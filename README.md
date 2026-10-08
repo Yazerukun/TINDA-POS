@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.74-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.75-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-419_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Community_Chat-Next--Gen_Multimedia-10b981?style=for-the-badge" alt="Next-Gen Chat">
+<img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Update_Engine-Dual--Track_Hot--Patch-10b981?style=for-the-badge" alt="Dual-Track Update Engine">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -17,11 +17,29 @@
 
 <br />
 
-[⬇️ Download v1.0.74 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Portable-1.0.74.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.75](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Feature-Patch-1.0.75.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.75 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Setup-1.0.75.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Portable-1.0.75.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v1.0.74 (Audit & History Delete Safeguards Edition)
+## ✨ What's New in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
+
+> **Dual-Track Update Architecture with 5-Second In-App Feature Hot-Patching, Proactive Center Cupertino Update Alert Modal, 5-Point Steelclad Database Safety Shield, and 100% Strict English Standardization.**
+
+- ⚡ **Fast In-App Feature Hot-Patch Engine**:
+  - Eliminates the 2-minute build and 107 MB download bottleneck for minor features, UI enhancements, and bugfixes by packaging only compiled application code into a compact ~0.8 MB archive.
+  - Bundled in ~3 seconds via `npm run build:patch` (`tools/bundle_patch.mjs`) with SHA-256 verification.
+  - Downloads in ~3 seconds on Philippine store WiFi and applies seamlessly with a 2-second restart.
+- 🛡️ **5-Point Steelclad Database & User Safety Shield**:
+  - **Decoupled Data Storage**: Store SQLite database (`tindapos.db`) remains completely decoupled in `%APPDATA%\tinda-pos\database\` or `TindaPOS-Data\database\`, ensuring code updates never touch store sales or inventory.
+  - **Pre-Update Automated Backup Snapshot**: Automatically creates a verified `BEFORE_UPDATE` backup snapshot before applying code patches.
+  - **Cashier Operation Guard**: Active checkout cart ringing and payment processing lock out updates, preventing transaction interruption.
+  - **Additive Migrations Only**: Non-destructive schema updates safeguard existing products, prices, and utang balances.
+  - **Crash Sentinel & Auto-Rollback**: Automatic boot health monitor reverts to the prior stable bundle if a patch fails to boot within two consecutive attempts.
+- 🚀 **Proactive Zero-Click Apple Cupertino Update Pop-up Modal**:
+  - Directly surfaces an elegant frosted-glass modal in the center of the screen as soon as an update is detected, without requiring users to manually check Settings.
+  - Displays version badge, release highlights, and database safety guarantees with a 1-tap "Update & Restart Now (Takes 5 seconds)" action and progress tracking.
+- 🌐 **100% Strict Professional English Standardization**:
+  - Enforced pure professional English across all update dialogs, notifications, receipts, and system tools with zero dialect words.
 
 > **Complete Deletion Safeguards in E-Wallet Audit Sheet & Historical Audit Ledger, Interactive Cupertino Confirmation Modals, Dynamic Today's Audit Delete Banner, and 1-Tap Count Reset.**
 

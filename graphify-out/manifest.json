@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791436295.2229795,
-    "seen": 1791436884.6249452,
-    "ast_hash": "9600a9005be97d09f0aab593aaf94866",
+    "mtime": 1791440356.0164583,
+    "seen": 1791441108.677216,
+    "ast_hash": "34f9fc3c93e6de06578f6b64cc7f45ed",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "source/src/main/index.ts": {
-    "mtime": 1791163706.6133273,
-    "seen": 1791428449.1201208,
-    "ast_hash": "cf9c57b4852c3ceadbfbbc01f5344b42",
+    "mtime": 1791440048.5614285,
+    "seen": 1791441108.6808157,
+    "ast_hash": "1e6f0175f93df42eefb58ca7a48b1eb2",
     "semantic_hash": ""
   },
   "source/src/main/ipc/index.ts": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/updateService.ts": {
-    "mtime": 1791163706.7014573,
-    "seen": 1791428449.1203232,
-    "ast_hash": "cca195f08f10cb57e46f2f865d4f6918",
+    "mtime": 1791439965.199301,
+    "seen": 1791441108.7025087,
+    "ast_hash": "ea2a39012570e43bbfdcc38e11e8de8d",
     "semantic_hash": ""
   },
   "source/src/main/services/updateStore.ts": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/updateTransport.ts": {
-    "mtime": 1791163706.7024367,
-    "seen": 1791428449.1203275,
-    "ast_hash": "05d433e90bbf2f7eaf23eb293d406ae1",
+    "mtime": 1791440850.6940992,
+    "seen": 1791441108.7027264,
+    "ast_hash": "fb637100616ba3e5e33b192c36b9c255",
     "semantic_hash": ""
   },
   "source/src/main/validation/__tests__/schemas.test.ts": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791436306.243671,
-    "seen": 1791436884.6555269,
-    "ast_hash": "75f20e5a8db06bc88570b582b8fa5015",
+    "mtime": 1791440344.79058,
+    "seen": 1791441108.7059386,
+    "ast_hash": "94b7699307e9033379c08b2ff6939e47",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -912,9 +912,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/layouts/Shell.tsx": {
-    "mtime": 1791352868.607303,
-    "seen": 1791428449.1203995,
-    "ast_hash": "6e5516888b2af7f89af05411455665e0",
+    "mtime": 1791440123.699992,
+    "seen": 1791441108.7111754,
+    "ast_hash": "dca433e6dd4be35513b1176c426f4104",
     "semantic_hash": ""
   },
   "source/src/renderer/src/lib/barcodeScanner.test.ts": {
@@ -1182,9 +1182,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/__tests__/update.test.ts": {
-    "mtime": 1791163706.8327389,
-    "seen": 1791428449.1204948,
-    "ast_hash": "55557ba330be755d8370147f4eceba3c",
+    "mtime": 1791440136.2155366,
+    "seen": 1791441108.7212288,
+    "ast_hash": "f0ca02518e76d88260fcaf26a8a0ed19",
     "semantic_hash": ""
   },
   "source/src/shared/__tests__/v1020-feedback.test.ts": {
@@ -1278,9 +1278,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/update.ts": {
-    "mtime": 1791163706.8477063,
-    "seen": 1791428449.1205273,
-    "ast_hash": "1dad4116e60c51f020972e01c8db7f80",
+    "mtime": 1791439877.914958,
+    "seen": 1791441108.724423,
+    "ast_hash": "5a856cd15188808e29b27ddfdb988dce",
     "semantic_hash": ""
   },
   "source/tailwind.config.ts": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791436332.1657352,
-    "seen": 1791436884.7489634,
-    "ast_hash": "8616686641c740dacfefddb833b9c1cd",
+    "mtime": 1791440379.419244,
+    "seen": 1791441108.802793,
+    "ast_hash": "fbcc1666f0a3ca450865a88762e3805d",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791436381.059466,
-    "seen": 1791436884.7495618,
-    "ast_hash": "2f721e4181f3504f40a378d5f05b2650",
+    "mtime": 1791440405.0814075,
+    "seen": 1791441108.8034408,
+    "ast_hash": "73eb0c89fc19b60375c12cba0f5684bf",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791436824.2446878,
-    "seen": 1791436884.752229,
-    "ast_hash": "0bbea03cccb73742444b0135648b3a66",
+    "mtime": 1791441074.5191948,
+    "seen": 1791441108.8069286,
+    "ast_hash": "fca4e82cb69b6b4c70d8b54120239b16",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3813,6 +3813,30 @@
     "mtime": 1791436653.2831862,
     "seen": 1791436884.7510052,
     "ast_hash": "53cb450dab4f2b20f9916a955a8a2ac0",
+    "semantic_hash": ""
+  },
+  "source/src/main/services/__tests__/patchService.test.ts": {
+    "mtime": 1791440155.8173988,
+    "seen": 1791441108.690807,
+    "ast_hash": "2011c18932e110656ee9b3dc623539cf",
+    "semantic_hash": ""
+  },
+  "source/src/main/services/patchService.ts": {
+    "mtime": 1791440824.661638,
+    "seen": 1791441108.699183,
+    "ast_hash": "acc3a555bccd82bdaa6fd1bb86a81920",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/components/update/UpdateModal.tsx": {
+    "mtime": 1791440858.4000614,
+    "seen": 1791441108.710421,
+    "ast_hash": "fd9f94e8f7bdb9a031e87547cdd83a9e",
+    "semantic_hash": ""
+  },
+  "tools/bundle_patch.mjs": {
+    "mtime": 1791440059.3062017,
+    "seen": 1791441108.7260132,
+    "ast_hash": "9fc6bb9a04d35103d76f081ea14729d6",
     "semantic_hash": ""
   }
 }

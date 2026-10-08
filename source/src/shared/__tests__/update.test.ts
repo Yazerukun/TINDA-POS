@@ -127,6 +127,21 @@ describe('GitHub release parsing', () => {
     expect(downloadAssetName(r, false)).toBe('TindaPOS-Setup-1.0.4.exe')
     expect(downloadAssetName(r, true)).toBe('TindaPOS-Portable-1.0.4.exe')
   })
+
+  it('picks patch asset and prioritizes when preferPatch is requested', () => {
+    const withPatch = release({
+      assets: [
+        { name: 'TindaPOS-Setup-1.0.4.exe', browser_download_url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.4/TindaPOS-Setup-1.0.4.exe', size: 900 },
+        { name: 'TindaPOS-Feature-Patch-1.0.4.zip', browser_download_url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.4/TindaPOS-Feature-Patch-1.0.4.zip', size: 300 }
+      ]
+    })
+    const r = parseGitHubRelease(withPatch)!
+    expect(r.hasPatch).toBe(true)
+    expect(r.patchAsset?.name).toBe('TindaPOS-Feature-Patch-1.0.4.zip')
+    expect(pickAsset(r, 'patch')?.name).toBe('TindaPOS-Feature-Patch-1.0.4.zip')
+    expect(downloadAssetName(r, false, true)).toBe('TindaPOS-Feature-Patch-1.0.4.zip')
+    expect(downloadAssetName(r, false, false)).toBe('TindaPOS-Setup-1.0.4.exe')
+  })
 })
 
 describe('official update source guard', () => {

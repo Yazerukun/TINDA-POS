@@ -3,13 +3,14 @@ import { createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 import { mkdir, unlink } from 'node:fs/promises'
 import type { ReleaseInfo } from '@shared/update'
-import { githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
+import { githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, pickAsset, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
 import type { UpdateProgressHandler, UpdateTransport } from './updateService'
 import { UpdateCheckError } from './updateService'
-import { getDb } from '../database/connection'
+import { appDirs, getDb } from '../database/connection'
 import { createBackupSync, validateBackupDatabase } from '../repositories/backup'
 import { consumeWithIdleTimeout, UPDATE_REQUEST_START_TIMEOUT_MS } from './updateDownload'
 import { downloadInstalledUpdate } from './installedUpdate'
+import { applyPatchArchive } from './patchService'
 
 const GITHUB_ASSET_HOSTS = new Set([
   'github.com',
@@ -32,6 +33,7 @@ async function fetchWithStartTimeout(url: string, init: RequestInit = {}): Promi
 export class ElectronUpdateTransport implements UpdateTransport {
   private updater: Promise<import('electron-updater').AppUpdater | null> | null = null
   private progressHandler: UpdateProgressHandler | null = null
+  private isPatchApplied = false
 
   isPortable(): boolean {
     return process.platform === 'linux' || portableRuntime(process.env)
@@ -180,6 +182,61 @@ export class ElectronUpdateTransport implements UpdateTransport {
     return { filePath }
   }
 
+  async downloadPatch(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<{ filePath: string }> {
+    const asset = pickAsset(release, 'patch')
+    if (!asset) {
+      throw new Error('The feature patch file was not found for this release.')
+    }
+    if (!isOfficialUpdateUrl(asset.url)) throw new Error('The patch file has an unexpected source.')
+
+    let res: Response
+    try {
+      res = await fetchWithStartTimeout(asset.url, { headers: { 'User-Agent': 'TINDA-POS' } })
+    } catch (err) {
+      throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
+    }
+    if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`)
+    if (!officialResponseUrl(res.url)) throw new Error('The patch download redirected to an unexpected source.')
+
+    const dir = join(appDirs().root, 'updates')
+    await mkdir(dir, { recursive: true })
+    const filePath = join(dir, asset.name)
+    const total = Number(res.headers.get('content-length')) || 0
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const out = createWriteStream(filePath)
+        const reader = res.body?.getReader()
+        let received = 0
+        if (!reader) {
+          out.end()
+          reject(new Error('The server did not provide a downloadable patch file.'))
+          return
+        }
+        out.on('error', (err) => reject(err))
+        void consumeWithIdleTimeout(reader, (value) => {
+            received += value?.byteLength ?? 0
+            out.write(Buffer.from(value))
+            if (total > 0) onProgress(received, total)
+          })
+          .then(() => out.end(() => resolve()))
+          .catch((err: unknown) => {
+            out.destroy()
+            reject(err instanceof Error && err.message ? err : new Error('Download failed'))
+          })
+      })
+      return { filePath }
+    } catch (err) {
+      await unlink(filePath).catch(() => undefined)
+      throw err
+    }
+  }
+
+  async applyPatch(filePath: string, version: string): Promise<void> {
+    await applyPatchArchive(filePath, version)
+    this.isPatchApplied = true
+  }
+
   safetyBackup(): { path: string } | null {
     try {
       const backup = createBackupSync(getDb(), 'BEFORE_UPDATE')
@@ -191,6 +248,17 @@ export class ElectronUpdateTransport implements UpdateTransport {
   }
 
   restartAndInstall(): void {
+    if (this.isPatchApplied) {
+      try {
+        const { reloadLiveWithPatch } = require('./patchService') as typeof import('./patchService')
+        if (reloadLiveWithPatch()) return
+      } catch {
+        // Fall back to relaunch
+      }
+      app.relaunch()
+      app.exit(0)
+      return
+    }
     const updater = require('electron-updater') as typeof import('electron-updater')
     updater.autoUpdater.quitAndInstall(true, true)
   }

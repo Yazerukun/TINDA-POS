@@ -37,6 +37,8 @@ export interface UpdateTransport {
   fetchReleases(): Promise<ReleaseInfo[]>
   downloadSetup(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<void>
   downloadPortable(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<{ filePath: string }>
+  downloadPatch?(release: ReleaseInfo, onProgress: UpdateProgressHandler): Promise<{ filePath: string }>
+  applyPatch?(filePath: string, version: string): Promise<void>
   safetyBackup(): { path: string } | null
   restartAndInstall(): void
   reveal(path: string): Promise<void>
@@ -131,7 +133,8 @@ export class UpdateService {
         return this.getState()
       }
 
-      this.set({ status: 'UPDATE_AVAILABLE', available, message: null, lastCheckedAt: new Date().toISOString() }, true)
+      const updateType = available.hasPatch ? 'PATCH' : 'FULL'
+      this.set({ status: 'UPDATE_AVAILABLE', available, message: null, lastCheckedAt: new Date().toISOString(), updateType }, true)
       return this.getState()
     } finally {
       this.busy = false
@@ -165,7 +168,16 @@ export class UpdateService {
         this.set({ progress: { downloaded, total, percent } })
       }
       try {
-        if (this.deps.transport.isPortable()) {
+        if (available.hasPatch && this.deps.transport.downloadPatch && this.deps.transport.applyPatch) {
+          const { filePath } = await this.deps.transport.downloadPatch(available, onProgress)
+          await this.deps.transport.applyPatch(filePath, available.version)
+          this.set({
+            status: 'READY_TO_INSTALL',
+            message: `Feature patch v${available.version} applied. Restart & Install to finish.`,
+            progress: null,
+            updateType: 'PATCH'
+          })
+        } else if (this.deps.transport.isPortable()) {
           const { filePath } = await this.deps.transport.downloadPortable(available, onProgress)
           this.downloadedPath = filePath
           this.set({
@@ -174,11 +186,12 @@ export class UpdateService {
               process.platform === 'linux'
                 ? `Update downloaded: ${filePath}. Relaunch TINDA POS to use the new version.`
                 : `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
-            progress: null
+            progress: null,
+            updateType: 'FULL'
           })
         } else {
           await this.deps.transport.downloadSetup(available, onProgress)
-          this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null })
+          this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null, updateType: 'FULL' })
         }
       } catch (err) {
         console.error('[updater] download failed', err)
@@ -195,7 +208,7 @@ export class UpdateService {
   async install(): Promise<UpdateStatusEvent> {
     if (this.state.status !== 'READY_TO_INSTALL' && this.state.status !== 'DOWNLOADED') return this.getState()
     if (hasCriticalOperation()) throw new OperationInProgressError()
-    if (this.deps.transport.isPortable()) {
+    if (this.deps.transport.isPortable() && this.state.updateType !== 'PATCH') {
       const path = this.downloadedPath ?? ''
       if (path) this.deps.transport.reveal(path).catch(() => undefined)
       return this.getState()

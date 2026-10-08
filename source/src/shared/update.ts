@@ -37,6 +37,8 @@ export interface ReleaseInfo {
   releaseNotes: string
   stable: boolean
   assets: ReleaseAsset[]
+  hasPatch?: boolean
+  patchAsset?: ReleaseAsset | null
 }
 
 export interface UpdateProgress {
@@ -53,6 +55,7 @@ export interface UpdateStatusEvent {
   progress: UpdateProgress | null
   message: string | null
   lastCheckedAt: string | null
+  updateType?: 'PATCH' | 'FULL'
 }
 
 export const UPDATE_CHECK_THROTTLE_MS = 15 * 60 * 1000 // 15 minutes
@@ -166,6 +169,7 @@ export function parseGitHubRelease(json: unknown): ReleaseInfo | null {
       if (asset) assets.push(asset)
     }
   }
+  const patchAsset = assets.find((a) => /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i.test(a.name)) ?? null
   return {
     version: parsed.raw,
     tag: tag === '' ? `v${parsed.raw}` : tag,
@@ -173,7 +177,9 @@ export function parseGitHubRelease(json: unknown): ReleaseInfo | null {
     publishedAt: typeof r.published_at === 'string' ? r.published_at : '',
     releaseNotes: safeReleaseNotes(typeof r.body === 'string' ? r.body : ''),
     stable: !draft && !prerelease && parsed.prerelease === null,
-    assets
+    assets,
+    hasPatch: Boolean(patchAsset),
+    patchAsset
   }
 }
 
@@ -199,11 +205,12 @@ export function latestStable(releases: ReleaseInfo[]): ReleaseInfo | null {
   return best
 }
 
-export type UpdateAssetKind = 'setup' | 'portable'
+export type UpdateAssetKind = 'setup' | 'portable' | 'patch'
 
 const ASSET_PATTERNS: Record<UpdateAssetKind, RegExp> = {
   setup: /^TindaPOS-Setup-\d+\.\d+\.\d+[^.]*\.exe$/i,
-  portable: /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i
+  portable: /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i,
+  patch: /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i
 }
 
 export function pickAsset(release: ReleaseInfo, kind: UpdateAssetKind): ReleaseAsset | null {
@@ -273,7 +280,11 @@ export function safeReleaseNotes(body: string, maxLength: number = MAX_RELEASE_N
 }
 
 /** Pick the correct Windows download target name for a release. */
-export function downloadAssetName(release: ReleaseInfo, portable: boolean): string | null {
+export function downloadAssetName(release: ReleaseInfo, portable: boolean, preferPatch = false): string | null {
+  if (preferPatch) {
+    const patch = pickAsset(release, 'patch')
+    if (patch) return patch.name
+  }
   const asset = pickAsset(release, portable ? 'portable' : 'setup')
   return asset ? asset.name : null
 }

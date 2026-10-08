@@ -1,32 +1,31 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.74 (AUDIT & HISTORY DELETE SAFEGUARDS EDITION)
+- v1.0.75 (FAST IN-APP FEATURE HOT-PATCH & PROACTIVE CUPERTINO UPDATE ENGINE EDITION)
 
 TARGET:
-- v1.0.75 (NEXT RELEASE CYCLE)
+- v1.0.76 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Published & Live (GitHub Releases v1.0.74 + Auto-Update Mirror Synced)
+- Stage 05 Passed (Ready for Boss's Build & Release Go-Signal)
 
 COMPLETED:
-- Stage 01: E-Wallet Audit Deletion Repository & IPC (`deleteEwalletAudit`, `clearAllEwalletAudits`, `ewallet:deleteAudit`, `ewallet:clearAudits`).
-- Stage 02: Audit History Row Deletion with Apple-Grade Cupertino Confirmation Modal (`Trash2` button, detailed variance metrics breakdown).
-- Stage 03: Bulk Audit Clearing ("Clear All Audits") with modal confirmation.
-- Stage 04: Audit Sheet 1-Tap Count Reset (`RotateCcw`) and Today's Audit Delete Banner for rapid recounting.
-- Stage 05: Comprehensive Quality Assurance (419/419 vitest unit tests passing across 63 test suites, 0 TypeScript compiler errors, master invariants verified 100%).
-- Stage 06: Production Packaging (`TindaPOS-Setup-1.0.74.exe` [107.17 MB], `TindaPOS-Portable-1.0.74.exe` [106.96 MB], blockmap, latest.yml, and SHA256 checksums generated and verified).
-- Stage 07: Production Deployment & GitHub Releases Publishing (Assets uploaded to https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.74; latest.yml auto-update manifest and release notes synced to public repository).
+- Stage 01: Dual-Track Fast Update Engine (`patchService.ts`, `tools/bundle_patch.mjs`, `build:patch` packaging in 3.8s, ~0.8 MB archive size).
+- Stage 02: 5-Point Steelclad Database Safety Shield (storage decoupling in `%APPDATA%`, verified pre-update snapshot backup, cashier checkout operation guard, additive migrations, crash sentinel & 2-failure auto-rollback).
+- Stage 03: Proactive Zero-Click Apple Cupertino Update Pop-up Modal (`UpdateModal.tsx` mounted in `Shell.tsx` with translucent backdrop, version badge, release highlights, and 1-tap update action).
+- Stage 04: 100% Strict English Standardization across all dialogs, notifications, receipts, and system tools with zero dialect words.
+- Stage 05: Comprehensive Quality Assurance (425/425 vitest unit tests passing across 64 test suites, 0 TypeScript compiler errors, master invariants verified 100%).
 
 PENDING APPROVAL:
-- None (Approved by Owner).
+- Owner Approval for v1.0.75 Build & Publish.
 
 BLOCKERS:
 - None.
 
-ARTIFACTS (v1.0.74):
-- Setup: `source/builds/TindaPOS-Setup-1.0.74.exe` (SHA256: `da37c9ef8c98e27d9b2aee9d30031f71e86a067655a7a95c018f549369e6442c`)
-- Portable: `source/builds/TindaPOS-Portable-1.0.74.exe` (SHA256: `6f86fd7cf41e08d3c56fa024aed7905e3a3f1cfa40df2715d646337272d96f1c`)
-- Blockmap: `source/builds/TindaPOS-Setup-1.0.74.exe.blockmap` (SHA256: `25ddfdd6c6569455044cc993e371b8aefeccb8a6c8f9762a4dbb50f9363ae794`)
-- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `7384e503d4ff119a3d1be409395a9dc97590fbb3ac688688c88c5330e1e09a55`)
-- Checksums: `source/builds/SHA256SUMS-v1.0.74.txt`
+ARTIFACTS (v1.0.75):
+- Setup: `source/builds/TindaPOS-Setup-1.0.75.exe` (SHA256: `ab400b15f336292b8dafa53e76a6e4304a47dac895901af7217496e4d03bb702`)
+- Portable: `source/builds/TindaPOS-Portable-1.0.75.exe` (SHA256: `4cef8eaf4a305e80b6a13ed55c969b366407d03adc239543e179d27f24b8fd90`)
+- Blockmap: `source/builds/TindaPOS-Setup-1.0.75.exe.blockmap` (SHA256: `6a0c0a3aa6a280c3d27784986c3683d9542819d62308c829a1d63f83bffbaa12`)
+- Feature Patch: `source/builds/TindaPOS-Feature-Patch-1.0.75.zip` (SHA256: `e3fc38519eef2f2f2c72569c02d7ee2d942b0c21155aec26ccc3afd3872f2c08`)
+- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `d4e2b75506f5f6530ee76023b94fd03a267b34ffee2fd31ef88848a5724c85fb`)
+- Checksums: `source/builds/SHA256SUMS-v1.0.75.txt`

@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 import { useAuth } from '../stores/auth'
 import { useSettings } from '../stores/settings'
 import { useNav } from '../stores/nav'
+import { useUpdate } from '../stores/update'
 import { Sidebar } from '../components/layout/Sidebar'
 import { ToastHost } from '../components/ui/ToastHost'
 import { UpdateNotification } from '../components/update/UpdateNotification'
+import { UpdateModal } from '../components/update/UpdateModal'
 import { Dashboard } from '../pages/Dashboard'
 import { POS } from '../pages/POS'
 import { Inventory } from '../pages/Inventory'
@@ -30,6 +32,9 @@ export function Shell(): React.JSX.Element {
 
   useEffect(() => {
     load().catch(() => console.error('settings load failed'))
+    void useUpdate.getState().init().then(() => {
+      void useUpdate.getState().check(false)
+    })
   }, [load])
 
   return (
@@ -55,6 +60,7 @@ export function Shell(): React.JSX.Element {
         </div>
       </main>
       <ToastHost />
+      <UpdateModal />
       <UpdateNotification />
       <HelpGuideModal />
       <TindaCommunityChat />
