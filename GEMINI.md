@@ -26,7 +26,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)**
+- Current Version: **v1.0.74 (Audit & History Delete Safeguards Edition)**
+
+## Key Features in v1.0.74 (Audit & History Delete Safeguards Edition)
+1. **Interactive Cupertino Deletion for E-Wallet Audit Records**:
+   - Added individual row Delete button (`Trash2`) in the Audit History ledger table (`EwalletAudit.tsx`).
+   - Launches an Apple-grade Cupertino confirmation modal detailing the audit's date, cashier, drawer cash status, and 3-way variance across Cash, GCash, Maya, and MariBank, preventing accidental loss while providing clean record management.
+   - Wired with backend `deleteEwalletAudit(id)` in `ewallet.ts` repository and `ewallet:deleteAudit` IPC channel.
+2. **Bulk Audit Ledger Clearing ("Clear All Audits")**:
+   - Added a top-level **Clear All Audits** action button in the Audit History header with a confirmation safeguard dialog.
+   - Cleans test audits and historical logs cleanly via `clearAllEwalletAudits()` in SQLite.
+3. **Live Audit Sheet Reset & Today's Audit Delete Banner**:
+   - Added **Reset Sheet** button with `RotateCcw` icon to instantly wipe counted denomination quantities, float target presets, and notes back to defaults.
+   - Introduced dynamic top-of-sheet status banner whenever an audit has already been recorded for today, featuring a 1-tap **Delete Saved Audit** button to allow cashiers to recount and re-audit without leaving the screen.
 
 ## Key Features in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
 1. **Zero-Wrap Deterministic Receipt Timestamps & Reference Alignment**:
