@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.70-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.72-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-417_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Thermal_Print-7--Eleven_Micro_Spacing-10b981?style=for-the-badge" alt="7-Eleven Micro Spacing">
+<img src="https://img.shields.io/badge/Tests-418_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Community_Chat-Next--Gen_Multimedia-10b981?style=for-the-badge" alt="Next-Gen Chat">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -17,9 +17,44 @@
 
 <br />
 
-[⬇️ Download v1.0.70 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.70/TindaPOS-Setup-1.0.70.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.70/TindaPOS-Portable-1.0.70.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.70/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.72 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-Setup-1.0.72.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-Portable-1.0.72.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
+
+> **Native Electron Printable Inventory & Operations Documents, Dual Auto/Manual System Dialog Printing in E-Wallet Audit & History, and Complete MariBank Digital Banking Integration.**
+
+- 🖨️ **Native Inventory & Operations Document Printing Pipeline**:
+  - Replaced fragile browser popup printing with native Electron IPC `printer.printDocument`, resolving printing failures across all Windows printer drivers.
+  - Dedicated hidden BrowserWindow renderer with `@page` formatting and A4/Letter dimensions for crisp Stock on Hand Reports, Physical Count Sheets, Purchase Orders (P.O.), and Stock Adjustment Logs.
+  - Added dual **Auto Print (A4)** and **Manual Print (Dialog)** options to `InventoryPrintModal` and `PriceTagPrintModal`.
+- ⚖️ **Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger**:
+  - Upgraded audit printing IPC to support direct Windows System Print Dialog execution (`{ manual: true }`).
+  - Added dual **Auto Print** (Thermal direct) and **Manual Print** (OS Print Dialog) buttons to both the live **Audit Sheet** and the **Audit History** ledger table.
+- 🏦 **MariBank Digital Banking & E-Wallet Integration**:
+  - Added **MariBank** alongside GCash and Maya across Cash In / Out, Bills & E-Load center, transactions ledger, and shift audits.
+  - Distinct Shopee/Sea orange (`#FF6A00`) brand theme and badges.
+  - SQLite database Migration 13 for `ewallet_audits` (MariBank reconciliation float columns) and `ewallet_transactions` channel check constraints.
+  - Comprehensive thermal receipt audit printing breakdown including MariBank drawer reconciliations.
+
+## ✨ What's New in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
+
+> **Clean Fee Notation, Universal No-Seconds Receipt Timestamps, Next-Gen Community Chat with Emojis & Photos, Universal Store Logo & Desktop Taskbar Icon, and Staggered Dashboard Login Animations.**
+
+- 💳 **Clean Fee Notation & No-Seconds Receipts**:
+  - Removed `+` prefix from all E-Wallet and Bills fee displays, chips, table columns, and receipt slips (`Service Fee    P20.00`).
+  - Standardized thermal receipt timestamps to `{ dateStyle: 'medium', timeStyle: 'short' }` across all transactions, producing clean date/time stamps with zero seconds (e.g., `Oct 7, 2026, 10:07 PM`).
+- 💬 **Next-Gen Community Chat Overhaul**:
+  - Dragging fix: Moving the minimized pill never accidentally restores or opens the chat window.
+  - Renamed minimized label to **Chat**.
+  - Integrated 1-tap Emoji Picker (`😀 😂 😍 👍 🙏 🏪 📦 💰 🔥 👏 ❤️ 🎉 🚀 🇵🇭`) and image attachment upload/paste support with inline thumbnail rendering.
+  - Seen Receipts: See who read messages and at what time (`👁️ Seen by Cashier · 10:07 PM`).
+  - Live presence counter: Real-time `🟢 X Online` merchant indicator.
+- 🎨 **Universal Store Logo & Desktop Window Icon**:
+  - Free custom store logo upload for all stores; custom logo dynamically updates the Windows desktop taskbar and window frame icon.
+- ✨ **Cinematic Staggered Dashboard Login Animations**:
+  - Fluid CSS fade-in-up staggered entrance animations and personalized time-of-day store welcome banner.
 
 ## ✨ What's New in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)
 
