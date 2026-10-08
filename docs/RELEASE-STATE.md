@@ -4,17 +4,16 @@ CURRENT STABLE:
 - v1.0.78 (REAL-TIME SIDEBAR FAST UPDATES & PROACTIVE POP-UP HUB EDITION)
 
 TARGET:
-- v1.0.79 (NEXT RELEASE CYCLE)
+- v1.0.79 (SIDEBAR FAST UPDATES & ZERO-RESTART LIVE ENGINE EDITION)
 
 CURRENT STAGE:
-- Published & Live (GitHub Releases v1.0.78 + Auto-Update Mirror Synced)
+- Stage 04: Production Packaging Complete (Ready for Publishing)
 
 COMPLETED:
-- Stage 01: Real-Time Sidebar Update Center & Proactive Pop-up Engine (added persistent Cupertino update widget to Sidebar.tsx; added 10-second high-frequency background polling in Shell.tsx and updateRuntime.ts; added unauthenticated CDN raw fallback to updateTransport.ts bypassing GitHub API 60 req/hr rate limits; connected modalDismissed state to useUpdate store).
+- Stage 01: Sidebar Fast Updates Hub & Zero-Restart Live Engine (migrated update controls from Settings > About into Sidebar; added Fast Updates nav entry; added openHub and closeHub state; upgraded patchService semver preservation > 0 and installedVersion active patch reporting; updated UpdateModal as standalone Cupertino Update Hub with zero-restart indicators and integrated version rollback).
 - Stage 02: Comprehensive Quality Assurance (425/425 vitest unit tests passing across 64 test suites, 0 TypeScript compiler errors, master invariants verified 100%).
-- Stage 03: Fast Feature Patch Packaging (`TindaPOS-Feature-Patch-1.0.78.zip` [0.81 MB] bundled in 0.73s with SHA-256 verification).
-- Stage 04: Production Packaging (`TindaPOS-Setup-1.0.78.exe` [107.18 MB], `TindaPOS-Portable-1.0.78.exe` [106.96 MB], blockmap, `latest.yml`, and SHA256 checksums generated and verified).
-- Stage 05: Production Deployment & GitHub Releases Publishing (Assets uploaded to https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.78; latest.yml auto-update manifest and release notes synced to public repository).
+- Stage 03: Fast Feature Patch Packaging (`TindaPOS-Feature-Patch-1.0.79.zip` [0.81 MB] bundled in 1.09s with SHA-256 verification).
+- Stage 04: Production Packaging (`TindaPOS-Setup-1.0.79.exe` [107.18 MB], `TindaPOS-Portable-1.0.79.exe` [106.96 MB], blockmap, `latest.yml`, and SHA256 checksums generated and verified).
 
 PENDING APPROVAL:
 - None (Approved by Owner).
@@ -22,10 +21,10 @@ PENDING APPROVAL:
 BLOCKERS:
 - None.
 
-ARTIFACTS (v1.0.78):
-- Setup: `source/builds/TindaPOS-Setup-1.0.78.exe` (SHA256: `5078b2fbc8f109c3d4ea58ad45a16830a22cf897a4a50eb5d52109d269bd7a43`)
-- Portable: `source/builds/TindaPOS-Portable-1.0.78.exe` (SHA256: `ba5d1a8e625293b050930bc64ac71d171efcb04b1f2eff243f633b021d6cc587`)
-- Blockmap: `source/builds/TindaPOS-Setup-1.0.78.exe.blockmap` (SHA256: `75a7bdbce4869d7f8f9a5da19e669e8abbbe9519ca153ba6c6bd5568258846af`)
-- Feature Patch: `source/builds/TindaPOS-Feature-Patch-1.0.78.zip` (SHA256: `2443f6e0143d12ac0087b767ca5916e0e345bab5ab4f5fc05d2b67517c80cff4`)
-- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `e4e48ffc0afadd6afe8fe0f791340399b81339600626d2ac49df803daca42e10`)
-- Checksums: `source/builds/SHA256SUMS-v1.0.78.txt`
+ARTIFACTS (v1.0.79):
+- Setup: `source/builds/TindaPOS-Setup-1.0.79.exe` (SHA256: `13e339cb3716bd24540fa0254ee7336506da3eaa49e53f0d00926af5020faf22`)
+- Portable: `source/builds/TindaPOS-Portable-1.0.79.exe` (SHA256: `097653968019c1b974191ce496c7af1dbc0f5337d771def10dc8dc9e4893620f`)
+- Blockmap: `source/builds/TindaPOS-Setup-1.0.79.exe.blockmap` (SHA256: `515b83e27d4e339bb3104c2f90d602d9cf1f052409ddc25376356a7539decf7b`)
+- Feature Patch: `source/builds/TindaPOS-Feature-Patch-1.0.79.zip` (SHA256: `91328a4b35f0f0e554d002370f51b3a02605c7f27f814c66c0e6431cd4f10a29`)
+- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `12c1b9778ffe77e2b3e3e368370f8cf095334307bff831d3db45716af5e9b440`)
+- Checksums: `source/builds/SHA256SUMS-v1.0.79.txt`
