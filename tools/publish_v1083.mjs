@@ -144,9 +144,11 @@ Official Production Release: **October 9, 2026**
    - OpenCode Free models pool (**nemotron-3.5-lightning-free**, **mimo-v2.6-flash-free**, **exo-free**, **space-bunny-free**, **step-5-preview-free**) with automatic sequential failover.
    - Secondary auto-switch to Google Gemini 2.5 Flash Lite Free Tier.
    - Tertiary instant offline fallback to built-in Store Handbook for 100% zero-downtime reliability.
-4. **🎨 Draggable & Minimizable Widget:**
-   - Independent floating draggable handle (\`⠿\`) and minimize (\`—\` / \`⤢\`) controls.
-   - Positioned cleanly side-by-side with Community Chat with persistent position remembrance.
+4. **🎨 Compact 330px AI Assistant & Non-Blocking POS Clearance:**
+   - Redesigned sleek 330px / 390px width with header width toggle and 42px micro-bar minimize mode.
+   - Unified FloatingWidgetsDock consolidating AI Copilot and Community Chat into a single capsule dock.
+   - Intelligent POS screen auto-shift: moves cleanly to the left of the Cart column so the Cart, Total, and big CHECKOUT button are 100% unobstructed.
+   - Distraction-free collapse toggle ([ ✦ ]) for fast rush-hour cashier operations.
 
 ### 📦 Checksums & Verification:
 \`\`\`
