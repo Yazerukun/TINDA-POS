@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.73-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.74-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-418_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-419_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Community_Chat-Next--Gen_Multimedia-10b981?style=for-the-badge" alt="Next-Gen Chat">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,22 @@
 
 <br />
 
-[⬇️ Download v1.0.73 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-Setup-1.0.73.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-Portable-1.0.73.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.74 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Portable-1.0.74.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.74 (Audit & History Delete Safeguards Edition)
+
+> **Complete Deletion Safeguards in E-Wallet Audit Sheet & Historical Audit Ledger, Interactive Cupertino Confirmation Modals, Dynamic Today's Audit Delete Banner, and 1-Tap Count Reset.**
+
+- 🗑️ **Interactive Cupertino Deletion for Audit Records**:
+  - Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals to each row in the Audit History ledger.
+  - Displays full audit metrics before deletion: Date, Cashier, Cash/GCash/Maya/MariBank differences, and Total Fees earned.
+- 🧹 **Bulk "Clear All Audits" Safeguard**:
+  - Added "Clear All Audits" action in the Audit History header with modal confirmation, allowing store owners to wipe test audits or start completely fresh.
+- 🔄 **Audit Sheet 1-Tap Reset & Today's Audit Delete Banner**:
+  - Added **Reset Sheet** button with `RotateCcw` icon to instantly clear all denomination inputs, float amounts, and notes.
+  - Interactive top banner on the Audit Sheet when an audit is recorded for today, featuring a 1-tap **Delete Saved Audit** button for effortless recounting.
 
 ## ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
 
@@ -510,10 +523,10 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 | Deliverable | Description | Download Link |
 |---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Portable-1.0.65.exe) |
-| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/SHA256SUMS-v1.0.65.txt) |
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Portable-1.0.74.exe) |
+| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/SHA256SUMS-v1.0.74.txt) |
 
 > ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
 
@@ -654,6 +667,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.65 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.74 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
