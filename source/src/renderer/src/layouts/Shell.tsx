@@ -5,7 +5,6 @@ import { useNav } from '../stores/nav'
 import { useUpdate } from '../stores/update'
 import { Sidebar } from '../components/layout/Sidebar'
 import { ToastHost } from '../components/ui/ToastHost'
-import { UpdateNotification } from '../components/update/UpdateNotification'
 import { UpdateModal } from '../components/update/UpdateModal'
 import { Dashboard } from '../pages/Dashboard'
 import { POS } from '../pages/POS'
@@ -49,12 +48,12 @@ export function Shell(): React.JSX.Element {
 
     // Real-time check on window focus (when cashier switches back or clicks app)
     const onFocus = () => {
-      void useUpdate.getState().check(true)
+      void useUpdate.getState().check(false)
     }
 
     // Real-time check on network reconnect
     const onOnline = () => {
-      void useUpdate.getState().check(true)
+      void useUpdate.getState().check(false)
     }
 
     window.addEventListener('focus', onFocus)
@@ -92,7 +91,6 @@ export function Shell(): React.JSX.Element {
       </main>
       <ToastHost />
       <UpdateModal />
-      <UpdateNotification />
       <HelpGuideModal />
       <TindaCommunityChat />
     </div>

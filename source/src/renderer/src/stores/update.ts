@@ -10,12 +10,13 @@ interface UpdateState {
   hubOpen: boolean
   init: () => Promise<void>
   check: (manual: boolean) => Promise<void>
-  download: () => Promise<void>
+  download: (type?: 'PATCH' | 'FULL') => Promise<void>
   install: () => Promise<void>
   dismiss: () => Promise<void>
   showModal: () => void
   openHub: () => void
   closeHub: () => void
+  minimize: () => void
 }
 
 let unsubscribe: (() => void) | null = null
@@ -64,9 +65,9 @@ export const useUpdate = create<UpdateState>((set, get) => ({
       set({ checking: false })
     }
   },
-  download: async () => {
+  download: async (type) => {
     if (!window?.api?.update) return
-    const event = await window.api.update.download()
+    const event = await window.api.update.download(type)
     set({ event })
   },
   install: async () => {
@@ -88,5 +89,8 @@ export const useUpdate = create<UpdateState>((set, get) => ({
   },
   closeHub: () => {
     set({ hubOpen: false })
+  },
+  minimize: () => {
+    set({ modalDismissed: true, hubOpen: false })
   }
 }))

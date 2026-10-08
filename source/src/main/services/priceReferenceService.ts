@@ -29,7 +29,7 @@ export async function isOnlineCheck(): Promise<boolean> {
 
     const probes = [
       ['https://connectivitycheck.gstatic.com/generate_204', 204],
-      ['https://www.msftconnecttest.com/connecttest.txt', 200]
+      ['http://www.msftconnecttest.com/connecttest.txt', 200]
     ] as const
 
     const results = await Promise.all(

@@ -81,7 +81,7 @@ const SECTIONS: NavSection[] = [
   {
     title: 'System & Guide',
     items: [
-      { key: 'updates', label: 'Fast Updates', icon: <Zap className="h-4 w-4 text-emerald-400" /> },
+      { key: 'updates', label: 'Software Update', icon: <RefreshCw className="h-4 w-4 text-emerald-400" /> },
       { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
       { key: 'backup', label: 'Data & Backup', icon: <HardDriveDownload className="h-4 w-4" />, permission: 'backup:manage' },
       { key: 'handbook', label: 'Store Handbook', icon: <BookOpen className="h-4 w-4 text-amber-400" /> }
@@ -131,10 +131,10 @@ export function Sidebar(): React.JSX.Element {
       </div>
 
       {/* Categorized Navigation List */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3.5 scrollbar-thin">
+      <nav className="flex-1 overflow-y-auto px-2.5 py-1.5 space-y-2 scrollbar-thin">
         {filteredSections.map((sec) => (
           <div key={sec.title} className="space-y-0.5">
-            <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <p className="px-2 pb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               {sec.title}
             </p>
             <div className="space-y-0.5">
@@ -151,23 +151,58 @@ export function Sidebar(): React.JSX.Element {
                       }
                       setPage(n.key)
                     }}
-                    className={`group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                    className={`group flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-gradient-to-r from-brand-600/20 via-brand-600/10 to-transparent text-brand-300 font-semibold border-l-2 border-brand-500 shadow-sm'
+                        : n.key === 'updates' && event?.status === 'UPDATE_AVAILABLE'
+                        ? 'bg-emerald-500/15 text-emerald-300 font-bold border-l-2 border-emerald-400 shadow-sm'
+                        : n.key === 'updates' && event?.status === 'READY_TO_INSTALL'
+                        ? 'bg-emerald-500/20 text-white font-extrabold border-l-2 border-emerald-400 shadow-md'
                         : 'text-slate-400 hover:bg-ink-800/80 hover:text-slate-200 hover:translate-x-0.5'
                     }`}
                   >
                     <span className="flex items-center gap-2.5 truncate">
-                      <span className={`shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-brand-400' : 'text-slate-400'}`}>
-                        {n.icon}
+                      <span className={`shrink-0 transition-transform group-hover:scale-110 ${
+                        isActive
+                          ? 'text-brand-400'
+                          : n.key === 'updates' && (event?.status === 'UPDATE_AVAILABLE' || event?.status === 'READY_TO_INSTALL')
+                          ? 'text-emerald-400 animate-pulse'
+                          : 'text-slate-400'
+                      }`}>
+                        {n.key === 'updates' && checking ? (
+                          <RefreshCw className="h-4 w-4 animate-spin text-emerald-400" />
+                        ) : n.key === 'updates' && event?.status === 'DOWNLOADING' ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-brand-400" />
+                        ) : (
+                          n.icon
+                        )}
                       </span>
                       <span className="truncate">{n.label}</span>
                     </span>
                     <span className="flex items-center gap-1.5 shrink-0">
-                      {n.key === 'updates' && event?.status === 'UPDATE_AVAILABLE' ? (
-                        <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 border border-emerald-500/30 animate-pulse">
-                          ⚡ NEW
-                        </span>
+                      {n.key === 'updates' ? (
+                        event?.status === 'UPDATE_AVAILABLE' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-emerald-500/25 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 border border-emerald-500/40 animate-pulse">
+                            ⚡ v{event.available?.version}
+                          </span>
+                        ) : event?.status === 'DOWNLOADING' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-brand-500/20 px-1.5 py-0.5 text-[9px] font-bold text-brand-300 border border-brand-500/30">
+                            {event.progress?.percent ?? 0}%
+                          </span>
+                        ) : event?.status === 'READY_TO_INSTALL' ? (
+                          <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500 px-1.5 py-0.5 text-[9px] font-black uppercase text-ink-950 shadow-sm animate-bounce">
+                            ⚡ APPLY
+                          </span>
+                        ) : event?.status === 'ERROR' ? (
+                          <span className="inline-flex items-center rounded bg-rose-500/20 px-1.5 py-0.5 text-[9px] font-bold text-rose-300 border border-rose-500/30">
+                            RETRY
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 font-mono text-[9px] text-slate-500 group-hover:text-slate-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" />
+                            v{event?.installedVersion || '1.0.80'}
+                          </span>
+                        )
                       ) : n.badge ? (
                         <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 border border-amber-500/30">
                           💎 {n.badge}
@@ -227,95 +262,6 @@ export function Sidebar(): React.JSX.Element {
             <HelpCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span className="truncate">Guide</span>
           </button>
-        </div>
-
-        {/* Fast In-App Update Center Widget */}
-        <div className="rounded-xl border border-ink-line bg-ink-850/90 p-2 shadow-sm space-y-1.5 transition-all">
-          {event?.status === 'UPDATE_AVAILABLE' ? (
-            <div className="space-y-1.5 animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
-                  <Zap className="h-3.5 w-3.5 text-emerald-400 animate-pulse fill-emerald-400/20" />
-                  Fast Update
-                </span>
-                <span className="font-mono text-[9px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                  v{event.available?.version}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  openHub()
-                  void download()
-                }}
-                className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] py-1.5 shadow-md shadow-emerald-600/30 active:scale-95 transition"
-              >
-                <Zap className="h-3.5 w-3.5" />
-                <span>Download Now (No Restart · 2s)</span>
-              </button>
-            </div>
-          ) : event?.status === 'DOWNLOADING' ? (
-            <div className="space-y-1.5 animate-in fade-in">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="flex items-center gap-1.5 text-slate-200 font-medium">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-400" />
-                  Downloading…
-                </span>
-                <span className="font-mono text-[10px] font-bold text-white">
-                  {event.progress?.percent ?? 0}%
-                </span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-950">
-                <div
-                  className="h-full bg-gradient-to-r from-brand-500 to-emerald-400 transition-all duration-300"
-                  style={{ width: `${event.progress?.percent ?? 0}%` }}
-                />
-              </div>
-            </div>
-          ) : event?.status === 'READY_TO_INSTALL' ? (
-            <div className="space-y-1.5 animate-in fade-in">
-              <button
-                type="button"
-                onClick={() => void install()}
-                className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-ink-950 font-extrabold text-[11px] py-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition"
-              >
-                <Zap className="h-3.5 w-3.5 fill-current" />
-                <span>Apply Live (0.3s · Zero Restart)</span>
-              </button>
-            </div>
-          ) : event?.status === 'ERROR' ? (
-            <div className="flex items-center justify-between text-[11px] text-rose-300">
-              <span className="truncate">Update error</span>
-              <button
-                type="button"
-                onClick={() => void check(true)}
-                className="text-[10px] font-bold text-rose-400 hover:text-rose-300 underline"
-              >
-                Retry
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between text-[10px]">
-              <button
-                type="button"
-                onClick={() => openHub()}
-                className="flex items-center gap-1.5 text-slate-400 min-w-0 hover:text-slate-200 transition text-left"
-                title="Open Fast Update Hub"
-              >
-                <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0" />
-                <span className="truncate font-mono">v{event?.installedVersion || '1.0.79'} · Up to date</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => void check(true)}
-                disabled={checking}
-                title="Check for Fast Updates Now"
-                className="p-1 rounded text-slate-400 hover:text-white hover:bg-ink-800 transition shrink-0"
-              >
-                <RefreshCw className={`h-3 w-3 ${checking ? 'animate-spin text-emerald-400' : ''}`} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Staff Identity Card */}

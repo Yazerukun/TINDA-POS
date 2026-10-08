@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import { execFile } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, renameSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, renameSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
@@ -131,14 +131,48 @@ export function cleanupPatch(): void {
 }
 
 /**
- * Extracts a zip archive using Windows built-in bsdtar.
+ * Extracts an archive using platform-native tools.
+ * Detects whether the archive is a true ZIP (PK..) or a POSIX tarball,
+ * guaranteeing clean extraction on Windows, Linux, and macOS.
  */
 export async function extractZipArchive(zipPath: string, targetDir: string): Promise<void> {
   if (!existsSync(targetDir)) {
     mkdirSync(targetDir, { recursive: true })
   }
-  // Windows 10/11 includes native bsdtar which handles standard .zip archives
-  await execFileAsync('tar', ['-xf', zipPath, '-C', targetDir])
+
+  // Detect whether archive is a true ZIP (PK\x03\x04) or a POSIX tar archive
+  let isZip = false
+  try {
+    const fd = openSync(zipPath, 'r')
+    const header = Buffer.alloc(4)
+    readSync(fd, header, 0, 4, 0)
+    closeSync(fd)
+    isZip = header[0] === 0x50 && header[1] === 0x4b
+  } catch {
+    isZip = false
+  }
+
+  if (isZip) {
+    if (process.platform === 'win32') {
+      try {
+        await execFileAsync('tar', ['-xf', zipPath, '-C', targetDir])
+        return
+      } catch {
+        // Fall back to powershell Expand-Archive on Windows
+        await execFileAsync('powershell', ['-NoProfile', '-Command', `Expand-Archive -LiteralPath "${zipPath}" -DestinationPath "${targetDir}" -Force`])
+        return
+      }
+    }
+    // Linux and macOS: use unzip, fallback to python3 zipfile
+    try {
+      await execFileAsync('unzip', ['-q', '-o', zipPath, '-d', targetDir])
+    } catch {
+      await execFileAsync('python3', ['-m', 'zipfile', '-e', zipPath, targetDir])
+    }
+  } else {
+    // Tar archive (POSIX tar created by GNU tar or bsdtar)
+    await execFileAsync('tar', ['-xf', zipPath, '-C', targetDir])
+  }
 }
 
 /**

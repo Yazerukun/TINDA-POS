@@ -84,7 +84,10 @@ function createWindow(): void {
   } else {
     const patchedEntry = getPatchedEntryHtml()
     if (patchedEntry) {
-      mainWindow.loadFile(patchedEntry)
+      mainWindow.loadURL(pathToFileURL(patchedEntry).href)
+      mainWindow.webContents.once('did-finish-load', () => {
+        markPatchStable()
+      })
     } else {
       mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
     }

@@ -1,8 +1,7 @@
 {
   "name": "tinda-pos",
   "productName": "TINDA POS",
-  "version": "1.0.80",
-
+  "version": "1.0.81",
   "description": "TINDA POS — Offline POS System for Sari-Sari Stores",
   "main": "out/main/index.js",
   "author": "TINDA POS",

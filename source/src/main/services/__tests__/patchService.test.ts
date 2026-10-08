@@ -133,4 +133,24 @@ describe('patchService tests', () => {
     expect(entry).toBeNull()
     expect(getPatchManifest()).toBeNull()
   })
+
+  it('extractZipArchive extracts zip archives cross-platform successfully', async () => {
+    const { execSync } = await import('node:child_process')
+    const { readFileSync } = await import('node:fs')
+    const testZipSource = join(testDir, 'zip_src')
+    mkdirSync(testZipSource, { recursive: true })
+    writeFileSync(join(testZipSource, 'hello.txt'), 'TINDA POS ZIP TEST', 'utf8')
+
+    const zipFile = join(testDir, 'test.zip')
+    execSync(`python3 -m zipfile -c "${zipFile}" hello.txt`, { cwd: testZipSource })
+
+    const destDir = join(testDir, 'extracted')
+    const { extractZipArchive } = await import('../patchService')
+    await extractZipArchive(zipFile, destDir)
+
+    // Verify extraction succeeded
+    const found = readFileSync(join(destDir, 'hello.txt'), 'utf8').trim()
+    expect(found).toBe('TINDA POS ZIP TEST')
+  })
 })
+

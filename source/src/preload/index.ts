@@ -43,7 +43,7 @@ const api: TindaApi = {
   update: {
     state: () => invoke<UpdateStatusEvent>('update:state'),
     check: (manual) => invoke<UpdateStatusEvent>('update:check', manual),
-    download: () => invoke<UpdateStatusEvent>('update:download'),
+    download: (type?: 'PATCH' | 'FULL') => invoke<UpdateStatusEvent>('update:download', type),
     install: () => invoke<UpdateStatusEvent>('update:install'),
     dismiss: () => invoke<void>('update:dismiss'),
     onEvent: (cb) => {

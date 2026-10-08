@@ -39,6 +39,8 @@ export interface ReleaseInfo {
   assets: ReleaseAsset[]
   hasPatch?: boolean
   patchAsset?: ReleaseAsset | null
+  hasFull?: boolean
+  fullAsset?: ReleaseAsset | null
 }
 
 export interface UpdateProgress {
@@ -170,6 +172,13 @@ export function parseGitHubRelease(json: unknown): ReleaseInfo | null {
     }
   }
   const patchAsset = assets.find((a) => /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i.test(a.name)) ?? null
+  const isLinux = typeof process !== 'undefined' && process.platform === 'linux'
+  const fullAsset = assets.find((a) =>
+    isLinux
+      ? /^TindaPOS-.*\.AppImage$/i.test(a.name) || /^TindaPOS-.*-linux-.*\.tar\.gz$/i.test(a.name)
+      : /^TindaPOS-(?:Setup|Portable)-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name) || /^TindaPOS-.*\.AppImage$/i.test(a.name)
+  ) ?? assets.find((a) => /^TindaPOS-(?:Setup|Portable|\d+\.\d+\.\d+).*?\.(?:exe|AppImage|tar\.gz)$/i.test(a.name)) ?? null
+
   return {
     version: parsed.raw,
     tag: tag === '' ? `v${parsed.raw}` : tag,
@@ -179,7 +188,9 @@ export function parseGitHubRelease(json: unknown): ReleaseInfo | null {
     stable: !draft && !prerelease && parsed.prerelease === null,
     assets,
     hasPatch: Boolean(patchAsset),
-    patchAsset
+    patchAsset,
+    hasFull: Boolean(fullAsset),
+    fullAsset
   }
 }
 
@@ -205,12 +216,13 @@ export function latestStable(releases: ReleaseInfo[]): ReleaseInfo | null {
   return best
 }
 
-export type UpdateAssetKind = 'setup' | 'portable' | 'patch'
+export type UpdateAssetKind = 'setup' | 'portable' | 'patch' | 'full'
 
 const ASSET_PATTERNS: Record<UpdateAssetKind, RegExp> = {
   setup: /^TindaPOS-Setup-\d+\.\d+\.\d+[^.]*\.exe$/i,
   portable: /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i,
-  patch: /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i
+  patch: /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i,
+  full: /^TindaPOS-(?:.*\.AppImage|Setup-.*\.exe|Portable-.*\.exe|.*-linux-.*\.tar\.gz)$/i
 }
 
 export function pickAsset(release: ReleaseInfo, kind: UpdateAssetKind): ReleaseAsset | null {

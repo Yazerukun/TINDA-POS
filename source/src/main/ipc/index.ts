@@ -105,7 +105,7 @@ handle('app:isOnline', async () => {
 
   const probes = [
     ['https://connectivitycheck.gstatic.com/generate_204', 204],
-    ['https://www.msftconnecttest.com/connecttest.txt', 200]
+    ['http://www.msftconnecttest.com/connecttest.txt', 200]
   ] as const
 
   const results = await Promise.all(
@@ -945,7 +945,7 @@ handle('backup:useSharedAppData', () => {
 // ---- Updates ----
 handle('update:state', () => getUpdateService().getState())
 handle('update:check', (_e, manual: boolean) => getUpdateService().check({ manual: manual === true }))
-handle('update:download', () => getUpdateService().download())
+handle('update:download', (_e, type?: 'PATCH' | 'FULL') => getUpdateService().download(type))
 handle('update:install', () => getUpdateService().install())
 handle('update:dismiss', () => getUpdateService().dismiss())
 

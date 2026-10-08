@@ -72,6 +72,10 @@ export class UpdateService {
   }
 
   getState(): UpdateStatusEvent {
+    const currentInstalled = this.deps.transport.installedVersion()
+    if (currentInstalled && currentInstalled !== this.state.installedVersion) {
+      this.state.installedVersion = currentInstalled
+    }
     return { ...this.state }
   }
 
@@ -142,13 +146,14 @@ export class UpdateService {
   }
 
   /** Download the pending update. For installed builds this also creates the pre-update safety backup. */
-  async download(): Promise<UpdateStatusEvent> {
+  async download(targetType?: 'PATCH' | 'FULL'): Promise<UpdateStatusEvent> {
     const available = this.state.available
     if (!available || (this.state.status !== 'UPDATE_AVAILABLE' && this.state.status !== 'ERROR')) return this.getState()
     if (this.busy) return this.getState()
     this.busy = true
     try {
-      if (!this.deps.transport.isPortable() && this.backupCreatedForVersion !== available.version) {
+      const wantFull = targetType === 'FULL' || (!available.hasPatch && targetType !== 'PATCH')
+      if (!this.deps.transport.isPortable() && wantFull && this.backupCreatedForVersion !== available.version) {
         let backup: { path: string } | null = null
         try {
           backup = this.deps.transport.safetyBackup()
@@ -168,7 +173,7 @@ export class UpdateService {
         this.set({ progress: { downloaded, total, percent } })
       }
       try {
-        if (available.hasPatch && this.deps.transport.downloadPatch && this.deps.transport.applyPatch) {
+        if (!wantFull && available.hasPatch && this.deps.transport.downloadPatch && this.deps.transport.applyPatch) {
           const { filePath } = await this.deps.transport.downloadPatch(available, onProgress)
           await this.deps.transport.applyPatch(filePath, available.version)
           this.set({
@@ -184,7 +189,7 @@ export class UpdateService {
             status: 'DOWNLOADED',
             message:
               process.platform === 'linux'
-                ? `Update downloaded: ${filePath}. Relaunch TINDA POS to use the new version.`
+                ? `Full Linux package downloaded: ${filePath}. Saved in Downloads.`
                 : `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
             progress: null,
             updateType: 'FULL'
@@ -219,7 +224,18 @@ export class UpdateService {
         this.set({ message: 'Update installation paused because a safety backup could not be created. Try Restart & Install again.' })
         return this.getState()
       }
+      const appliedVersion = this.state.available?.version || this.deps.transport.installedVersion()
+      const isPatch = this.state.updateType === 'PATCH'
       this.deps.transport.restartAndInstall()
+      if (isPatch) {
+        this.set({
+          status: 'UP_TO_DATE',
+          installedVersion: appliedVersion,
+          available: null,
+          progress: null,
+          message: `Updated to v${appliedVersion} live. Zero system restart required.`
+        }, true)
+      }
     } catch (err) {
       const message = err instanceof Error && err.message ? err.message : 'The update could not be installed right now.'
       this.set({ status: 'ERROR', message })

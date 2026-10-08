@@ -1494,6 +1494,117 @@
   - **Strict English Localization Standard:**
     - Standardized all UI labels from "Tubo" to "Fee", "Total Fees Earned", and "Service Fee" across all tabs, summary chips, transaction tables, and confirmation modals.
 
+---
+
+## 68. Audit Delete Safeguards, Fast Feature Patcher & Unrestricted E-Wallet (v1.0.74 – v1.0.76)
+* **Problem Addressed:**
+  1. Cashiers needed ability to safely remove mistake entries in Audit Sheet and Audit History without corrupting database integrity.
+  2. Large installer downloads (112 MB) caused friction for fast UI/feature fixes.
+  3. E-Wallet Center was previously locked behind a VIP badge, restricting cashiers in sari-sari retail operations.
+* **Key Architectural Implementations:**
+  - **Audit Safeguards (`auditRepo.ts`, `EwalletAudit.tsx`):** Added delete options with double-confirmation modals and atomic SQLite deletions.
+  - **Fast Feature Patcher Engine (`patchService.ts`, `bundle_patch.mjs`):** Lightweight patch delivery (~0.8 MB) containing pre-built renderer artifacts.
+  - **Unrestricted E-Wallet Access:** Unlocked GCash, Maya, and MariBank recording, fee tracking, and slip printing for 100% of store accounts without VIP key requirements.
+
+---
+
+## 69. Sidebar Fast Updates Hub & Zero-Restart Live Engine (v1.0.77 – v1.0.79)
+* **Problem Addressed:**
+  - Update controls were hidden deep inside Settings > About, making merchants unaware of critical system improvements.
+  - Full app restarts dropped cashier active workflows and required re-login.
+* **Key Architectural Implementations:**
+  - **Sidebar Fast Updates Navigation:** Promoted Fast Updates into the primary navigation bar with real-time status pills.
+  - **Cupertino Update Hub (`UpdateModal.tsx`):** Proactive alert hub offering single-click download and live zero-restart patching.
+  - **Zero-Restart Live Reload (`patchService.ts`):** Reloads active `BrowserWindow` instances in ~300ms without restarting the Electron process or closing database connections.
+
+---
+
+## 70. Apply Live Asset Resolution & Pop-up Debounce Standard (v1.0.80)
+* **Problem Addressed:**
+  1. *Blank White Screen on Live Apply:* Electron's `loadFile()` failed to resolve relative sibling JS/CSS assets (`index-*.js`, `index-*.css`) inside the patch folder, rendering an empty white window.
+  2. *Pop-up Loop:* 10-second background polling repeatedly reset `modalDismissed: false`, re-showing the modal every 10 seconds even after dismissed.
+* **Key Architectural Implementations:**
+  - Switched from `loadFile()` to `loadURL(pathToFileURL(entry).href)` to resolve asset paths relative to the extracted patch folder.
+  - Added `dismissedVersion` tracking so polling only re-alerts when a genuinely newer version tag arrives.
+  - Enhanced `app:info` IPC handler to return the active patch version rather than base installer version.
+
+---
+
+## 71. Linux Real-Time In-App Update Engine & Native Linux AppImage Build (v1.0.80-L / v1.0.81)
+* **Problem Addressed & Root Cause Analysis:**
+  1. *In-App Update Failure on Linux:* When clicking Download/Apply on Linux, updates failed completely with error `tar (GNU tar): This does not look like a tar archive`.
+     - **Root Cause:** `extractZipArchive()` was hardcoded to `execFileAsync('tar', ['-xf', ...])`. Windows 10/11 includes `bsdtar` (which transparently extracts zip files), but Linux uses `GNU tar`, which strictly rejects zip archives.
+  2. *Cold-Boot Blank Screen & Rollback Loop:* On cold launch with a patch present, `main/index.ts` still invoked `mainWindow.loadFile(patchedEntry)` (which failed asset loading) and never invoked `markPatchStable()` on `did-finish-load`, causing `sentinel.attempts >= 2` and triggering an automatic rollback that wiped the patch on reboot.
+  3. *Linux Executable Availability:* Linux merchants required native Linux executables (`.AppImage`) compiled and verified on Linux.
+* **Key Architectural Implementations:**
+  - **Format-Aware Archive Extractor (`patchService.ts`):**
+    - Inspects the first 4 bytes of the archive: detects `0x50, 0x4b` (PK ZIP header) vs POSIX tarballs.
+    - Routes ZIP extraction to native `unzip` (with `python3 -m zipfile -e` fallback) on Linux/macOS, and `tar -xf` / PowerShell on Windows.
+    - Guarantees seamless extraction for both ZIP archives and tarballs without fatal exits.
+  - **Cold-Boot Patched Entry Stability Hook (`main/index.ts`):**
+    - Updated entry loading to `mainWindow.loadURL(pathToFileURL(patchedEntry).href)`.
+    - Added `mainWindow.webContents.once('did-finish-load', () => markPatchStable())` on initial boot, ensuring successful launches immediately set sentinel to `STABLE` and prevent rollback loops.
+  - **Cross-Platform Zip Bundler (`tools/bundle_patch.mjs`):**
+    - Employs native `zip` CLI / `python3 -m zipfile` on Linux/macOS and `tar -a` on Windows, ensuring generated patch archives are 100% valid ZIP files on all operating systems.
+  - **Native Linux AppImage Pipeline:**
+    - Successfully built `TindaPOS-1.0.80.AppImage` (131 MB) and unpacked Linux binary target in `builds/linux-unpacked/tinda-pos`.
+
+---
+
+## 72. Official Release v1.0.81: Linux Zero-Restart Live Patch & Network Diagnostic Edition
+* **Tag & Artifacts:**
+  - Tag: `v1.0.81`
+  - Release URL: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.81`
+  - Asset: `TindaPOS-Feature-Patch-1.0.81.zip` (0.82 MB / 859,245 bytes)
+  - SHA-256: `e015b91c0a044cf4c7e553885371493f85b060326fbdfa45222080fc184a777d`
+* **Features Shipped:**
+  - **Linux Live Hot-Patching:** Feature patches can be downloaded and applied in real-time on Linux without restarting the application process or dropping database connections.
+  - **Zero-Restart Live Reload:** Swapped renderer in-place using `reloadLiveWithPatch()` in <300ms.
+  - **Silent Network Probing:** Standardized captive portal check to HTTP endpoint `http://www.msftconnecttest.com/connecttest.txt`, eliminating SSL handshake warnings (`net_error -200`).
+* **Verification Invariant:**
+  - Full vitest regression test suite: 65/65 test suites (429/429 tests) passing at 100%.
+
+---
+
+## 73. Unified Dual-Mode Update Engine (Option A: Live Patch vs Option B: Full Build)
+* **Problem Addressed:**
+  - Update notifications were firing repeatedly on window focus due to `onFocus` calling `check(true)` with manual override.
+  - Previous modal only offered the hot-patch and omitted full standalone packages/installers.
+  - Users needed one clean, cohesive modal to choose between an instant live hot-patch (`0.82 MB`) or full offline build (`131 MB AppImage`).
+* **Architectural Upgrades:**
+  - **Single Unified Cupertino Modal (`UpdateModal.tsx`):**
+    - Both **Option A: Fast Live Patch (Zero Restart ⚡ · 0.8 MB)** and **Option B: Full Platform Build (AppImage · 131 MB)** presented side-by-side in one dialog.
+    - Cashiers can click **`Update via Patch (Live · 0.3s)`** for zero-downtime updates, or **`Download Full Build`** to save the standalone package directly into `~/Downloads/TINDA-POS-Updates/`.
+    - Modal can be minimized cleanly to the sidebar (`— Minimize to Sidebar`) under `System & Guide` (`Software Update`).
+  - **Window Focus Debounce Safeguard (`Shell.tsx`):**
+    - Changed `window.addEventListener('focus')` and `online` checks to `check(false)` so background polling respects dismissed/minimized modal states and never creates duplicate or pop-up loops.
+  - **Auto-Check Throttling Invariant (`updateService.ts`):**
+    - Throttled auto-checks retain existing `UPDATE_AVAILABLE` states instead of falsely overwriting them back to `UP_TO_DATE`.
+  - **Official Artifacts Attached to Release `v1.0.81`:**
+    - `TindaPOS-Feature-Patch-1.0.81.zip` (836 KB) — Fast In-App Patch
+    - `TindaPOS-1.0.81.AppImage` (131 MB) — Full Linux Standalone Build
+    - `SHA256SUMS-v1.0.81.txt` — Verification hashes
+
+---
+
+## 74. Real-Time Dynamic In-Memory Version Sync on Live Hot-Patching
+* **Root Cause Diagnosed:**
+  - `UpdateService` only initialized `this.state.installedVersion` once inside the constructor on boot.
+  - When `restartAndInstall()` reloaded the renderer via `reloadLiveWithPatch()`, the main process kept holding the stale `installedVersion: "1.0.80"` in memory, and `getState()` returned that cached version instead of checking the newly extracted patch manifest.
+  - In `updateTransport.ts`, `installedVersion()` checked `sentinel.status === 'STABLE'`, but during the hot-reload phase the sentinel was still temporarily `PENDING` until `did-finish-load` resolved.
+* **Architectural Fix Implemented:**
+  - **Dynamic In-Memory Version Sync (`updateService.ts`):**
+    - `getState()` now dynamically queries `this.deps.transport.installedVersion()` on every call, synchronizing `this.state.installedVersion` whenever a patch is loaded or swapped.
+    - Inside `install()`, when applying a feature patch, `this.set()` immediately sets `status: 'UP_TO_DATE'`, updates `installedVersion` to the newly applied patch version, clears `available`, and broadcasts the updated state to all windows.
+  - **Hot-Patch Status Leniency (`updateTransport.ts`):**
+    - `installedVersion()` now honors both `STABLE` and `PENDING` statuses if a valid `manifest.json` is present in `~/.config/TINDA POS/patches`, ensuring the newly unpacked patch version reflects instantly across all IPC channels before and during reload.
+  - **Live UI Reflection:**
+    - Both the Sidebar (`v1.0.81`) and the Update Modal (`v1.0.81` / `TINDA POS is Up to Date`) update immediately in real-time with zero system reboot or manual refresh required.
+
+
+
+
+
 
 
 

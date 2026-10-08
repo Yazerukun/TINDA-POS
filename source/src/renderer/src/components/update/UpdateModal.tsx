@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Download,
   X,
+  Minus,
   Sparkles,
   Loader2,
   ShieldCheck,
@@ -23,7 +24,7 @@ import { RollbackModal } from './RollbackModal'
  * and allows instant on-demand checking, rollback, and live zero-restart patching directly.
  */
 export function UpdateModal(): React.JSX.Element | null {
-  const { event, download, install, dismiss, check, checking, modalDismissed, hubOpen, closeHub } = useUpdate()
+  const { event, download, install, dismiss, minimize, check, checking, modalDismissed, hubOpen, closeHub } = useUpdate()
   const [busy, setBusy] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
   const [installError, setInstallError] = useState<string | null>(null)
@@ -56,11 +57,11 @@ export function UpdateModal(): React.JSX.Element | null {
 
   const notes = event.available?.releaseNotes?.trim() || ''
 
-  const handleDownload = async () => {
+  const handleDownload = async (type?: 'PATCH' | 'FULL') => {
     setInstallError(null)
     setBusy(true)
     try {
-      await download()
+      await download(type)
     } finally {
       setBusy(false)
     }
@@ -128,7 +129,7 @@ export function UpdateModal(): React.JSX.Element | null {
                     ? 'TINDA POS is Up to Date'
                     : 'New Fast Update Available'}
                 </h2>
-                {version ? (
+                {!isUpToDate && version ? (
                   <span className="rounded-full bg-brand-500/20 px-2.5 py-0.5 text-xs font-semibold text-brand-300 border border-brand-500/30 font-mono">
                     v{version}
                   </span>
@@ -154,13 +155,27 @@ export function UpdateModal(): React.JSX.Element | null {
             </div>
           </div>
 
-          <button
-            onClick={handleClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition-colors"
-            aria-label="Close Update Dialog"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={minimize}
+              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 hover:bg-ink-800 hover:text-white transition-colors border border-white/5 hover:border-white/10"
+              title="Minimize to Sidebar"
+              aria-label="Minimize Update Dialog"
+            >
+              <Minus className="h-4 w-4 text-slate-400" />
+              <span className="text-[11px] font-semibold">Minimize</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition-colors"
+              title="Close"
+              aria-label="Close Update Dialog"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Database Safety Guarantee Banner */}
@@ -175,6 +190,61 @@ export function UpdateModal(): React.JSX.Element | null {
             </div>
           </div>
         </div>
+
+        {/* Choice Comparison: Live Patch vs Full Build */}
+        {s === 'UPDATE_AVAILABLE' && (
+          <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Live Patch Option */}
+            {isPatch && (
+              <div className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 p-3.5 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 font-bold text-emerald-300 text-xs">
+                      <Zap className="h-4 w-4 text-emerald-400" />
+                      Option A: Fast Live Patch
+                    </span>
+                    <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black text-emerald-300 uppercase tracking-wide border border-emerald-500/40">
+                      Zero Restart ⚡
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[11px] text-emerald-200/85 leading-relaxed">
+                    Ultra-lightweight hot patch (~0.8 MB). Updates live in 0.3s without restarting the desktop application or closing ongoing sales.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[11px]">
+                  <span className="font-mono text-slate-400">~840 KB</span>
+                  <span className="font-semibold text-emerald-300">Fastest &amp; Safest</span>
+                </div>
+              </div>
+            )}
+
+            {/* Full Platform Build Option */}
+            <div className={`rounded-xl border border-sky-500/30 bg-sky-500/10 p-3.5 flex flex-col justify-between ${!isPatch ? 'sm:col-span-2' : ''}`}>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold text-sky-300 text-xs">
+                    <FolderOpen className="h-4 w-4 text-sky-400" />
+                    Option B: Full Platform Build
+                  </span>
+                  <span className="rounded bg-sky-500/20 px-1.5 py-0.5 text-[9px] font-bold text-sky-300 uppercase tracking-wide border border-sky-500/30">
+                    Complete App
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[11px] text-slate-300 leading-relaxed">
+                  Complete offline standalone installer / AppImage (~130 MB). Downloaded directly to your Downloads folder for fresh installations or archival.
+                </p>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-sky-500/20 flex items-center justify-between text-[11px]">
+                <span className="font-mono text-slate-400">
+                  {event.available?.fullAsset?.size
+                    ? `${(event.available.fullAsset.size / (1024 * 1024)).toFixed(0)} MB · AppImage`
+                    : '~130 MB · AppImage'}
+                </span>
+                <span className="font-medium text-sky-300">Offline Package</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Up to Date Content Card */}
         {isUpToDate && !isDownloading && !isReady && (
@@ -302,35 +372,74 @@ export function UpdateModal(): React.JSX.Element | null {
         )}
 
         {/* Action Button Footer */}
-        <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-ink-line">
+        <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-ink-line">
           <button
             type="button"
-            onClick={handleClose}
-            className="btn-ghost px-4 py-2 text-xs"
-            disabled={busy && isDownloading}
+            onClick={minimize}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-ink-800 border border-white/5 transition"
+            title="Keep update active in sidebar"
           >
-            {isUpToDate ? 'Close' : 'Remind Me Later'}
+            <Minus className="h-3.5 w-3.5 text-slate-400" />
+            <span>Minimize to Sidebar</span>
           </button>
 
-          {s === 'UPDATE_AVAILABLE' && (
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => void handleDownload()}
-              disabled={busy}
-              className="btn-primary flex items-center gap-2 px-5 py-2 text-xs font-semibold shadow-lg shadow-brand-500/20 active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-500 text-white"
+              onClick={handleClose}
+              className="btn-ghost px-4 py-2 text-xs"
+              disabled={busy && isDownloading}
             >
-              {busy ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Starting Download…
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  {isPatch ? 'Download Now (No Restart · 2s)' : 'Download Update'}
-                </>
-              )}
+              {isUpToDate ? 'Close' : 'Remind Me Later'}
             </button>
+
+          {s === 'UPDATE_AVAILABLE' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void handleDownload('FULL')}
+                disabled={busy}
+                className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-200 hover:text-white border-sky-500/30 hover:border-sky-500/60 hover:bg-sky-500/10 active:scale-[0.98] transition-all"
+                title="Download full standalone installer / AppImage package"
+              >
+                <FolderOpen className="h-4 w-4 text-sky-400" />
+                <span>Download Full Build</span>
+              </button>
+
+              {isPatch && (
+                <button
+                  type="button"
+                  onClick={() => void handleDownload('PATCH')}
+                  disabled={busy}
+                  className="btn-primary flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-lg shadow-emerald-500/25 active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-500 text-white"
+                  title="Instant live hot-patch without restarting the application"
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Starting Patch…
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 text-emerald-200" />
+                      <span>Update via Patch (Live · 0.3s)</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              {!isPatch && (
+                <button
+                  type="button"
+                  onClick={() => void handleDownload('FULL')}
+                  disabled={busy}
+                  className="btn-primary flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Download Update</span>
+                </button>
+              )}
+            </div>
           )}
 
           {isError && (
@@ -376,6 +485,7 @@ export function UpdateModal(): React.JSX.Element | null {
               )}
             </button>
           )}
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync, unlinkSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -16,7 +16,7 @@ if (!existsSync(pkgPath)) {
 }
 
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
-const version = pkg.version || '1.0.0'
+const version = process.argv[2] || pkg.version || '1.0.0'
 const outDir = join(sourceDir, 'out')
 const buildsDir = join(sourceDir, 'builds')
 
@@ -42,11 +42,22 @@ writeFileSync(join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 
 // 2. Archive out/ into TindaPOS-Feature-Patch-${version}.zip
 const zipName = `TindaPOS-Feature-Patch-${version}.zip`
 const zipPath = join(buildsDir, zipName)
-
 console.log(`📦 Packaging Fast Feature Patch: ${zipName}...`)
 try {
-  // Use Windows built-in bsdtar to create standard zip archive
-  execFileSync('tar', ['-a', '-cf', zipPath, '-C', outDir, '.'], { stdio: 'inherit' })
+  if (existsSync(zipPath)) {
+    unlinkSync(zipPath)
+  }
+  if (process.platform === 'win32') {
+    // Use Windows built-in bsdtar to create standard zip archive
+    execFileSync('tar', ['-a', '-cf', zipPath, '-C', outDir, '.'], { stdio: 'inherit' })
+  } else {
+    // On Linux/macOS, use zip (or python3 -m zipfile fallback) to create a valid zip
+    try {
+      execFileSync('zip', ['-q', '-r', zipPath, '.'], { cwd: outDir, stdio: 'inherit' })
+    } catch {
+      execFileSync('python3', ['-m', 'zipfile', '-c', zipPath, '.'], { cwd: outDir, stdio: 'inherit' })
+    }
+  }
 } catch (err) {
   console.error(`[bundle_patch] Archive creation failed:`, err)
   process.exit(1)

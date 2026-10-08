@@ -45,7 +45,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
       const manifest = getPatchManifest()
       const sentinel = getPatchSentinel()
       const baseVersion = app.getVersion() || '0.0.0'
-      if (manifest?.version && sentinel?.status === 'STABLE') {
+      if (manifest?.version && (sentinel?.status === 'STABLE' || sentinel?.status === 'PENDING')) {
         if (compareSemver(manifest.version, baseVersion) >= 0) {
           return manifest.version
         }
@@ -163,14 +163,14 @@ export class ElectronUpdateTransport implements UpdateTransport {
     const isLinux = process.platform === 'linux'
     const asset = release.assets.find((a) =>
       isLinux
-        ? /^TindaPOS-.*\.AppImage$/i.test(a.name)
-        : /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name)
-    )
+        ? /^TindaPOS-.*\.AppImage$/i.test(a.name) || /^TindaPOS-.*-linux-.*\.tar\.gz$/i.test(a.name)
+        : /^TindaPOS-Portable-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name) || /^TindaPOS-Setup-\d+\.\d+\.\d+[^.]*\.exe$/i.test(a.name)
+    ) ?? release.fullAsset ?? null
     if (!asset) {
       throw new Error(
         isLinux
-          ? 'The Linux AppImage update file was not found for this release.'
-          : 'The portable update file was not found for this release.'
+          ? 'The Linux update package (AppImage/tar.gz) was not found for this release.'
+          : 'The complete installer package was not found for this release.'
       )
     }
     if (!isOfficialUpdateUrl(asset.url)) throw new Error('The update file has an unexpected source.')

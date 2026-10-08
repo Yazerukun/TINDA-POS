@@ -203,13 +203,13 @@ export class RollbackService {
           return false
         })
 
-        // If preferred flavor is missing, try any valid Windows binary
-        if (!asset && isWindows) {
-          asset = r.assets.find((a) => /^TindaPOS-.*\.exe$/i.test(a.name))
+        // If preferred flavor is missing, try any valid Windows or Linux binary
+        if (!asset) {
+          asset = r.assets.find((a) => /^TindaPOS-.*\.(exe|AppImage)$/i.test(a.name))
         }
 
         if (!asset && r.assets.length > 0) {
-          asset = r.assets[0]
+          asset = r.assets.find((a) => !/\.(yml|txt|blockmap)$/i.test(a.name)) || r.assets[0]
         }
 
         if (asset) {
