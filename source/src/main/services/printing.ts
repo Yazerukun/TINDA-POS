@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
 import type { Sale, StoreSettings } from '@shared/types'
-import { receiptHtml } from '@shared/receiptHtml'
+import { formatReceiptDate, receiptHtml } from '@shared/receiptHtml'
 import { autoDetectThermalPrinter, inferPaperWidth } from '@shared/printer'
 import { buildReceiptLines } from './checkout'
 
@@ -27,10 +27,10 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
     `Store: ${settings.store_name}`,
     `Printer: ${printer}`,
     `Paper: ${settings.receipt_paper_width}`,
-    `Date: ${now.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })}`,
-    '--------------------------',
+    `Date: ${formatReceiptDate(now)}`,
+    '--------------------------------',
     'Printer configuration successful',
-    '--------------------------',
+    '--------------------------------',
     'Thank you!'
   ]
 }

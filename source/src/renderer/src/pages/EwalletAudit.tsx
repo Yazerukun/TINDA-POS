@@ -68,6 +68,8 @@ export interface BillRecord {
   status: 'COMPLETED'
   createdAt: string
   referenceNo: string
+  cashReceived?: number
+  change?: number
 }
 
 export function EwalletAudit(): React.JSX.Element {
@@ -90,6 +92,7 @@ export function EwalletAudit(): React.JSX.Element {
   const [billCustomerPhone, setBillCustomerPhone] = useState('')
   const [billAmountStr, setBillAmountStr] = useState('')
   const [billFeeStr, setBillFeeStr] = useState(String(BILLER_PRESETS[0]?.defaultFee || 15))
+  const [billCashReceivedStr, setBillCashReceivedStr] = useState('')
   const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA' | 'MARIBANK'>('GCASH')
   const [billReferenceNo, setBillReferenceNo] = useState('')
   const [billSearchQuery, setBillSearchQuery] = useState('')
@@ -302,6 +305,9 @@ export function EwalletAudit(): React.JSX.Element {
       return
     }
     const fee = parseFloat(billFeeStr) || 0
+    const cashRec = parseFloat(billCashReceivedStr) || undefined
+    const totalDue = amt + fee
+    const changeAmt = cashRec !== undefined && cashRec >= totalDue ? cashRec - totalDue : undefined
 
     const newTx: BillRecord = {
       id: 'BL-' + Date.now().toString(36).toUpperCase(),
@@ -316,7 +322,9 @@ export function EwalletAudit(): React.JSX.Element {
       sourceWallet: billSourceWallet,
       status: 'COMPLETED',
       createdAt: new Date().toISOString(),
-      referenceNo: billReferenceNo.trim() || 'REF-' + Math.floor(100000 + Math.random() * 900000)
+      referenceNo: billReferenceNo.trim() || 'REF-' + Math.floor(100000 + Math.random() * 900000),
+      cashReceived: cashRec,
+      change: changeAmt
     }
 
     // Auto-record E-Wallet transaction into database
@@ -347,6 +355,7 @@ export function EwalletAudit(): React.JSX.Element {
     setBillCustomerName('')
     setBillCustomerPhone('')
     setBillAmountStr('')
+    setBillCashReceivedStr('')
     setBillReferenceNo('')
     void loadData()
   }
@@ -363,7 +372,9 @@ export function EwalletAudit(): React.JSX.Element {
           amount: tx.amount,
           serviceFee: tx.serviceFee,
           sourceWallet: tx.sourceWallet,
-          createdAt: tx.createdAt
+          createdAt: tx.createdAt,
+          cashReceived: tx.cashReceived,
+          change: tx.change
         },
         { manual }
       )
@@ -572,7 +583,7 @@ export function EwalletAudit(): React.JSX.Element {
               </p>
               <div className="pt-2 flex flex-wrap gap-4 text-xs text-amber-200/90 font-medium">
                 <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> GCash & Maya 1-Click Logger</span>
-                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Total Service Fees (Tubo) Tracker</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Total Service Fees Tracker</span>
                 <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Physical Cash Drawer Reconciliation</span>
                 <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-amber-400" /> Thermal Claim Stubs & End-of-Day Reports</span>
               </div>
@@ -711,11 +722,11 @@ export function EwalletAudit(): React.JSX.Element {
                 </div>
               </div>
 
-              {/* Service Fee / Tubo */}
+              {/* Service Fee */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-300">
-                    Service Fee / Tubo (₱)
+                    Service Fee (₱)
                   </label>
                   <span className="text-[10px] text-slate-500">Store Profit</span>
                 </div>
@@ -867,7 +878,7 @@ export function EwalletAudit(): React.JSX.Element {
               {/* Total Service Fees & Cash Impact */}
               <div className="border-t border-ink-line pt-3 flex items-center justify-between text-xs">
                 <div>
-                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Tubo (Fees Earned)</p>
+                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Fees Earned</p>
                   <p className="text-lg font-black text-amber-400">
                     ₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
@@ -1133,8 +1144,33 @@ export function EwalletAudit(): React.JSX.Element {
                       </p>
                     </div>
                     <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
-                      Tubo: ₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
+                      Fee: ₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
                     </span>
+                  </div>
+
+                  {/* Cash Tendered & Change */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-300 block mb-1">
+                        Cash Tendered (₱) <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={billCashReceivedStr}
+                        onChange={(e) => setBillCashReceivedStr(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-brand-500 transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-300 block mb-1">
+                        Change (₱)
+                      </label>
+                      <div className="w-full rounded-xl border border-ink-line bg-ink-900/60 px-3 py-2 text-sm font-bold text-emerald-400 flex items-center h-[38px]">
+                        ₱{Math.max(0, (parseFloat(billCashReceivedStr) || 0) - ((parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0))).toFixed(2)}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Reference Number */}
@@ -1314,7 +1350,7 @@ export function EwalletAudit(): React.JSX.Element {
             {/* Total summary chip */}
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400">
-                Total Tubo Earned:{' '}
+                Total Fees Earned:{' '}
                 <strong className="text-amber-400 font-bold">
                   ₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}
                 </strong>
@@ -1398,7 +1434,7 @@ export function EwalletAudit(): React.JSX.Element {
                   <th className="py-2.5 px-3">Channel</th>
                   <th className="py-2.5 px-3">Type</th>
                   <th className="py-2.5 px-3 text-right">Principal</th>
-                  <th className="py-2.5 px-3 text-right">Tubo / Fee</th>
+                  <th className="py-2.5 px-3 text-right">Fee</th>
                   <th className="py-2.5 px-3">Fee Paid Via</th>
                   <th className="py-2.5 px-3">Reference No</th>
                   <th className="py-2.5 px-3">Customer</th>
@@ -1848,7 +1884,7 @@ export function EwalletAudit(): React.JSX.Element {
             <div>
               <p className="text-xs font-bold text-white flex items-center gap-1.5">
                 <DollarSign className="h-4 w-4 text-amber-400" />
-                Total Service Fees (Tubo) Earned: <span className="text-amber-400 font-black text-base">₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}</span>
+                Total Service Fees Earned: <span className="text-amber-400 font-black text-base">₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}</span>
               </p>
               <p className="text-[11px] text-slate-400">
                 Audits are permanently archived and printable for store accounting records.
@@ -2020,7 +2056,7 @@ export function EwalletAudit(): React.JSX.Element {
                 <span className="font-bold text-white">₱{(txToDelete.amount_c / 100).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Service Fee (Tubo):</span>
+                <span className="text-slate-400">Service Fee:</span>
                 <span className="font-bold text-amber-400">₱{(txToDelete.fee_c / 100).toFixed(2)}</span>
               </div>
               {txToDelete.reference_no && (

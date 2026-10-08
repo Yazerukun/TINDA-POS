@@ -128,8 +128,15 @@ function rowsToHtml(lines: string[], currency: string): string {
       const isTotal = /^(TOTAL|TOTAL PAYMENTS|Total Payments|NET SALES|Actual Cash|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED)$/i.test(money.label)
       const cls = /^(SUKLI|Change)$/i.test(money.label) ? 'tp-sukli' : isTotal ? 'tp-total' : 'tp-sum'
       const label = /^(SUKLI|Change)$/i.test(money.label) ? 'Change' : money.label === 'Cash' ? 'Cash' : money.label
+
+      const prevLine = lines[i - 1] ?? ''
+      const nextLine = lines[i + 1] ?? ''
+      const hasTopSep = isDoubleSeparator(prevLine)
+      const hasBottomSep = isDoubleSeparator(nextLine)
+      const borderClass = isTotal ? ((hasTopSep ? ' has-adjacent-top-sep' : '') + (hasBottomSep ? ' has-adjacent-bottom-sep' : '')) : ''
+
       pushRow(
-        `<div class="${cls}"><span class="tp-lbl">${escapeHtml(label)}</span><span class="tp-amt">${fmtSigned(money.amount, symbol)}</span></div>`
+        `<div class="${cls}${borderClass}"><span class="tp-lbl">${escapeHtml(label)}</span><span class="tp-amt">${fmtSigned(money.amount, symbol)}</span></div>`
       )
       continue
     }
@@ -144,7 +151,7 @@ function rowsToHtml(lines: string[], currency: string): string {
       continue
     }
 
-    const countMatch = trimmed.match(/^(Transactions|Items)\s*[:\s]\s*(\d+)$/i)
+    const countMatch = trimmed.match(/^(Transactions|Items|Total Items)\s*[:\s]\s*(\d+(?:\.\d+)?)$/i)
     if (countMatch) {
       pushRow(
         `<div class="tp-sum"><span class="tp-lbl">${escapeHtml(countMatch[1]!)}</span><span class="tp-amt">${escapeHtml(countMatch[2]!)}</span></div>`
@@ -159,7 +166,7 @@ function rowsToHtml(lines: string[], currency: string): string {
     }
 
     if (/^(Thank you! Please come again\.|Thank you for your purchase!|OFFICIAL ACKNOWLEDGMENT|Please keep this receipt as proof|of payment\. Thank you!|Please retain this slip for your proof\.|Thank you for choosing us!)$/i.test(trimmed)) {
-      pushRow(`<div class="tp-row tp-center">${escapeHtml(raw)}</div>`)
+      pushRow(`<div class="tp-row tp-center tp-footer">${escapeHtml(raw)}</div>`)
       continue
     }
 
@@ -172,7 +179,15 @@ function rowsToHtml(lines: string[], currency: string): string {
     // info, cashier, customer, payment method lines, footer stay left-aligned.
     // Community branding tag [ Powered by TINDA POS Free Community ] is centered.
     const isCommunityTag = trimmed.startsWith('[') && trimmed.endsWith(']')
-    const cls = isCommunityTag ? 'tp-row tp-center tp-community-tag' : (seenSeparator ? 'tp-row' : `tp-row tp-center${i === 0 ? ' tp-heading' : ''}`)
+    let headerCls = 'tp-row tp-center'
+    if (i === 0) {
+      headerCls += ' tp-heading'
+    } else if (/^(Tel:|TIN:|Owner:|Pilit|Cabancalan|Mandaue|Cebu|Manila|Davao|Street|St\.|Brgy|Barangay|City)/i.test(trimmed) || trimmed.length > 28) {
+      headerCls += ' tp-small'
+    } else {
+      headerCls += ' tp-subheader'
+    }
+    const cls = isCommunityTag ? 'tp-row tp-center tp-community-tag' : (seenSeparator ? 'tp-row' : headerCls)
     pushRow(`<div class="${cls}">${escapeHtml(raw)}</div>`)
   }
   return out.join('\n')
@@ -181,32 +196,37 @@ function rowsToHtml(lines: string[], currency: string): string {
 const baseCss = `
   .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 600; }
   .tp-sheet * { box-sizing: border-box; }
-  .tp-community-tag { font-size: 0.82em; font-weight: 600; letter-spacing: 0.03em; margin-top: 0.25em; }
-  .tp-sheet { font-family: 'Courier New', Courier, Consolas, monospace; line-height: 1.15; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-  .tp-row { font-size: 1em; }
+  .tp-community-tag { font-size: 8.5px; font-weight: 600; letter-spacing: 0.02em; margin-top: 2px; }
+  .tp-sheet { font-family: 'Courier New', Courier, Consolas, monospace; line-height: 1.05; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  .tp-row { font-size: 10px; line-height: 1.05; }
   .tp-center { text-align: center; }
-  .tp-heading { font-size: 1.18em; font-weight: 900; }
+  .tp-heading { font-size: 11px; font-weight: 900; }
+  .tp-subheader { font-size: 9.5px; }
+  .tp-small { font-size: 9px; line-height: 1.05; }
   .tp-item, .tp-sum, .tp-total, .tp-sukli, .tp-denomline { break-inside: avoid; }
-  .tp-gap { height: 0.1em; }
-  .tp-sep { border-top: 1px dashed black; margin: 3px 0; }
-  .tp-sep-double { border-top: 3px double black; margin: 3px 0; }
-  .tp-section-head { font-size: 0.95em; font-weight: 800; text-transform: uppercase; margin-top: 0.12em; letter-spacing: 0.03em; }
-  .tp-section-head.tp-sub { font-size: 0.88em; font-weight: 700; margin-top: 0.1em; color: #000; }
-  .tp-item { margin-bottom: 2px; }
-  .tp-item .tp-name { font-size: 0.95em; font-weight: 700; }
-  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
-  .tp-qty { font-size: 0.9em; white-space: nowrap; font-weight: 600; shrink: 0; }
+  .tp-gap { height: 1px; }
+  .tp-sep { border-top: 1px dashed #000000; margin: 2px 0; }
+  .tp-sep-double { border-top: 3px double #000000; margin: 2px 0; }
+  .tp-section-head { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.03em; }
+  .tp-section-head.tp-sub { font-size: 9px; font-weight: 700; margin-top: 1px; color: #000; }
+  .tp-item { margin-bottom: 1px; }
+  .tp-item .tp-name { font-size: 10px; font-weight: 700; line-height: 1.05; }
+  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; font-size: 10px; line-height: 1.05; }
+  .tp-qty { font-size: 10px; white-space: nowrap; font-weight: 600; shrink: 0; }
   .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 700; padding-right: 1px; }
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 800; }
-  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; }
+  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; font-size: 10px; line-height: 1.05; }
   .tp-lbl { flex: 1; min-width: 0; }
-  .tp-sum { font-size: 0.95em; margin: 1px 0; }
-  .tp-total { font-size: 1.15em; font-weight: 900; border-top: 3px double black; border-bottom: 3px double black; margin: 3px 0; padding: 1px 0; }
+  .tp-sum { font-size: 10px; margin: 1px 0; }
+  .tp-total { font-size: 11px; font-weight: 900; border-top: 3px double #000000; border-bottom: 3px double #000000; margin: 2px 0; padding: 1px 0; }
+  .tp-total.has-adjacent-top-sep { border-top: none !important; }
+  .tp-total.has-adjacent-bottom-sep { border-bottom: none !important; }
   .tp-total .tp-amt { font-weight: 900; text-align: right; padding-right: 1px; }
-  .tp-sukli { font-size: 1.02em; font-weight: 800; margin-top: 1px; padding: 1px 0; }
+  .tp-sukli { font-size: 10px; font-weight: 800; margin: 1px 0; padding: 0; }
   .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 800; }
   .tp-sukli .tp-amt { text-align: right; padding-right: 1px; }
-  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 0.9em; line-height: 1.15; }
+  .tp-footer { font-size: 9px; text-align: center; margin-top: 2px; }
+  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 9.5px; line-height: 1.05; }
   .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 700; }
   .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
   .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; padding-right: 1px; }
@@ -246,30 +266,30 @@ export function receiptCss(width: ReceiptWidth): string {
       .tp-sheet {
         width: ${contentWidth} !important;
         margin: 0 auto !important;
-        padding: 1mm 1mm 2mm 1mm !important;
+        padding: 2mm 2mm 2mm 2mm !important;
         font-weight: 700 !important;
         letter-spacing: 0.01em !important;
+        line-height: 1.05 !important;
       }
       .tp-heading {
-        font-size: 1.18em !important;
+        font-size: 11px !important;
         font-weight: 900 !important;
       }
       .tp-total {
-        border-top: 3px double #000000 !important;
-        border-bottom: 3px double #000000 !important;
+        font-size: 11px !important;
         font-weight: 900 !important;
-        margin: 3px 0 !important;
+        margin: 2px 0 !important;
       }
       .tp-sep {
         border-top: 1px dashed #000000 !important;
-        margin: 3px 0 !important;
+        margin: 2px 0 !important;
       }
       .tp-sep-double {
         border-top: 3px double #000000 !important;
-        margin: 3px 0 !important;
+        margin: 2px 0 !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 1mm 1mm 2mm 1mm; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 2mm 2mm 2mm 2mm; font-size: ${fontSize}; }
   `
 }
 
@@ -286,7 +306,14 @@ export function formatReceiptDate(d: string | Date | undefined | null): string {
   if (!d) return ''
   const dt = typeof d === 'string' ? new Date(d.replace(' ', 'T')) : d
   if (Number.isNaN(dt.getTime())) return String(d)
-  return dt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+  const m = String(dt.getMonth() + 1).padStart(2, '0')
+  const day = String(dt.getDate()).padStart(2, '0')
+  const y = dt.getFullYear()
+  let h = dt.getHours()
+  const min = String(dt.getMinutes()).padStart(2, '0')
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12 || 12
+  return `${m}/${day}/${y} ${h}:${min} ${ampm}`
 }
 
 export function formatEwalletSlipLines(
@@ -315,7 +342,7 @@ export function formatEwalletSlipLines(
     : tx.amount_c - (tx.fee_collected_via === 'CASH' ? tx.fee_c : 0)
   lines.push('================================')
   lines.push(`TOTAL ${isCashIn ? 'CASH RECEIVED' : 'CASH RELEASED'}  ${money(totalReceivedOrGiven)}`)
-  lines.push('--------------------------------')
+  lines.push('================================')
   lines.push('Thank you! Please come again.')
   return lines
 }
@@ -329,7 +356,7 @@ export function formatEwalletAuditLines(
     storeName || 'TINDA POS',
     'E-WALLET & CASH AUDIT REPORT',
     '--------------------------------',
-    `Date: ${a.business_date}`,
+    `Date: ${formatReceiptDate(a.business_date || a.created_at)}`,
     `Shift: ${a.shift_id ?? 'N/A'}`,
     `Cashier: ${a.cashier_name || 'Store Cashier'}`,
     '--------------------------------',
@@ -380,6 +407,8 @@ export interface BillSlipPayload {
   serviceFee: number
   sourceWallet: string
   createdAt: string
+  cashReceived?: number
+  change?: number
 }
 
 export function formatBillSlipLines(
@@ -391,21 +420,29 @@ export function formatBillSlipLines(
     storeName || 'TINDA POS',
     'BILLS & E-LOAD RECEIPT',
     '--------------------------------',
-    `Date: ${formatReceiptDate(b.createdAt)}`,
-    `Ref #: ${b.referenceNo || 'N/A'}`,
-    `Biller: ${b.biller}`,
-    `Acct / No: ${b.accountNo}`
+    `Date:   ${formatReceiptDate(b.createdAt)}`,
+    `Ref #:  ${b.referenceNo || 'N/A'}`,
+    '--------------------------------',
+    `Biller:     ${b.biller}`,
+    `Acct / No:  ${b.accountNo}`
   ]
-  if (b.customerName) lines.push(`Customer: ${b.customerName}`)
-  if (b.customerPhone) lines.push(`Mobile: ${b.customerPhone}`)
-  lines.push('Paid Via: Customer Cash')
-  lines.push(`Processed: ${b.sourceWallet} Business`)
+  if (b.customerName) lines.push(`Customer:   ${b.customerName}`)
+  if (b.customerPhone) lines.push(`Mobile:     ${b.customerPhone}`)
+  lines.push('Paid Via:   Customer Cash')
+  lines.push(`Processed:  ${b.sourceWallet} Business`)
   lines.push('--------------------------------')
   lines.push(`Bill Amount    P${moneyStr(b.amount)}`)
   lines.push(`Service Fee    P${moneyStr(b.serviceFee)}`)
   lines.push('================================')
   lines.push(`TOTAL PAID     P${moneyStr(b.amount + b.serviceFee)}`)
-  lines.push('--------------------------------')
+  lines.push('================================')
+  if (b.cashReceived !== undefined && b.cashReceived > 0) {
+    const totalPaid = b.amount + b.serviceFee
+    const sukli = b.change !== undefined ? b.change : Math.max(0, b.cashReceived - totalPaid)
+    lines.push(`CASH           P${moneyStr(b.cashReceived)}`)
+    lines.push(`CHANGE         P${moneyStr(sukli)}`)
+    lines.push('--------------------------------')
+  }
   lines.push('Thank you! Please come again.')
   return lines
 }

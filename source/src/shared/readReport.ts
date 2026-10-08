@@ -1,8 +1,9 @@
 import type { ReadReport } from './types'
+import { formatReceiptDate } from './receiptHtml'
 
 function localTime(value: string): string {
-  const date = new Date(value.replace(' ', 'T'))
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+  if (!value) return ''
+  return formatReceiptDate(value)
 }
 
 export function readReportLines(r: ReadReport, reportNo?: string, closing?: { actual_cash_c: number; finalized_at: string }, storeName = 'TINDA POS'): string[] {

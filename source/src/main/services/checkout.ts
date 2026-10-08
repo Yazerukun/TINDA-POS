@@ -11,6 +11,7 @@ import { requirePermission, requireUser } from './session'
 import { getSettings } from '../repositories/settings'
 import { LicenseService } from './licenseService'
 import { randomBytes } from 'node:crypto'
+import { formatReceiptDate } from '../../shared/receiptHtml'
 
 export function validatePaymentTotals(totalC: number, payments: PaymentInput[]): void {
   if (!payments || payments.length === 0) throw new Error('At least one payment method is required.')
@@ -58,7 +59,7 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   if (store.tin) lines.push(`TIN: ${store.tin}`)
   lines.push('--------------------------------')
   lines.push(sale.transaction_no)
-  lines.push(new Date(sale.created_at.replace(' ', 'T')).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }))
+  lines.push(formatReceiptDate(sale.created_at))
   lines.push(`Cashier: ${sale.cashier_name}`)
   if (sale.customer_name) lines.push(`Customer: ${sale.customer_name}`)
   lines.push('--------------------------------')
@@ -72,7 +73,7 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   lines.push(`Discount      ${(sale.discount_c / 100).toFixed(2)}`)
   lines.push('================================')
   lines.push(`TOTAL         ${(sale.total_c / 100).toFixed(2)}`)
-  lines.push('--------------------------------')
+  lines.push('================================')
   const cash = sale.payments.find((p) => p.method === 'CASH')
   if (cash) {
     lines.push(`Cash          ${(cash.amount_c / 100).toFixed(2)}`)

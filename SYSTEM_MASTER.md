@@ -1472,6 +1472,29 @@
     - Added SQLite database migration for `ewallet_audits` (starting, in, out, expected, actual, variance columns for MariBank) and updated `ewallet_transactions` check constraint.
     - Updated `EwalletShiftSummary` and `formatEwalletAuditLines` in `receiptHtml.ts` to cleanly format MariBank cash flow alongside GCash and Maya without breaking existing transactions.
 
+---
+
+## 67. Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition (v1.0.73)
+* **Problem Addressed & Reference Alignment (1.jfif & 2.jfif):**
+  1. *Receipt Timestamp Wrapping:* Previous date/time formatting (`dt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })`) produced strings like `Oct 8, 2026, 9:49 AM` (26+ chars), which awkwardly wrapped onto a second line (`Oct 8, 2026, 9:49 \n AM`) on narrow 58mm (32-column) thermal paper rolls.
+  2. *Reference Standard Visual Hierarchy:* Reference images `1.jfif` (Bills & E-Load slip) and `2.jfif` (Sales receipt) established an explicit retail typography hierarchy: single-line date format (`10/08/2026 9:49 PM`), double-line dividers (`================================`) framing grand totals (`TOTAL`, `TOTAL PAID`, `TOTAL CASH RECEIVED / RELEASED`), and cash tendered with change breakdown.
+  3. *Zero-Waste Micro Thermal Spacing:* Monospace line-height optimized to `1.05`, integer dot sizing (`10px` body, `11px` bold headers/totals, `9px` footers), and tight `2mm` page padding.
+  4. *Strict English Standard:* Cleaned up residual Bisaya/Filipino terminology across user-facing E-Wallet and Bills UI and receipt outputs to 100% professional English.
+
+* **Key Architectural Implementations:**
+  - **Deterministic Zero-Wrap Date Formatter (`receiptHtml.ts`):**
+    - Created `formatReceiptDate()` returning standard single-line `MM/DD/YYYY h:mm A` (`10/08/2026 9:49 PM`, exactly 19 chars), guaranteeing zero line-wraps across 58mm and 80mm paper widths.
+    - Synchronized across `checkout.ts` (`buildReceiptLines`), `printing.ts` (`testPrintLines`), `readReport.ts` (`localTime`), `formatEwalletSlipLines`, `formatBillSlipLines`, and `formatEwalletAuditLines`.
+  - **Double-Divider Total Blocks (`receiptHtml.ts`, `checkout.ts`):**
+    - Standardized double-line framing around grand total lines across sales receipts, E-wallet claim slips, and bills payments.
+    - Updated `rowsToHtml()` with adjacent separator detection (`has-adjacent-top-sep`, `has-adjacent-bottom-sep`) to eliminate redundant border doubling.
+  - **Bills Cash Tendered & Change Calculation (`EwalletAudit.tsx`, `receiptHtml.ts`):**
+    - Extended `BillRecord` interface and form with optional `cashReceived` and `change` fields.
+    - Added real-time change calculation UI in the Bills & E-Load center and passed both tender amounts to `formatBillSlipLines` for automatic rendering on thermal receipts.
+  - **Strict English Localization Standard:**
+    - Standardized all UI labels from "Tubo" to "Fee", "Total Fees Earned", and "Service Fee" across all tabs, summary chips, transaction tables, and confirmation modals.
+
+
 
 
 
