@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.72-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.73-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-418_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,26 @@
 
 <br />
 
-[⬇️ Download v1.0.72 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-Setup-1.0.72.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-Portable-1.0.72.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.72/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⬇️ Download v1.0.73 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-Setup-1.0.73.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-Portable-1.0.73.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.73/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
+
+> **Standardized Thermal Receipt Layouts Across Auto Print and Manual Print matching Retail Reference Specifications, Zero-Wrap Deterministic Timestamps, Double-Divider Total Hierarchy, and Bills Cash Tendered & Change Breakdown.**
+
+- 🧾 **Deterministic Zero-Wrap Receipt Timestamps**:
+  - Replaced wrapping date formats with compact, single-line timestamps (`MM/DD/YYYY h:mm A`, e.g. `10/08/2026 9:49 PM`).
+  - Guaranteed single-line display across narrow 58mm (32-col) and 80mm rolls on checkout receipts, test prints, X/Z shift reports, E-Wallet stubs, and Bills slips.
+- ⚡ **Standardized Double-Divider Total Hierarchy**:
+  - Grand total blocks strictly enclosed in double dividers (`================================`) above and below.
+  - Enhanced `rowsToHtml` renderer to eliminate redundant double borders when consecutive separators occur.
+- 💰 **Bills Cash Tendered & Change Calculation**:
+  - Added Cash Tendered input and real-time Change calculation to the Bills & E-Load center.
+  - Printed directly on thermal slips and manual printouts.
+- 🎯 **Ultra-Compact Typography & Strict English Standard**:
+  - Tight `line-height: 1.05`, 2mm micro-margins, and integer dot font sizing (`11px` bold headers, `10px` body, `9px` footers) for zero paper waste.
+  - 100% strict English standardization across all financial and cashier modules.
 
 ## ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
 
