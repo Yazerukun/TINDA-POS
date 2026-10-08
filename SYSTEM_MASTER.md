@@ -1349,3 +1349,129 @@
      - 417 automated unit tests passing across 63 test suites with 0 TypeScript compiler errors.
      - Master invariants verified 100%.
 
+---
+
+## 64. Architecture Plan & Specification: Clean Fee Notation, No-Seconds Receipt Timestamps & Next-Gen Community Chat (v1.0.71)
+* **Status:** Proposed & Planned (Awaiting Boss Ian's Approval)
+* **Target Version:** `v1.0.71`
+* **Trigger:** Merchant feedback from Boss Ian regarding:
+  1. Removal of `+` sign in `+Fee` for E-Wallet and Bills UI and print stubs.
+  2. Removal of seconds from receipt date & time format (e.g., `Oct 7, 2026, 10:07 PM` instead of displaying seconds).
+  3. Community Chat offline diagnosis, minimized drag-without-open fix, label change to "Chat", emoji picker, photo attachments, seen receipts with timestamps, and live online user counter.
+* **Component Impact:**
+  - `source/src/renderer/src/pages/EwalletAudit.tsx`
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/main/services/checkout.ts`
+  - `source/src/main/services/communityChat.ts`
+  - `source/src/renderer/src/components/community/TindaCommunityChat.tsx`
+  - `source/src/shared/types.ts`
+* **Technical Implementations:**
+  1. **Clean Fee Notation (Removal of `+` Prefix):**
+     - In `EwalletAudit.tsx`: Cleaned quick fee chips (`₱10`, `₱15`, `₱20`, `₱30`, `₱50`), transaction table rows (`₱{fee}` instead of `+₱{fee}`), summary metrics (`Fee: ₱...`), and delete dialogs.
+     - In `receiptHtml.ts`: Updated `formatBillSlipLines` so `Service Fee` prints as clean `P{amount}` without `+`.
+  2. **No-Seconds Universal Receipt Timestamps:**
+     - Standardized all thermal receipt date/time formatters across POS sales, E-Wallet slips, Bills receipts, and test prints to `{ dateStyle: 'medium', timeStyle: 'short' }` (producing e.g., `Oct 7, 2026, 10:07 PM` with strictly no seconds).
+  3. **Community Chat Offline Root Cause & Edge Worker Fix:**
+     - **Offline Root Cause:** `https://tinda-sync.yomikaze-md.workers.dev/api/chat/messages` currently returns HTTP 404 because the edge worker route is absent/unrouted on Cloudflare.
+     - **Client Resilience:** Graceful error handling in `communityChat.ts` so network timeouts or edge 404s fail silently with local message buffering and automatic recovery once the worker is live.
+  4. **Hold-and-Drag Fix on Minimized Pill:**
+     - Prevent accidental window expansion during drag by adding a drag-movement threshold check (`Math.hypot(dx, dy) > 4`) on `mouseUp`. If the mouse moved while dragging, the click/restore event is suppressed.
+     - Renamed minimized pill text from `Lounge` to `Chat` and updated title tooltip to `Expand Chat`.
+  5. **Emoji Picker & Photo Attachment Support:**
+     - Integrated quick-click emoji bar with merchant-centric smileys (`😀 😂 😍 👍 🙏 🏪 📦 💰 🔥 👏 ❤️ 🎉 🚀 🇵🇭`).
+     - Added image attachment input supporting file selection and clipboard paste with client-side image compression and inline thumbnail rendering in message bubbles.
+  6. **Seen Receipts & Online Merchant Counter:**
+     - Added `seen_by: { name: string; time: string }[]` tracking to `CommunityChatMessage` so users can see who viewed messages and at what exact time without seconds.
+     - Added live presence counter (`🟢 X Online`) in the chat header and minimized floating pill.
+  7. **Universal Store Logo Upload & Desktop Window Icon:**
+     - Removed VIP gating from `AppLogo` rendering: any store can upload their PNG/JPG/WEBP logo locally via Settings.
+     - The custom logo displays throughout the application (Sidebar brand, Header, Welcome banner, Login screen, and thermal receipts).
+     - Synchronized Electron `mainWindow.setIcon` with the store's custom logo for localized branding on the Windows taskbar and desktop titlebar.
+  8. **Cinematic Dashboard Login Entrance Animations:**
+     - Replaced abrupt static dashboard mounting with smooth staggered CSS keyframe transitions (`@keyframes fadeInUp` with staggered delays across metric cards, update banner, and recent transaction tables).
+     - Added an executive welcome banner featuring a dynamic time-of-day greeting ("Good morning / afternoon / evening, [Cashier Name]!"), store logo, and active shift pill.
+     - Polished glassmorphism with smooth micro-interactions (`hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300`).
+
+
+---
+
+## 65. Enterprise N-Tier / 3-Tier Architecture Standard (PAL, BLL/BAL, DAL)
+* **Status:** Permanent System Invariant & Workflow Standard
+* **Architectural Blueprint:**
+  TINDA POS follows a strict **N-Tier / 3-Tier Enterprise Decoupled Architecture**:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│               PAL — Presentation Access Layer (Client UI)              │
+│       React 18 · TailwindCSS · Zustand Stores · Cupertino Modals       │
+│                Directory: source/src/renderer/                         │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                         Context-Isolated IPC Bridge
+                   (source/src/preload/ & source/src/shared/)
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│              BLL / BAL — Business Logic / Access Layer                 │
+│      Pricing · Checkout · Auth Rules · E-Wallet Math · Reporting       │
+│                 Directory: source/src/main/services/                   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                            Direct TypeScript Calls
+                                    │
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                     DAL — Data Access Layer (Database)                 │
+│         Better-SQLite3 · Prepared Statements · ACID Transactions       │
+│        Directories: source/src/main/repositories/ & .../db/            │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+1. **PAL (Presentation Access Layer / UI Layer)**:
+   - **Path:** [`source/src/renderer/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/renderer/)
+   - **Components:** React pages (`POS.tsx`, `Inventory.tsx`, `EwalletAudit.tsx`), UI components, and client-side Zustand stores (`usePosCart`, `useAuth`, `useSettings`).
+   - **Rule:** The PAL **never** imports `better-sqlite3`, never executes SQL queries directly, and never accesses native OS filesystems. All mutations route through the typed IPC Bridge (`window.api`).
+
+2. **IPC Contract & DTO Bridge (Interface Layer)**:
+   - **Paths:** [`source/src/shared/types.ts`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/shared/types.ts), [`source/src/shared/ipc.ts`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/shared/ipc.ts), and [`source/src/preload/index.ts`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/preload/index.ts).
+   - **Rule:** Strictly typed request/response contracts and data transfer objects (DTOs). Guarantees Electron security isolation (`contextIsolation: true`, `nodeIntegration: false`).
+
+3. **BLL / BAL (Business Logic Layer / Business Access Layer)**:
+   - **Path:** [`source/src/main/services/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/main/services/)
+   - **Modules:**
+     - `checkout.ts`: Cart item calculations, discount caps, stock availability gating, multi-payment validation.
+     - `auth.ts`: Password hashing, user session lifecycle, lockout auto-healing.
+     - `ewallet.ts`: Drawer float reconciliations, fee collection rules.
+     - `reporting.ts`: Gross profit calculations, realized revenue vs utang exclusions.
+     - `printing.ts`: Receipt string layouts, ESC/POS hardware command generation.
+     - `licenseService.ts`: HMAC machine-bound cryptographic license validation.
+   - **Rule:** Contains all business logic, invariant enforcement, and calculation formulas. Unit-tested in isolation with Vitest without mounting React UI or Electron windows.
+
+4. **DAL (Data Access Layer)**:
+   - **Paths:** [`source/src/main/repositories/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/main/repositories/) and [`source/src/main/db/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/main/db/).
+   - **Modules:** `sales.ts`, `products.ts`, `customers.ts`, `shifts.ts`, `settings.ts`, `users.ts`, `audit.ts`.
+   - **Rule:** Encapsulates all SQL statements (`SELECT`, `INSERT`, `UPDATE`), schema migrations, indexed queries, and atomic SQLite transactions (`db.transaction`). Exposes clean repository functions (`salesRepo.createSaleRecord()`, `prodRepo.adjustStock()`) consumed by the BLL.
+
+---
+
+## 66. Native Document Printing, Audit Dual Print Engine & MariBank Ecosystem Integration (v1.0.72)
+* **Problem Addressed & User Feedback:**
+  1. *Printable Inventory & Operations Reports Failure:* Users clicking Print on physical count sheets, stock-on-hand reports, and purchase orders encountered failures because the modal invoked `window.open()`, which is blocked or restricted by Electron's chromium security boundary.
+  2. *Audit Sheet & History Dual Printing:* Store cashiers needed both Auto Print (direct thermal burning) and Manual Print (Windows System Print Dialog pre-bound to printer) for E-Wallet shift audits and historical audits to troubleshoot locked spoolers or choose specific report printers.
+  3. *MariBank Provider Integration Request:* Community sari-sari stores and retail merchants actively requested MariBank (SeaMoney / Shopee digital banking ecosystem in the Philippines) support alongside GCash and Maya for cash-in, cash-out, bills, and multi-wallet drawer reconciliations.
+
+* **Key Architectural Implementations:**
+  - **Native Document Printing Pipeline (`printing.ts`, `ipc/index.ts`, `InventoryPrintModal.tsx`):**
+    - Replaced unreliable renderer `window.open` popup printing with native Electron IPC `printing:printDocument`.
+    - Spawns a dedicated hidden BrowserWindow, renders complete CSS-styled A4 / Letter printable sheets with `@page` print rules, and triggers `webContents.print()`.
+    - Supports both **Auto Print** (direct to detected printer) and **Manual Print** (invokes native Windows print dialog with printer, copies, and PDF export options).
+  - **Dual Printing for E-Wallet Audit Sheet & Audit History (`EwalletAudit.tsx`, `ipc/index.ts`):**
+    - Extended `ewallet:printAuditReport` IPC channel to accept `{ manual?: boolean }`.
+    - Added dedicated **Auto Print** and **Manual Print** buttons in both the live **Audit Sheet** footer and the **Audit History** ledger table.
+  - **MariBank Provider Integration (`types.ts`, `ewallet.ts`, `EwalletAudit.tsx`, `migrations.ts`):**
+    - Expanded `EwalletChannel` and `sourceWallet` to include `'MARIBANK'`.
+    - Designed custom vibrant brand styling for MariBank (`#FF6A00` Shopee/Sea orange gradient badges and chip selectors).
+    - Added SQLite database migration for `ewallet_audits` (starting, in, out, expected, actual, variance columns for MariBank) and updated `ewallet_transactions` check constraint.
+    - Updated `EwalletShiftSummary` and `formatEwalletAuditLines` in `receiptHtml.ts` to cleanly format MariBank cash flow alongside GCash and Maya without breaking existing transactions.
+
+
+
+
