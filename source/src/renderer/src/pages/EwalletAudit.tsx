@@ -116,6 +116,9 @@ export function EwalletAudit(): React.JSX.Element {
   const [txFilterType, setTxFilterType] = useState<'ALL' | 'CASH_IN' | 'CASH_OUT'>('ALL')
   const [txToDelete, setTxToDelete] = useState<EwalletTransactionRecord | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [auditToDelete, setAuditToDelete] = useState<EwalletAuditRecord | null>(null)
+  const [isDeletingAudit, setIsDeletingAudit] = useState(false)
+  const [isClearAuditsModalOpen, setIsClearAuditsModalOpen] = useState(false)
   const [posShiftExpectedCashStr, setPosShiftExpectedCashStr] = useState('0')
 
   // Transactions & Summary Data
@@ -433,6 +436,44 @@ export function EwalletAudit(): React.JSX.Element {
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0] || '', [])
+  const todayAudit = useMemo(() => {
+    if (!todayStr) return null
+    return audits.find((a) => a.business_date === todayStr || a.business_date.startsWith(todayStr)) || null
+  }, [audits, todayStr])
+
+  const handleDeleteAudit = (audit: EwalletAuditRecord): void => {
+    setAuditToDelete(audit)
+  }
+
+  const confirmDeleteAudit = async (): Promise<void> => {
+    if (!auditToDelete) return
+    setIsDeletingAudit(true)
+    try {
+      await window.api.ewallet.deleteAudit(auditToDelete.id)
+      toast.success('Audit deleted successfully', `Audit record for ${auditToDelete.business_date} was permanently removed.`)
+      setAuditToDelete(null)
+      void loadData()
+    } catch (err) {
+      toast.error('Failed to delete audit', (err as Error)?.message || String(err))
+    } finally {
+      setIsDeletingAudit(false)
+    }
+  }
+
+  const handleResetAuditSheet = (): void => {
+    setDenominations(new Array(CASH_COUNT_DENOMINATIONS.length).fill(0))
+    setExpectedCashDrawerStr(posShiftExpectedCashStr !== '0' ? posShiftExpectedCashStr : '0.00')
+    setStartingGcashStr('0')
+    setActualGcashStr('0')
+    setStartingMayaStr('0')
+    setActualMayaStr('0')
+    setStartingMaribankStr('0')
+    setActualMaribankStr('0')
+    setAuditNotes('')
+    toast.success('Audit Sheet Reset', 'All counted denominations, expected balances, and notes have been cleared.')
   }
 
   const printAuditRecord = async (id: number, manual = false) => {
@@ -1571,6 +1612,56 @@ export function EwalletAudit(): React.JSX.Element {
       {/* Tab 2: Audit Sheet (Multi-Wallet & Cash) */}
       {isVip && activeTab === 'audit' && (
         <div className="space-y-6">
+          {/* Today's Existing Audit Status Banner */}
+          {todayAudit && (
+            <div className="rounded-2xl border border-sky-500/30 bg-sky-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30 shrink-0">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-bold text-white">
+                      Audit Recorded for Today ({todayAudit.business_date})
+                    </p>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        todayAudit.cash_status === 'BALANCED'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      }`}
+                    >
+                      {todayAudit.cash_status}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Cashier: <span className="text-slate-300 font-medium">{todayAudit.cashier_name || 'Cashier'}</span> · Fees Earned:{' '}
+                    <span className="text-amber-400 font-bold">₱{(todayAudit.total_fees_c / 100).toFixed(2)}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('history')}
+                  className="px-3 py-1.5 rounded-xl border border-ink-line bg-ink-900 text-xs font-semibold text-slate-300 hover:text-white hover:bg-ink-800 transition"
+                >
+                  View in History
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteAudit(todayAudit)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition"
+                  title="Delete today's saved audit to perform a fresh recount"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Delete Saved Audit</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-5">
             {/* Box 1: Physical Cash Drawer Audit */}
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
@@ -1887,11 +1978,20 @@ export function EwalletAudit(): React.JSX.Element {
                 Total Service Fees Earned: <span className="text-amber-400 font-black text-base">₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}</span>
               </p>
               <p className="text-[11px] text-slate-400">
-                Audits are permanently archived and printable for store accounting records.
+                Audits are saved to your ledger and can be printed or deleted in Audit History.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={handleResetAuditSheet}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-xs font-bold text-rose-300 hover:bg-rose-500/20 hover:text-white transition"
+                title="Reset denominations and clear all counted amounts"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset Sheet</span>
+              </button>
               <button
                 type="button"
                 onClick={() => void handleSaveAudit('NONE')}
@@ -1925,10 +2025,23 @@ export function EwalletAudit(): React.JSX.Element {
       {/* Tab 3: Audit History */}
       {isVip && activeTab === 'history' && (
         <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <History className="h-4 w-4 text-brand-400" />
-            Previous E-Wallet & Cash Audits
-          </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <History className="h-4 w-4 text-brand-400" />
+              Previous E-Wallet &amp; Cash Audits ({audits.length})
+            </h3>
+            {audits.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsClearAuditsModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs font-bold text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition"
+                title="Clear all saved audit records"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Clear All Audits</span>
+              </button>
+            )}
+          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -2000,6 +2113,14 @@ export function EwalletAudit(): React.JSX.Element {
                             title="Manual Print (System Print Dialog)"
                           >
                             Manual
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAudit(a)}
+                            className="p-1 rounded text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 transition"
+                            title="Delete Audit Record"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </td>
@@ -2156,6 +2277,145 @@ export function EwalletAudit(): React.JSX.Element {
               >
                 <Trash2 className="h-4 w-4" />
                 Yes, Delete Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apple Design Delete Audit Record Confirmation Modal */}
+      {auditToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-rose-500/30 bg-ink-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Audit Record</h3>
+                <p className="text-xs text-slate-400">Permanently delete this audit snapshot from history</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-ink-line bg-ink-950 p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Audit Date:</span>
+                <span className="font-semibold text-white">{auditToDelete.business_date}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Cashier:</span>
+                <span className="text-slate-300">{auditToDelete.cashier_name || 'Cashier'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Drawer Cash Status:</span>
+                <span
+                  className={`font-bold ${
+                    auditToDelete.cash_status === 'BALANCED' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {auditToDelete.cash_status} (₱{(auditToDelete.cash_difference_c / 100).toFixed(2)})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">GCash Variance:</span>
+                <span className="font-mono text-sky-400">₱{(auditToDelete.gcash_difference_c / 100).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Maya Variance:</span>
+                <span className="font-mono text-emerald-400">₱{(auditToDelete.maya_difference_c / 100).toFixed(2)}</span>
+              </div>
+              {auditToDelete.maribank_difference_c != null && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">MariBank Variance:</span>
+                  <span className="font-mono text-orange-400">
+                    ₱{((auditToDelete.maribank_difference_c || 0) / 100).toFixed(2)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-ink-line pt-2">
+                <span className="text-slate-400 font-medium">Service Fees Earned:</span>
+                <span className="font-bold text-amber-400">₱{(auditToDelete.total_fees_c / 100).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-rose-300/80 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              ⚠️ Warning: This will permanently remove this audit snapshot from your accounting history. This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setAuditToDelete(null)}
+                disabled={isDeletingAudit}
+                className="flex-1 rounded-xl border border-ink-line bg-ink-950 py-2.5 text-xs font-semibold text-slate-300 hover:bg-ink-800 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteAudit()}
+                disabled={isDeletingAudit}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-600/30 active:scale-95 transition disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{isDeletingAudit ? 'Deleting…' : 'Yes, Delete Audit'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apple Design Clear All Audits Confirmation Modal */}
+      {isClearAuditsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-rose-500/30 bg-ink-900 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Clear All Audit Records</h3>
+                <p className="text-xs text-slate-400">Permanently delete all {audits.length} saved audit snapshots</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to delete all historical E-Wallet and cash audit snapshots? This will clear the entire audit ledger.
+            </p>
+
+            <p className="text-[11px] text-rose-300/80 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+              ⚠️ Warning: This action is permanent and cannot be reversed.
+            </p>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsClearAuditsModalOpen(false)}
+                disabled={isDeletingAudit}
+                className="flex-1 rounded-xl border border-ink-line bg-ink-950 py-2.5 text-xs font-semibold text-slate-300 hover:bg-ink-800 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsDeletingAudit(true)
+                  try {
+                    await window.api.ewallet.clearAudits?.()
+                    toast.success('Audits Cleared', 'All historical audit snapshots have been removed.')
+                    setIsClearAuditsModalOpen(false)
+                    void loadData()
+                  } catch (err) {
+                    toast.error('Failed to clear audits', (err as Error)?.message || String(err))
+                  } finally {
+                    setIsDeletingAudit(false)
+                  }
+                }}
+                disabled={isDeletingAudit}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-600/30 active:scale-95 transition disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{isDeletingAudit ? 'Clearing…' : 'Clear All Audits'}</span>
               </button>
             </div>
           </div>

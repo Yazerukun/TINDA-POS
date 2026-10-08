@@ -7,7 +7,9 @@ import {
   listEwalletTransactions,
   getEwalletShiftSummary,
   saveEwalletAudit,
-  listEwalletAudits
+  listEwalletAudits,
+  deleteEwalletAudit,
+  clearAllEwalletAudits
 } from '../ewallet'
 
 describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
@@ -207,4 +209,43 @@ describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
     expect(audit.actual_maribank_c).toBe(900000)
     expect(audit.maribank_difference_c).toBe(0)
   })
+
+  it('deletes an individual audit record and clears all audits correctly', () => {
+    const audit1 = saveEwalletAudit(db, userId, {
+      expected_cash_c: 10000,
+      actual_cash_c: 10000,
+      denominations: [],
+      starting_gcash_c: 0,
+      actual_gcash_c: 0,
+      starting_maya_c: 0,
+      actual_maya_c: 0
+    })
+
+    const audit2 = saveEwalletAudit(db, userId, {
+      expected_cash_c: 20000,
+      actual_cash_c: 20000,
+      denominations: [],
+      starting_gcash_c: 0,
+      actual_gcash_c: 0,
+      starting_maya_c: 0,
+      actual_maya_c: 0
+    })
+
+    let audits = listEwalletAudits(db)
+    expect(audits).toHaveLength(2)
+
+    // Delete audit1
+    const deleted = deleteEwalletAudit(db, audit1.id)
+    expect(deleted).toBe(true)
+
+    audits = listEwalletAudits(db)
+    expect(audits).toHaveLength(1)
+    expect(audits[0]?.id).toBe(audit2.id)
+
+    // Clear all audits
+    const cleared = clearAllEwalletAudits(db)
+    expect(cleared).toBe(1)
+    expect(listEwalletAudits(db)).toHaveLength(0)
+  })
 })
+

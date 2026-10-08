@@ -1174,6 +1174,22 @@ handle('ewallet:listAudits', (_e: IpcMainInvokeEvent, opts?: unknown) => {
   const ewalletRepo = require('../repositories/ewallet')
   return ewalletRepo.listEwalletAudits(db(), (opts ?? {}) as object)
 })
+handle('ewallet:deleteAudit', (_e: IpcMainInvokeEvent, id: number) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP Pro feature: E-Wallet Audit is locked.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  return ewalletRepo.deleteEwalletAudit(db(), Number(id))
+})
+handle('ewallet:clearAudits', (_e: IpcMainInvokeEvent) => {
+  const isVip = licenseService.getStatus().isVip
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('VIP Pro feature: E-Wallet Audit is locked.')
+  }
+  const ewalletRepo = require('../repositories/ewallet')
+  return ewalletRepo.clearAllEwalletAudits(db())
+})
 handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number, options?: { manual?: boolean }) => {
   const isVip = licenseService.getStatus().isVip
   if (!isVip && process.env.NODE_ENV !== 'test') {

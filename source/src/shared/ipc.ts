@@ -512,6 +512,8 @@ export interface TindaApi {
       notes?: string | null
     }) => Promise<import('./types').EwalletAuditRecord>
     listAudits: (opts?: { limit?: number }) => Promise<import('./types').EwalletAuditRecord[]>
+    deleteAudit: (id: number) => Promise<boolean>
+    clearAudits?: () => Promise<number>
     printSlip: (id: number, options?: { manual?: boolean }) => Promise<{ ok: boolean; message: string }>
     printAuditReport: (id: number, options?: { manual?: boolean }) => Promise<{ ok: boolean; message: string }>
     printBillSlip: (

@@ -451,3 +451,13 @@ export function listEwalletAudits(
 
   return rows.map(toAuditRow)
 }
+
+export function deleteEwalletAudit(db: Database.Database, id: number): boolean {
+  const res = db.prepare('DELETE FROM ewallet_audits WHERE id = ?').run(id)
+  return res.changes > 0
+}
+
+export function clearAllEwalletAudits(db: Database.Database): number {
+  const res = db.prepare('DELETE FROM ewallet_audits').run()
+  return res.changes
+}
