@@ -23,6 +23,7 @@ import { BillsLoadHub } from '../pages/BillsLoadHub'
 import { ExpirationAlerts } from '../components/Expiration'
 import { HelpGuideModal } from '../components/HelpGuideModal'
 import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
+import { TindaAiAssistantModal } from '../components/ai/TindaAiAssistantModal'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -93,6 +94,7 @@ export function Shell(): React.JSX.Element {
       <UpdateModal />
       <HelpGuideModal />
       <TindaCommunityChat />
+      <TindaAiAssistantModal />
     </div>
   )
 }

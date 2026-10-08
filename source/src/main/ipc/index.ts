@@ -1238,6 +1238,11 @@ handle('ewallet:printBillSlip', async (_e: IpcMainInvokeEvent, payload: import('
   return await printingSvc.printLines(settings, formatBillSlipLines(payload, settings.store_name), options)
 })
 
+handle('ai:ask', async (_e: IpcMainInvokeEvent, question: string) => {
+  const { askMainAiService } = require('../services/aiService')
+  return await askMainAiService(question)
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }

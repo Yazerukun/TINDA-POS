@@ -21,7 +21,8 @@ import {
   Wrench,
   Zap,
   RefreshCw,
-  Loader2
+  Loader2,
+  Bot
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -242,11 +243,11 @@ export function Sidebar(): React.JSX.Element {
         </button>
 
         {/* Secondary Utilities Strip */}
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
             onClick={() => void window.api.app.toggleSalesMonitor()}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-sky-500/25 bg-sky-500/10 px-2 py-1.5 text-[11px] font-semibold text-sky-300 hover:border-sky-500/40 hover:bg-sky-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1 rounded-lg border border-sky-500/25 bg-sky-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-sky-300 hover:border-sky-500/40 hover:bg-sky-500/20 transition shadow-sm active:scale-95"
             title="Open / Toggle Live Sales Monitor & Customer Display"
           >
             <Tv className="h-3.5 w-3.5 text-sky-400 shrink-0" />
@@ -256,11 +257,21 @@ export function Sidebar(): React.JSX.Element {
           <button
             type="button"
             onClick={() => useGuide.getState().openGuide('start')}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/25 bg-amber-500/10 px-2 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
+            className="flex items-center justify-center gap-1 rounded-lg border border-amber-500/25 bg-amber-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
             title="Open User Guide & Cashier Instructions"
           >
             <HelpCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span className="truncate">Guide</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('tinda-open-ai-assistant'))}
+            className="flex items-center justify-center gap-1 rounded-lg border border-indigo-500/35 bg-indigo-500/15 px-1.5 py-1.5 text-[11px] font-bold text-indigo-300 hover:border-indigo-400 hover:bg-indigo-500/25 transition shadow-sm active:scale-95"
+            title="Open TindaBot AI Assistant"
+          >
+            <Bot className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+            <span className="truncate">AI Bot</span>
           </button>
         </div>
 

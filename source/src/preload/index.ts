@@ -323,6 +323,9 @@ const api: TindaApi = {
     printSlip: (id, options) => invoke<{ ok: boolean; message: string }>('ewallet:printSlip', id, options),
     printAuditReport: (id, options) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id, options),
     printBillSlip: (payload, options) => invoke<{ ok: boolean; message: string }>('ewallet:printBillSlip', payload, options)
+  },
+  ai: {
+    ask: (question: string) => invoke<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>('ai:ask', question)
   }
 }
 

@@ -521,6 +521,9 @@ export interface TindaApi {
       options?: { manual?: boolean }
     ) => Promise<{ ok: boolean; message: string }>
   }
+  ai: {
+    ask: (question: string) => Promise<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>
+  }
 }
 
 export type SupplierInput = {

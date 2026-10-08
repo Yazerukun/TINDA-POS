@@ -1633,6 +1633,37 @@
   - `latest.yml` (348 B) — Windows electron-updater sha512 manifest
   - `SHA256SUMS-v1.0.82.txt` (556 B) — Cryptographic verification hashes
 
+---
+
+## 76. In-Store TindaBot AI Assistant & Multi-Model Free Pool Architecture (v1.0.83)
+* **Design Philosophy & Operational Goal:**
+  - Bridge the gap between complex retail store operations (E-Wallet starting balances, bills payment reconciliation, Senior/PWD 20% discount compliance, barcode generation) and cashiers through an intelligent in-app copilot.
+  - Non-custodial financial security: System never asks for or stores user MPIN, bank passwords, or OTPs. All merchant capital stays in physical smartphones; TINDA POS acts purely as the automated ledger and discrepancy audit engine.
+* **Grounded In-Store Knowledge Engine (`tindaAiKnowledge.ts`):**
+  - Synthesizes all 11 chapters of the TINDA POS Store Handbook into zero-latency semantic patterns.
+  - Speaks natural, conversational **Tagalog, Bisaya (Cebuano), and English**.
+  - Generates actionable UI deep-links (`[Buksan ang E-Wallet Audit Sheet ↗]`, `[Pumunta sa Bills & E-Load Hub ↗]`, `[Pumunta sa Inventory ↗]`) with instant screen navigation.
+* **Zero-Key-Leak Desktop Vault (`src/main/services/aiService.ts`):**
+  - AI requests run strictly in Electron Main Process (`ai:ask` IPC channel) via `net.fetch`.
+  - Zero credential exposure in React frontend, web inspector, or network requests.
+* **Automated Multi-Model Free Failover Pool:**
+  - Tier 1: Local OpenCode Free Pool (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with automatic sequential failover on timeout or busy status.
+  - Tier 2: Cloud Failover to Google Gemini 2.5 Flash Lite Free Tier via embedded vault credentials.
+  - Tier 3: Tertiary instant offline handbook fallback ensuring 100% zero-downtime reliability even without internet connection.
+* **Floating Draggable & Minimizable Widget (`TindaAiAssistantModal.tsx`):**
+  - Positioned side-by-side with Community Chat (`right-56` vs `right-5`) to eliminate UI button overlap.
+  - Floating drag handle (`⠿`) with viewport clamping and persistent coordinate memory (`localStorage: tinda_aibot_pos`).
+  - Single-line minimize (`—` / `⤢`) to prevent obstructing checkout queues or receipt printing.
+* **Official Release Artifacts (`v1.0.83`):**
+  - `TindaPOS-Feature-Patch-1.0.83.zip` (853 KiB) — Fast live update
+  - `TindaPOS-1.0.83.AppImage` (130.88 MiB) — Linux standalone binary
+  - `TindaPOS-Setup-1.0.83.exe` (107.36 MiB) — Windows NSIS installer
+  - `TindaPOS-Portable-1.0.83.exe` (107.14 MiB) — Windows portable executable
+  - `TindaPOS-Setup-1.0.83.exe.blockmap` (118 KiB) — Delta update blockmap
+  - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
+  - `SHA256SUMS-v1.0.83.txt` — Official release cryptographic hashes
+
+
 
 
 

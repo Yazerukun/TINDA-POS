@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.82-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.83-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-429_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Update_Engine-Dual--Track_Hot--Patch-10b981?style=for-the-badge" alt="Dual-Track Update Engine">
+<img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -13,13 +13,29 @@
 
 ### Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses
 
-**Sell products · Track inventory · Manage customer Utang · Reconcile cash — all in one focused desktop app. No internet required.**
+**Sell products · Track inventory · Manage customer Utang · Reconcile cash · Ask TindaBot AI — all in one focused desktop app. No internet required.**
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.82](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Feature-Patch-1.0.82.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.82 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Setup-1.0.82.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Portable-1.0.82.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-1.0.82.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.83](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Feature-Patch-1.0.83.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.83 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Setup-1.0.83.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Portable-1.0.83.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-1.0.83.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.83 (In-Store TindaBot AI Assistant & Multi-Model Free Pool Edition)
+
+> **Embedded TindaBot AI Copilot with Zero-Key-Leak Desktop Vault, Multi-Model OpenCode Free Pool Rotation, Google Gemini 2.5 Flash Lite Failover, and Draggable / Minimizable Screen Widget.**
+
+- 🤖 **TindaBot In-Store AI Copilot (`TindaAiAssistantModal.tsx` & `tindaAiKnowledge.ts`)**:
+  - Embedded friendly store mentor speaking conversational **Tagalog, Bisaya (Cebuano), and English**.
+  - Answers cashier questions with actionable deep-links (e.g. `[Buksan ang E-Wallet Audit Sheet ↗]`).
+  - Covers beginning float/funds for GCash/Maya/MariBank, Bills Payment, Telco E-Load, Senior/PWD 20% discounts, Barcode sticker printing, and thermal receipt printers.
+- 🔒 **Zero-Key-Leak Desktop Vault (`src/main/services/aiService.ts`)**:
+  - Secure main-process backend dispatch ensures system credentials and AI keys are never exposed in the React renderer, web inspector, or network tab.
+- 🔄 **Automated Multi-Model Free Failover Pool**:
+  - Pool of fast free models (**nemotron-3.5-lightning-free**, **mimo-v2.6-flash-free**, **exo-free**, **space-bunny-free**, **step-5-preview-free**) with automatic sequential failover.
+  - Automatic fallback to Gemini 2.5 Flash Lite and instant offline Store Handbook matching.
+- 🎨 **Draggable & Minimizable Widget**:
+  - Smooth drag handle (`⠿`) anywhere across the screen, minimize to single-line bar (`—` / `⤢`), and separated launcher buttons that never overlap with Community Chat.
 
 ## ✨ What's New in v1.0.82 (Store Handbook Modernization, Zero-Rate-Limit Updates & Dual-Mode Patch Architecture)
 
