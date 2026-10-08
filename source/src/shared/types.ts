@@ -761,7 +761,7 @@ export interface CommunityChatMessage {
   created_at: string
 }
 
-export type EwalletChannel = 'GCASH' | 'MAYA'
+export type EwalletChannel = 'GCASH' | 'MAYA' | 'MARIBANK'
 export type EwalletTransactionType = 'CASH_IN' | 'CASH_OUT'
 
 export interface EwalletTransactionRecord {
@@ -804,6 +804,12 @@ export interface EwalletAuditRecord {
   expected_maya_c: number
   actual_maya_c: number
   maya_difference_c: number
+  starting_maribank_c?: number
+  maribank_in_c?: number
+  maribank_out_c?: number
+  expected_maribank_c?: number
+  actual_maribank_c?: number
+  maribank_difference_c?: number
   total_fees_c: number
   notes: string | null
   created_at: string
@@ -822,6 +828,12 @@ export interface EwalletShiftSummary {
   maya_out_count: number
   maya_out_amount_c: number
   maya_out_fees_c: number
+  maribank_in_count: number
+  maribank_in_amount_c: number
+  maribank_in_fees_c: number
+  maribank_out_count: number
+  maribank_out_amount_c: number
+  maribank_out_fees_c: number
   total_fees_c: number
   net_cash_drawer_delta_c: number
 }

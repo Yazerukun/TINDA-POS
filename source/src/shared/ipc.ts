@@ -319,6 +319,7 @@ export interface TindaApi {
     testPrint: (options?: { manual?: boolean }) => Promise<PrintResult>
     printReceipt: (saleId: number, options?: { manual?: boolean }) => Promise<PrintResult>
     printLines: (lines: string[], options?: { manual?: boolean }) => Promise<PrintResult>
+    printDocument: (html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }) => Promise<PrintResult>
   }
 
   transactions: {
@@ -506,11 +507,13 @@ export interface TindaApi {
       actual_gcash_c: number
       starting_maya_c: number
       actual_maya_c: number
+      starting_maribank_c?: number
+      actual_maribank_c?: number
       notes?: string | null
     }) => Promise<import('./types').EwalletAuditRecord>
     listAudits: (opts?: { limit?: number }) => Promise<import('./types').EwalletAuditRecord[]>
     printSlip: (id: number, options?: { manual?: boolean }) => Promise<{ ok: boolean; message: string }>
-    printAuditReport: (id: number) => Promise<{ ok: boolean; message: string }>
+    printAuditReport: (id: number, options?: { manual?: boolean }) => Promise<{ ok: boolean; message: string }>
     printBillSlip: (
       payload: import('./receiptHtml').BillSlipPayload,
       options?: { manual?: boolean }

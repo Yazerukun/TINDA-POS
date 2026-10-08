@@ -144,4 +144,67 @@ describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
     const list = listEwalletTransactions(db, { shift_id: 1 })
     expect(list.length).toBe(0)
   })
+
+  it('records MariBank Cash In & Cash Out transactions and reconciles in 4-way audit', () => {
+    // 1. MariBank Cash In: customer gives ₱2,000 physical cash, store sends ₱2,000 MariBank load, fee ₱20 cash
+    const txIn = recordEwalletTransaction(db, userId, {
+      channel: 'MARIBANK',
+      type: 'CASH_IN',
+      amount_c: 200000,
+      fee_c: 2000,
+      reference_no: 'REF-MB-001',
+      customer_name: 'Carlos Yulo',
+      fee_collected_via: 'CASH'
+    })
+    expect(txIn.id).toBeGreaterThan(0)
+    expect(txIn.channel).toBe('MARIBANK')
+
+    // 2. MariBank Cash Out: customer sends ₱1,000 MariBank load, cashier releases ₱1,000 physical cash, fee ₱15 cash
+    const txOut = recordEwalletTransaction(db, userId, {
+      channel: 'MARIBANK',
+      type: 'CASH_OUT',
+      amount_c: 100000,
+      fee_c: 1500,
+      reference_no: 'REF-MB-002',
+      customer_name: 'EJ Obiena',
+      fee_collected_via: 'CASH'
+    })
+    expect(txOut.id).toBeGreaterThan(0)
+    expect(txOut.channel).toBe('MARIBANK')
+
+    const summary = getEwalletShiftSummary(db, 1)
+    expect(summary.maribank_in_count).toBe(1)
+    expect(summary.maribank_in_amount_c).toBe(200000)
+    expect(summary.maribank_in_fees_c).toBe(2000)
+    expect(summary.maribank_out_count).toBe(1)
+    expect(summary.maribank_out_amount_c).toBe(100000)
+    expect(summary.maribank_out_fees_c).toBe(1500)
+    expect(summary.total_fees_c).toBe(3500)
+
+    // Drawer gained from in (+2,000 + 20) = +2,020. Drawer lost from out (-1,000 + 15) = -985. Net = +1,035 (103500 cents)
+    expect(summary.net_cash_drawer_delta_c).toBe(103500)
+
+    // Multi-wallet audit snapshot with MariBank
+    // Starting MariBank: ₱10,000 (1000000 cents). Sent: ₱2,000. Received: ₱1,000. Expected: ₱9,000 (900000 cents). Actual on app: ₱9,000.
+    const audit = saveEwalletAudit(db, userId, {
+      shift_id: 1,
+      expected_cash_c: 500000,
+      actual_cash_c: 500000,
+      denominations: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      starting_gcash_c: 100000,
+      actual_gcash_c: 100000,
+      starting_maya_c: 100000,
+      actual_maya_c: 100000,
+      starting_maribank_c: 1000000,
+      actual_maribank_c: 900000,
+      notes: 'MariBank balanced shift'
+    })
+
+    expect(audit.starting_maribank_c).toBe(1000000)
+    expect(audit.maribank_in_c).toBe(200000)
+    expect(audit.maribank_out_c).toBe(100000)
+    expect(audit.expected_maribank_c).toBe(900000)
+    expect(audit.actual_maribank_c).toBe(900000)
+    expect(audit.maribank_difference_c).toBe(0)
+  })
 })

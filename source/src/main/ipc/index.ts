@@ -602,6 +602,9 @@ handle('printer:printLines', async (_e: IpcMainInvokeEvent, lines: string[], opt
   sessionSvc.requirePermission('transactions:view')
   return printingSvc.printLines(settingRepo.getSettings(db()), lines, options)
 })
+handle('printer:printDocument', async (_e: IpcMainInvokeEvent, html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }) => {
+  return printingSvc.printDocument(html, options)
+})
 
 // ---- Transactions ----
 handle('transactions:list', (_e: IpcMainInvokeEvent, opts: unknown) => listSales(db(), (opts ?? {}) as object))
@@ -1182,7 +1185,7 @@ handle('ewallet:printSlip', async (_e: IpcMainInvokeEvent, id: number, options?:
   const { formatEwalletSlipLines } = require('../../shared/receiptHtml')
   return await printingSvc.printLines(settings, formatEwalletSlipLines(tx, settings.store_name), options)
 })
-handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number) => {
+handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number, options?: { manual?: boolean }) => {
   const isVip = licenseService.getStatus().isVip
   if (!isVip && process.env.NODE_ENV !== 'test') {
     throw new Error('VIP_LOCKED: E-Wallet audit report printing is a VIP Pro feature.')
@@ -1191,7 +1194,7 @@ handle('ewallet:printAuditReport', async (_e: IpcMainInvokeEvent, id: number) =>
   const audit = ewalletRepo.getEwalletAudit(db(), id)
   const settings = settingRepo.getSettings(db())
   const { formatEwalletAuditLines } = require('../../shared/receiptHtml')
-  return await printingSvc.printLines(settings, formatEwalletAuditLines(audit, settings.store_name))
+  return await printingSvc.printLines(settings, formatEwalletAuditLines(audit, settings.store_name), options)
 })
 handle('ewallet:printBillSlip', async (_e: IpcMainInvokeEvent, payload: import('../../shared/receiptHtml').BillSlipPayload, options?: { manual?: boolean }) => {
   const isVip = licenseService.getStatus().isVip

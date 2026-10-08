@@ -39,6 +39,30 @@ export function ensureSchemaColumns(db: Database.Database): void {
       db.exec('ALTER TABLE inventory_movements ADD COLUMN receiving_notes TEXT')
       cols.add('receiving_notes')
     }
+
+    const auditCols = new Set(
+      (db.prepare("PRAGMA table_info('ewallet_audits')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (auditCols.size > 0) {
+      if (!auditCols.has('starting_maribank_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN starting_maribank_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!auditCols.has('maribank_in_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN maribank_in_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!auditCols.has('maribank_out_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN maribank_out_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!auditCols.has('expected_maribank_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN expected_maribank_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!auditCols.has('actual_maribank_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN actual_maribank_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!auditCols.has('maribank_difference_c')) {
+        db.exec('ALTER TABLE ewallet_audits ADD COLUMN maribank_difference_c INTEGER NOT NULL DEFAULT 0')
+      }
+    }
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }
@@ -656,6 +680,44 @@ CREATE TABLE IF NOT EXISTS system_license_vault (
   tamper_proof_hash TEXT,
   updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
+`
+  },
+  {
+    version: 13,
+    name: 'maribank_ewallet_support',
+    sql: `
+CREATE TABLE IF NOT EXISTS ewallet_transactions_new (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  shift_id INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  channel TEXT NOT NULL CHECK (channel IN ('GCASH', 'MAYA', 'MARIBANK')),
+  type TEXT NOT NULL CHECK (type IN ('CASH_IN', 'CASH_OUT')),
+  amount_c INTEGER NOT NULL,
+  fee_c INTEGER NOT NULL DEFAULT 0,
+  reference_no TEXT,
+  customer_name TEXT,
+  customer_phone TEXT,
+  fee_collected_via TEXT NOT NULL DEFAULT 'CASH' CHECK (fee_collected_via IN ('CASH', 'WALLET')),
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
+INSERT INTO ewallet_transactions_new (id, shift_id, user_id, channel, type, amount_c, fee_c, reference_no, customer_name, customer_phone, fee_collected_via, notes, created_at)
+SELECT id, shift_id, user_id, channel, type, amount_c, fee_c, reference_no, customer_name, customer_phone, fee_collected_via, notes, created_at
+FROM ewallet_transactions;
+
+DROP TABLE ewallet_transactions;
+ALTER TABLE ewallet_transactions_new RENAME TO ewallet_transactions;
+
+CREATE INDEX IF NOT EXISTS idx_ewallet_shift ON ewallet_transactions(shift_id);
+CREATE INDEX IF NOT EXISTS idx_ewallet_created_at ON ewallet_transactions(created_at);
+
+ALTER TABLE ewallet_audits ADD COLUMN starting_maribank_c INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ewallet_audits ADD COLUMN maribank_in_c INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ewallet_audits ADD COLUMN maribank_out_c INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ewallet_audits ADD COLUMN expected_maribank_c INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ewallet_audits ADD COLUMN actual_maribank_c INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ewallet_audits ADD COLUMN maribank_difference_c INTEGER NOT NULL DEFAULT 0;
 `
   }
 ]

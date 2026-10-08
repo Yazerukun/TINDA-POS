@@ -38,17 +38,13 @@ export function PriceTagPrintModal({
   if (!open || !activeProduct) return null
 
   const copies = Math.max(1, parseInt(printCopies) || 1)
+  const [isPrinting, setIsPrinting] = useState(false)
 
-  const handlePrint = () => {
-    // Generate isolated printable label document
+  const handlePrint = async (manual = false) => {
+    if (!activeProduct) return
+    setIsPrinting(true)
     const widthMm = tagSize === '30x20' ? '30mm' : tagSize === '40x30' ? '40mm' : tagSize === '50x30' ? '50mm' : `${customWidthMm}mm`
     const heightMm = tagSize === '30x20' ? '20mm' : tagSize === '40x30' ? '30mm' : tagSize === '50x30' ? '30mm' : `${customHeightMm}mm`
-
-    const printWin = window.open('', '_blank', 'width=450,height=600')
-    if (!printWin) {
-      toastError('Print Blocked', 'Please allow popups to print shelf price tags.')
-      return
-    }
 
     const labelsHtml = Array.from({ length: copies })
       .map(
@@ -74,10 +70,11 @@ export function PriceTagPrintModal({
       )
       .join('')
 
-    printWin.document.write(`
+    const fullHtml = `
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="utf-8">
         <title>Price Tag - ${activeProduct.name}</title>
         <style>
           @page {
@@ -166,18 +163,38 @@ export function PriceTagPrintModal({
       </head>
       <body>
         ${labelsHtml}
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(function() { window.close(); }, 500);
-          }
-        </script>
       </body>
       </html>
-    `)
-    printWin.document.close()
-    toastSuccess('Print Dialog Ready', `Generated ${copies} price tag(s) for ${activeProduct.name}`)
-    onClose()
+    `
+
+    try {
+      if (window.api?.printer?.printDocument) {
+        const res = await window.api.printer.printDocument(fullHtml, {
+          manual,
+          title: `Price Tag - ${activeProduct.name}`
+        })
+        if (res.ok) {
+          toastSuccess(manual ? 'System Print Dialog' : 'Price Tags Printed', res.message)
+          onClose()
+        } else if (res.code !== 'DISABLED') {
+          toastError('Print Failed', res.message)
+        }
+      } else {
+        const printWin = window.open('', '_blank', 'width=450,height=600')
+        if (printWin) {
+          printWin.document.write(fullHtml)
+          printWin.document.close()
+          toastSuccess('Print Dialog Ready', `Generated ${copies} price tag(s) for ${activeProduct.name}`)
+          onClose()
+        } else {
+          toastError('Print Blocked', 'Please allow popups to print shelf price tags.')
+        }
+      }
+    } catch (err) {
+      toastError('Print Error', err instanceof Error ? err.message : String(err))
+    } finally {
+      setIsPrinting(false)
+    }
   }
 
   return (
@@ -313,17 +330,28 @@ export function PriceTagPrintModal({
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-end gap-3 pt-3 border-t border-ink-line">
+        <div className="flex justify-end gap-2 pt-3 border-t border-ink-line">
           <button type="button" onClick={onClose} className="btn-ghost text-xs">
             Cancel
           </button>
           <button
             type="button"
-            onClick={handlePrint}
-            className="btn-primary flex items-center gap-2 text-xs font-bold py-2.5 px-4 shadow-lg"
+            disabled={isPrinting}
+            onClick={() => void handlePrint(true)}
+            className="px-3.5 py-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-xs flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+            title="Open Windows System Print Dialog"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Manual Print (Dialog)
+          </button>
+          <button
+            type="button"
+            disabled={isPrinting}
+            onClick={() => void handlePrint(false)}
+            className="btn-primary flex items-center gap-2 text-xs font-bold py-2.5 px-4 shadow-lg active:scale-95 transition disabled:opacity-50"
           >
             <Printer className="h-4 w-4" />
-            Print {copies} Price Tag{copies > 1 ? 's' : ''}
+            {isPrinting ? 'Preparing...' : `Auto Print ${copies} Tag${copies > 1 ? 's' : ''}`}
           </button>
         </div>
       </div>

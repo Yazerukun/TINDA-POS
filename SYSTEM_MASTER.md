@@ -1450,5 +1450,28 @@
    - **Modules:** `sales.ts`, `products.ts`, `customers.ts`, `shifts.ts`, `settings.ts`, `users.ts`, `audit.ts`.
    - **Rule:** Encapsulates all SQL statements (`SELECT`, `INSERT`, `UPDATE`), schema migrations, indexed queries, and atomic SQLite transactions (`db.transaction`). Exposes clean repository functions (`salesRepo.createSaleRecord()`, `prodRepo.adjustStock()`) consumed by the BLL.
 
+---
+
+## 66. Native Document Printing, Audit Dual Print Engine & MariBank Ecosystem Integration (v1.0.72)
+* **Problem Addressed & User Feedback:**
+  1. *Printable Inventory & Operations Reports Failure:* Users clicking Print on physical count sheets, stock-on-hand reports, and purchase orders encountered failures because the modal invoked `window.open()`, which is blocked or restricted by Electron's chromium security boundary.
+  2. *Audit Sheet & History Dual Printing:* Store cashiers needed both Auto Print (direct thermal burning) and Manual Print (Windows System Print Dialog pre-bound to printer) for E-Wallet shift audits and historical audits to troubleshoot locked spoolers or choose specific report printers.
+  3. *MariBank Provider Integration Request:* Community sari-sari stores and retail merchants actively requested MariBank (SeaMoney / Shopee digital banking ecosystem in the Philippines) support alongside GCash and Maya for cash-in, cash-out, bills, and multi-wallet drawer reconciliations.
+
+* **Key Architectural Implementations:**
+  - **Native Document Printing Pipeline (`printing.ts`, `ipc/index.ts`, `InventoryPrintModal.tsx`):**
+    - Replaced unreliable renderer `window.open` popup printing with native Electron IPC `printing:printDocument`.
+    - Spawns a dedicated hidden BrowserWindow, renders complete CSS-styled A4 / Letter printable sheets with `@page` print rules, and triggers `webContents.print()`.
+    - Supports both **Auto Print** (direct to detected printer) and **Manual Print** (invokes native Windows print dialog with printer, copies, and PDF export options).
+  - **Dual Printing for E-Wallet Audit Sheet & Audit History (`EwalletAudit.tsx`, `ipc/index.ts`):**
+    - Extended `ewallet:printAuditReport` IPC channel to accept `{ manual?: boolean }`.
+    - Added dedicated **Auto Print** and **Manual Print** buttons in both the live **Audit Sheet** footer and the **Audit History** ledger table.
+  - **MariBank Provider Integration (`types.ts`, `ewallet.ts`, `EwalletAudit.tsx`, `migrations.ts`):**
+    - Expanded `EwalletChannel` and `sourceWallet` to include `'MARIBANK'`.
+    - Designed custom vibrant brand styling for MariBank (`#FF6A00` Shopee/Sea orange gradient badges and chip selectors).
+    - Added SQLite database migration for `ewallet_audits` (starting, in, out, expected, actual, variance columns for MariBank) and updated `ewallet_transactions` check constraint.
+    - Updated `EwalletShiftSummary` and `formatEwalletAuditLines` in `receiptHtml.ts` to cleanly format MariBank cash flow alongside GCash and Maya without breaking existing transactions.
+
+
 
 

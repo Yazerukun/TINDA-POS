@@ -91,7 +91,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Center</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v1.0.71
+                  v1.0.72
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -356,7 +356,7 @@ export function PosToolsModal({
                   <p className="font-bold text-sm leading-tight truncate">E-Wallet</p>
                   <span className="text-[10px] font-mono text-emerald-400/80 bg-emerald-500/20 px-1 rounded">[F8]</span>
                 </div>
-                <p className="text-[11px] text-emerald-300/80 truncate">GCash, Maya & Audit</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">GCash, Maya, MariBank & Audit</p>
               </div>
             </button>
 

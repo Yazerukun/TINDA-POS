@@ -35,7 +35,7 @@ function isDoubleSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|Change|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Cash In|Cash Out|Amount|Bill Amount|Service Fee|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED|TOTAL FEES EARNED)\s+([+-]?)\s*(?:[P₱]\s*)?(-?\d[\d,]*(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|Change|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|MariBank|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Starting GCash|Starting Maya|Starting MariBank|Expected GCash|Expected Maya|Expected MariBank|Actual GCash|Actual Maya|Actual MariBank|Cash In|Cash Out|Amount|Bill Amount|Service Fee|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED|TOTAL FEES EARNED)\s+([+-]?)\s*(?:[P₱]\s*)?(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   const prefixSign = m[2] || ''
   const amount = prefixSign ? `${prefixSign}${m[3]!}` : m[3]!
@@ -354,6 +354,14 @@ export function formatEwalletAuditLines(
     `Expected Maya  ${money(a.expected_maya_c)}`,
     `Actual Maya    ${money(a.actual_maya_c)}`,
     `Difference     ${money(a.maya_difference_c)}`,
+    '--------------------------------',
+    'MARIBANK WALLET AUDIT',
+    `Starting MariBank ${money(a.starting_maribank_c || 0)}`,
+    `Cash In (Sent) ${money(a.maribank_in_c || 0)}`,
+    `Cash Out (Rcvd) ${money(a.maribank_out_c || 0)}`,
+    `Expected MariBank ${money(a.expected_maribank_c || 0)}`,
+    `Actual MariBank   ${money(a.actual_maribank_c || 0)}`,
+    `Difference     ${money(a.maribank_difference_c || 0)}`,
     '--------------------------------',
     `TOTAL FEES EARNED  ${money(a.total_fees_c)}`,
     '--------------------------------',

@@ -161,7 +161,8 @@ const api: TindaApi = {
     save: (input) => invoke<import('@shared/types').StoreSettings>('printer:save', input),
     testPrint: (options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:testPrint', options),
     printReceipt: (saleId: number, options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printReceipt', saleId, options),
-    printLines: (lines: string[], options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printLines', lines, options)
+    printLines: (lines: string[], options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printLines', lines, options),
+    printDocument: (html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }) => invoke<import('@shared/ipc').PrintResult>('printer:printDocument', html, options)
   },
   transactions: {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),
@@ -318,7 +319,7 @@ const api: TindaApi = {
     saveAudit: (input) => invoke<import('@shared/types').EwalletAuditRecord>('ewallet:saveAudit', input),
     listAudits: (opts) => invoke<import('@shared/types').EwalletAuditRecord[]>('ewallet:listAudits', opts),
     printSlip: (id, options) => invoke<{ ok: boolean; message: string }>('ewallet:printSlip', id, options),
-    printAuditReport: (id) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id),
+    printAuditReport: (id, options) => invoke<{ ok: boolean; message: string }>('ewallet:printAuditReport', id, options),
     printBillSlip: (payload, options) => invoke<{ ok: boolean; message: string }>('ewallet:printBillSlip', payload, options)
   }
 }

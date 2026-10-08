@@ -64,7 +64,7 @@ export interface BillRecord {
   amount: number
   serviceFee: number
   paidVia: 'CASH'
-  sourceWallet: 'GCASH' | 'MAYA'
+  sourceWallet: 'GCASH' | 'MAYA' | 'MARIBANK'
   status: 'COMPLETED'
   createdAt: string
   referenceNo: string
@@ -90,7 +90,7 @@ export function EwalletAudit(): React.JSX.Element {
   const [billCustomerPhone, setBillCustomerPhone] = useState('')
   const [billAmountStr, setBillAmountStr] = useState('')
   const [billFeeStr, setBillFeeStr] = useState(String(BILLER_PRESETS[0]?.defaultFee || 15))
-  const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA'>('GCASH')
+  const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA' | 'MARIBANK'>('GCASH')
   const [billReferenceNo, setBillReferenceNo] = useState('')
   const [billSearchQuery, setBillSearchQuery] = useState('')
   const [billToDelete, setBillToDelete] = useState<BillRecord | null>(null)
@@ -109,7 +109,7 @@ export function EwalletAudit(): React.JSX.Element {
 
   // Transaction Ledger Filters & Search
   const [txSearch, setTxSearch] = useState('')
-  const [txFilterChannel, setTxFilterChannel] = useState<'ALL' | 'GCASH' | 'MAYA'>('ALL')
+  const [txFilterChannel, setTxFilterChannel] = useState<'ALL' | 'GCASH' | 'MAYA' | 'MARIBANK'>('ALL')
   const [txFilterType, setTxFilterType] = useState<'ALL' | 'CASH_IN' | 'CASH_OUT'>('ALL')
   const [txToDelete, setTxToDelete] = useState<EwalletTransactionRecord | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -129,6 +129,8 @@ export function EwalletAudit(): React.JSX.Element {
   const [actualGcashStr, setActualGcashStr] = useState('0')
   const [startingMayaStr, setStartingMayaStr] = useState('0')
   const [actualMayaStr, setActualMayaStr] = useState('0')
+  const [startingMaribankStr, setStartingMaribankStr] = useState('0')
+  const [actualMaribankStr, setActualMaribankStr] = useState('0')
   const [auditNotes, setAuditNotes] = useState('')
 
   // Load transactions and summary
@@ -212,6 +214,13 @@ export function EwalletAudit(): React.JSX.Element {
   const mayaReceivedC = summary?.maya_out_amount_c || 0
   const expectedMayaC = startingMayaC - mayaSentC + mayaReceivedC
   const mayaDifferenceC = actualMayaC - expectedMayaC
+
+  const startingMaribankC = Math.round((parseFloat(startingMaribankStr) || 0) * 100)
+  const actualMaribankC = Math.round((parseFloat(actualMaribankStr) || 0) * 100)
+  const maribankSentC = summary?.maribank_in_amount_c || 0
+  const maribankReceivedC = summary?.maribank_out_amount_c || 0
+  const expectedMaribankC = startingMaribankC - maribankSentC + maribankReceivedC
+  const maribankDifferenceC = actualMaribankC - expectedMaribankC
 
   const handleDenomChange = (index: number, val: string): void => {
     const qty = parseInt(val, 10) || 0
@@ -415,7 +424,20 @@ export function EwalletAudit(): React.JSX.Element {
     }
   }
 
-  const handleSaveAudit = async (printReport = false): Promise<void> => {
+  const printAuditRecord = async (id: number, manual = false) => {
+    try {
+      const res = await window.api.ewallet.printAuditReport(id, { manual })
+      if (res.ok) {
+        toast.success(manual ? 'Manual print dialog opened' : 'Audit report printed successfully')
+      } else {
+        toast.error('Printing failed', res.message)
+      }
+    } catch (e) {
+      toast.error('Printing error', String((e as Error)?.message || e))
+    }
+  }
+
+  const handleSaveAudit = async (printMode: 'NONE' | 'AUTO' | 'MANUAL' = 'NONE'): Promise<void> => {
     try {
       const audit = await window.api.ewallet.saveAudit({
         expected_cash_c: expectedCashC,
@@ -425,13 +447,18 @@ export function EwalletAudit(): React.JSX.Element {
         actual_gcash_c: actualGcashC,
         starting_maya_c: startingMayaC,
         actual_maya_c: actualMayaC,
+        starting_maribank_c: startingMaribankC,
+        actual_maribank_c: actualMaribankC,
         notes: auditNotes || null
       })
 
       toast.success('E-Wallet & Cash Audit saved successfully!')
-      if (printReport && audit.id) {
+      if (printMode !== 'NONE' && audit.id) {
         try {
-          await window.api.ewallet.printAuditReport(audit.id)
+          const res = await window.api.ewallet.printAuditReport(audit.id, { manual: printMode === 'MANUAL' })
+          if (res?.ok) {
+            toast.success(printMode === 'MANUAL' ? 'Manual print dialog opened' : 'Audit report printed successfully')
+          }
         } catch (e) {
           toast.error('Print failed: ' + (e as Error).message)
         }
@@ -581,12 +608,12 @@ export function EwalletAudit(): React.JSX.Element {
                 New E-Wallet Transaction
               </h3>
 
-              {/* Channel Selector: GCash vs Maya */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Channel Selector: GCash, Maya, MariBank */}
+              <div className="grid grid-cols-3 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setChannel('GCASH')}
-                  className={`flex items-center justify-center gap-2.5 py-3 rounded-xl border font-bold text-sm transition ${
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-sm transition ${
                     channel === 'GCASH'
                       ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-2 ring-sky-500/30'
                       : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
@@ -598,7 +625,7 @@ export function EwalletAudit(): React.JSX.Element {
                 <button
                   type="button"
                   onClick={() => setChannel('MAYA')}
-                  className={`flex items-center justify-center gap-2.5 py-3 rounded-xl border font-bold text-sm transition ${
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-sm transition ${
                     channel === 'MAYA'
                       ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-md ring-2 ring-emerald-500/30'
                       : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
@@ -606,6 +633,18 @@ export function EwalletAudit(): React.JSX.Element {
                 >
                   <Smartphone className="h-4 w-4" />
                   Maya
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChannel('MARIBANK')}
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-sm transition ${
+                    channel === 'MARIBANK'
+                      ? 'border-orange-500 bg-orange-500/15 text-orange-400 shadow-md ring-2 ring-orange-500/30'
+                      : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Smartphone className="h-4 w-4" />
+                  MariBank
                 </button>
               </div>
 
@@ -878,10 +917,12 @@ export function EwalletAudit(): React.JSX.Element {
                           className={`flex h-7 w-7 items-center justify-center rounded-lg font-bold text-[10px] ${
                             tx.channel === 'GCASH'
                               ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
-                              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : tx.channel === 'MAYA'
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                           }`}
                         >
-                          {tx.channel === 'GCASH' ? 'GC' : 'MY'}
+                          {tx.channel === 'GCASH' ? 'GC' : tx.channel === 'MAYA' ? 'MY' : 'MB'}
                         </span>
                         <div>
                           <p className="font-semibold text-white flex items-center gap-1.5">
@@ -953,28 +994,39 @@ export function EwalletAudit(): React.JSX.Element {
                     <label className="text-xs font-semibold text-slate-300 block mb-1.5">
                       Store Wallet Used to Process:
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <button
                         type="button"
                         onClick={() => setBillSourceWallet('GCASH')}
-                        className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold transition ${
+                        className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-bold transition ${
                           billSourceWallet === 'GCASH'
                             ? 'border-sky-500 bg-sky-500/15 text-sky-400 ring-2 ring-sky-500/20'
                             : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
                         }`}
                       >
-                        <Smartphone className="h-3.5 w-3.5" /> GCash Business
+                        <Smartphone className="h-3.5 w-3.5" /> GCash
                       </button>
                       <button
                         type="button"
                         onClick={() => setBillSourceWallet('MAYA')}
-                        className={`flex items-center justify-center gap-2 py-2 rounded-xl border text-xs font-bold transition ${
+                        className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-bold transition ${
                           billSourceWallet === 'MAYA'
                             ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 ring-2 ring-emerald-500/20'
                             : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
                         }`}
                       >
-                        <Smartphone className="h-3.5 w-3.5" /> Maya Business
+                        <Smartphone className="h-3.5 w-3.5" /> Maya
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillSourceWallet('MARIBANK')}
+                        className={`flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-bold transition ${
+                          billSourceWallet === 'MARIBANK'
+                            ? 'border-orange-500 bg-orange-500/15 text-orange-400 ring-2 ring-orange-500/20'
+                            : 'border-ink-line bg-ink-950 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Smartphone className="h-3.5 w-3.5" /> MariBank
                       </button>
                     </div>
                   </div>
@@ -1187,7 +1239,9 @@ export function EwalletAudit(): React.JSX.Element {
                                   className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                     b.sourceWallet === 'GCASH'
                                       ? 'bg-sky-500/20 text-sky-300'
-                                      : 'bg-emerald-500/20 text-emerald-300'
+                                      : b.sourceWallet === 'MAYA'
+                                      ? 'bg-emerald-500/20 text-emerald-300'
+                                      : 'bg-orange-500/20 text-orange-300'
                                   }`}
                                 >
                                   {b.sourceWallet}
@@ -1298,7 +1352,7 @@ export function EwalletAudit(): React.JSX.Element {
             <div className="flex flex-wrap items-center gap-2">
               {/* Channel Filter */}
               <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line text-xs font-semibold">
-                {(['ALL', 'GCASH', 'MAYA'] as const).map((ch) => (
+                {(['ALL', 'GCASH', 'MAYA', 'MARIBANK'] as const).map((ch) => (
                   <button
                     key={ch}
                     type="button"
@@ -1378,7 +1432,9 @@ export function EwalletAudit(): React.JSX.Element {
                           className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
                             tx.channel === 'GCASH'
                               ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
-                              : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                              : tx.channel === 'MAYA'
+                              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-orange-500/15 text-orange-400 border border-orange-500/30'
                           }`}
                         >
                           <Smartphone className="h-3 w-3" />
@@ -1476,10 +1532,10 @@ export function EwalletAudit(): React.JSX.Element {
         </div>
       )}
 
-      {/* Tab 2: 3-Way Audit Sheet */}
+      {/* Tab 2: Audit Sheet (Multi-Wallet & Cash) */}
       {isVip && activeTab === 'audit' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-5">
             {/* Box 1: Physical Cash Drawer Audit */}
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -1537,7 +1593,7 @@ export function EwalletAudit(): React.JSX.Element {
                     )}
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">
-                    💡 Walang ₱{posShiftExpectedCashStr} onhand? I-tap ang <span className="text-amber-400 font-semibold">&quot;₱0.00 (Zero Float)&quot;</span> o i-type ang onhand cash.
+                    💡 Missing ₱{posShiftExpectedCashStr} cash on hand? Tap <span className="text-amber-400 font-semibold">&quot;₱0.00 (Zero Float)&quot;</span> or enter your drawer count.
                   </p>
                 </div>
 
@@ -1721,6 +1777,70 @@ export function EwalletAudit(): React.JSX.Element {
                 </div>
               </div>
             </div>
+
+            {/* Box 4: MariBank App Wallet Audit */}
+            <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
+              <h3 className="text-sm font-bold text-orange-400 flex items-center gap-2">
+                <Smartphone className="h-4 w-4" />
+                4. MariBank Reconciliation
+              </h3>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Starting MariBank Balance (₱)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={startingMaribankStr}
+                    onChange={(e) => setStartingMaribankStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-white font-bold outline-none focus:border-orange-500"
+                  />
+                </div>
+
+                <div className="rounded-xl bg-ink-950 p-2.5 space-y-1 text-[11px] border border-ink-line">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">- Sent for Cash In:</span>
+                    <span className="font-semibold text-danger-400">-₱{(maribankSentC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">+ Received via Cash Out:</span>
+                    <span className="font-semibold text-emerald-400">+₱{(maribankReceivedC / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-ink-line pt-1 font-bold">
+                    <span className="text-slate-300">Expected MariBank:</span>
+                    <span className="text-white">₱{(expectedMaribankC / 100).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-400 font-medium">Actual MariBank Balance (Phone shows)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={actualMaribankStr}
+                    onChange={(e) => setActualMaribankStr(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full mt-1 rounded-xl border border-orange-500/40 bg-ink-950 px-3 py-2 text-orange-300 font-black text-sm outline-none focus:border-orange-400"
+                  />
+                </div>
+
+                <div className="flex justify-between text-xs border-t border-ink-line pt-2">
+                  <span className="text-slate-400 font-semibold">MariBank Variance:</span>
+                  <span
+                    className={`font-black ${
+                      maribankDifferenceC === 0
+                        ? 'text-emerald-400'
+                        : maribankDifferenceC > 0
+                        ? 'text-orange-400'
+                        : 'text-danger-400'
+                    }`}
+                  >
+                    {maribankDifferenceC > 0 ? '+' : ''}₱{(maribankDifferenceC / 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Bottom Audit Actions */}
@@ -1735,21 +1855,31 @@ export function EwalletAudit(): React.JSX.Element {
               </p>
             </div>
 
-            <div className="flex gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
               <button
                 type="button"
-                onClick={() => void handleSaveAudit(true)}
-                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition"
+                onClick={() => void handleSaveAudit('NONE')}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white transition"
               >
-                <Printer className="h-4 w-4" />
-                Save & Print Audit Report
+                Save Only
               </button>
               <button
                 type="button"
-                onClick={() => void handleSaveAudit(false)}
-                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-5 py-2.5 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white transition"
+                onClick={() => void handleSaveAudit('MANUAL')}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs font-bold text-sky-300 hover:bg-sky-500/20 active:scale-95 transition"
+                title="Save and open Windows System Print Dialog"
               >
-                Save Audit Only
+                <Printer className="h-4 w-4" />
+                Save &amp; Manual Print (Dialog)
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSaveAudit('AUTO')}
+                className="flex-1 md:flex-initial flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition"
+                title="Save and print directly to thermal receipt printer"
+              >
+                <Printer className="h-4 w-4" />
+                Save &amp; Print (Thermal)
               </button>
             </div>
           </div>
@@ -1773,15 +1903,16 @@ export function EwalletAudit(): React.JSX.Element {
                   <th className="py-2.5 px-3 text-right">Cash Var</th>
                   <th className="py-2.5 px-3 text-right">GCash Var</th>
                   <th className="py-2.5 px-3 text-right">Maya Var</th>
+                  <th className="py-2.5 px-3 text-right">MariBank Var</th>
                   <th className="py-2.5 px-3 text-right">Fees Earned</th>
                   <th className="py-2.5 px-3 text-center">Status</th>
-                  <th className="py-2.5 px-3 text-center">Print</th>
+                  <th className="py-2.5 px-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-line">
                 {audits.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-500">
+                    <td colSpan={9} className="py-8 text-center text-slate-500">
                       No previous audits found.
                     </td>
                   </tr>
@@ -1799,6 +1930,9 @@ export function EwalletAudit(): React.JSX.Element {
                       <td className="py-2.5 px-3 text-right font-mono text-emerald-400">
                         ₱{(a.maya_difference_c / 100).toFixed(2)}
                       </td>
+                      <td className="py-2.5 px-3 text-right font-mono text-orange-400">
+                        ₱{((a.maribank_difference_c || 0) / 100).toFixed(2)}
+                      </td>
                       <td className="py-2.5 px-3 text-right font-bold text-amber-400">
                         ₱{(a.total_fees_c / 100).toFixed(2)}
                       </td>
@@ -1814,14 +1948,24 @@ export function EwalletAudit(): React.JSX.Element {
                         </span>
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => void window.api.ewallet.printAuditReport(a.id)}
-                          className="p-1 rounded text-slate-400 hover:text-white hover:bg-ink-800 transition"
-                          title="Print Thermal Report"
-                        >
-                          <Printer className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void printAuditRecord(a.id, false)}
+                            className="p-1 rounded text-slate-400 hover:text-white hover:bg-ink-800 transition"
+                            title="Auto Print (Thermal Report)"
+                          >
+                            <Printer className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void printAuditRecord(a.id, true)}
+                            className="px-1.5 py-0.5 text-[10px] font-bold text-sky-400 hover:text-sky-300 rounded hover:bg-sky-500/10 border border-sky-500/30 transition"
+                            title="Manual Print (System Print Dialog)"
+                          >
+                            Manual
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

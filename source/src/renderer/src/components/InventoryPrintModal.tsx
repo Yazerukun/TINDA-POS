@@ -29,13 +29,9 @@ export function InventoryPrintModal({
     ? products.filter((p) => p.stock <= p.low_stock_threshold)
     : products
 
-  const handlePrint = () => {
-    const printWin = window.open('', '_blank', 'width=850,height=1000')
-    if (!printWin) {
-      toastError('Print Blocked', 'Please allow popups to print inventory sheets.')
-      return
-    }
+  const [isPrinting, setIsPrinting] = useState(false)
 
+  const generateDocumentHtml = (): { title: string; html: string } => {
     const titleMap: Record<SheetType, string> = {
       STOCK_ON_HAND: 'PHYSICAL STOCK ON HAND REPORT',
       COUNT_SHEET: 'BLIND PHYSICAL INVENTORY COUNT SHEET',
@@ -87,15 +83,16 @@ export function InventoryPrintModal({
 
     const totalVal = targetProducts.reduce((s, p) => s + p.stock * p.purchase_cost_c, 0)
 
-    printWin.document.write(`
+    const html = `
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="utf-8">
         <title>${titleMap[sheetType]}</title>
         <style>
           @page { size: A4 portrait; margin: 12mm; }
           * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; color: #000; margin: 0; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; color: #000; margin: 0; padding: 12px; }
           .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
           .title { font-size: 16px; font-weight: 900; text-transform: uppercase; }
           .meta { font-size: 10px; color: #444; }
@@ -168,19 +165,45 @@ export function InventoryPrintModal({
           <div class="sign-box">Prepared / Counted By</div>
           <div class="sign-box">Audited / Approved By (Owner)</div>
         </div>
-
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(function() { window.close(); }, 500);
-          }
-        </script>
       </body>
       </html>
-    `)
-    printWin.document.close()
-    toastSuccess('Print Sheet Ready', `Generated ${titleMap[sheetType]}`)
-    onClose()
+    `
+
+    return { title: titleMap[sheetType], html }
+  }
+
+  const handlePrint = async (manual = false) => {
+    setIsPrinting(true)
+    const { title, html } = generateDocumentHtml()
+    try {
+      if (window.api?.printer?.printDocument) {
+        const res = await window.api.printer.printDocument(html, {
+          manual,
+          title,
+          pageSize: 'A4'
+        })
+        if (res.ok) {
+          toastSuccess(manual ? 'System Print Dialog' : 'Print Document', res.message)
+          onClose()
+        } else if (res.code !== 'DISABLED') {
+          toastError('Print Failed', res.message)
+        }
+      } else {
+        const printWin = window.open('', '_blank', 'width=850,height=1000')
+        if (printWin) {
+          printWin.document.write(html)
+          printWin.document.close()
+          toastSuccess('Print Sheet Ready', `Generated ${title}`)
+          onClose()
+        } else {
+          toastError('Print Blocked', 'Please allow popups to print inventory sheets.')
+        }
+      }
+    } catch (err) {
+      toastError('Print Error', err instanceof Error ? err.message : String(err))
+    } finally {
+      setIsPrinting(false)
+    }
   }
 
   return (
@@ -257,17 +280,29 @@ export function InventoryPrintModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-3 border-t border-ink-line">
+        <div className="flex justify-end gap-2 pt-3 border-t border-ink-line">
           <button type="button" onClick={onClose} className="btn-ghost text-xs">
             Cancel
           </button>
           <button
             type="button"
-            onClick={handlePrint}
-            className="btn-primary flex items-center gap-2 text-xs font-bold py-2.5 px-4 shadow-lg"
+            disabled={isPrinting}
+            onClick={() => void handlePrint(true)}
+            className="px-3.5 py-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-xs flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+            title="Open Windows System Print Dialog to choose printer, page range, and paper"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Manual Print (Dialog)
+          </button>
+          <button
+            type="button"
+            disabled={isPrinting}
+            onClick={() => void handlePrint(false)}
+            className="btn-primary flex items-center gap-2 text-xs font-bold py-2.5 px-4 shadow-lg active:scale-95 transition disabled:opacity-50"
+            title="Print directly to configured printer"
           >
             <Printer className="h-4 w-4" />
-            Print Document
+            {isPrinting ? 'Preparing...' : 'Auto Print (A4)'}
           </button>
         </div>
       </div>

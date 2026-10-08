@@ -30,6 +30,8 @@ export interface SaveEwalletAuditInput {
   actual_gcash_c: number
   starting_maya_c: number
   actual_maya_c: number
+  starting_maribank_c?: number
+  actual_maribank_c?: number
   notes?: string | null
 }
 
@@ -85,6 +87,12 @@ function toAuditRow(r: Record<string, unknown>): EwalletAuditRecord {
     expected_maya_c: Number(r.expected_maya_c || 0),
     actual_maya_c: Number(r.actual_maya_c || 0),
     maya_difference_c: Number(r.maya_difference_c || 0),
+    starting_maribank_c: Number(r.starting_maribank_c || 0),
+    maribank_in_c: Number(r.maribank_in_c || 0),
+    maribank_out_c: Number(r.maribank_out_c || 0),
+    expected_maribank_c: Number(r.expected_maribank_c || 0),
+    actual_maribank_c: Number(r.actual_maribank_c || 0),
+    maribank_difference_c: Number(r.maribank_difference_c || 0),
     total_fees_c: Number(r.total_fees_c || 0),
     notes: (r.notes as string | null) ?? null,
     created_at: String(r.created_at)
@@ -99,8 +107,8 @@ export function recordEwalletTransaction(
   userId: number,
   input: CreateEwalletTransactionInput
 ): EwalletTransactionRecord {
-  if (!input.channel || !['GCASH', 'MAYA'].includes(input.channel)) {
-    throw new Error('Valid channel (GCASH or MAYA) is required.')
+  if (!input.channel || !['GCASH', 'MAYA', 'MARIBANK'].includes(input.channel)) {
+    throw new Error('Valid channel (GCASH, MAYA, or MARIBANK) is required.')
   }
   if (!input.type || !['CASH_IN', 'CASH_OUT'].includes(input.type)) {
     throw new Error('Valid transaction type (CASH_IN or CASH_OUT) is required.')
@@ -246,6 +254,14 @@ export function getEwalletShiftSummary(
   let maya_out_amount_c = 0
   let maya_out_fees_c = 0
 
+  let maribank_in_count = 0
+  let maribank_in_amount_c = 0
+  let maribank_in_fees_c = 0
+
+  let maribank_out_count = 0
+  let maribank_out_amount_c = 0
+  let maribank_out_fees_c = 0
+
   let net_cash_drawer_delta_c = 0
 
   for (const r of rows) {
@@ -277,10 +293,23 @@ export function getEwalletShiftSummary(
         maya_out_fees_c += r.fee_c
         net_cash_drawer_delta_c -= r.amount_c - feeInCash
       }
+    } else if (r.channel === 'MARIBANK') {
+      if (r.type === 'CASH_IN') {
+        maribank_in_count++
+        maribank_in_amount_c += r.amount_c
+        maribank_in_fees_c += r.fee_c
+        net_cash_drawer_delta_c += r.amount_c + feeInCash
+      } else {
+        maribank_out_count++
+        maribank_out_amount_c += r.amount_c
+        maribank_out_fees_c += r.fee_c
+        net_cash_drawer_delta_c -= r.amount_c - feeInCash
+      }
     }
   }
 
-  const total_fees_c = gcash_in_fees_c + gcash_out_fees_c + maya_in_fees_c + maya_out_fees_c
+  const total_fees_c =
+    gcash_in_fees_c + gcash_out_fees_c + maya_in_fees_c + maya_out_fees_c + maribank_in_fees_c + maribank_out_fees_c
 
   return {
     gcash_in_count,
@@ -295,6 +324,12 @@ export function getEwalletShiftSummary(
     maya_out_count,
     maya_out_amount_c,
     maya_out_fees_c,
+    maribank_in_count,
+    maribank_in_amount_c,
+    maribank_in_fees_c,
+    maribank_out_count,
+    maribank_out_amount_c,
+    maribank_out_fees_c,
     total_fees_c,
     net_cash_drawer_delta_c
   }
@@ -334,6 +369,12 @@ export function saveEwalletAudit(
   const expectedMaya = input.starting_maya_c - summary.maya_in_amount_c + summary.maya_out_amount_c
   const mayaDiff = input.actual_maya_c - expectedMaya
 
+  // 4. MariBank Wallet Audit:
+  const startingMaribank = input.starting_maribank_c || 0
+  const actualMaribank = input.actual_maribank_c || 0
+  const expectedMaribank = startingMaribank - summary.maribank_in_amount_c + summary.maribank_out_amount_c
+  const maribankDiff = actualMaribank - expectedMaribank
+
   const info = db
     .prepare(
       `INSERT INTO ewallet_audits (
@@ -341,8 +382,9 @@ export function saveEwalletAudit(
         expected_cash_c, actual_cash_c, cash_difference_c, cash_status, denominations_json,
         starting_gcash_c, gcash_in_c, gcash_out_c, expected_gcash_c, actual_gcash_c, gcash_difference_c,
         starting_maya_c, maya_in_c, maya_out_c, expected_maya_c, actual_maya_c, maya_difference_c,
+        starting_maribank_c, maribank_in_c, maribank_out_c, expected_maribank_c, actual_maribank_c, maribank_difference_c,
         total_fees_c, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       shiftId,
@@ -365,6 +407,12 @@ export function saveEwalletAudit(
       expectedMaya,
       input.actual_maya_c,
       mayaDiff,
+      startingMaribank,
+      summary.maribank_in_amount_c,
+      summary.maribank_out_amount_c,
+      expectedMaribank,
+      actualMaribank,
+      maribankDiff,
       summary.total_fees_c,
       input.notes?.trim() || null
     )

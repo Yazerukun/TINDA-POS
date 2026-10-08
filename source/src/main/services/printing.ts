@@ -225,3 +225,74 @@ export async function printTest(
   return printLines(settings, testPrintLines(settings, targetPrinter), options)
 }
 
+export async function printDocument(
+  html: string,
+  options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }
+): Promise<PrintResult> {
+  const isManual = options?.manual ?? false
+  const title = options?.title || 'TINDA POS - Printable Document'
+  const pageSize = options?.pageSize || 'A4'
+
+  const window = new BrowserWindow({
+    show: isManual,
+    width: 900,
+    height: 1050,
+    center: true,
+    title,
+    autoHideMenuBar: true,
+    alwaysOnTop: isManual,
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  try {
+    await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(html)}`)
+    // Give Chromium 400ms buffer to layout tables and render CSS print assets
+    await new Promise((r) => setTimeout(r, 400))
+
+    if (window.isDestroyed()) {
+      return { ok: false, code: 'FAILED', message: 'Print window closed before printing.' }
+    }
+
+    return await new Promise((resolve) => {
+      window.webContents.print(
+        {
+          silent: !isManual,
+          printBackground: true,
+          color: true,
+          pageSize,
+          margins: {
+            marginType: 'printableArea'
+          }
+        },
+        (success, failureReason) => {
+          if (success) {
+            resolve({
+              ok: true,
+              code: 'PRINTED',
+              message: isManual
+                ? 'Document sent to system print dialog.'
+                : 'Document printed successfully.'
+            })
+          } else {
+            const isCancelled = /cancel/i.test(failureReason || '')
+            resolve({
+              ok: false,
+              code: isCancelled ? 'DISABLED' : 'FAILED',
+              message: isCancelled ? 'Print dialog cancelled by user.' : (failureReason || 'Document printing failed.')
+            })
+          }
+        }
+      )
+    })
+  } finally {
+    // Keep window alive briefly for Windows Spooler to buffer
+    await new Promise((r) => setTimeout(r, 600))
+    if (!window.isDestroyed()) window.destroy()
+  }
+}
+
+
