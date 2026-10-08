@@ -14,6 +14,7 @@ import {
   Megaphone,
   Minus,
   Maximize2,
+  Minimize2,
   Volume2,
   VolumeX,
   Trash2,
@@ -23,6 +24,8 @@ import {
 } from 'lucide-react'
 import type { LiveAnnouncement, CommunityChatMessage } from '@shared/types'
 import { useSettings } from '../../stores/settings'
+import { useFloatingWidgets } from '../../stores/floatingWidgets'
+import { useNav } from '../../stores/nav'
 
 function resizeImageToDataUrl(file: File, maxDim = 600, quality = 0.75): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -104,10 +107,19 @@ function playNotificationChime(): void {
   }
 }
 
-export function TindaCommunityChat(): React.JSX.Element {
+export function TindaCommunityChat(): React.JSX.Element | null {
   const { settings } = useSettings()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+  const { page } = useNav()
+  const {
+    isChatOpen: isOpen,
+    setChatOpen: setIsOpen,
+    isChatMinimized: isMinimized,
+    setChatMinimized: setIsMinimized,
+    isChatWide,
+    setChatWide,
+    isAiOpen,
+    setHasUnreadChat
+  } = useFloatingWidgets()
   const [messages, setMessages] = useState<CommunityChatMessage[]>([])
   const [announcements, setAnnouncements] = useState<LiveAnnouncement[]>([])
   const [inputText, setInputText] = useState('')
@@ -470,8 +482,8 @@ export function TindaCommunityChat(): React.JSX.Element {
         hasDraggedRef.current = true
       }
 
-      const panelWidth = isMinimized ? 300 : 420
-      const panelHeight = isMinimized ? 52 : 580
+      const panelWidth = isMinimized ? 240 : isChatWide ? 390 : 330
+      const panelHeight = isMinimized ? 42 : 460
 
       const maxX = Math.max(10, window.innerWidth - panelWidth - 10)
       const maxY = Math.max(10, window.innerHeight - panelHeight - 10)
@@ -508,7 +520,7 @@ export function TindaCommunityChat(): React.JSX.Element {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, isMinimized])
+  }, [isDragging, isMinimized, isChatWide])
 
   // Can delete message check:
   const currentStoreId = settings?.cloud_store_id || 'unregistered'
@@ -526,62 +538,65 @@ export function TindaCommunityChat(): React.JSX.Element {
   if (settings?.store_name) activeMerchants.add(settings.store_name)
   const onlineCount = Math.max(1, activeMerchants.size)
 
+  // Sync unread status with dock
+  useEffect(() => {
+    setHasUnreadChat(hasUnreadMessages || !!unreadAnnouncement)
+  }, [hasUnreadMessages, unreadAnnouncement, setHasUnreadChat])
+
+  // Custom event listener for external launchers
+  useEffect(() => {
+    const handleOpenEvent = () => {
+      setIsOpen(true)
+      setIsMinimized(false)
+    }
+    window.addEventListener('tinda-open-community-chat', handleOpenEvent)
+    return () => window.removeEventListener('tinda-open-community-chat', handleOpenEvent)
+  }, [setIsOpen, setIsMinimized])
+
+  // If not open, FloatingWidgetsDock handles the launcher button
+  if (!isOpen) {
+    return null
+  }
+
+  const panelWidth = isMinimized ? 240 : isChatWide ? 390 : 330
+  const panelHeight = isMinimized ? 42 : 460
+
+  // Default coordinate if not dragged:
+  // In POS page, Cart sits at right: 0 to ~370-416px.
+  // Community Chat default sits at right: 390px (left of Cart).
+  // If TindaBot is also open, snap Chat to right: 390px and TindaBot to right: 730px.
+  const defaultRight = page === 'pos' ? 390 : 16
+
+  const stylePosition: React.CSSProperties = position
+    ? {
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        position: 'fixed'
+      }
+    : {
+        right: `${defaultRight}px`,
+        bottom: '16px',
+        position: 'fixed'
+      }
+
   return (
     <>
-      {/* 1. CLOSED LAUNCHER BUTTON (Bottom-Right) */}
-      {!isOpen && (
-        <div className="fixed bottom-5 right-5 z-40">
-          <button
-            type="button"
-            onClick={handleOpen}
-            className={`relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
-              hasUnreadMessages
-                ? 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 shadow-red-500/50 ring-4 ring-red-400/60 animate-pulse'
-                : 'bg-gradient-to-r from-brand-600 to-indigo-600 hover:shadow-brand-500/25'
-            }`}
-            title="Open TINDA Community Chat"
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span>Community Chat</span>
-            {hasUnreadMessages ? (
-              <span className="flex items-center gap-1.5 ml-1">
-                <span className="flex h-2.5 w-2.5 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
-                </span>
-                <span className="rounded-full bg-red-950/80 px-1.5 py-0.2 text-[10px] font-bold text-red-100 border border-red-300/30">
-                  NEW
-                </span>
-              </span>
-            ) : unreadAnnouncement ? (
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
-              </span>
-            ) : null}
-          </button>
-        </div>
-      )}
-
-      {/* 2. MINIMIZED FLOATING PILL BAR (Draggable & Drag-Protected) */}
+      {/* 1. MINIMIZED FLOATING BAR (Draggable & Compact) */}
       {isOpen && isMinimized && (
         <div
           style={{
-            left:
-              position?.x ??
-              Math.max(16, window.innerWidth - 320),
-            top:
-              position?.y ??
-              Math.max(40, window.innerHeight - 80)
+            ...stylePosition,
+            width: '240px',
+            height: '42px'
           }}
           onMouseDown={handleDragStart}
-          className={`fixed z-50 flex items-center justify-between gap-2.5 rounded-full border border-ink-700/80 bg-ink-950/95 px-3 py-1.5 text-xs text-white shadow-2xl backdrop-blur-xl transition-shadow select-none ${
+          className={`fixed z-50 flex items-center justify-between gap-2 rounded-2xl border border-ink-700/80 bg-ink-950/95 px-3 py-1 text-xs text-white shadow-2xl backdrop-blur-xl transition-shadow select-none ${
             isDragging ? 'cursor-grabbing ring-2 ring-brand-500/60 shadow-brand-500/20' : 'cursor-grab hover:border-ink-600'
           }`}
           title="Click to restore or hold and drag anywhere"
         >
           <div
-            className="flex items-center gap-2 cursor-pointer py-1 pl-1"
+            className="flex items-center gap-2 cursor-pointer py-1 pl-1 min-w-0"
             onClick={(e) => {
               if (hasDraggedRef.current) {
                 e.stopPropagation()
@@ -591,38 +606,38 @@ export function TindaCommunityChat(): React.JSX.Element {
               setHasUnreadMessages(false)
             }}
           >
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-500/20 text-brand-400">
-              <MessageSquare className="h-3.5 w-3.5" />
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-500/20 text-brand-400">
+              <MessageSquare className="h-3 w-3" />
             </div>
-            <div className="flex items-center gap-1.5 font-bold">
-              <span>Chat</span>
+            <div className="flex items-center gap-1.5 font-bold truncate">
+              <span className="truncate">Chat</span>
               {isOnline ? (
-                <span className="flex items-center gap-1 text-emerald-400 text-[10px]">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="flex items-center gap-1 text-emerald-400 text-[10px] shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>{onlineCount}</span>
                 </span>
               ) : (
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
               )}
             </div>
             {hasUnreadMessages && (
-              <span className="rounded-full bg-red-600 px-1.5 py-0.2 text-[9px] font-black text-white animate-pulse">
+              <span className="rounded-full bg-red-600 px-1.5 py-0.2 text-[9px] font-black text-white animate-pulse shrink-0">
                 NEW
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={toggleSound}
               title={soundEnabled ? 'Mute new message chime' : 'Enable new message chime'}
-              className="rounded-full p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
             >
               {soundEnabled ? (
-                <Volume2 className="h-3.5 w-3.5 text-emerald-400" />
+                <Volume2 className="h-3 w-3 text-emerald-400" />
               ) : (
-                <VolumeX className="h-3.5 w-3.5 text-slate-500" />
+                <VolumeX className="h-3 w-3 text-slate-500" />
               )}
             </button>
             <button
@@ -633,34 +648,31 @@ export function TindaCommunityChat(): React.JSX.Element {
                 setHasUnreadMessages(false)
               }}
               title="Expand Chat"
-              className="rounded-full p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              <Maximize2 className="h-3 w-3" />
             </button>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
               title="Close"
-              className="rounded-full p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+              className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
             </button>
           </div>
         </div>
       )}
 
-      {/* 3. EXPANDED DRAGGABLE FLOATING WINDOW (Non-Blocking) */}
+      {/* 2. EXPANDED DRAGGABLE FLOATING WINDOW (Non-Blocking & Compact) */}
       {isOpen && !isMinimized && (
         <div
           style={{
-            left:
-              position?.x ??
-              Math.max(16, window.innerWidth - 440),
-            top:
-              position?.y ??
-              Math.max(40, window.innerHeight - 620)
+            ...stylePosition,
+            width: `${panelWidth}px`,
+            height: `${panelHeight}px`
           }}
-          className={`fixed z-50 flex w-[420px] max-w-[calc(100vw-32px)] h-[580px] max-h-[calc(100vh-60px)] flex-col rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl overflow-hidden transition-shadow ${
+          className={`fixed z-50 flex flex-col rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
             isDragging ? 'ring-2 ring-brand-500/60 shadow-brand-500/25' : ''
           }`}
         >
@@ -738,6 +750,14 @@ export function TindaCommunityChat(): React.JSX.Element {
                 className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatWide(!isChatWide)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+                title={isChatWide ? 'I-compact ang lapad (330px)' : 'I-expand ang lapad (390px)'}
+              >
+                {isChatWide ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
               </button>
               <button
                 type="button"

@@ -24,6 +24,7 @@ import { ExpirationAlerts } from '../components/Expiration'
 import { HelpGuideModal } from '../components/HelpGuideModal'
 import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
 import { TindaAiAssistantModal } from '../components/ai/TindaAiAssistantModal'
+import { FloatingWidgetsDock } from '../components/common/FloatingWidgetsDock'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -93,6 +94,7 @@ export function Shell(): React.JSX.Element {
       <ToastHost />
       <UpdateModal />
       <HelpGuideModal />
+      <FloatingWidgetsDock />
       <TindaCommunityChat />
       <TindaAiAssistantModal />
     </div>

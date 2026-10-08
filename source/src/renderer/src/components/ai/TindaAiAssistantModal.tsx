@@ -11,9 +11,11 @@ import {
   ShieldCheck,
   Minus,
   Maximize2,
+  Minimize2,
   GripHorizontal
 } from 'lucide-react'
-import { useNav, type PageKey } from '../../stores/nav'
+import { useNav } from '../../stores/nav'
+import { useFloatingWidgets } from '../../stores/floatingWidgets'
 import {
   askTindaAssistant,
   getAiConfig,
@@ -23,10 +25,18 @@ import {
 } from '../../services/tindaAiAssistant'
 import { AssistantAction } from '../../services/tindaAiKnowledge'
 
-export function TindaAiAssistantModal(): React.JSX.Element {
-  const { setPage } = useNav()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+export function TindaAiAssistantModal(): React.JSX.Element | null {
+  const { page, setPage } = useNav()
+  const {
+    isAiOpen,
+    setAiOpen,
+    isAiMinimized,
+    setAiMinimized,
+    isAiWide,
+    setAiWide,
+    isChatOpen
+  } = useFloatingWidgets()
+
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -61,7 +71,7 @@ export function TindaAiAssistantModal(): React.JSX.Element {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: 'Kumusta! Ako si TindaBot, ang inyong AI Assistant sa tindahan. Pwede kang magtanong sa Tagalog, Bisaya, o English kung paano mag-input ng GCash funds, mag-process ng Bills, Senior discount, o mag-ayos ng printer!',
+      text: 'Kumusta! Ako si TindaBot, ang inyong AI Assistant. Pwede kang magtanong sa Tagalog, Bisaya, o English ukol sa GCash funds, Bills payment, Senior discount, o barcode!',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ])
@@ -69,10 +79,10 @@ export function TindaAiAssistantModal(): React.JSX.Element {
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isAiOpen && !isAiMinimized) {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages, isOpen, isMinimized])
+  }, [messages, isAiOpen, isAiMinimized])
 
   // Drag logic
   const handleDragStart = (e: React.MouseEvent): void => {
@@ -81,10 +91,14 @@ export function TindaAiAssistantModal(): React.JSX.Element {
     }
     e.preventDefault()
     hasDraggedRef.current = false
+
+    const panelW = isAiMinimized ? 240 : isAiWide ? 390 : 330
+    const panelH = isAiMinimized ? 42 : 460
+
     const currentX =
-      position?.x ?? Math.max(16, window.innerWidth - (isMinimized ? 300 : 440) - 240) // Default offset away from Community Chat
+      position?.x ?? Math.max(16, window.innerWidth - panelW - (page === 'pos' ? 390 : 16))
     const currentY =
-      position?.y ?? Math.max(40, window.innerHeight - (isMinimized ? 60 : 620))
+      position?.y ?? Math.max(40, window.innerHeight - panelH - 16)
 
     dragRef.current = {
       startX: e.clientX,
@@ -105,11 +119,11 @@ export function TindaAiAssistantModal(): React.JSX.Element {
         hasDraggedRef.current = true
       }
 
-      const panelWidth = isMinimized ? 300 : 420
-      const panelHeight = isMinimized ? 52 : 580
+      const panelW = isAiMinimized ? 240 : isAiWide ? 390 : 330
+      const panelH = isAiMinimized ? 42 : 460
 
-      const maxX = Math.max(10, window.innerWidth - panelWidth - 10)
-      const maxY = Math.max(10, window.innerHeight - panelHeight - 10)
+      const maxX = Math.max(10, window.innerWidth - panelW - 10)
+      const maxY = Math.max(10, window.innerHeight - panelH - 10)
 
       const nextX = Math.max(10, Math.min(maxX, dragRef.current.initPosX + dx))
       const nextY = Math.max(10, Math.min(maxY, dragRef.current.initPosY + dy))
@@ -143,17 +157,17 @@ export function TindaAiAssistantModal(): React.JSX.Element {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, isMinimized])
+  }, [isDragging, isAiMinimized, isAiWide])
 
-  // Listen to custom trigger event
+  // Listen to custom trigger event from Sidebar or Shortcuts
   useEffect(() => {
     const handleOpenEvent = () => {
-      setIsOpen(true)
-      setIsMinimized(false)
+      setAiOpen(true)
+      setAiMinimized(false)
     }
     window.addEventListener('tinda-open-ai-assistant', handleOpenEvent)
     return () => window.removeEventListener('tinda-open-ai-assistant', handleOpenEvent)
-  }, [])
+  }, [setAiOpen, setAiMinimized])
 
   const handleSend = async (userQuestion?: string) => {
     const q = (userQuestion || input).trim()
@@ -186,7 +200,7 @@ export function TindaAiAssistantModal(): React.JSX.Element {
         {
           id: String(Date.now() + 1),
           sender: 'assistant',
-          text: 'Paumanhin, nagkaroon ng saglit na aberya. Pakisubukan muli o buksan ang Store Handbook.',
+          text: 'Paumanhin, nagkaroon ng sandaling aberya. Pakisubukan muli o tingnan ang handbook.',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ])
@@ -197,7 +211,7 @@ export function TindaAiAssistantModal(): React.JSX.Element {
 
   const handleActionClick = (action: AssistantAction) => {
     setPage(action.page)
-    setIsOpen(false)
+    setAiOpen(false)
   }
 
   const handleSaveConfig = () => {
@@ -211,29 +225,26 @@ export function TindaAiAssistantModal(): React.JSX.Element {
     setIsConfigOpen(false)
   }
 
-  // 1. CLOSED LAUNCHER BUTTON: placed to the LEFT of Community Chat (right-52) so they NEVER overlap!
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => {
-          setIsOpen(true)
-          setIsMinimized(false)
-        }}
-        className="fixed bottom-5 right-56 z-40 flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 px-3.5 py-2.5 text-xs font-bold text-white shadow-xl hover:shadow-brand-500/30 hover:scale-105 active:scale-95 transition-all border border-brand-400/40"
-        title="Open TindaBot AI Copilot"
-      >
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-        </span>
-        <Bot className="h-4 w-4 text-white" />
-        <span>Ask TindaBot</span>
-      </button>
-    )
+  // If closed, FloatingWidgetsDock handles the launcher button
+  if (!isAiOpen) {
+    return null
   }
 
-  const panelWidth = isMinimized ? 300 : 420
-  const panelHeight = isMinimized ? 52 : 580
+  const panelWidth = isAiMinimized ? 240 : isAiWide ? 390 : 330
+  const panelHeight = isAiMinimized ? 42 : 460
+
+  // Coordinated default positioning:
+  // In POS page, Cart takes right: 0 to ~370-416px.
+  // Default AI position is placed to the LEFT of the Cart (right: 390px).
+  // If Chat is also open, snap AI beside it (right: 730px).
+  const defaultRight =
+    page === 'pos'
+      ? isChatOpen
+        ? 730
+        : 390
+      : isChatOpen
+        ? 356
+        : 16
 
   const stylePosition: React.CSSProperties = position
     ? {
@@ -242,8 +253,8 @@ export function TindaAiAssistantModal(): React.JSX.Element {
         position: 'fixed'
       }
     : {
-        right: '250px', // Placed side-by-side with Community Chat by default
-        bottom: '20px',
+        right: `${defaultRight}px`,
+        bottom: '16px',
         position: 'fixed'
       }
 
@@ -252,78 +263,126 @@ export function TindaAiAssistantModal(): React.JSX.Element {
       style={{
         ...stylePosition,
         width: `${panelWidth}px`,
-        height: isMinimized ? 'auto' : `${panelHeight}px`,
+        height: isAiMinimized ? '42px' : `${panelHeight}px`,
         cursor: isDragging ? 'grabbing' : 'auto'
       }}
-      className={`z-50 flex flex-col rounded-2xl border border-ink-line/80 bg-ink-900/95 backdrop-blur-xl shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
+      className={`z-50 flex flex-col rounded-2xl border border-ink-line/80 bg-ink-950/95 backdrop-blur-xl shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
         isDragging ? 'select-none ring-2 ring-brand-500/50' : ''
       }`}
     >
-      {/* Draggable Header */}
-      <div
-        onMouseDown={handleDragStart}
-        className="flex items-center justify-between border-b border-ink-line/60 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 px-3.5 py-2.5 cursor-grab active:cursor-grabbing select-none"
-        title="I-drag para ilipat kahit saan sa screen"
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          <GripHorizontal className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-sm">
-            <Bot className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-xs font-bold text-slate-100 truncate">TindaBot AI</h3>
-              <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-bold text-emerald-400 border border-emerald-500/30">
-                Online Auto-Pool
-              </span>
+      {/* Minimized Compact Bar View */}
+      {isAiMinimized ? (
+        <div
+          onMouseDown={handleDragStart}
+          className="flex h-full w-full items-center justify-between px-3 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 cursor-grab active:cursor-grabbing select-none"
+          title="I-drag para ilipat o i-click ang maximize"
+        >
+          <div
+            className="flex items-center gap-2 min-w-0 cursor-pointer"
+            onClick={() => {
+              if (hasDraggedRef.current) return
+              setAiMinimized(false)
+            }}
+          >
+            <GripHorizontal className="h-3 w-3 text-slate-500 shrink-0" />
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-brand-500 to-indigo-600 text-white">
+              <Bot className="h-3 w-3" />
             </div>
-            {!isMinimized && (
-              <p className="text-[10px] text-slate-400 truncate">Kasangga sa Tindahan at Cashier</p>
-            )}
+            <span className="text-xs font-bold text-slate-200 truncate">TindaBot</span>
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setAiMinimized(false)}
+              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+              title="I-expand si TindaBot"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setAiOpen(false)}
+              className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
+              title="Isara"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
-
-        {/* Header Controls: Minimize / Maximize & Close */}
-        <div className="flex items-center gap-1 shrink-0 ml-2">
-          {!isMinimized && (
-            <button
-              onClick={() => setIsConfigOpen(!isConfigOpen)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
-              title="AI Settings & Models"
-            >
-              <Settings className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
-            title={isMinimized ? 'I-expand ang chat' : 'I-minimize'}
-          >
-            {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-          </button>
-
-          <button
-            onClick={() => setIsOpen(false)}
-            className="rounded-lg p-1 text-slate-400 hover:bg-danger-500/20 hover:text-danger-400 transition"
-            title="Isara si TindaBot"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* When minimized, hide body */}
-      {!isMinimized && (
+      ) : (
         <>
+          {/* Draggable Header */}
+          <div
+            onMouseDown={handleDragStart}
+            className="flex items-center justify-between border-b border-ink-line/60 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 px-3 py-2 cursor-grab active:cursor-grabbing select-none"
+            title="I-drag para ilipat kahit saan sa screen"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <GripHorizontal className="h-3 w-3 text-slate-500 shrink-0" />
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-sm">
+                <Bot className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-100 truncate">TindaBot</h3>
+                  <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[8px] font-bold text-emerald-400 border border-emerald-500/30">
+                    Online
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Header Controls: Width toggle, Settings, Minimize, Close */}
+            <div className="flex items-center gap-1 shrink-0 ml-1">
+              <button
+                type="button"
+                onClick={() => setAiWide(!isAiWide)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
+                title={isAiWide ? 'I-compact ang lapad (330px)' : 'I-expand ang lapad (390px)'}
+              >
+                {isAiWide ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsConfigOpen(!isConfigOpen)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
+                title="AI Settings & Models"
+              >
+                <Settings className="h-3 w-3" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAiMinimized(true)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
+                title="I-minimize sa compact bar"
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAiOpen(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
+                title="Isara si TindaBot"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+
           {/* Settings Overlay View */}
           {isConfigOpen ? (
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-ink-950/60">
-              <div className="flex items-center justify-between pb-2 border-b border-ink-line">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-ink-950/80 text-xs">
+              <div className="flex items-center justify-between pb-1.5 border-b border-ink-line">
                 <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <Key className="h-3.5 w-3.5 text-brand-400" /> AI Engine Configuration
+                  <Key className="h-3.5 w-3.5 text-brand-400" /> AI Engine Setup
                 </h4>
                 <button
+                  type="button"
                   onClick={() => setIsConfigOpen(false)}
                   className="text-[11px] text-slate-400 hover:text-slate-200"
                 >
@@ -331,135 +390,130 @@ export function TindaAiAssistantModal(): React.JSX.Element {
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-semibold text-slate-300">AI Provider:</label>
-                <div className="grid grid-cols-3 gap-1.5">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-300">Provider:</label>
+                <div className="grid grid-cols-3 gap-1">
                   <button
                     type="button"
                     onClick={() => setProviderSelect('offline')}
-                    className={`p-2 rounded-xl border text-left text-xs transition ${
+                    className={`p-1.5 rounded-lg border text-left transition ${
                       providerSelect === 'offline'
                         ? 'border-brand-500 bg-brand-500/15 text-brand-300 font-bold'
                         : 'border-ink-line bg-ink-850 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-1">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <ShieldCheck className="h-3 w-3 text-emerald-400" />
                       <span>Offline</span>
                     </div>
-                    <p className="text-[9px] text-slate-500 mt-1">Handbook only.</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setProviderSelect('opencode')}
-                    className={`p-2 rounded-xl border text-left text-xs transition ${
+                    className={`p-1.5 rounded-lg border text-left transition ${
                       providerSelect === 'opencode'
                         ? 'border-brand-500 bg-brand-500/15 text-brand-300 font-bold'
                         : 'border-ink-line bg-ink-850 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-1">
-                      <Bot className="h-3.5 w-3.5 text-indigo-400" />
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <Bot className="h-3 w-3 text-indigo-400" />
                       <span>Auto-Pool</span>
                     </div>
-                    <p className="text-[9px] text-slate-500 mt-1">Multi-Model Free.</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setProviderSelect('gemini')}
-                    className={`p-2 rounded-xl border text-left text-xs transition ${
+                    className={`p-1.5 rounded-lg border text-left transition ${
                       providerSelect === 'gemini'
                         ? 'border-brand-500 bg-brand-500/15 text-brand-300 font-bold'
                         : 'border-ink-line bg-ink-850 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <div className="flex items-center gap-1">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <Sparkles className="h-3 w-3 text-amber-400" />
                       <span>Gemini</span>
                     </div>
-                    <p className="text-[9px] text-slate-500 mt-1">Flash Lite Free.</p>
                   </button>
                 </div>
               </div>
 
               {providerSelect === 'opencode' && (
-                <div className="space-y-1.5 rounded-xl bg-ink-900/60 p-2.5 border border-ink-line/60">
-                  <label className="text-[11px] font-semibold text-slate-300">
-                    OpenCode Free Failover Pool:
-                  </label>
-                  <div className="space-y-1 text-[10px] text-indigo-300 font-mono bg-ink-950 p-2 rounded-lg border border-ink-line">
-                    <p>✓ nemotron-3.5-lightning-free</p>
-                    <p>✓ mimo-v2.6-flash-free</p>
-                    <p>✓ exo-free & space-bunny-free</p>
-                    <p>✓ Google Gemini 2.5 Flash Lite failover</p>
-                  </div>
-                  <p className="text-[10px] text-slate-400">
-                    ⚡ Awtomatikong nag-sasalitan kapag busy ang isa para laging may mabilis na sagot!
+                <div className="space-y-1 rounded-lg bg-ink-900/60 p-2 border border-ink-line/60 text-[10px] text-slate-300">
+                  <p className="font-semibold text-indigo-300">OpenCode Multi-Model Failover:</p>
+                  <p className="text-slate-400">
+                    Awtomatikong mag-switch sa nemotron, mimo, exo, o cloud kapag busy ang isa.
                   </p>
                 </div>
               )}
 
               {providerSelect === 'gemini' && (
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-slate-300">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold text-slate-300">
                     Custom Gemini Key (Optional):
                   </label>
                   <input
                     type="password"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    placeholder="Naka-vault na sa backend pero pwede maglagay ng sarili..."
-                    className="w-full rounded-xl border border-ink-line bg-ink-900 px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-brand-500 focus:outline-none"
+                    placeholder="Naka-vault sa backend..."
+                    className="w-full rounded-lg border border-ink-line bg-ink-900 px-2.5 py-1.5 text-xs text-white placeholder-slate-600 focus:border-brand-500 focus:outline-none"
                   />
-                  <p className="text-[10px] text-slate-500">
-                    Protektado ang system key sa loob ng main backend at hindi nakikita sa screen.
-                  </p>
                 </div>
               )}
 
-              <div className="pt-2">
+              <div className="pt-1">
                 <button
+                  type="button"
                   onClick={handleSaveConfig}
-                  className="w-full rounded-xl bg-brand-600 hover:bg-brand-500 py-2 text-xs font-bold text-white shadow-md transition"
+                  className="w-full rounded-lg bg-brand-600 hover:bg-brand-500 py-1.5 text-xs font-bold text-white shadow transition"
                 >
-                  I-Save ang Configuration
+                  I-Save Settings
                 </button>
               </div>
             </div>
           ) : (
-            /* Chat History */
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3">
+            /* Compact Chat Body */
+            <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 text-xs">
               {/* Quick Starter Chips */}
-              <div className="space-y-1.5 pb-2 border-b border-ink-line/50">
-                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Mga Karaniwang Tanong:
+              <div className="space-y-1 pb-1.5 border-b border-ink-line/40">
+                <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Quick Topics:
                 </p>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="grid grid-cols-2 gap-1">
                   <button
+                    type="button"
                     onClick={() => void handleSend('san po ilalagay yung pera ng gcash ko?')}
-                    className="rounded-lg bg-ink-800/80 hover:bg-ink-750 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left"
+                    className="rounded-md bg-ink-850 hover:bg-ink-800 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left truncate"
+                    title="Saan ilalagay ang GCash funds?"
                   >
-                    💰 Saan ilalagay ang GCash funds?
+                    💰 GCash Float & Funds
                   </button>
                   <button
+                    type="button"
                     onClick={() => void handleSend('paano mag bayad ng bills at kuryente?')}
-                    className="rounded-lg bg-ink-800/80 hover:bg-ink-750 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left"
+                    className="rounded-md bg-ink-850 hover:bg-ink-800 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left truncate"
+                    title="Paano mag-bayad ng Bills?"
                   >
-                    ⚡ Paano mag-bayad ng Bills?
+                    ⚡ Bills & E-Load Hub
                   </button>
                   <button
+                    type="button"
                     onClick={() => void handleSend('paano mag senior citizen discount?')}
-                    className="rounded-lg bg-ink-800/80 hover:bg-ink-750 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left"
+                    className="rounded-md bg-ink-850 hover:bg-ink-800 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left truncate"
+                    title="Senior / PWD 20% Discount"
                   >
-                    🏷️ Senior / PWD Discount
+                    🏷️ Senior/PWD Discount
                   </button>
                   <button
+                    type="button"
                     onClick={() => void handleSend('paano mag add ng produkto na walang barcode?')}
-                    className="rounded-lg bg-ink-800/80 hover:bg-ink-750 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left"
+                    className="rounded-md bg-ink-850 hover:bg-ink-800 px-2 py-1 text-[10px] text-slate-300 border border-ink-line/60 transition active:scale-95 text-left truncate"
+                    title="Add Item & Barcode Generation"
                   >
-                    📦 Add Item & Barcode
+                    📦 Barcode Generation
                   </button>
                 </div>
               </div>
@@ -470,36 +524,37 @@ export function TindaAiAssistantModal(): React.JSX.Element {
                   className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`max-w-[90%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-sm ${
+                    className={`max-w-[92%] rounded-xl px-2.5 py-2 text-xs leading-relaxed shadow-sm ${
                       m.sender === 'user'
                         ? 'bg-brand-600 text-white rounded-tr-none'
-                        : 'bg-ink-800 text-slate-200 border border-ink-line/60 rounded-tl-none'
+                        : 'bg-ink-900 text-slate-200 border border-ink-line/60 rounded-tl-none'
                     }`}
                   >
                     <p className="whitespace-pre-line">{m.text}</p>
 
                     {m.action && (
-                      <div className="mt-2.5 pt-2 border-t border-ink-line/40">
+                      <div className="mt-2 pt-1.5 border-t border-ink-line/40">
                         <button
+                          type="button"
                           onClick={() => handleActionClick(m.action!)}
-                          className="group flex items-center gap-1.5 rounded-lg bg-brand-500/20 hover:bg-brand-500/30 px-2.5 py-1.5 text-[11px] font-bold text-brand-300 border border-brand-500/40 transition active:scale-95"
+                          className="group flex items-center gap-1 rounded-md bg-brand-500/20 hover:bg-brand-500/30 px-2 py-1 text-[10px] font-bold text-brand-300 border border-brand-500/40 transition active:scale-95"
                         >
                           <span>{m.action.label}</span>
                           <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                         {m.action.description && (
-                          <p className="text-[10px] text-slate-400 mt-1">{m.action.description}</p>
+                          <p className="text-[9px] text-slate-400 mt-0.5">{m.action.description}</p>
                         )}
                       </div>
                     )}
                   </div>
-                  <span className="text-[9px] text-slate-500 mt-1 px-1">{m.timestamp}</span>
+                  <span className="text-[8px] text-slate-500 mt-0.5 px-1">{m.timestamp}</span>
                 </div>
               ))}
 
               {loading && (
-                <div className="flex items-center gap-2 text-slate-400 text-xs py-1">
-                  <Bot className="h-4 w-4 animate-spin text-brand-400" />
+                <div className="flex items-center gap-1.5 text-slate-400 text-[11px] py-1">
+                  <Bot className="h-3.5 w-3.5 animate-spin text-brand-400" />
                   <span>Nag-iisip si TindaBot...</span>
                 </div>
               )}
@@ -507,29 +562,29 @@ export function TindaAiAssistantModal(): React.JSX.Element {
             </div>
           )}
 
-          {/* Input Footer */}
+          {/* Compact Input Footer */}
           {!isConfigOpen && (
-            <div className="border-t border-ink-line/60 bg-ink-950/80 p-2.5">
+            <div className="border-t border-ink-line/60 bg-ink-950/90 p-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
                   void handleSend()
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5"
               >
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Magtanong sa Tagalog, Bisaya, o English..."
-                  className="flex-1 rounded-xl border border-ink-line bg-ink-900 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+                  placeholder="Magtanong sa Tagalog / Bisaya..."
+                  className="flex-1 rounded-lg border border-ink-line bg-ink-900 px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white transition active:scale-95 shadow-md"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white transition active:scale-95 shadow"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-3.5 w-3.5" />
                 </button>
               </form>
             </div>
