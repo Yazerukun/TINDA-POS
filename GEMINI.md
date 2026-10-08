@@ -26,7 +26,8 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)**
+- Current Version: **v1.0.80 (Apply Live Fix & Zero-Restart Pop-up Dismiss Edition)**
+
 
 ## Key Features in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
 1. **Full Update Migration from Settings > About into Sidebar Hub**:

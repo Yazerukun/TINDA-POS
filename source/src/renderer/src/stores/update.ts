@@ -6,6 +6,7 @@ interface UpdateState {
   initialized: boolean
   checking: boolean
   modalDismissed: boolean
+  dismissedVersion: string | null
   hubOpen: boolean
   init: () => Promise<void>
   check: (manual: boolean) => Promise<void>
@@ -24,6 +25,7 @@ export const useUpdate = create<UpdateState>((set, get) => ({
   initialized: false,
   checking: false,
   modalDismissed: false,
+  dismissedVersion: null,
   hubOpen: false,
   init: async () => {
     if (get().initialized) return
@@ -31,9 +33,12 @@ export const useUpdate = create<UpdateState>((set, get) => ({
     unsubscribe?.()
     if (!window?.api?.update) return
     unsubscribe = window.api.update.onEvent((event) => {
-      // Whenever a fresh update is detected, bring up the modal
       if (event.status === 'UPDATE_AVAILABLE') {
-        set({ event, modalDismissed: false })
+        const { dismissedVersion } = get()
+        const incomingVersion = event.available?.version ?? null
+        // Only re-show the modal if this is a NEW version the user hasn't dismissed yet
+        const alreadyDismissed = dismissedVersion !== null && dismissedVersion === incomingVersion
+        set({ event, ...(alreadyDismissed ? {} : { modalDismissed: false }) })
       } else {
         set({ event })
       }
@@ -47,7 +52,11 @@ export const useUpdate = create<UpdateState>((set, get) => ({
     try {
       const event = await window.api.update.check(manual)
       if (event.status === 'UPDATE_AVAILABLE') {
-        set({ event, modalDismissed: false })
+        const { dismissedVersion } = get()
+        const incomingVersion = event.available?.version ?? null
+        const alreadyDismissed = dismissedVersion !== null && dismissedVersion === incomingVersion
+        // Manual checks always re-show the modal
+        set({ event, modalDismissed: manual ? false : !!alreadyDismissed })
       } else {
         set({ event })
       }
@@ -68,7 +77,8 @@ export const useUpdate = create<UpdateState>((set, get) => ({
   dismiss: async () => {
     if (!window?.api?.update) return
     await window.api.update.dismiss()
-    set({ modalDismissed: true, hubOpen: false })
+    const version = get().event?.available?.version ?? null
+    set({ modalDismissed: true, hubOpen: false, dismissedVersion: version })
   },
   showModal: () => {
     set({ modalDismissed: false, hubOpen: true })

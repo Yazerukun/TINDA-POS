@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron'
 import { execFile } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import { compareSemver } from '@shared/update'
 import { appDirs } from '../database/connection'
@@ -224,10 +225,15 @@ export function reloadLiveWithPatch(): boolean {
 
   for (const win of windows) {
     if (!win.isDestroyed()) {
-      win.loadFile(patchedEntry)
+      // Use loadURL with a proper file:// URL so Electron can resolve
+      // sibling JS/CSS assets (./assets/index-*.js) relative to the patch dir.
+      win.loadURL(pathToFileURL(patchedEntry).href)
+      // Mark patch stable only after the page has actually loaded
+      win.webContents.once('did-finish-load', () => {
+        markPatchStable()
+      })
     }
   }
-  markPatchStable()
   return true
 }
 
