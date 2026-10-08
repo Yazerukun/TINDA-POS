@@ -36,7 +36,7 @@
 
 | Artifact | File Name | Size | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| **Windows Installer** | `TindaPOS-Setup-1.0.73.exe` | 107.17 MB | `b18e80ae1f80565ff95c2a8ce715dc2b2c5ef1db607468cf97fb1f67562d88f9` |
-| **Portable Version** | `TindaPOS-Portable-1.0.73.exe` | 106.95 MB | `1bb7f18dab1ddc841918d0504ff2945a0b51f0c3b1999ea987601383aeb17a36` |
-| **Auto-Update Map** | `TindaPOS-Setup-1.0.73.exe.blockmap` | 119.80 KB | `9532e4bac8cb8a36c80d88e4e259c317f343084c6988517fb37f91aaa59f628b` |
-| **Update Manifest** | `latest.yml` | 348 B | `8c52afce80dfc5c7adbc00bb918020c0ecb56ff859db0ca049c7ec741e1818ad` |
+| **Windows Installer** | `TindaPOS-Setup-1.0.73.exe` | 107.17 MB | `112af896b9ef6413673579f388f4ecedf47621bce1e5fbbf2ead7791e78be53d` |
+| **Portable Version** | `TindaPOS-Portable-1.0.73.exe` | 106.95 MB | `0436840c3b62e3f089f4aef226e468f064937ea21f95ef9727b3ea875afa7e0b` |
+| **Auto-Update Map** | `TindaPOS-Setup-1.0.73.exe.blockmap` | 119.80 KB | `bce2f877843a8f659b16fc88bcf4c550c59af216f08200fe787f1e1d45267f04` |
+| **Update Manifest** | `latest.yml` | 348 B | `535491db1e8857f2b17e80be2898bcd6eab3527c9eb866ed428c0d1b75f8e0aa` |
