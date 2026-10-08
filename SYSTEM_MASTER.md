@@ -1617,11 +1617,21 @@
     9. *Troubleshooting & FAQ (`troubleshoot`):* Brownout recovery, scanner trailing Enter keys, and multi-PC LAN sharing.
     10. *Thermal Printers (`printer`):* Zero-Blur integer typography, auto-detect for GOOJPRT 58H / Xprinter, Bluetooth setup, and paper scratch test.
     11. *Software Updates & Zero-Restart Live Patches (`updates`):* Dual-mode update architecture (Option A: 0.82 MB live 0.3s patch vs Option B: 130 MB full platform build), sidebar update hub, minimize to sidebar, and 24-hour smart throttle.
+* **Permanent Zero-Rate-Limit Transport Architecture (`updateTransport.ts`):**
+  - **Root Cause Eliminated:** Addressed public GitHub REST API (`api.github.com/repos/.../releases`) 60 req/hr IP-based rate limiting (HTTP 403 Forbidden).
+  - **Direct Redirect Engine (`fetchLatestRedirectFallback`):** Inspects `https://github.com/Yazerukun/TINDA-POS/releases/latest` with a fast `HEAD` request (`redirect: 'follow'`). The target URL provides the current release tag in <100ms with zero authentication, zero token requirement, and zero 403 rate limits.
+  - Automatically maps canonical asset paths for fast feature patches (`TindaPOS-Feature-Patch-${v}.zip`), Windows installer (`TindaPOS-Setup-${v}.exe`), Windows portable (`TindaPOS-Portable-${v}.exe`), and Linux AppImage (`TindaPOS-${v}.AppImage`).
 * **Direct In-Handbook Action Triggers:**
   - Added interactive buttons in Chapter 11 to directly trigger `openHub()` on `useUpdate` store, enabling store cashiers to check and inspect updates directly from the handbook.
-* **Verification & Packaging:**
-  - 65 test files, 429 tests passing 100%.
-  - Bundled as `TindaPOS-Feature-Patch-1.0.82.zip` (0.82 MB, 859 KB).
+* **Verification & Official Release Artifacts (`v1.0.82`):**
+  - All 65 test suites (429 tests) passing 100%.
+  - `TindaPOS-Feature-Patch-1.0.82.zip` (839.77 KiB) — Live hot-patch (~0.3s apply)
+  - `TindaPOS-1.0.82.AppImage` (130.86 MiB) — Linux standalone package
+  - `TindaPOS-Setup-1.0.82.exe` (107.34 MiB) — Windows NSIS installer
+  - `TindaPOS-Setup-1.0.82.exe.blockmap` (117.20 KiB) — Differential update blockmap
+  - `TindaPOS-Portable-1.0.82.exe` (107.12 MiB) — Standalone Windows executable
+  - `latest.yml` (348 B) — Windows electron-updater sha512 manifest
+  - `SHA256SUMS-v1.0.82.txt` (556 B) — Cryptographic verification hashes
 
 
 

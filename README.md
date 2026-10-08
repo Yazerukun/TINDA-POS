@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.79-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.82-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-429_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Update_Engine-Dual--Track_Hot--Patch-10b981?style=for-the-badge" alt="Dual-Track Update Engine">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,35 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.79](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Feature-Patch-1.0.79.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.79 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Setup-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Portable-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.82](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Feature-Patch-1.0.82.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.82 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Setup-1.0.82.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-Portable-1.0.82.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.82/TindaPOS-1.0.82.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.82 (Store Handbook Modernization, Zero-Rate-Limit Updates & Dual-Mode Patch Architecture)
+
+> **Comprehensive Store Handbook Modernization with 11 Full Operational Chapters (Including Chapter 11 on Zero-Restart Live Patches), Permanent Zero-Rate-Limit Public GitHub Redirect Fallback, Real-Time In-Memory Version Sync, and Clean Dual-Mode Update Flow.**
+
+- 📖 **Complete Store Handbook Modernization (`Handbook.tsx`)**:
+  - Expanded in-system digital handbook to **11 comprehensive operational chapters**:
+    1. *Welcome to TINDA POS:* 100% offline security, zero cloud lockout, 172 pre-seeded DTI products, and real-time Cloudflare D1 store sync dashboard.
+    2. *Daily Workflow & Shift Management:* Opening float cash, real-time Net Sales reconciliation (void handling & D1 sync), and evening cash count / Z-Reading.
+    3. *POS Terminal & Cashier Masterclass:* Fast searching (`F1`), quantity editing (`F2`), discounts (`F4`), cash (`F9`), GCash (`F10`), Utang (`F11`), hold & resume (`F8`), Terminal Tools (`F3`), and Dual-Screen TV customer display.
+    4. *Barcode Scanning:* Dual barcode engine, instant auto-capture in product form, and wireless smartphone companion with dual-canvas center-reticle crop and 120ms Wi-Fi burst tolerance.
+    5. *Inventory, Products & Multi-Units:* Piece vs case conversion math, low stock alert badges, 1-tap quick restock drawer, and near-expiry color-coded badges.
+    6. *Customer & Utang Management:* Suki credit ledgers, itemized package breakdown icon drawer, partial/full settlements, and credit limits.
+    7. *Database Backups & Zero Data Loss:* SQLite WAL durability, 1-click snapshot creation, and USB flash drive safety protocols.
+    8. *Keyboard Shortcuts Cheat Sheet:* Full reference matrix for `F1`–`F12`, `Esc`, `Alt+B`, and `Ctrl+P`.
+    9. *Troubleshooting & FAQ:* Brownout recovery, scanner trailing Enter keys, and multi-PC LAN sharing.
+    10. *Thermal Printers:* Zero-Blur integer typography, auto-detect for GOOJPRT 58H / Xprinter, Bluetooth setup, and paper scratch test.
+    11. *Software Updates & Zero-Restart Live Patches:* Dual-mode update architecture (Option A: 0.82 MB live 0.3s patch vs Option B: 130 MB full platform build), sidebar update hub, minimize to sidebar, and 24-hour smart throttle.
+  - Added direct interactive `Open Software Update Hub` button inside Chapter 11.
+- 🛡️ **Permanent Zero-Rate-Limit Update Engine (`updateTransport.ts`)**:
+  - Eliminated recurring unauthenticated GitHub REST API 403 Rate Limit errors by introducing public release redirect inspection (`releases/latest` HEAD probe).
+  - Inspects public release redirect in <100ms with zero rate limit, zero token requirement, and zero 403 network failures.
+- ⚡ **Clean Dual-Mode Update Architecture (`UpdateModal.tsx` & `updateService.ts`)**:
+  - **Option A (Fast Feature Patch):** Downloads in seconds (~0.8 MB) and hot-reloads the UI in 0.3s without restarting the desktop application, dropping SQLite connections, or losing active cashier carts.
+  - **Option B (Full Platform Build):** Dedicated standalone packages (`Setup.exe` on Windows, `AppImage` on Linux) with automated pre-update safety backup.
+  - **Real-Time Dynamic Version Sync:** Immediately updates version indicators across the modal, sidebar, and header upon patch apply.
 
 ## ✨ What's New in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
 
