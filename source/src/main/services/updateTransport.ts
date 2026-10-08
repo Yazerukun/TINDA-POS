@@ -2,6 +2,7 @@ import { app, net, shell } from 'electron'
 import { createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 import { mkdir, unlink } from 'node:fs/promises'
+import https from 'node:https'
 import type { ReleaseInfo } from '@shared/update'
 import { compareSemver, githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, pickAsset, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
 import type { UpdateProgressHandler, UpdateTransport } from './updateService'
@@ -111,13 +112,38 @@ export class ElectronUpdateTransport implements UpdateTransport {
 
   private async fetchLatestRedirectFallback(): Promise<ReleaseInfo | null> {
     try {
-      const latestUrl = `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/latest`
-      const res = await fetchWithStartTimeout(latestUrl, { method: 'HEAD' })
-      const finalUrl = res.url || ''
-      const match = finalUrl.match(/tag\/(v?(\d+\.\d+\.\d+[^/?#]*))/i)
-      if (!match || !match[2]) return null
-      const v = match[2]
-      const tag = match[1].startsWith('v') ? match[1] : `v${v}`
+      const latestTag = await new Promise<{ version: string; tag: string } | null>((resolve) => {
+        const req = https.request(
+          `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/latest`,
+          {
+            method: 'HEAD',
+            headers: { 'User-Agent': 'TINDA-POS-Updater' },
+            timeout: 8000
+          },
+          (res) => {
+            const loc = res.headers.location || ''
+            const match = loc.match(/tag\/(v?(\d+\.\d+\.\d+[^/?#]*))/i)
+            if (match && match[1] && match[2]) {
+              const v = match[2]
+              const rawTag = match[1]
+              const tag = rawTag.startsWith('v') ? rawTag : `v${v}`
+              resolve({ version: v, tag })
+            } else {
+              resolve(null)
+            }
+          }
+        )
+        req.on('error', () => resolve(null))
+        req.on('timeout', () => {
+          req.destroy()
+          resolve(null)
+        })
+        req.end()
+      })
+
+      if (!latestTag) return null
+
+      const { version: v, tag } = latestTag
       const isLinux = process.platform === 'linux'
 
       const patchUrl = `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-Feature-Patch-${v}.zip`
@@ -129,13 +155,13 @@ export class ElectronUpdateTransport implements UpdateTransport {
       const patchAsset: import('@shared/update').ReleaseAsset = {
         name: `TindaPOS-Feature-Patch-${v}.zip`,
         url: patchUrl,
-        size: 859763
+        size: 874646
       }
 
       const fullAsset: import('@shared/update').ReleaseAsset = {
         name: fullAssetName,
         url: fullAssetUrl,
-        size: isLinux ? 137000000 : 112000000
+        size: isLinux ? 137232958 : 112574670
       }
 
       return {

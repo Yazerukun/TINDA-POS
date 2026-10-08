@@ -158,7 +158,7 @@ export interface TindaApi {
   update: {
     state: () => Promise<import('./update').UpdateStatusEvent>
     check: (manual: boolean) => Promise<import('./update').UpdateStatusEvent>
-    download: () => Promise<import('./update').UpdateStatusEvent>
+    download: (type?: 'PATCH' | 'FULL') => Promise<import('./update').UpdateStatusEvent>
     install: () => Promise<import('./update').UpdateStatusEvent>
     dismiss: () => Promise<void>
     onEvent: (cb: (event: import('./update').UpdateStatusEvent) => void) => () => void

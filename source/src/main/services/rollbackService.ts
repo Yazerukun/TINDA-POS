@@ -47,15 +47,21 @@ export class RollbackService {
     const url = 'https://api.github.com/repos/Yazerukun/TINDA-POS/releases'
     let releases: ReleaseInfo[] = []
     try {
-      const res = await fetch(url, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'TINDA-POS'
-        }
-      })
+      const headers: Record<string, string> = {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'TINDA-POS'
+      }
+      const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      const res = await fetch(url, { headers })
       if (res.ok) {
         const data = await res.json()
         releases = parseGitHubReleases(data)
+      } else {
+        throw new Error(`GitHub API error ${res.status}`)
+      }
+      if (releases.length === 0) {
+        throw new Error('No releases returned')
       }
     } catch {
       // Offline fallback: provide documented stable fallback releases
@@ -77,6 +83,11 @@ export class RollbackService {
               name: 'TindaPOS-Portable-1.0.59.exe',
               url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-Portable-1.0.59.exe',
               size: 112290000
+            },
+            {
+              name: 'TindaPOS-1.0.59.AppImage',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.59/TindaPOS-1.0.59.AppImage',
+              size: 137000000
             }
           ]
         },
@@ -97,6 +108,11 @@ export class RollbackService {
               name: 'TindaPOS-Portable-1.0.58.exe',
               url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-Portable-1.0.58.exe',
               size: 112274440
+            },
+            {
+              name: 'TindaPOS-1.0.58.AppImage',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.58/TindaPOS-1.0.58.AppImage',
+              size: 137000000
             }
           ]
         },
@@ -117,6 +133,11 @@ export class RollbackService {
               name: 'TindaPOS-Portable-1.0.57.exe',
               url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.57/TindaPOS-Portable-1.0.57.exe',
               size: 112080000
+            },
+            {
+              name: 'TindaPOS-1.0.57.AppImage',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.57/TindaPOS-1.0.57.AppImage',
+              size: 137000000
             }
           ]
         },
@@ -137,6 +158,11 @@ export class RollbackService {
               name: 'TindaPOS-Portable-1.0.56.exe',
               url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-Portable-1.0.56.exe',
               size: 112070000
+            },
+            {
+              name: 'TindaPOS-1.0.56.AppImage',
+              url: 'https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.56/TindaPOS-1.0.56.AppImage',
+              size: 137000000
             }
           ]
         },

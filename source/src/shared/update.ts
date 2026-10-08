@@ -172,7 +172,12 @@ export function parseGitHubRelease(json: unknown): ReleaseInfo | null {
     }
   }
   const patchAsset = assets.find((a) => /^TindaPOS-(?:Feature-)?Patch-\d+\.\d+\.\d+[^.]*\.zip$/i.test(a.name)) ?? null
-  const isLinux = typeof process !== 'undefined' && process.platform === 'linux'
+  const isLinux =
+    typeof (globalThis as unknown as { process?: { platform?: string } }).process?.platform === 'string'
+      ? (globalThis as unknown as { process?: { platform?: string } }).process?.platform === 'linux'
+      : typeof navigator !== 'undefined'
+        ? /linux/i.test(navigator.userAgent)
+        : false
   const fullAsset = assets.find((a) =>
     isLinux
       ? /^TindaPOS-.*\.AppImage$/i.test(a.name) || /^TindaPOS-.*-linux-.*\.tar\.gz$/i.test(a.name)
