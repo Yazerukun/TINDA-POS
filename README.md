@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.75-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.76-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,23 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.75](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Feature-Patch-1.0.75.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.75 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Setup-1.0.75.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-Portable-1.0.75.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.75/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.76](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Feature-Patch-1.0.76.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.76 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Setup-1.0.76.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Portable-1.0.76.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
+
+> **Unrestricted Access to E-Wallet & Bills Center for All Merchants, Removal of VIP Crystal Paywall Badges, Direct Operational Tab Access, and Pure Apple Cupertino Layout.**
+
+- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
+  - Removed the VIP crystal badge (`💎 VIP`) from the navigation sidebar and module header.
+  - Permanently unlocked all 5 operational tabs for all merchants and cashiers: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+  - Cashiers can immediately record Cash In, Cash Out, Utility Bills payments, and E-Load transactions without any license restrictions or paywall modals.
+- 🎨 **Streamlined Apple Cupertino User Interface**:
+  - Eliminated paywall banners and upgrade prompts inside the financial reconciliation hub.
+  - Full-featured cash register controls, fee calculation chips, thermal receipt generation, and manual OS print dialogs available natively.
+- 🛡️ **Continued Dual-Track Hot-Patch Engine & Database Safety Shield**:
+  - Instant feature updates delivered via lightweight ~0.8 MB hot-patches with zero data disruption.
 
 ## ✨ What's New in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
 
