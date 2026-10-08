@@ -26,7 +26,15 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)**
+- Current Version: **v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)**
+
+## Key Features in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
+1. **GitHub Release Redirect & In-App Hot-Patch Engine Fix**:
+   - Fixed the root cause of the "Update encountered an error, retry download" alert during fast in-app hot-patch downloads.
+   - In Electron's `net.fetch`, Chromium follows 302 redirects to GitHub release storage CDNs (`release-assets.githubusercontent.com`) but leaves `res.url` blank, causing redundant strict origin checks to reject valid downloads.
+   - Normalized redirect validation and expanded asset CDN host allowlisting to guarantee seamless patch downloading, extraction, and sub-second live reloads.
+2. **Unrestricted E-Wallet & Bills Center (Full Parity)**:
+   - Permanently unlocked all 5 operational tabs (`Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, `Audit History`) without VIP crystal badges or paywalls.
 
 ## Key Features in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
 1. **Unrestricted E-Wallet & Bills Center Access for All Merchants**:
