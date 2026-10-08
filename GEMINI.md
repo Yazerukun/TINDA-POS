@@ -26,7 +26,25 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.74 (Audit & History Delete Safeguards Edition)**
+- Current Version: **v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)**
+
+## Key Features in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
+1. **Fast In-App Feature Hot-Patch Engine (Dual-Track Architecture)**:
+   - Solved the full build bottleneck by decoupling pure application code (~0.8 MB compressed zip) from the redundant Chromium runtime (103 MB).
+   - Introduces `npm run build:patch` via `tools/bundle_patch.mjs` which packages in ~3-5 seconds with SHA-256 integrity verification.
+   - 100% universal support for both Installed and Portable builds without requiring elevated Windows UAC permissions.
+2. **5-Point Steelclad Database & User Safety Shield**:
+   - **Physical Data Isolation**: Store database (`tindapos.db`) remains completely decoupled in `%APPDATA%\tinda-pos\database` or `TindaPOS-Data\database`. Code updates never touch or overwrite user records.
+   - **Automated Pre-Update Backup Snapshot**: `createBackupSync(db, 'BEFORE_UPDATE')` creates an integrity-verified snapshot before any code is extracted or applied.
+   - **Cashier Operation Guard**: Active checkout rings, payments, and audits lock out updates to prevent transaction interruption.
+   - **Additive Non-Destructive Migrations**: Only additive table alters; legacy sales, items, and utang records are never wiped.
+   - **Crash Sentinel & Auto-Rollback Engine**: Startup health monitor automatically reverts to the previous working bundle if a patch fails to boot within two consecutive attempts.
+3. **Proactive Zero-Click Apple Cupertino Update Pop-up Modal (`UpdateModal.tsx`)**:
+   - Automatically surfaces front-and-center across all views upon app launch or background detection, eliminating the need to manually check Settings.
+   - Translucent frosted glass backdrop, version badge, release highlights, and prominent database safety guarantee badge.
+   - 1-tap "Update & Restart Now (Takes 5 seconds)" action with real-time download progress bar and "Remind Me Later" option.
+4. **100% Strict English Standardization**:
+   - Pure professional English enforced across all update dialogs, notifications, status alerts, receipts, and system tools with zero dialect words.
 
 ## Key Features in v1.0.74 (Audit & History Delete Safeguards Edition)
 1. **Interactive Cupertino Deletion for E-Wallet Audit Records**:
