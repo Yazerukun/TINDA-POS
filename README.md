@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.83-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.84-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-429_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,28 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.83](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Feature-Patch-1.0.83.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.83 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Setup-1.0.83.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-Portable-1.0.83.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.83/TindaPOS-1.0.83.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.84](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Feature-Patch-1.0.84.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.84 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Setup-1.0.84.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Portable-1.0.84.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-1.0.84.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.84 (Compact TindaBot & Non-Blocking POS Clearance Edition)
+
+> **Sleek 330px Compact UI, Unified Floating Widgets Dock, Non-Blocking POS Cashier Clearance, and 1-Click Distraction-Free Collapse Mode.**
+
+- 🎨 **Compact 330px AI Assistant & Community Chat**:
+  - Redesigned sleek 330px default width (reduced by 25% from 420px) and 450px height.
+  - Built-in width switcher (`⤢` / 330px ↔ 390px) in the header for comfortable multi-language reading.
+  - Micro-bar minimization (`240px × 42px`) with drag handle, live pulse dot, restore, and close buttons.
+- 🛡️ **Unified Floating Widgets Dock with POS Clearance**:
+  - Consolidated TindaBot AI and Community Chat launchers into a single compact dock: `[ 🤖 Ask AI ] [ 💬 Chat ] [ — ]`.
+  - **Zero Checkout Obstruction**: When viewing the POS Cashier screen (`page === 'pos'`), the dock automatically relocates to `right-[24.5rem]` (left of the Cart). The entire Cart column, totals, Hold, Clear, and the big `CHECKOUT` button remain 100% unobstructed.
+  - **Distraction-Free Collapse**: 1-click collapse to a miniature 36px floating badge (`[ ✦ ]`) for rush-hour cashier operations.
+- 🤝 **Side-by-Side Coexistence**:
+  - When opening both TindaBot and Community Chat, they tile side-by-side cleanly without overlapping.
+  - Header drag handles (`⠿`) allow repositioning anywhere on screen, with positions saved to local storage.
+- 🔒 **Zero-Key-Leak Desktop Vault & Multi-Model Free Pool**:
+  - Backend execution strictly in Electron Main process.
+  - Automated failover across OpenCode Free models (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`), cloud Gemini Flash Lite, and offline store handbook.
 
 ## ✨ What's New in v1.0.83 (In-Store TindaBot AI Assistant & Multi-Model Free Pool Edition)
 

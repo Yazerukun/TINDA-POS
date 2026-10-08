@@ -1663,12 +1663,30 @@
   - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
   - `SHA256SUMS-v1.0.83.txt` — Official release cryptographic hashes
 
+---
 
-
-
-
-
-
-
-
-
+## 77. Compact TindaBot & Non-Blocking POS Clearance Architecture (v1.0.84)
+* **Ergonomic UX Challenge:**
+  - On POS screens (`page === 'pos'`), the cart and checkout controls dominate the right column (`md:w-[23rem]` / 368px to `xl:w-[26rem]` / 416px).
+  - Previous bottom-right launchers physically overlapped with the Cart Total, `Hold (F8)`, `Clear`, and the primary `CHECKOUT (F9 Cash / F10 GCash)` action buttons.
+  - Previous modal dimensions (`420px × 580px`) were unnecessarily wide on 1366x768 and standard retail touchscreens.
+* **Architectural Implementation:**
+  - **Sleek 330px Modal Geometry (`TindaAiAssistantModal.tsx` & `TindaCommunityChat.tsx`):**
+    - Redesigned default width to **`330px`** (25% reduction in screen footprint) and height to **`450px`**.
+    - Header width toggle button (`⤢` / 330px ↔ 390px) for flexible reading of longer responses.
+    - Drag-protected micro-bar minimization (`240px × 42px`) with status pulse dot, restore, and close buttons.
+  - **Unified FloatingWidgetsDock (`FloatingWidgetsDock.tsx` & `floatingWidgets.ts`):**
+    - Replaced scattered individual buttons with a consolidated capsule dock: `[ 🤖 Ask AI ] [ 💬 Chat ] [ — ]`.
+    - **Zero Checkout Obstruction**: On `page === 'pos'`, the dock automatically shifts to `bottom-3.5 right-[24.5rem] xl:right-[27.5rem]`, placing it strictly to the left of the cart column. The entire cart, totals, and checkout buttons remain 100% unobstructed.
+    - **Distraction-Free Collapse Mode**: 1-click collapse to a miniature 36px floating badge (`[ ✦ ]`) during busy cashier rushes.
+  - **Side-by-Side Coexistence**:
+    - When both TindaBot and Community Chat are open, they tile side-by-side (`right: 390px` and `right: 730px` in POS mode) with zero overlap.
+    - Preserves persistent drag coordinates in `localStorage`.
+* **Official Release Artifacts (`v1.0.84`):**
+  - `TindaPOS-Feature-Patch-1.0.84.zip` — Fast live hot-patch (~0.3s apply)
+  - `TindaPOS-1.0.84.AppImage` — Standalone Linux binary
+  - `TindaPOS-Setup-1.0.84.exe` — Windows NSIS installer
+  - `TindaPOS-Portable-1.0.84.exe` — Standalone Windows executable
+  - `TindaPOS-Setup-1.0.84.exe.blockmap` — Delta update blockmap
+  - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
+  - `SHA256SUMS-v1.0.84.txt` — Official release cryptographic hashes
