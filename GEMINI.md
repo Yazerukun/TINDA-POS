@@ -26,7 +26,17 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)**
+- Current Version: **v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)**
+
+## Key Features in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
+1. **Dedicated Sidebar Fast Update Center Widget**:
+   - Added a persistent Apple-grade Cupertino Update Card directly in the left navigation sidebar above the cashier profile.
+   - Real-time dynamic states: `Update Available` (with pulsing `⚡ Fast Update` badge and 1-tap `Update Now` button), `Downloading...` (live animated progress bar and percentage), `Ready to Apply` (`Apply Patch (Live · 0.3s)` action), and `Up to date` with instant manual refresh icon.
+   - Cashiers can initiate, monitor, and apply updates directly from the sidebar without leaving checkout.
+2. **Real-Time Proactive Pop-Up Detection Engine**:
+   - Upgraded update engine with 10-second background polling, window focus trigger, and network reconnect listener.
+   - Bypasses GitHub API rate limits using zero-quota `raw.githubusercontent.com` CDN manifest fallback.
+   - When a fast feature patch is published, the centered Cupertino `UpdateModal` surfaces immediately across cashier screens.
 
 ## Key Features in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
 1. **GitHub Release Redirect & In-App Hot-Patch Engine Fix**:
