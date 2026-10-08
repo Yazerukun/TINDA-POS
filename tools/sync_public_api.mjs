@@ -68,7 +68,7 @@ async function syncFile(localPath, repoPath) {
   }
 
   const payload = {
-    message: `release: sync v1.0.71 ${repoPath}`,
+    message: `release: sync v1.0.72 ${repoPath}`,
     content: base64Content,
     branch: 'master'
   }
@@ -89,11 +89,11 @@ async function syncFile(localPath, repoPath) {
 async function main() {
   const filesToSync = [
     { local: path.resolve('source', 'builds', 'latest.yml'), repo: 'latest.yml' },
-    { local: path.resolve('RELEASE_NOTES_v1.0.71.md'), repo: 'RELEASE_NOTES_v1.0.71.md' },
+    { local: path.resolve('RELEASE_NOTES_v1.0.72.md'), repo: 'RELEASE_NOTES_v1.0.72.md' },
     { local: path.resolve('README.md'), repo: 'README.md' },
     { local: path.resolve('GEMINI.md'), repo: 'GEMINI.md' },
     { local: path.resolve('SYSTEM_MASTER.md'), repo: 'SYSTEM_MASTER.md' },
-    { local: path.resolve('..', 'TINDA-POS', 'docs', 'RELEASE-STATE.md'), repo: 'docs/RELEASE-STATE.md' }
+    { local: path.resolve('docs', 'RELEASE-STATE.md'), repo: 'docs/RELEASE-STATE.md' }
   ]
 
   for (const f of filesToSync) {
