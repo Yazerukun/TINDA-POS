@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "source/src/main/ipc/index.ts": {
-    "mtime": 1791420474.8566208,
-    "seen": 1791428449.1201231,
-    "ast_hash": "1b2887eac59d38a12e4bf37420c43f06",
+    "mtime": 1791434464.3033264,
+    "seen": 1791435593.5560725,
+    "ast_hash": "643987445abe9b1f9de5d8ccfb8df158",
     "semantic_hash": ""
   },
   "source/src/main/repositories/__tests__/cashCounts.test.ts": {
@@ -138,9 +138,9 @@
     "semantic_hash": ""
   },
   "source/src/main/repositories/__tests__/ewallet.test.ts": {
-    "mtime": 1791420871.1452248,
-    "seen": 1791428449.1201293,
-    "ast_hash": "a18a45dee44f8d40367a1b9ba7d6f52b",
+    "mtime": 1791435276.0936208,
+    "seen": 1791435593.5563421,
+    "ast_hash": "5f162b122702d620543b32eccc3f412a",
     "semantic_hash": ""
   },
   "source/src/main/repositories/__tests__/expiration.test.ts": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "source/src/main/repositories/ewallet.ts": {
-    "mtime": 1791420423.8775332,
-    "seen": 1791428449.1201541,
-    "ast_hash": "78b5136df666fa0a0e08db5c0cbadfd5",
+    "mtime": 1791434357.7622957,
+    "seen": 1791435593.5589662,
+    "ast_hash": "bff3dc00b418be195e50b32122c24720",
     "semantic_hash": ""
   },
   "source/src/main/repositories/expenses.ts": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "source/src/preload/index.ts": {
-    "mtime": 1791420507.7813828,
-    "seen": 1791428449.1203356,
-    "ast_hash": "38948c97007b07c6c0c179744a2c1b13",
+    "mtime": 1791434674.649741,
+    "seen": 1791435593.580047,
+    "ast_hash": "d114b3d5ec4ab2f05db6fabc188d171f",
     "semantic_hash": ""
   },
   "source/src/renderer/src/App.tsx": {
@@ -1014,9 +1014,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/EwalletAudit.tsx": {
-    "mtime": 1791428047.981145,
-    "seen": 1791428449.1204329,
-    "ast_hash": "3235b2b96e9e4b4fe0d62d65d5edcc28",
+    "mtime": 1791435333.7452092,
+    "seen": 1791435593.5918784,
+    "ast_hash": "599cb548a8061bb655d0abc91d73bc60",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Expenses.tsx": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/ipc.ts": {
-    "mtime": 1791420492.0078006,
-    "seen": 1791428449.120505,
-    "ast_hash": "dda0f801a885a1296ca58d4d036e82e5",
+    "mtime": 1791434585.3801148,
+    "seen": 1791435593.599778,
+    "ast_hash": "595a08a311db9bc4b627ae9b7d39c492",
     "semantic_hash": ""
   },
   "source/src/shared/pos.ts": {
