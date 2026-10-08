@@ -194,51 +194,53 @@ function rowsToHtml(lines: string[], currency: string): string {
 }
 
 const baseCss = `
-  .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 600; }
-  .tp-sheet * { box-sizing: border-box; }
-  .tp-community-tag { font-size: 8.5px; font-weight: 600; letter-spacing: 0.02em; margin-top: 2px; }
-  .tp-sheet { font-family: 'Courier New', Courier, Consolas, monospace; line-height: 1.05; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-  .tp-row { font-size: 10px; line-height: 1.05; }
+  .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 700; }
+  .tp-sheet * { box-sizing: border-box; color: #000000 !important; -webkit-font-smoothing: none !important; -moz-osx-font-smoothing: grayscale !important; font-smooth: never !important; text-rendering: geometricPrecision !important; }
+  .tp-community-tag { font-size: 8.5px; font-weight: 700; letter-spacing: 0.02em; margin-top: 2px; }
+  .tp-sheet { font-family: 'Courier New', Courier, Consolas, monospace; line-height: 1.1; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  .tp-row { font-size: 10px; line-height: 1.1; font-weight: 700; margin: 0; padding: 0; }
   .tp-center { text-align: center; }
-  .tp-heading { font-size: 11px; font-weight: 900; }
-  .tp-subheader { font-size: 9.5px; }
-  .tp-small { font-size: 9px; line-height: 1.05; }
+  .tp-heading { font-size: 12px; font-weight: 900; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
+  .tp-subheader { font-size: 9.5px; font-weight: 700; line-height: 1.05; margin: 0; }
+  .tp-small { font-size: 9px; font-weight: 700; line-height: 1.05; margin: 0; }
   .tp-item, .tp-sum, .tp-total, .tp-sukli, .tp-denomline { break-inside: avoid; }
   .tp-gap { height: 1px; }
-  .tp-sep { border-top: 1px dashed #000000; margin: 2px 0; }
-  .tp-sep-double { border-top: 3px double #000000; margin: 2px 0; }
-  .tp-section-head { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.03em; }
-  .tp-section-head.tp-sub { font-size: 9px; font-weight: 700; margin-top: 1px; color: #000; }
-  .tp-item { margin-bottom: 1px; }
-  .tp-item .tp-name { font-size: 10px; font-weight: 700; line-height: 1.05; }
-  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; font-size: 10px; line-height: 1.05; }
-  .tp-qty { font-size: 10px; white-space: nowrap; font-weight: 600; shrink: 0; }
-  .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 700; padding-right: 1px; }
-  .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 800; }
-  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 4px; overflow: visible; font-size: 10px; line-height: 1.05; }
+  .tp-sep { border-top: 1px dashed #000000; margin: 2px 0; height: 0; }
+  .tp-sep-double { border-top: 3px double #000000; margin: 2px 0; height: 0; }
+  .tp-section-head { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 1px; letter-spacing: 0.02em; line-height: 1.1; }
+  .tp-section-head.tp-sub { font-size: 9px; font-weight: 700; margin-top: 0; color: #000; line-height: 1.05; }
+  .tp-item { margin: 0; padding: 0.5px 0; line-height: 1.1; }
+  .tp-item .tp-name { font-size: 10px; font-weight: 700; line-height: 1.1; margin: 0; }
+  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10px; line-height: 1.1; margin: 0; padding-right: 3px; font-weight: 700; }
+  .tp-qty { font-size: 10px; white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; shrink: 0; }
+  .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 900; padding-right: 3px; }
+  .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 900; }
+  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10px; line-height: 1.1; margin: 0; padding-right: 3px; }
   .tp-lbl { flex: 1; min-width: 0; }
-  .tp-sum { font-size: 10px; margin: 1px 0; }
-  .tp-total { font-size: 11px; font-weight: 900; border-top: 3px double #000000; border-bottom: 3px double #000000; margin: 2px 0; padding: 1px 0; }
+  .tp-sum { font-size: 10px; margin: 0; line-height: 1.1; }
+  .tp-total { font-size: 11.5px; font-weight: 900; line-height: 1.15; border-top: 3px double #000000; border-bottom: 3px double #000000; margin: 2px 0; padding: 1px 3px 1px 0; }
   .tp-total.has-adjacent-top-sep { border-top: none !important; }
   .tp-total.has-adjacent-bottom-sep { border-bottom: none !important; }
-  .tp-total .tp-amt { font-weight: 900; text-align: right; padding-right: 1px; }
-  .tp-sukli { font-size: 10px; font-weight: 800; margin: 1px 0; padding: 0; }
+  .tp-total .tp-amt { font-weight: 900; font-size: 12px; text-align: right; padding-right: 2px; }
+  .tp-sukli { font-size: 10px; font-weight: 800; line-height: 1.1; margin: 0; padding-right: 3px; }
   .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 800; }
-  .tp-sukli .tp-amt { text-align: right; padding-right: 1px; }
-  .tp-footer { font-size: 9px; text-align: center; margin-top: 2px; }
-  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 9.5px; line-height: 1.05; }
+  .tp-sukli .tp-amt { text-align: right; padding-right: 3px; }
+  .tp-footer { font-size: 9px; font-weight: 700; text-align: center; margin-top: 2px; line-height: 1.1; }
+  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 9.5px; line-height: 1.1; }
   .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 700; }
-  .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
-  .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; padding-right: 1px; }
+  .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 900; padding-right: 3px; }
   .tp-badge-status { font-weight: 900; letter-spacing: 0.05em; }
   .tp-status-balanced { color: #000; }
   .tp-status-over { color: #000; }
   .tp-status-short { color: #000; }
 `
 export function receiptCss(width: ReceiptWidth): string {
-  const paperWidth = width === '80mm' ? '80mm' : '58mm'
-  const contentWidth = width === '80mm' ? '72mm' : '48mm'
-  const fontSize = width === '80mm' ? '12px' : '11px'
+  const is58 = width !== '80mm'
+  const paperWidth = is58 ? '58mm' : '80mm'
+  const contentWidth = is58 ? '48mm' : '72mm'
+  const printWidth = is58 ? '46mm' : '70mm'
+  const fontSize = is58 ? '11px' : '12px'
   return `
     ${baseCss}
     @page { size: ${paperWidth} auto; margin: 0; }
@@ -264,32 +266,50 @@ export function receiptCss(width: ReceiptWidth): string {
         box-shadow: none !important;
       }
       .tp-sheet {
-        width: ${contentWidth} !important;
-        margin: 0 auto !important;
-        padding: 2mm 2mm 2mm 2mm !important;
+        width: ${printWidth} !important;
+        max-width: ${printWidth} !important;
+        margin: 0 0 0 1.5mm !important;
+        padding: 1.5mm 3.5mm 1.5mm 1.5mm !important;
         font-weight: 700 !important;
-        letter-spacing: 0.01em !important;
-        line-height: 1.05 !important;
+        letter-spacing: -0.01em !important;
+        line-height: 1.1 !important;
+        box-sizing: border-box !important;
       }
       .tp-heading {
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 900 !important;
+        line-height: 1.1 !important;
       }
       .tp-total {
-        font-size: 11px !important;
+        font-size: 11.5px !important;
         font-weight: 900 !important;
         margin: 2px 0 !important;
+        line-height: 1.15 !important;
+      }
+      .tp-total .tp-amt {
+        font-size: 12px !important;
+        font-weight: 900 !important;
+        padding-right: 2px !important;
       }
       .tp-sep {
         border-top: 1px dashed #000000 !important;
         margin: 2px 0 !important;
+        height: 0 !important;
       }
       .tp-sep-double {
         border-top: 3px double #000000 !important;
         margin: 2px 0 !important;
+        height: 0 !important;
+      }
+      .tp-row, .tp-item, .tp-sum, .tp-sukli {
+        line-height: 1.1 !important;
+        margin: 0 !important;
+      }
+      .tp-amt {
+        padding-right: 3px !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm 2mm 2mm 2mm; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 2mm 3mm; font-size: ${fontSize}; }
   `
 }
 
