@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/checkout.ts": {
-    "mtime": 1791427786.7761388,
-    "seen": 1791428449.1202688,
-    "ast_hash": "235b08da8c239d2d4cbde91dc664940f",
+    "mtime": 1791432185.9329555,
+    "seen": 1791433178.0771763,
+    "ast_hash": "205a450ce811d7b1262351c13afd4917",
     "semantic_hash": ""
   },
   "source/src/main/services/cloudSync.ts": {
@@ -1236,9 +1236,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/receiptHtml.ts": {
-    "mtime": 1791428058.2251356,
-    "seen": 1791428449.1205132,
-    "ast_hash": "4db1703be0c99f6a2a1c2cc9fa6f02c2",
+    "mtime": 1791431012.070394,
+    "seen": 1791433178.1061697,
+    "ast_hash": "6098787339415758461effc206637928",
     "semantic_hash": ""
   },
   "source/src/shared/roles.ts": {
@@ -1578,9 +1578,9 @@
     "semantic_hash": ""
   },
   "tools/sync_public_api.mjs": {
-    "mtime": 1791422613.2126198,
-    "seen": 1791428449.1206255,
-    "ast_hash": "327274b5f02263f14a3e86ca5b01af38",
+    "mtime": 1791429169.7549858,
+    "seen": 1791433178.1216164,
+    "ast_hash": "b288be9ff5f43beb0b0ec2c9fe5e5771",
     "semantic_hash": ""
   },
   "tools/tinda-scout/scout.py": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791428265.7123902,
-    "seen": 1791428449.1211505,
-    "ast_hash": "86abf1eb78445fc58f823d33df9c082d",
+    "mtime": 1791433128.1499703,
+    "seen": 1791433178.1847966,
+    "ast_hash": "393f84a139cc0b4b01fa4849bd4883af",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3783,6 +3783,24 @@
     "mtime": 1791163706.557193,
     "seen": 1791428449.121343,
     "ast_hash": "7570e72362d85f8ad4d93ce2bb60f1b4",
+    "semantic_hash": ""
+  },
+  "tools/calc_hashes_v1073.mjs": {
+    "mtime": 1791428706.445414,
+    "seen": 1791433178.1104598,
+    "ast_hash": "5ea4ddc8ec88cd7f3dca80c2547bb815",
+    "semantic_hash": ""
+  },
+  "tools/publish_v1073.mjs": {
+    "mtime": 1791428776.3845782,
+    "seen": 1791433178.120517,
+    "ast_hash": "18c4fbf37b2fbcc37e70f0c440555562",
+    "semantic_hash": ""
+  },
+  "RELEASE_NOTES_v1.0.73.md": {
+    "mtime": 1791432530.483277,
+    "seen": 1791433178.1835723,
+    "ast_hash": "ccbe7dc17da1c68fd452f4c37dc3611d",
     "semantic_hash": ""
   }
 }
