@@ -3,7 +3,7 @@ import { createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 import { mkdir, unlink } from 'node:fs/promises'
 import type { ReleaseInfo } from '@shared/update'
-import { githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, pickAsset, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
+import { compareSemver, githubReleasesApiUrl, isOfficialUpdateUrl, parseGitHubReleases, pickAsset, portableRuntime, UPDATE_OWNER, UPDATE_REPO } from '@shared/update'
 import type { UpdateProgressHandler, UpdateTransport } from './updateService'
 import { UpdateCheckError } from './updateService'
 import { appDirs, getDb } from '../database/connection'
@@ -41,9 +41,18 @@ export class ElectronUpdateTransport implements UpdateTransport {
 
   installedVersion(): string {
     try {
-      return app.getVersion() || '0.0.0'
+      const { getPatchManifest, getPatchSentinel } = require('./patchService') as typeof import('./patchService')
+      const manifest = getPatchManifest()
+      const sentinel = getPatchSentinel()
+      const baseVersion = app.getVersion() || '0.0.0'
+      if (manifest?.version && sentinel?.status === 'STABLE') {
+        if (compareSemver(manifest.version, baseVersion) >= 0) {
+          return manifest.version
+        }
+      }
+      return baseVersion
     } catch {
-      return '0.0.0'
+      return app.getVersion() || '0.0.0'
     }
   }
 

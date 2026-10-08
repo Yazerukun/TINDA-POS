@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.78-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.79-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,22 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.78](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Feature-Patch-1.0.78.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.78 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Setup-1.0.78.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-Portable-1.0.78.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.78/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.79](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Feature-Patch-1.0.79.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.79 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Setup-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Portable-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
+
+> **Complete Migration of Updates from Settings > About into the Sidebar Hub, True Zero-Restart Live Hot-Patching (Reloads in 0.3s Without Killing Processes or System Restart), and Interactive Fast Updates Nav Item.**
+
+- 📱 **100% Sidebar-Centric Update Hub**:
+  - Removed update checking and recovery cards from `Settings -> About`, dedicating the About page purely to store attribution, support, and licensing.
+  - Added a dedicated **Fast Updates** item in the main left Sidebar under *System & Guide* with dynamic pulsing `⚡ NEW` badge upon update detection.
+  - Clicking any update element opens the full Cupertino Update Hub modal with version details, release notes, and version rollback safeguards.
+- ⚡ **True Zero-Restart In-Place Live Patching Engine**:
+  - Code patches (~0.8 MB) download and unpack directly into the live application directory without closing the app, rebooting Windows, or losing cashier cart context.
+  - Fixed semver comparison boundary to ensure active patches are never prematurely cleaned up.
+  - 1-tap "Apply Live (0.3s · Zero Restart)" reloads the UI in-place in 300ms while keeping SQLite database connections, hardware barcode listeners, and local network servers active.
 
 ## ✨ What's New in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
 

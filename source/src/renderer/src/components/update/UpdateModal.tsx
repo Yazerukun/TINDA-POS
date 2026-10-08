@@ -9,23 +9,28 @@ import {
   Zap,
   FolderOpen,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Crown
 } from 'lucide-react'
 import type { UpdateStatusEvent } from '@shared/update'
 import { useUpdate } from '../../stores/update'
+import { RollbackModal } from './RollbackModal'
 
 /**
- * High-visibility Apple Cupertino Update Modal.
+ * High-visibility Apple Cupertino Update Modal & Fast Update Hub.
  * Proactively alerts merchants and cashiers as soon as an update is detected,
- * guaranteeing zero data loss with automated database safety guarantees.
+ * and allows instant on-demand checking, rollback, and live zero-restart patching directly.
  */
 export function UpdateModal(): React.JSX.Element | null {
-  const { event, download, install, dismiss, modalDismissed } = useUpdate()
+  const { event, download, install, dismiss, check, checking, modalDismissed, hubOpen, closeHub } = useUpdate()
   const [busy, setBusy] = useState(false)
   const [showNotes, setShowNotes] = useState(true)
   const [installError, setInstallError] = useState<string | null>(null)
+  const [rollbackOpen, setRollbackOpen] = useState(false)
 
-  if (!event || modalDismissed) return null
+  if (!event) return null
+  if (modalDismissed && !hubOpen) return null
 
   const s = event.status
   const visibleStatuses: UpdateStatusEvent['status'][] = [
@@ -36,14 +41,18 @@ export function UpdateModal(): React.JSX.Element | null {
     'ERROR'
   ]
 
-  if (!visibleStatuses.includes(s)) return null
+  // If not manually opened as hub, only show when there is an active update or error
+  if (!hubOpen && !visibleStatuses.includes(s)) return null
 
   const version = event.available?.version ?? ''
+  const installedVersion = event.installedVersion
   const isPatch = event.updateType === 'PATCH' || Boolean(event.available?.hasPatch)
   const isDownloading = s === 'DOWNLOADING'
   const isReady = s === 'READY_TO_INSTALL'
   const isDownloaded = s === 'DOWNLOADED'
   const isError = s === 'ERROR'
+  const isUpToDate = s === 'UP_TO_DATE' || s === 'DISMISSED' || s === 'IDLE'
+  const isChecking = s === 'CHECKING' || checking
 
   const notes = event.available?.releaseNotes?.trim() || ''
 
@@ -63,9 +72,17 @@ export function UpdateModal(): React.JSX.Element | null {
     try {
       await install()
     } catch {
-      setInstallError('Please complete current cashier transactions before restarting.')
+      setInstallError('Please complete current cashier transactions before updating.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  const handleClose = () => {
+    if (hubOpen) {
+      closeHub()
+    } else {
+      void dismiss()
     }
   }
 
@@ -79,13 +96,21 @@ export function UpdateModal(): React.JSX.Element | null {
         {/* Header Bar */}
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-ink-line">
           <div className="flex items-center gap-3">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
-              isError
-                ? 'bg-red-500/15 text-red-400 border border-red-500/30'
-                : 'bg-brand-500/15 text-brand-400 border border-brand-500/30'
-            }`}>
+            <div
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
+                isError
+                  ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                  : isUpToDate
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-brand-500/15 text-brand-400 border border-brand-500/30'
+              }`}
+            >
               {isError ? (
                 <AlertCircle className="h-6 w-6" />
+              ) : isChecking ? (
+                <Loader2 className="h-6 w-6 animate-spin text-brand-400" />
+              ) : isUpToDate ? (
+                <CheckCircle2 className="h-6 w-6 text-emerald-400" />
               ) : isPatch ? (
                 <Zap className="h-6 w-6 text-brand-400 animate-pulse" />
               ) : (
@@ -95,18 +120,32 @@ export function UpdateModal(): React.JSX.Element | null {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-white tracking-tight">
-                  {isError ? 'Update Encountered an Issue' : `New Update Available`}
+                  {isError
+                    ? 'Update Encountered an Issue'
+                    : isChecking
+                    ? 'Checking for Updates…'
+                    : isUpToDate
+                    ? 'TINDA POS is Up to Date'
+                    : 'New Fast Update Available'}
                 </h2>
-                {version && (
+                {version ? (
                   <span className="rounded-full bg-brand-500/20 px-2.5 py-0.5 text-xs font-semibold text-brand-300 border border-brand-500/30 font-mono">
                     v{version}
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-300 border border-emerald-500/30 font-mono">
+                    v{installedVersion}
                   </span>
                 )}
               </div>
               <p className="mt-0.5 text-xs text-slate-400 flex items-center gap-1.5">
-                {isPatch ? (
+                {isUpToDate ? (
+                  <span className="text-emerald-400 font-medium">
+                    You have the latest stable system release installed.
+                  </span>
+                ) : isPatch ? (
                   <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-                    <Zap className="h-3 w-3" /> Fast In-App Feature Hot-Patch (Instant 2-Second Restart)
+                    <Zap className="h-3 w-3" /> Fast In-App Feature Hot-Patch (Live 0.3s · Zero System Restart)
                   </span>
                 ) : (
                   <span className="text-slate-400">Core Engine Platform Release</span>
@@ -116,9 +155,9 @@ export function UpdateModal(): React.JSX.Element | null {
           </div>
 
           <button
-            onClick={() => void dismiss()}
+            onClick={handleClose}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition-colors"
-            aria-label="Dismiss Update"
+            aria-label="Close Update Dialog"
           >
             <X className="h-5 w-5" />
           </button>
@@ -131,11 +170,48 @@ export function UpdateModal(): React.JSX.Element | null {
             <div className="space-y-0.5">
               <p className="font-semibold text-emerald-200">Store Database &amp; Records 100% Protected</p>
               <p className="text-emerald-300/80 leading-relaxed">
-                Your products, sales, customer utang, and store settings are safely decoupled and backed up automatically before any code is updated.
+                Your products, sales, customer utang, and store settings are safely decoupled and backed up automatically before any code is updated. Zero system restart required.
               </p>
             </div>
           </div>
         </div>
+
+        {/* Up to Date Content Card */}
+        {isUpToDate && !isDownloading && !isReady && (
+          <div className="mt-4 space-y-3 rounded-xl bg-ink-800/60 p-4 border border-ink-line">
+            <div className="flex items-center justify-between text-xs text-slate-300">
+              <span>Active System Version:</span>
+              <span className="font-mono font-bold text-white">v{installedVersion}</span>
+            </div>
+            {event.lastCheckedAt && (
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>Last Checked:</span>
+                <span className="font-mono text-slate-300">{new Date(event.lastCheckedAt).toLocaleTimeString()}</span>
+              </div>
+            )}
+            <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-ink-line/50">
+              <button
+                type="button"
+                onClick={() => void check(true)}
+                disabled={isChecking}
+                className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-200 hover:text-white"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin text-emerald-400' : ''}`} />
+                {isChecking ? 'Checking GitHub…' : 'Check for Updates Now'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRollbackOpen(true)}
+                className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs text-amber-300 border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10"
+                title="Safely restore previous stable version"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+                Version Rollback
+                <Crown className="h-3 w-3 text-amber-400" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Download Progress Bar */}
         {isDownloading && event.progress && (
@@ -168,7 +244,7 @@ export function UpdateModal(): React.JSX.Element | null {
             <div>
               <p className="font-semibold text-white">Update Downloaded &amp; Verified</p>
               <p className="mt-0.5 text-emerald-300/90 leading-relaxed">
-                {event.message || 'The update is ready to install. Restart TINDA POS now to apply changes.'}
+                {event.message || 'The update is ready to apply. Click below to apply live in 0.3s without restarting the system.'}
               </p>
             </div>
           </div>
@@ -229,11 +305,11 @@ export function UpdateModal(): React.JSX.Element | null {
         <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-ink-line">
           <button
             type="button"
-            onClick={() => void dismiss()}
+            onClick={handleClose}
             className="btn-ghost px-4 py-2 text-xs"
             disabled={busy && isDownloading}
           >
-            Remind Me Later
+            {isUpToDate ? 'Close' : 'Remind Me Later'}
           </button>
 
           {s === 'UPDATE_AVAILABLE' && (
@@ -241,7 +317,7 @@ export function UpdateModal(): React.JSX.Element | null {
               type="button"
               onClick={() => void handleDownload()}
               disabled={busy}
-              className="btn-primary flex items-center gap-2 px-5 py-2 text-xs font-semibold shadow-lg shadow-brand-500/20 active:scale-[0.98] transition-all"
+              className="btn-primary flex items-center gap-2 px-5 py-2 text-xs font-semibold shadow-lg shadow-brand-500/20 active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-500 text-white"
             >
               {busy ? (
                 <>
@@ -251,7 +327,7 @@ export function UpdateModal(): React.JSX.Element | null {
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  {isPatch ? 'Update Now (Takes 5 seconds)' : 'Download Update'}
+                  {isPatch ? 'Download Now (No Restart · 2s)' : 'Download Update'}
                 </>
               )}
             </button>
@@ -285,23 +361,29 @@ export function UpdateModal(): React.JSX.Element | null {
               type="button"
               onClick={() => void handleInstall()}
               disabled={busy}
-              className="btn-primary flex items-center gap-2 px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/20"
+              className="btn-primary flex items-center gap-2 px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] transition-all shadow-lg shadow-emerald-600/20 text-white"
             >
               {busy ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {isPatch ? 'Applying Live…' : 'Restarting…'}
+                  {isPatch ? 'Applying Live…' : 'Applying…'}
                 </>
               ) : (
                 <>
                   {isPatch ? <Zap className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
-                  {isPatch ? 'Apply Live (Zero Restart · 0.3s)' : 'Restart & Install'}
+                  {isPatch ? 'Apply Live (0.3s · Zero Restart)' : 'Apply & Reload'}
                 </>
               )}
             </button>
           )}
         </div>
       </div>
+
+      <RollbackModal
+        open={rollbackOpen}
+        onClose={() => setRollbackOpen(false)}
+        currentVersion={installedVersion}
+      />
     </div>
   )
 }

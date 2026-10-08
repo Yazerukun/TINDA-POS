@@ -173,7 +173,7 @@ export class UpdateService {
           await this.deps.transport.applyPatch(filePath, available.version)
           this.set({
             status: 'READY_TO_INSTALL',
-            message: `Feature patch v${available.version} applied. Restart & Install to finish.`,
+            message: `Feature patch v${available.version} downloaded. Zero system restart required.`,
             progress: null,
             updateType: 'PATCH'
           })

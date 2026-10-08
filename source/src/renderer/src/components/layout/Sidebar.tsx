@@ -34,7 +34,7 @@ import { ConnectionStatus } from '../ConnectionStatus'
 import { AppLogo } from '../AppLogo'
 
 interface NavItem {
-  key: PageKey
+  key: PageKey | 'updates'
   label: string
   icon: React.ReactNode
   permission?: Permission
@@ -81,6 +81,7 @@ const SECTIONS: NavSection[] = [
   {
     title: 'System & Guide',
     items: [
+      { key: 'updates', label: 'Fast Updates', icon: <Zap className="h-4 w-4 text-emerald-400" /> },
       { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
       { key: 'backup', label: 'Data & Backup', icon: <HardDriveDownload className="h-4 w-4" />, permission: 'backup:manage' },
       { key: 'handbook', label: 'Store Handbook', icon: <BookOpen className="h-4 w-4 text-amber-400" /> }
@@ -93,7 +94,7 @@ export function Sidebar(): React.JSX.Element {
   const { user, logout } = useAuth()
   const { settings } = useSettings()
   const { isVip } = useLicense()
-  const { event, checking, check, download, install, showModal } = useUpdate()
+  const { event, checking, check, download, install, showModal, openHub } = useUpdate()
 
   // Filter sections by user permissions, keeping only sections that have at least one visible item
   const filteredSections = SECTIONS.map((sec) => ({
@@ -143,7 +144,13 @@ export function Sidebar(): React.JSX.Element {
                   <button
                     key={n.key}
                     type="button"
-                    onClick={() => setPage(n.key)}
+                    onClick={() => {
+                      if (n.key === 'updates') {
+                        openHub()
+                        return
+                      }
+                      setPage(n.key)
+                    }}
                     className={`group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-gradient-to-r from-brand-600/20 via-brand-600/10 to-transparent text-brand-300 font-semibold border-l-2 border-brand-500 shadow-sm'
@@ -157,11 +164,15 @@ export function Sidebar(): React.JSX.Element {
                       <span className="truncate">{n.label}</span>
                     </span>
                     <span className="flex items-center gap-1.5 shrink-0">
-                      {n.badge && (
+                      {n.key === 'updates' && event?.status === 'UPDATE_AVAILABLE' ? (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 border border-emerald-500/30 animate-pulse">
+                          ⚡ NEW
+                        </span>
+                      ) : n.badge ? (
                         <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-300 border border-amber-500/30">
                           💎 {n.badge}
                         </span>
-                      )}
+                      ) : null}
                       {n.isHot && !isActive && (
                         <span className="h-1.5 w-1.5 rounded-full bg-brand-500/60" />
                       )}
@@ -234,13 +245,13 @@ export function Sidebar(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => {
-                  showModal()
+                  openHub()
                   void download()
                 }}
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] py-1.5 shadow-md shadow-emerald-600/30 active:scale-95 transition"
               >
                 <Zap className="h-3.5 w-3.5" />
-                <span>Update Now (Takes 2s)</span>
+                <span>Download Now (No Restart · 2s)</span>
               </button>
             </div>
           ) : event?.status === 'DOWNLOADING' ? (
@@ -269,7 +280,7 @@ export function Sidebar(): React.JSX.Element {
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-ink-950 font-extrabold text-[11px] py-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition"
               >
                 <Zap className="h-3.5 w-3.5 fill-current" />
-                <span>Apply Patch (Live · 0.3s)</span>
+                <span>Apply Live (0.3s · Zero Restart)</span>
               </button>
             </div>
           ) : event?.status === 'ERROR' ? (
@@ -285,10 +296,15 @@ export function Sidebar(): React.JSX.Element {
             </div>
           ) : (
             <div className="flex items-center justify-between text-[10px]">
-              <div className="flex items-center gap-1.5 text-slate-400 min-w-0">
+              <button
+                type="button"
+                onClick={() => openHub()}
+                className="flex items-center gap-1.5 text-slate-400 min-w-0 hover:text-slate-200 transition text-left"
+                title="Open Fast Update Hub"
+              >
                 <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 shrink-0" />
-                <span className="truncate font-mono">v1.0.78 · Up to date</span>
-              </div>
+                <span className="truncate font-mono">v{event?.installedVersion || '1.0.79'} · Up to date</span>
+              </button>
               <button
                 type="button"
                 onClick={() => void check(true)}

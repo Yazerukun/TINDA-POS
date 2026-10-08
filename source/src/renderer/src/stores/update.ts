@@ -6,12 +6,15 @@ interface UpdateState {
   initialized: boolean
   checking: boolean
   modalDismissed: boolean
+  hubOpen: boolean
   init: () => Promise<void>
   check: (manual: boolean) => Promise<void>
   download: () => Promise<void>
   install: () => Promise<void>
   dismiss: () => Promise<void>
   showModal: () => void
+  openHub: () => void
+  closeHub: () => void
 }
 
 let unsubscribe: (() => void) | null = null
@@ -21,6 +24,7 @@ export const useUpdate = create<UpdateState>((set, get) => ({
   initialized: false,
   checking: false,
   modalDismissed: false,
+  hubOpen: false,
   init: async () => {
     if (get().initialized) return
     set({ initialized: true })
@@ -64,9 +68,15 @@ export const useUpdate = create<UpdateState>((set, get) => ({
   dismiss: async () => {
     if (!window?.api?.update) return
     await window.api.update.dismiss()
-    set({ modalDismissed: true })
+    set({ modalDismissed: true, hubOpen: false })
   },
   showModal: () => {
-    set({ modalDismissed: false })
+    set({ modalDismissed: false, hubOpen: true })
+  },
+  openHub: () => {
+    set({ modalDismissed: false, hubOpen: true })
+  },
+  closeHub: () => {
+    set({ hubOpen: false })
   }
 }))
