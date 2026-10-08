@@ -25,7 +25,35 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)**
+- Current Version: **v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)**
+
+## Key Features in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
+1. **Native Operations Sheets & Inventory Document Printing Pipeline**:
+   - Replaced fragile browser `window.open` popup printing with native Electron IPC `printing:printDocument`.
+   - Spawns a dedicated hidden BrowserWindow with proper `@page` CSS and page sizing (A4 / Letter), executing direct printing or opening native Windows OS Print Dialog without popup blockers.
+   - Provides 1-tap **Auto Print** and **Manual Print (Dialog)** in `InventoryPrintModal.tsx` for Physical Count Sheets, Stock on Hand Reports, Purchase Orders, and Stock Adjustment Logs.
+2. **Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger**:
+   - Upgraded `ewallet:printAuditReport` to support optional `{ manual?: boolean }` Windows System Print Dialog execution.
+   - Added dual **Auto Print** (Thermal direct) and **Manual Print** (OS Print Dialog) buttons to both the live **Audit Sheet** footer and the **Audit History** ledger table.
+3. **MariBank Digital Banking & E-Wallet Integration**:
+   - Added **MariBank** alongside GCash and Maya across E-Wallet Cash In / Out, Bills & E-Load center, transactions ledger, and shift audits.
+   - Distinct vibrant MariBank brand identity (`#FF6A00` Shopee/Sea orange gradient badges and chip selectors).
+   - Added Migration 12 for SQLite database schema: `ewallet_audits` (MariBank float reconciliation columns) and updated `ewallet_transactions` channel check constraint.
+   - Updated thermal audit receipt printer to include MariBank reconciliation breakdown.
+
+## Key Features in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
+1. **Clean Fee Notation & No-Seconds Receipt Timestamps**:
+   - Removed `+` sign from all E-Wallet and Bills fee displays, chips, summaries, and receipt slips (`Service Fee    P20.00`).
+   - Standardized all thermal receipt date/time formatters across sales, E-Wallet, and Bills slips to `{ dateStyle: 'medium', timeStyle: 'short' }`, producing clean timestamps with zero seconds (e.g., `Oct 7, 2026, 10:07 PM`).
+2. **Next-Gen Community Chat Overhaul**:
+   - Fixed hold-and-drag accidental expansion on minimized floating pill via movement threshold checks and dedicated drag handle.
+   - Renamed minimized label to **Chat**.
+   - Added instant Emoji Picker (`😀 😂 😍 👍 🙏 🏪 📦 💰 🔥 👏 ❤️ 🎉 🚀 🇵🇭`) and image attachment upload/paste support.
+   - Added Seen Receipts (`👁️ Seen by Cashier · 10:07 PM`) and live online merchant counter (`🟢 X Online`).
+3. **Universal Store Logo Upload & Window Icon**:
+   - Unlocked store logo customization for all merchants without VIP restrictions; dynamically updates the Windows desktop taskbar and window frame icon.
+4. **Cinematic Staggered Dashboard Login Animations**:
+   - Smooth CSS keyframe fade-in-up animations and personalized time-of-day store welcome banner.
 
 ## Key Features in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)
 1. **7-Eleven Micro Thermal Spacing & Double-Divider Receipts**:
