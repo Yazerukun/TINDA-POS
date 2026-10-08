@@ -16,12 +16,14 @@ import {
   Loader2,
   Sparkles,
   ExternalLink,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { useGuide } from '../stores/guide'
 import { useNav } from '../stores/nav'
 import { useSettings } from '../stores/settings'
+import { useUpdate } from '../stores/update'
 import { toastSuccess, toastError } from '../stores/toast'
 import type { LanStatus } from '@shared/types'
 import { AppLogo } from './AppLogo'
@@ -59,6 +61,7 @@ export function PosToolsModal({
 }: PosToolsModalProps): React.JSX.Element | null {
   const { setPage } = useNav()
   const { settings } = useSettings()
+  const { event, openHub, check } = useUpdate()
   const [printingTest, setPrintingTest] = useState(false)
 
   if (!open) return null
@@ -91,7 +94,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Center</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v1.0.79
+                  v{event?.installedVersion || '1.0.84'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -380,27 +383,50 @@ export function PosToolsModal({
           </div>
         </div>
 
-        {/* Section 3: Cashier Guide & Manual */}
-        <div className="pt-1">
+        {/* Section 3: Cashier Guide & System Updates */}
+        <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => {
               onClose()
               useGuide.getState().openGuide('pos')
             }}
-            className="flex w-full items-center justify-between p-3 rounded-xl border border-ink-line bg-ink-850 hover:bg-ink-800 text-slate-200 transition-all text-left group"
+            className="flex items-center justify-between p-3 rounded-xl border border-ink-line bg-ink-850 hover:bg-ink-800 text-slate-200 transition-all text-left group"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
                 <HelpCircle className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-sm leading-tight truncate">Cashier Guide & Hotkeys</p>
-                <p className="text-[11px] text-slate-400 truncate">Instructions, scanning guide & keyboard shortcuts</p>
+                <p className="font-bold text-sm leading-tight truncate">Cashier Guide</p>
+                <p className="text-[11px] text-slate-400 truncate">Hotkeys & instructions</p>
               </div>
             </div>
-            <span className="text-xs font-semibold text-amber-400 group-hover:underline">
-              Open Guide →
+            <span className="text-xs font-semibold text-amber-400 group-hover:underline shrink-0">
+              Open →
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              openHub()
+              void check(true)
+            }}
+            className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 transition-all text-left group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-300 shrink-0 group-hover:scale-105 transition-transform">
+                <RefreshCw className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm leading-tight truncate">Check for Updates</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '1.0.84'} · Live Check</p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-emerald-400 group-hover:underline shrink-0">
+              Check →
             </span>
           </button>
         </div>

@@ -31,7 +31,8 @@ import {
   Eye,
   EyeOff,
   Globe,
-  BookOpen
+  BookOpen,
+  Zap
 } from 'lucide-react'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
@@ -48,6 +49,8 @@ import { VipUpgradeBanner } from '../components/VipUpgradeBanner'
 import { LegalModal, type LegalTab } from '../components/LegalModal'
 import { useLicense } from '../stores/license'
 import { ThemeSelector } from '../components/theme/ThemeSelector'
+import { useUpdate } from '../stores/update'
+import { RollbackModal } from '../components/update/RollbackModal'
 
 type Tab = 'HOME' | 'RECEIPT' | 'USERS' | 'DATA' | 'NETWORK' | 'CLOUD' | 'VIP' | 'ABOUT'
 
@@ -628,6 +631,168 @@ function DataTab(): React.JSX.Element {
   )
 }
 
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'CHECKING': return 'Checking for updates…'
+    case 'UP_TO_DATE': return 'Up to date'
+    case 'UPDATE_AVAILABLE': return 'Update available'
+    case 'DOWNLOADING': return 'Downloading'
+    case 'DOWNLOADED': return 'Downloaded'
+    case 'READY_TO_INSTALL': return 'Ready to install'
+    case 'OFFLINE': return 'Offline'
+    case 'UNABLE_TO_CHECK': return 'Unable to check'
+    case 'ERROR': return 'Update check failed'
+    case 'DISMISSED': return 'Up to date'
+    default: return 'Up to date'
+  }
+}
+
+function SoftwareUpdatePanel(): React.JSX.Element {
+  const { event, check, checking, openHub } = useUpdate()
+  const [busy, setBusy] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
+  const [rollbackOpen, setRollbackOpen] = useState(false)
+
+  const installed = event?.installedVersion || '1.0.84'
+  const available = event?.available?.version ?? ''
+  const status = event?.status || 'IDLE'
+  const isChecking = status === 'CHECKING' || checking
+  const isUpdateAvailable = status === 'UPDATE_AVAILABLE'
+
+  const handleCheck = async () => {
+    setBusy(true)
+    try {
+      await check(true)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="card p-5 border border-ink-line/80 bg-ink-900 shadow-md rounded-2xl">
+      <div className="mb-3.5 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+          <RefreshCw className={`h-4 w-4 text-emerald-400 ${isChecking ? 'animate-spin' : ''}`} />
+          Software Update &amp; Maintenance
+        </h3>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            status === 'ERROR'
+              ? 'bg-red-500/15 text-red-300 border border-red-500/30'
+              : isUpdateAvailable
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse'
+              : isChecking || status === 'DOWNLOADING'
+              ? 'bg-brand-500/15 text-brand-300 border border-brand-500/30'
+              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+          }`}
+        >
+          {statusLabel(status)}
+        </span>
+      </div>
+
+      <div className="space-y-2 rounded-xl bg-ink-950/70 p-3.5 border border-ink-line/60 text-xs text-slate-300">
+        <div className="flex items-center justify-between">
+          <span className="text-slate-400">Installed Version:</span>
+          <span className="font-mono font-bold text-white">v{installed}</span>
+        </div>
+        {available && (
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400">Latest Available:</span>
+            <span className="font-mono font-bold text-emerald-400">v{available}</span>
+          </div>
+        )}
+        {event?.lastCheckedAt && (
+          <div className="flex items-center justify-between text-slate-500 text-[11px]">
+            <span>Last Checked:</span>
+            <span className="font-mono">{new Date(event.lastCheckedAt).toLocaleTimeString()}</span>
+          </div>
+        )}
+        {event?.message && <p className="pt-1 text-[11px] text-slate-400">{event.message}</p>}
+
+        {status === 'DOWNLOADING' && event?.progress && (
+          <div className="pt-2">
+            <div className="flex items-center justify-between text-[11px] mb-1">
+              <span className="flex items-center gap-1 font-medium text-slate-200">
+                <Loader2 className="h-3 w-3 animate-spin text-brand-400" />
+                Downloading update package…
+              </span>
+              <span className="font-mono font-bold text-white">{event.progress.percent}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-ink-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand-500 to-emerald-400 transition-all duration-300"
+                style={{ width: `${Math.max(5, event.progress.percent)}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void handleCheck()}
+          disabled={busy || isChecking || status === 'DOWNLOADING'}
+          className="btn-primary flex items-center gap-2 px-3.5 py-2 text-xs font-bold shadow-sm"
+        >
+          {isChecking ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Checking GitHub…</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Check for Updates Now</span>
+            </>
+          )}
+        </button>
+
+        {isUpdateAvailable && (
+          <button
+            type="button"
+            onClick={openHub}
+            className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/10 shadow-sm"
+          >
+            <Zap className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Open Update Hub (v{available})</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setRollbackOpen(true)}
+          className="btn-ghost flex items-center gap-1.5 px-3 py-2 text-xs text-amber-300 hover:text-amber-200 hover:bg-amber-500/10"
+          title="Safely restore previous stable version"
+        >
+          <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+          <span>Version Rollback</span>
+        </button>
+
+        {event?.available && (
+          <button
+            type="button"
+            onClick={() => setShowNotes((v) => !v)}
+            className="btn-ghost flex items-center gap-1.5 px-2.5 py-2 text-xs text-slate-300 hover:text-white"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-brand-400" />
+            <span>{showNotes ? "Hide What's New" : "What's New"}</span>
+          </button>
+        )}
+      </div>
+
+      {showNotes && event?.available?.releaseNotes && (
+        <div className="mt-3.5 max-h-48 overflow-y-auto rounded-xl bg-ink-950/80 p-3.5 text-xs leading-relaxed text-slate-300 border border-ink-line scrollbar-thin">
+          <p className="mb-1 font-semibold text-white">What&apos;s New in v{event.available.version}</p>
+          <pre className="whitespace-pre-wrap font-sans text-xs">{event.available.releaseNotes}</pre>
+        </div>
+      )}
+
+      <RollbackModal open={rollbackOpen} onClose={() => setRollbackOpen(false)} currentVersion={installed} />
+    </div>
+  )
+}
+
 function AboutTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?: () => void }): React.JSX.Element {
   const [legalOpen, setLegalOpen] = useState(false)
   const [legalTab, setLegalTab] = useState<LegalTab>('privacy')
@@ -645,6 +810,7 @@ function AboutTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgradeClick?:
 
   return (
     <div className="space-y-4">
+      <SoftwareUpdatePanel />
       <div className="card overflow-hidden">
         <div className="developer-card p-8 text-center">
           <div className="coffee-float relative z-10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-pop ring-1 ring-white/10"><Coffee className="h-7 w-7" /></div>

@@ -82,7 +82,7 @@ const SECTIONS: NavSection[] = [
   {
     title: 'System & Guide',
     items: [
-      { key: 'updates', label: 'Software Update', icon: <RefreshCw className="h-4 w-4 text-emerald-400" /> },
+      { key: 'updates', label: 'Check for Updates', icon: <RefreshCw className="h-4 w-4 text-emerald-400" /> },
       { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
       { key: 'backup', label: 'Data & Backup', icon: <HardDriveDownload className="h-4 w-4" />, permission: 'backup:manage' },
       { key: 'handbook', label: 'Store Handbook', icon: <BookOpen className="h-4 w-4 text-amber-400" /> }
@@ -148,6 +148,7 @@ export function Sidebar(): React.JSX.Element {
                     onClick={() => {
                       if (n.key === 'updates') {
                         openHub()
+                        void check(true)
                         return
                       }
                       setPage(n.key)

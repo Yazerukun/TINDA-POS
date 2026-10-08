@@ -158,6 +158,16 @@ export function UpdateModal(): React.JSX.Element | null {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
+              onClick={() => void check(true)}
+              disabled={isChecking}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 hover:bg-ink-800 hover:text-white transition-colors border border-white/5 hover:border-white/10"
+              title="Check for updates on GitHub now"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isChecking ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
+              <span className="text-[11px] font-semibold">{isChecking ? 'Checking…' : 'Check Updates'}</span>
+            </button>
+            <button
+              type="button"
               onClick={minimize}
               className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 hover:bg-ink-800 hover:text-white transition-colors border border-white/5 hover:border-white/10"
               title="Minimize to Sidebar"
