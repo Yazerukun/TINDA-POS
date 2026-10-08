@@ -26,7 +26,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)**
+- Current Version: **v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)**
+
+## Key Features in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
+1. **Full Update Migration from Settings > About into Sidebar Hub**:
+   - Completely removed `SoftwareUpdatePanel` from `Settings -> About`, streamlining the About page exclusively for store info, developer details, support, and legal links.
+   - Added a dedicated **Fast Updates** navigation entry in the Sidebar under *System & Guide* with dynamic `⚡ NEW` notification badge when an update is detected.
+2. **True Zero-Restart In-Place Live Patch Engine**:
+   - Upgraded patch extraction and reload pipeline to preserve patches matching or exceeding the installed base version (`compareSemver > 0`), fixing false-positive deletion during patch swaps.
+   - In-app hot-patch applying reloads BrowserWindow webContents in ~0.3s without terminating background Node/Electron processes, maintaining SQLite database handles, and never restarting the Windows system or closing cashier shifts.
+3. **Interactive Sidebar Fast Update Center Card**:
+   - 1-tap "Download Now (No Restart · 2s)" action with live percentage bar.
+   - 1-tap "Apply Live (0.3s · Zero Restart)" action.
+   - Clicking the version status card (`v1.0.79 · Up to date`) opens the full Cupertino Update Hub modal with manual GitHub checks, Release Notes, and Version Rollback safeguards.
 
 ## Key Features in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
 1. **Dedicated Sidebar Fast Update Center Widget**:
