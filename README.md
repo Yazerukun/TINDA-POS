@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.76-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.77-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,19 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.76](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Feature-Patch-1.0.76.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.76 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Setup-1.0.76.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-Portable-1.0.76.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.76/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.77](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Feature-Patch-1.0.77.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.77 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Setup-1.0.77.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-Portable-1.0.77.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.77/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
+
+> **Fixed Root-Cause GitHub Releases CDN 302 Redirect Handling in Electron Network Transport, Eliminating the "Update encountered an error, retry download" Warning During Fast Feature Hot-Patching.**
+
+- ⚡ **Fixed In-App Feature Hot-Patch Download Engine**:
+  - Solved Chromium network transport issue where HTTP 302 redirect responses from GitHub Releases CDN (`release-assets.githubusercontent.com`) return empty `res.url` strings, which previously triggered false-positive source rejections.
+  - Added robust validation fallback and full CDN host coverage so hot-patches download, unpack, and live-reload smoothly.
+- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
+  - Permanently unlocked all 5 operational tabs without VIP crystal badges or upgrade paywalls.
 
 ## ✨ What's New in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
 

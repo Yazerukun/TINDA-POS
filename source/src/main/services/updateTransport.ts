@@ -129,7 +129,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
       throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
     }
     if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`)
-    if (!officialResponseUrl(res.url)) throw new Error('The download redirected to an unexpected source.')
+    if (res.url && !officialResponseUrl(res.url)) throw new Error('The download redirected to an unexpected source.')
 
     const dir = join(app.getPath('downloads'), 'TINDA-POS-Updates')
     await mkdir(dir, { recursive: true })
@@ -196,7 +196,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
       throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
     }
     if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`)
-    if (!officialResponseUrl(res.url)) throw new Error('The patch download redirected to an unexpected source.')
+    if (res.url && !officialResponseUrl(res.url)) throw new Error('The patch download redirected to an unexpected source.')
 
     const dir = join(appDirs().root, 'updates')
     await mkdir(dir, { recursive: true })
@@ -307,13 +307,15 @@ function toBytes(value: unknown): number {
 }
 
 function officialResponseUrl(url: string): boolean {
-  if (!url || typeof url !== 'string') return false
+  if (!url || typeof url !== 'string') return true
   try {
     const parsed = new URL(url)
     if (parsed.protocol !== 'https:') return false
-    if (!GITHUB_ASSET_HOSTS.has(parsed.host)) return false
+    if (GITHUB_ASSET_HOSTS.has(parsed.host)) return true
+    if (parsed.host.endsWith('.githubusercontent.com') || parsed.host.endsWith('.github.com')) return true
+    if (parsed.host.endsWith('.amazonaws.com') && parsed.host.includes('github')) return true
     if (parsed.host === 'github.com') return parsed.pathname.startsWith(`/${UPDATE_OWNER}/${UPDATE_REPO}/`)
-    return true
+    return false
   } catch {
     return false
   }
