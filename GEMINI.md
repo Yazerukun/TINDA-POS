@@ -26,7 +26,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)**
+- Current Version: **v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)**
+
+## Key Features in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
+1. **Zero-Wrap Deterministic Receipt Timestamps & Reference Alignment**:
+   - Replaced multi-line locale timestamps with deterministic, compact single-line format (`MM/DD/YYYY h:mm A`, e.g., `10/08/2026 9:49 PM`), completely eliminating date wrapping on 32-column 58mm rolls.
+   - Synchronized across sales checkout receipts, printer test stubs, X/Z shift reports, E-Wallet Cash In/Out claim slips, Bills payment receipts, and audit reports.
+2. **Standardized Double-Divider Total Hierarchy (Exact 1.jfif & 2.jfif Reference Standard)**:
+   - Total blocks strictly bordered with crisp double dividers (`================================`) above and below grand totals (`TOTAL`, `TOTAL PAID`, `TOTAL CASH RECEIVED / RELEASED`).
+   - Added Cash Tendered and Change calculations and display directly to Bills & E-Load center and thermal slips.
+   - Enhanced `rowsToHtml` with adjacent-separator detection to avoid redundant border doubling while ensuring clean 1:1 parity between Auto Print and Manual Print dialogs.
+3. **Ultra-Compact Typography & Strict English Standardization**:
+   - Standardized monospace font stack with `line-height: 1.05`, 10px body, 11px bold headers, 9px footers, and micro-margins (`2mm`) for crisp, dark, zero-waste thermal printing.
+   - 100% strict professional English across all user-facing E-Wallet and Bills UI elements and receipts (clearing all legacy terms).
 
 ## Key Features in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
 1. **Native Operations Sheets & Inventory Document Printing Pipeline**:
