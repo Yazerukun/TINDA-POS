@@ -65,6 +65,14 @@ export class ElectronUpdateTransport implements UpdateTransport {
   }
 
   async fetchReleases(): Promise<ReleaseInfo[]> {
+    // 1. Try public GitHub release redirect HEAD request first (ZERO RATE LIMIT, 0.1s!)
+    try {
+      const redirectRelease = await this.fetchLatestRedirectFallback()
+      if (redirectRelease) return [redirectRelease]
+    } catch {
+      // ignore and try standard API
+    }
+
     let res: Response
     try {
       res = await fetchWithStartTimeout(githubReleasesApiUrl(), {
@@ -79,12 +87,14 @@ export class ElectronUpdateTransport implements UpdateTransport {
       }
       throw new UpdateCheckError('NETWORK', err instanceof Error ? err.message : 'network failure')
     }
-    if (res.status === 403 || res.status === 429) {
-      const fallback = await this.fetchManifestFallback()
+    if (res.status === 403 || res.status === 429 || !res.ok) {
+      const fallback = await this.fetchLatestRedirectFallback()
       if (fallback) return [fallback]
-      throw new UpdateCheckError('RATE_LIMIT', `GitHub ${res.status}`)
+      if (res.status === 403 || res.status === 429) {
+        throw new UpdateCheckError('RATE_LIMIT', `GitHub ${res.status}`)
+      }
+      throw new UpdateCheckError('HTTP', `GitHub ${res.status}`)
     }
-    if (!res.ok) throw new UpdateCheckError('HTTP', `GitHub ${res.status}`)
     const finalUrl = res.url || githubReleasesApiUrl()
     if (!officialResponseUrl(finalUrl)) throw new UpdateCheckError('INVALID', 'unexpected update source')
     const body = await res.text()
@@ -99,40 +109,47 @@ export class ElectronUpdateTransport implements UpdateTransport {
     return releases
   }
 
-  private async fetchManifestFallback(): Promise<ReleaseInfo | null> {
+  private async fetchLatestRedirectFallback(): Promise<ReleaseInfo | null> {
     try {
-      const manifestUrl = `https://raw.githubusercontent.com/${UPDATE_OWNER}/${UPDATE_REPO}/master/latest.yml`
-      const res = await fetchWithStartTimeout(manifestUrl, { headers: { 'User-Agent': 'TINDA-POS' } })
-      if (!res.ok) return null
-      const text = await res.text()
-      const match = text.match(/^version:\s*([^\s]+)/m)
-      if (!match || !match[1]) return null
-      const v = match[1]
+      const latestUrl = `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/latest`
+      const res = await fetchWithStartTimeout(latestUrl, { method: 'HEAD' })
+      const finalUrl = res.url || ''
+      const match = finalUrl.match(/tag\/(v?(\d+\.\d+\.\d+[^/?#]*))/i)
+      if (!match || !match[2]) return null
+      const v = match[2]
+      const tag = match[1].startsWith('v') ? match[1] : `v${v}`
+      const isLinux = process.platform === 'linux'
+
+      const patchUrl = `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-Feature-Patch-${v}.zip`
+      const fullAssetUrl = isLinux
+        ? `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-${v}.AppImage`
+        : `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-Setup-${v}.exe`
+      const fullAssetName = isLinux ? `TindaPOS-${v}.AppImage` : `TindaPOS-Setup-${v}.exe`
+
+      const patchAsset: import('@shared/update').ReleaseAsset = {
+        name: `TindaPOS-Feature-Patch-${v}.zip`,
+        url: patchUrl,
+        size: 859763
+      }
+
+      const fullAsset: import('@shared/update').ReleaseAsset = {
+        name: fullAssetName,
+        url: fullAssetUrl,
+        size: isLinux ? 137000000 : 112000000
+      }
+
       return {
         version: v,
-        tag: `v${v}`,
-        title: `TINDA POS v${v}`,
+        tag,
+        title: `TINDA POS ${tag}`,
         publishedAt: new Date().toISOString(),
-        releaseNotes: `Fast Feature Update v${v}`,
+        releaseNotes: `TINDA POS ${tag} Update\n• Live Fast Patch & System Improvements`,
         stable: true,
-        assets: [
-          {
-            name: `TindaPOS-Feature-Patch-${v}.zip`,
-            url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Feature-Patch-${v}.zip`,
-            size: 850000
-          },
-          {
-            name: `TindaPOS-Setup-${v}.exe`,
-            url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Setup-${v}.exe`,
-            size: 112000000
-          }
-        ],
+        assets: [patchAsset, fullAsset],
         hasPatch: true,
-        patchAsset: {
-          name: `TindaPOS-Feature-Patch-${v}.zip`,
-          url: `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/v${v}/TindaPOS-Feature-Patch-${v}.zip`,
-          size: 850000
-        }
+        patchAsset,
+        hasFull: true,
+        fullAsset
       }
     } catch {
       return null

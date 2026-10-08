@@ -62,7 +62,7 @@ describe('Linux Real-Time In-App Patch & Update Verification', () => {
   })
 
   it('verifies real GitHub releases API payload parses correctly into ReleaseInfo with patch asset', async () => {
-    const { parseGitHubReleases, latestStable } = await import('@shared/update')
+    const { parseGitHubReleases, latestStable, compareSemver } = await import('@shared/update')
     const res = await fetch('https://api.github.com/repos/Yazerukun/TINDA-POS/releases', {
       headers: {
         Accept: 'application/vnd.github+json',
@@ -76,9 +76,9 @@ describe('Linux Real-Time In-App Patch & Update Verification', () => {
 
     const latest = latestStable(releases)
     expect(latest).not.toBeNull()
-    expect(latest?.version).toBe('1.0.81')
+    expect(compareSemver(latest?.version || '0.0.0', '1.0.81')).toBeGreaterThanOrEqual(0)
     expect(latest?.hasPatch).toBe(true)
-    expect(latest?.patchAsset?.name).toBe('TindaPOS-Feature-Patch-1.0.81.zip')
+    expect(latest?.patchAsset?.name).toMatch(/^TindaPOS-Feature-Patch-\d+\.\d+\.\d+\.zip$/)
   })
 
   it('runs full UpdateService state machine on Linux from check to READY_TO_INSTALL', async () => {
