@@ -36,7 +36,7 @@
 
 | Artifact | File Name | Size | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| **Windows Installer** | `TindaPOS-Setup-1.0.74.exe` | *Pending Build* | *TBD* |
-| **Portable Version** | `TindaPOS-Portable-1.0.74.exe` | *Pending Build* | *TBD* |
-| **Auto-Update Map** | `TindaPOS-Setup-1.0.74.exe.blockmap` | *Pending Build* | *TBD* |
-| **Update Manifest** | `latest.yml` | *Pending Build* | *TBD* |
+| **Windows Installer** | `TindaPOS-Setup-1.0.74.exe` | 107.17 MB | `da37c9ef8c98e27d9b2aee9d30031f71e86a067655a7a95c018f549369e6442c` |
+| **Portable Version** | `TindaPOS-Portable-1.0.74.exe` | 106.96 MB | `6f86fd7cf41e08d3c56fa024aed7905e3a3f1cfa40df2715d646337272d96f1c` |
+| **Auto-Update Map** | `TindaPOS-Setup-1.0.74.exe.blockmap` | 117.13 KB | `25ddfdd6c6569455044cc993e371b8aefeccb8a6c8f9762a4dbb50f9363ae794` |
+| **Update Manifest** | `latest.yml` | 348 B | `7384e503d4ff119a3d1be409395a9dc97590fbb3ac688688c88c5330e1e09a55` |
