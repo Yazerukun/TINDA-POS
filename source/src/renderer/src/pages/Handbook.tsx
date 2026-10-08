@@ -20,9 +20,15 @@ import {
   Smartphone,
   ExternalLink,
   ArrowRight,
-  HelpCircle
+  HelpCircle,
+  RefreshCw,
+  Tv,
+  Layers,
+  FileText,
+  Cloud
 } from 'lucide-react'
 import { useNav, type PageKey } from '../stores/nav'
+import { useUpdate } from '../stores/update'
 
 interface Chapter {
   id: string
@@ -33,6 +39,8 @@ interface Chapter {
   readTime: string
   relatedPage?: PageKey
   relatedPageLabel?: string
+  action?: () => void
+  actionLabel?: string
   content: React.ReactNode
 }
 
@@ -95,6 +103,16 @@ export function Handbook(): React.JSX.Element {
                 </p>
               </div>
             </div>
+
+            <div className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-4">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider">
+                <Cloud className="h-4 w-4" /> Real-Time Cloudflare D1 Store Sync
+              </div>
+              <h4 className="mt-1 font-semibold text-white text-sm">Remote Owner Dashboard Connectivity</h4>
+              <p className="mt-1 text-xs text-slate-300">
+                While cashiers ring up sales completely offline, store owners with internet can view live gross sales, net realized revenue, inventory alerts, and customer utang balances anywhere in the world via the official <strong>TINDA Cloud Dashboard</strong>.
+              </p>
+            </div>
           </div>
         </div>
       )
@@ -103,7 +121,7 @@ export function Handbook(): React.JSX.Element {
       id: 'shift',
       number: 2,
       title: 'Daily Workflow & Shift Management',
-      subtitle: 'Opening float, cashier balancing, and Z-Reading shift reports',
+      subtitle: 'Opening float, cashier balancing, void handling, and Z-Reading reports',
       icon: <Zap className="h-4 w-4" />,
       readTime: '4 min read',
       relatedPage: 'pos',
@@ -121,7 +139,7 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-brand-500/20 bg-ink-900 p-4 flex gap-4">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-500/20 text-xs font-bold text-brand-300">1</span>
               <div>
-                <h4 className="font-semibold text-white">Morning: Opening Shift & Float Cash</h4>
+                <h4 className="font-semibold text-white">Morning: Opening Shift &amp; Float Cash</h4>
                 <p className="mt-1 text-xs text-slate-400">
                   When starting your shift in the morning, the system prompts for your <strong>Starting Cash Float</strong>. This is the change fund you put into the drawer (e.g., ₱500 or ₱1,000 in coins and small bills). Entering an accurate float prevents cash count discrepancies at the end of the day.
                 </p>
@@ -131,17 +149,20 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-emerald-500/20 bg-ink-900 p-4 flex gap-4">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">2</span>
               <div>
-                <h4 className="font-semibold text-white">All Day: Processing Transactions</h4>
+                <h4 className="font-semibold text-white">All Day: Processing Transactions &amp; Real-Time Net Sales</h4>
                 <p className="mt-1 text-xs text-slate-400">
                   Ring up every customer through the POS screen. Whenever a sale is finished, the system calculates exact change, logs the payment method (Cash, GCash, or Utang), and instantly deducts stock from inventory.
                 </p>
+                <div className="mt-2 rounded bg-ink-950 p-2.5 border border-emerald-500/30 text-[11px] text-emerald-300">
+                  <strong>Accurate Net Sales Engine:</strong> Voided transactions are automatically excluded from realized net sales and drawer cash counts. If a manager voids a transaction, the stock is returned to inventory and the cash drawer target is updated instantly.
+                </div>
               </div>
             </div>
 
             <div className="rounded-lg border border-amber-500/20 bg-ink-900 p-4 flex gap-4">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-300">3</span>
               <div>
-                <h4 className="font-semibold text-white">Evening: Cash Count & Shift Z-Reading</h4>
+                <h4 className="font-semibold text-white">Evening: Cash Count &amp; Shift Z-Reading</h4>
                 <p className="mt-1 text-xs text-slate-400">
                   At the end of the shift or closing time, click <strong>End Shift</strong>. Count the physical paper bills and coins in your cash drawer and enter the total. The system prints or displays the <strong>Z-Reading Report</strong> showing:
                 </p>
@@ -173,41 +194,64 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white flex items-center gap-2">
                 <Search className="h-4 w-4 text-brand-400" />
-                Finding Products
+                Finding Products (<kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F1</kbd>)
               </h4>
               <p className="mt-1 text-xs text-slate-400">
-                Press <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F1</kbd> or <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">/</kbd> to focus the search bar. You can search by brand, full name, SKU, or scan the barcode. You can also filter by category dropdown on the right.
+                Press <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F1</kbd> or <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">/</kbd> to focus the search bar. You can search by brand, full name, SKU, or scan the barcode directly. You can also filter by category dropdown on the right.
               </p>
             </div>
 
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white flex items-center gap-2">
                 <Tag className="h-4 w-4 text-brand-400" />
-                Adjusting Quantity & Discounts
+                Adjusting Quantity (<kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F2</kbd>)
               </h4>
               <p className="mt-1 text-xs text-slate-400">
-                Click <strong>+</strong> or <strong>-</strong> in the cart. To enter a large number directly, click the quantity number or press <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F2</kbd>. Click <strong>Add Discount</strong> (<kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F4</kbd>) to deduct custom pesos.
+                Click <strong>+</strong> or <strong>-</strong> in the cart. To enter a large number directly, click the quantity number or press <kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F2</kbd>. Click <strong>Add Discount</strong> (<kbd className="rounded bg-ink-800 px-1.5 py-0.5 font-mono text-brand-300">F4</kbd>) to deduct custom peso discounts.
               </p>
             </div>
 
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white flex items-center gap-2">
                 <Wallet className="h-4 w-4 text-emerald-400" />
-                Payment Options (Cash & GCash)
+                Payment Options (Cash &amp; GCash)
               </h4>
               <ul className="mt-1 text-xs text-slate-400 space-y-1 list-disc pl-4">
-                <li><strong>Cash (<kbd className="font-mono text-emerald-300">F9</kbd>):</strong> Type amount tendered. The system calculates exact change.</li>
+                <li><strong>Cash (<kbd className="font-mono text-emerald-300">F9</kbd>):</strong> Type amount tendered. The system calculates exact change with zero mental math.</li>
                 <li><strong>GCash (<kbd className="font-mono text-sky-300">F10</kbd>):</strong> Customer scans store QR. Enter the reference number.</li>
+                <li><strong>Utang Credit (<kbd className="font-mono text-amber-300">F11</kbd>):</strong> Charge transaction directly to a customer&apos;s verified credit ledger.</li>
               </ul>
             </div>
 
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white flex items-center gap-2">
                 <Zap className="h-4 w-4 text-amber-400" />
-                Hold & Resume Sales (<kbd className="font-mono text-amber-300">F8</kbd>)
+                Hold &amp; Resume Sales (<kbd className="font-mono text-amber-300">F8</kbd>)
               </h4>
               <p className="mt-1 text-xs text-slate-400">
                 If a customer forgets their wallet or steps away to pick up more items, tap <strong>Hold Sale</strong>. The cart clears to serve the next customer. When the first customer returns, tap <strong>Held Sales</strong> to restore their cart in 1 click!
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-cyan-500/30 bg-ink-900 p-4">
+              <h4 className="font-semibold text-white flex items-center gap-2">
+                <TerminalToolsIcon className="h-4 w-4 text-cyan-400" />
+                Terminal Tools &amp; Guide (<kbd className="font-mono text-cyan-300">F3</kbd>)
+              </h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Press <kbd className="font-mono text-cyan-300">F3</kbd> to launch the Terminal Tools modal. Cashiers can test thermal printing, reprint the last customer receipt, verify scanner inputs, or view on-screen quick checklists.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-purple-500/30 bg-ink-900 p-4">
+              <h4 className="font-semibold text-white flex items-center gap-2">
+                <Tv className="h-4 w-4 text-purple-400" />
+                Dual-Screen Customer Display
+              </h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Connect a second monitor or TV facing the customer. Click the <strong>Live Monitor</strong> button in the sidebar to open a dedicated full-screen customer display showing itemized prices, running totals, and store branding in real time.
               </p>
             </div>
           </div>
@@ -236,63 +280,43 @@ export function Handbook(): React.JSX.Element {
           </div>
 
           <div className="space-y-4">
-            {/* FEATURE 1: Instant Auto-Capture in Inventory */}
             <div className="rounded-lg border border-brand-500/30 bg-ink-900 p-4">
               <span className="rounded bg-brand-500/20 px-2 py-0.5 text-[10px] font-bold text-brand-300">
-                NEW IN v1.0.42 · INVENTORY SPEED ENCODING
+                INVENTORY SPEED ENCODING
               </span>
               <h4 className="mt-1.5 font-semibold text-white">Instant Barcode Auto-Capture (Zero Manual Typing)</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Encoding products with long 12- or 13-digit EAN/UPC barcodes is now completely effortless:
+                Encoding products with long 12- or 13-digit EAN/UPC barcodes is completely effortless:
               </p>
               <ul className="mt-2 space-y-1.5 text-xs text-slate-300 list-disc pl-4">
                 <li>
                   <strong>Inside Product Form:</strong> Simply scan the physical product with your USB barcode gun or smartphone companion camera. The barcode number is immediately populated into the Barcode field with an audible confirmation tone and a green auto-capture indicator.
                 </li>
                 <li>
-                  <strong>Active Input Contamination Sanitizer:</strong> You do not need to click into the Barcode field before scanning. Even if your cursor is focused inside the product Name or Cost field, the high-speed scanner burst is intercepted, stripped from the active input, and routed cleanly into the Barcode slot without accidental form submissions.
-                </li>
-                <li>
-                  <strong>Multi-Unit (Tingi) Barcodes:</strong> Add distinct barcodes for individual retail pieces and wholesale cartons by clicking the camera icon or focusing the unit barcode field.
-                </li>
-                <li>
-                  <strong>Proactive Duplicate Alert:</strong> The system automatically verifies that the scanned barcode is not already assigned to another product in your catalog, preventing cashier checkout confusion.
-                </li>
-                <li>
-                  <strong>Direct Inventory Fast-Track:</strong> When browsing the Inventory list, scanning any uncataloged barcode immediately opens the New Product creation window with that barcode pre-filled, ready for you to enter the name and price!
+                  <strong>Collision Prevention:</strong> The system verifies that barcodes are unique across products, but allows multi-unit overrides (e.g. piece vs case packaging).
                 </li>
               </ul>
             </div>
 
-            {/* HARDWARE SCANNERS */}
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-              <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
-                HARDWARE · PLUG &amp; PLAY
-              </span>
-              <h4 className="mt-1.5 font-semibold text-white">Physical USB &amp; 2.4GHz Wireless Barcode Scanners</h4>
-              <p className="mt-1 text-xs text-slate-400">
-                Any standard USB or 2.4GHz wireless retail barcode scanner gun (Honeywell, Zebra, Netum, Eyoyo, Datalogic, generic USB) connects with <strong>zero driver installation</strong>.
-              </p>
-              <div className="mt-2.5 rounded bg-ink-950 p-2.5 text-xs text-emerald-300 border border-emerald-500/20">
-                <strong>💡 Global Burst Interceptor in POS:</strong> Cashiers can scan items from anywhere in the POS checkout screen. High-speed keystrokes are automatically recognized and items are immediately added to the customer's cart.
-              </div>
-            </div>
-
-            {/* SMARTPHONE COMPANION */}
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+            <div className="rounded-lg border border-sky-500/30 bg-ink-900 p-4">
               <span className="rounded bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold text-sky-300">
-                WIRELESS · ZERO APP INSTALL
+                ZERO INSTALL COMPANION
               </span>
-              <h4 className="mt-1.5 font-semibold text-white">1-Click Smartphone Companion QR Scanner</h4>
+              <h4 className="mt-1.5 font-semibold text-white">Wireless Smartphone Companion (Dual-Canvas Center Reticle)</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Transform any Android phone or iPhone into a high-speed wireless barcode scanner over your local Wi-Fi:
+                No expensive handheld scanner? Turn any Android or iPhone into a high-speed laser-like barcode reader:
               </p>
-              <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-xs text-slate-400">
-                <li>Click <strong>"📷 Camera / Phone"</strong> in the POS header or inside the Product Inventory modal.</li>
-                <li>Connect your smartphone to the same Wi-Fi router as your computer.</li>
-                <li>Scan the displayed QR code with your phone camera to launch the web scanner interface.</li>
-                <li>Point your phone camera at product barcodes — scanned barcodes are beamed directly to your desktop POS or Inventory form in real time!</li>
-              </ol>
+              <ul className="mt-2 space-y-1.5 text-xs text-slate-300 list-disc pl-4">
+                <li>
+                  Click the <strong>Phone Camera</strong> button in the POS header.
+                </li>
+                <li>
+                  Scan the on-screen QR code with your mobile phone camera while connected to the same Wi-Fi.
+                </li>
+                <li>
+                  Point your phone at product barcodes. The built-in <strong>Dual-Canvas Center-Reticle</strong> crop and 120ms Wi-Fi burst engine streams scanned items instantly to the checkout screen without lag.
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -302,38 +326,39 @@ export function Handbook(): React.JSX.Element {
       id: 'inventory',
       number: 5,
       title: 'Inventory, Products & Multi-Units',
-      subtitle: 'Adding items, piece vs case conversions, and stock alerts',
+      subtitle: 'Adding items, piece vs case conversions, stock alerts, and expiration management',
       icon: <Boxes className="h-4 w-4" />,
       readTime: '4 min read',
       relatedPage: 'inventory',
       relatedPageLabel: 'Open Inventory',
       content: (
         <div className="space-y-6 text-slate-300 leading-relaxed">
-          <div className="space-y-3">
-            <h3 className="text-base font-bold text-white">Managing Products Like a Pro</h3>
-            <p className="text-xs text-slate-400">
-              Keep your inventory accurate and your profit margins healthy by structuring your products properly.
-            </p>
-          </div>
-
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-              <h4 className="font-semibold text-white flex items-center gap-2">
-                <Tag className="h-4 w-4 text-brand-400" />
-                Multi-Unit Conversions (Pack vs Piece)
-              </h4>
+              <h4 className="font-semibold text-white">Piece vs Case Conversions</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Do you sell instant noodles by the piece and also by the box? In product settings, set the <strong>Base Unit</strong> to <em>Piece</em>, then add a <strong>Secondary Unit</strong>: <em>1 Box = 72 Pieces</em> with its own box price and barcode. Selling a box will automatically deduct 72 pieces from inventory!
+                Sari-sari stores buy in cases and sell in pieces. When adding a product, define units (e.g., 1 Box = 24 Pieces). When you sell 1 piece in POS, the inventory automatically deducts 1/24th of a box, keeping stock counts exact.
               </p>
             </div>
 
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-              <h4 className="font-semibold text-white flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-400" />
-                Low Stock Thresholds & Badges
-              </h4>
+              <h4 className="font-semibold text-white">Low Stock Warning &amp; Quick Restock Drawer</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Every product has a <strong>Low Stock Threshold</strong> (default is 5 units). When remaining stock drops below this number, the product tile displays a yellow warning badge in the POS so you know to reorder before running out.
+                Set a <strong>Reorder Threshold</strong> (e.g., 5 items). When stock falls below that number, a badge appears on the Dashboard. Clicking the item opens the <strong>1-Tap Quick Restock Drawer</strong> to immediately add incoming delivery inventory without opening full product edit forms.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Pre-Loaded DTI Price Reference</h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Unsure how much to price canned goods, instant noodles, or coffee sachets? Click <strong>DTI SRP Guide</strong> to view official suggested retail prices for common household brands.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Expiration Date Tracking</h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Enter expiry dates on perishable items. The system warns cashiers with yellow (near expiry within 30 days) or red (expired) badges, preventing accidental sale of expired dairy or snacks.
               </p>
             </div>
           </div>
@@ -344,39 +369,46 @@ export function Handbook(): React.JSX.Element {
       id: 'utang',
       number: 6,
       title: 'Customer & Utang (Credit) Management',
-      subtitle: 'Credit tracking, itemized breakdown with package icon, and receipts',
+      subtitle: 'Credit tracking, itemized breakdown with package icon, and settlement receipts',
       icon: <Wallet className="h-4 w-4" />,
-      readTime: '4 min read',
+      readTime: '3 min read',
       relatedPage: 'utang',
       relatedPageLabel: 'Open Utang Ledger',
       content: (
         <div className="space-y-6 text-slate-300 leading-relaxed">
           <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
-            <h3 className="text-base font-bold text-white">Zero Debt Confusion</h3>
+            <h3 className="text-base font-bold text-white">The Filipino Suki Ledger</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Never argue with customers about what they borrowed. TINDA POS tracks every transaction down to the exact item name, quantity, and timestamp.
+              Replace messy paper notebooks (&ldquo;kuaderno&rdquo;) with an organized digital ledger that cannot be torn, spilled on, or lost.
             </p>
           </div>
 
-          <div className="space-y-3">
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-3.5">
-              <h4 className="font-semibold text-white">1. Ringing up an Utang Sale</h4>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Recording Utang in Checkout</h4>
               <p className="mt-1 text-xs text-slate-400">
-                In POS, click <strong>Customer</strong> and assign the customer's name (or add a new customer). Add their items to the cart, click <strong>Checkout</strong>, and select <strong>Utang / Credit</strong>. The sale finishes with ₱0 cash received and increases the customer's ledger balance.
+                At checkout, select <strong>Utang (<kbd className="font-mono text-amber-300">F11</kbd>)</strong> and choose the customer. If they are a new customer, enter their name and mobile number. The transaction saves with ₱0 cash received and logs into their balance.
               </p>
             </div>
 
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-3.5">
-              <h4 className="font-semibold text-white">2. Itemized Debt Breakdown (📦 Package Icon)</h4>
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Itemized Breakdown with Package Icon</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Go to the <strong>Utang</strong> page in the sidebar. Click the 📦 package icon on any credit entry. The entry expands to show the full list of products the customer took on credit!
+                When a customer asks, <em>&ldquo;Unsa man ning akong gi-utang sa miaging adlaw?&rdquo;</em>, click the <strong>Package Icon</strong> next to the ledger entry. An itemized drawer opens showing every specific product, unit, price, and timestamp purchased.
               </p>
             </div>
 
-            <div className="rounded-lg border border-ink-line bg-ink-900 p-3.5">
-              <h4 className="font-semibold text-white">3. Recording Partial Payments</h4>
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Partial &amp; Full Debt Settlements</h4>
               <p className="mt-1 text-xs text-slate-400">
-                When a customer pays (e.g. ₱300 towards a ₱750 debt), click <strong>Record Payment</strong>. Type ₱300, and their remaining balance updates instantly to ₱450. Click <strong>Print Receipt</strong> to hand them proof of payment.
+                When a customer makes a partial payment (e.g. ₱200 out of ₱500 balance), enter ₱200. The remaining balance automatically updates to ₱300 and prints a thermal payment receipt showing remaining debt.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+              <h4 className="font-semibold text-white">Credit Limits &amp; Alerts</h4>
+              <p className="mt-1 text-xs text-slate-400">
+                Set a Maximum Credit Limit per customer. The POS warns cashiers if a customer tries to purchase more than their allowed credit threshold.
               </p>
             </div>
           </div>
@@ -397,7 +429,7 @@ export function Handbook(): React.JSX.Element {
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
             <h3 className="text-base font-bold text-amber-300 flex items-center gap-2">
               <HardDriveDownload className="h-5 w-5" />
-              The Store Owner's Golden Rule
+              The Store Owner&apos;s Golden Rule
             </h3>
             <p className="mt-1 text-xs text-slate-300">
               Because TINDA POS is 100% offline, your entire store history lives on your computer. If your computer hardware fails or your laptop gets damaged, you must have a backup on a USB flash drive!
@@ -408,7 +440,7 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white">1-Click Local Backup</h4>
               <p className="mt-1 text-xs text-slate-400">
-                Go to <strong>Backup</strong> in the sidebar and click <strong>Back Up Now</strong>. A checkpointed database snapshot (`tindapos-YYYY-MM-DD.db`) is saved instantly.
+                Go to <strong>Backup</strong> in the sidebar and click <strong>Back Up Now</strong>. A checkpointed database snapshot (<code>tindapos-YYYY-MM-DD.db</code>) is saved instantly.
               </p>
             </div>
 
@@ -432,7 +464,7 @@ export function Handbook(): React.JSX.Element {
       content: (
         <div className="space-y-6 text-slate-300 leading-relaxed">
           <p className="text-xs text-slate-400">
-            Cashiers can complete transactions without touching the mouse by using keyboard hotkeys:
+            Cashiers can complete entire transactions without touching the mouse by using high-speed keyboard hotkeys:
           </p>
 
           <div className="overflow-hidden rounded-xl border border-ink-line bg-ink-900">
@@ -441,29 +473,34 @@ export function Handbook(): React.JSX.Element {
                 <tr>
                   <th className="px-4 py-3">Shortcut Key</th>
                   <th className="px-4 py-3">Function</th>
-                  <th className="px-4 py-3">When to Use</th>
+                  <th className="px-4 py-3">Action Description</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-line text-slate-300">
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F1 or /</td>
                   <td className="px-4 py-2.5 font-semibold text-white">Search Products</td>
-                  <td className="px-4 py-2.5 text-slate-400">Jump cursor straight to search box</td>
+                  <td className="px-4 py-2.5 text-slate-400">Jump cursor straight to product search bar</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F2</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Edit Quantity</td>
-                  <td className="px-4 py-2.5 text-slate-400">Type exact quantity for current cart item</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Edit Quantity / Barcode Focus</td>
+                  <td className="px-4 py-2.5 text-slate-400">Focus quantity input for highlighted cart item</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-cyan-400">F3</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Terminal Tools &amp; Guide</td>
+                  <td className="px-4 py-2.5 text-slate-400">Open tools dialog (reprint receipt, printer test, scanner status)</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F4</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Discount</td>
-                  <td className="px-4 py-2.5 text-slate-400">Apply peso discount to current cart</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Custom Discount</td>
+                  <td className="px-4 py-2.5 text-slate-400">Apply custom peso discount to current cart</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F8</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Hold Sale</td>
-                  <td className="px-4 py-2.5 text-slate-400">Suspend order to serve next customer</td>
+                  <td className="px-4 py-2.5 font-mono font-bold text-amber-300">F8</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Hold / Resume Order</td>
+                  <td className="px-4 py-2.5 text-slate-400">Suspend order to serve next customer in queue</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-emerald-400">F9</td>
@@ -472,8 +509,18 @@ export function Handbook(): React.JSX.Element {
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-sky-400">F10</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">GCash Checkout</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">GCash / E-Wallet Checkout</td>
                   <td className="px-4 py-2.5 text-slate-400">Focuses GCash reference number input</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-amber-400">F11</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Utang (Credit) Checkout</td>
+                  <td className="px-4 py-2.5 text-slate-400">Opens Suki customer credit selector dialog</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-emerald-300">F12</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Complete Transaction</td>
+                  <td className="px-4 py-2.5 text-slate-400">Finalizes sale, prints receipt, and clears cart</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-rose-400">Esc</td>
@@ -507,7 +554,7 @@ export function Handbook(): React.JSX.Element {
             <p className="mt-1 text-slate-400">
               1. Check if the product has that exact barcode saved in Inventory.<br />
               2. Make sure the <strong>🟢 Scanner Ready</strong> indicator in the POS header is green.<br />
-              3. Ensure your handheld scanner is set to send a trailing <em>"Enter"</em> key (standard factory default for all retail scanners).
+              3. Ensure your handheld scanner is set to send a trailing <em>&ldquo;Enter&rdquo;</em> key (standard factory default for all retail scanners).
             </p>
           </div>
 
@@ -515,6 +562,13 @@ export function Handbook(): React.JSX.Element {
             <h4 className="font-semibold text-white text-sm">Can I move my store database to a new laptop?</h4>
             <p className="mt-1 text-slate-400">
               Yes! Simply go to <strong>Backup</strong>, click <strong>Back Up Now</strong>, copy the file to a USB stick, install TINDA POS on the new laptop, and click <strong>Restore Backup</strong>.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
+            <h4 className="font-semibold text-white text-sm">How do I connect multiple cashier PCs in one store?</h4>
+            <p className="mt-1 text-slate-400">
+              TINDA POS supports Multi-PC local network sharing via SQLite WAL network modes or local LAN bridges. Refer to the official <code>docs/MULTI_PC_AND_VPS_GUIDE.md</code> for LAN IP configuration.
             </p>
           </div>
         </div>
@@ -535,7 +589,7 @@ export function Handbook(): React.JSX.Element {
             <div className="flex items-center gap-2 text-teal-400 font-bold uppercase tracking-wider">
               <Printer className="h-4 w-4" /> Thermal Printing Guide
             </div>
-            <h3 className="mt-1 text-xl font-bold text-white">Setting up GOOJPRT 58H (JP-58BL / PB-58H) &amp; 58mm Thermal Printers</h3>
+            <h3 className="mt-1 text-xl font-bold text-white">Setting up GOOJPRT 58H (JP-58BL / PB-58H) &amp; 58mm/80mm Printers</h3>
             <p className="mt-2 text-slate-300">
               TINDA POS has built-in support for standard 58mm and 80mm thermal receipt printers, including popular models like <strong>GOOJPRT 58H (JP-58BL / PB-58H)</strong>, Xprinter XP-58, and POS-58 printers. Official manual reference: <a href="https://manuals.plus/ae/1005008661058283" target="_blank" rel="noreferrer" className="text-teal-300 underline font-semibold">GOOJPRT 58H User Manual</a>.
             </p>
@@ -564,7 +618,7 @@ export function Handbook(): React.JSX.Element {
                 <li>Turn on Bluetooth on your Windows PC or laptop.</li>
                 <li>Search for the printer Bluetooth device (usually named <em>KP58B-U</em>, <em>PB-58H</em>, or <em>MTP-2</em>).</li>
                 <li>Pair using the standard PIN: <strong>0000</strong> or <strong>1234</strong>.</li>
-                <li>In Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, verify the printer's <strong>Outgoing COM Port</strong> (e.g., COM3 or COM4).</li>
+                <li>In Windows <em>Control Panel &rarr; Devices &amp; Printers</em>, verify the printer&apos;s <strong>Outgoing COM Port</strong> (e.g., COM3 or COM4).</li>
                 <li>Assign the printer driver to this COM port, then click <strong>Refresh Printers</strong> in TINDA POS Settings.</li>
               </ol>
             </div>
@@ -575,7 +629,7 @@ export function Handbook(): React.JSX.Element {
                 <span>Zero-Blur Guide: How to Fix Blurry or Faint Print Output</span>
               </div>
               <ul className="list-disc pl-4 space-y-1.5 text-slate-300 text-[11px]">
-                <li><strong>1. Zero-Blur Typography Engine:</strong> TINDA POS automatically applies integer font geometry and disables subpixel grayscale anti-aliasing so monochrome thermal pins only burn pure black dots.</li>
+                <li><strong>1. Zero-Blur Typography Engine:</strong> TINDA POS automatically applies integer font geometry and disables subpixel grayscale anti-aliasing so monochrome thermal pins only burn pure black dots without fuzzy edges.</li>
                 <li><strong>2. Windows Driver Darkness &amp; Halftone:</strong> In Windows <em>Settings &rarr; Bluetooth &amp; devices &rarr; Printers &amp; scanners &rarr; Your Printer &rarr; Printing preferences &rarr; Advanced</em>, set <strong>Print Density / Darkness</strong> to <strong>Dark (Level 12-15)</strong> and set <strong>Dithering / Halftone</strong> to <strong>None</strong>.</li>
                 <li><strong>3. Print Head Maintenance:</strong> Turn off the printer and use a cotton swab lightly dampened with isopropyl alcohol to gently wipe the thermal print head surface (Section 7.1 of manual). Let dry before printing.</li>
               </ul>
@@ -591,6 +645,84 @@ export function Handbook(): React.JSX.Element {
                 <li><strong>2. Windows USB Virtual Port Mapping:</strong> In Windows <em>Printer Properties &rarr; Ports tab</em>, ensure that the active <code>USB001</code> Virtual Printer Port is selected instead of LPT1 or COM1.</li>
                 <li><strong>3. Windows Driver Page Size Setting:</strong> In Windows Printing Preferences, set the default Paper Size to <strong>58mm x 297mm</strong> or <strong>58 x Continuous</strong> rather than A4 or Letter.</li>
                 <li><strong>4. Hardware Self-Test Verification:</strong> Turn off the printer, hold the <strong>FEED button</strong>, and turn on power while holding FEED. Release after 2 seconds. The printer should print an internal diagnostic self-test slip confirming the printhead is working.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'updates',
+      number: 11,
+      title: 'Software Updates & Zero-Restart Live Patches',
+      subtitle: 'Dual-mode updates, 0.3s hot-reload feature patches, full installers, and data safety',
+      icon: <RefreshCw className="h-4 w-4" />,
+      readTime: '3 min read',
+      action: () => useUpdate.getState().openHub(),
+      actionLabel: 'Open Software Update Hub',
+      content: (
+        <div className="space-y-6 text-slate-300 leading-relaxed text-xs">
+          <div className="rounded-xl border border-brand-500/30 bg-gradient-to-br from-brand-950/60 to-ink-900 p-5">
+            <div className="flex items-center gap-2 text-brand-400 font-bold uppercase tracking-wider">
+              <RefreshCw className="h-4 w-4" /> Next-Generation In-App Updater
+            </div>
+            <h3 className="mt-1 text-xl font-bold text-white">Dual-Mode Update Architecture</h3>
+            <p className="mt-2 text-slate-300">
+              TINDA POS features a proprietary dual-mode update engine designed so cashiers can receive critical improvements, bug fixes, and feature upgrades with <strong>zero downtime</strong> and zero risk to active transactions.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-brand-500/30 bg-ink-900 p-4 space-y-2">
+              <div className="flex items-center gap-2 text-brand-400 font-bold text-sm">
+                <Zap className="h-4 w-4" />
+                <span>Option A: Fast Feature Patch (0.82 MB · Zero Restart ⚡)</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">
+                The default and recommended update method for all routine software updates:
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
+                <li><strong>Ultra-Lightweight:</strong> Downloads in 2 to 5 seconds over ordinary mobile data or weak sari-sari store Wi-Fi (under 1 MB).</li>
+                <li><strong>0.3s Live Hot-Reload:</strong> Unpacks and mounts the new renderer runtime instantly in less than 300 milliseconds.</li>
+                <li><strong>Zero Cashier Downtime:</strong> The desktop app does not close or reboot. Active carts, SQLite database connections, and open cash shifts remain completely uninterrupted.</li>
+              </ul>
+            </div>
+
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2">
+              <div className="flex items-center gap-2 text-slate-200 font-bold text-sm">
+                <Layers className="h-4 w-4" />
+                <span>Option B: Full Platform Build (~110–130 MB)</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">
+                Reserved for major Electron runtime upgrades, native driver changes, or new PC setups:
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
+                <li><strong>Complete Standalone Installer:</strong> Provides <code>Setup.exe</code> on Windows or <code>AppImage</code> on Linux.</li>
+                <li><strong>Automated Safety Backup:</strong> Before replacing core binaries, the system automatically creates an encrypted database snapshot to guarantee zero data loss.</li>
+                <li><strong>Clean Portability:</strong> Portable users can also download standalone single-file executables without touching system registry.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold text-white flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              Sidebar Update Hub &amp; Non-Intrusive Notifications
+            </h4>
+            <div className="rounded-lg border border-ink-line bg-ink-900 p-4 space-y-2 text-slate-300 text-[11px]">
+              <p>
+                To protect frontline store operations from annoying pop-up interruptions:
+              </p>
+              <ul className="list-disc pl-4 space-y-1.5">
+                <li>
+                  <strong>Minimize to Sidebar:</strong> When an update arrives during a busy checkout rush, simply click <em>&ldquo;— Minimize to Sidebar&rdquo;</em> or <em>&ldquo;Remind Me Later&rdquo;</em>. The notification minimizes into a neat badge in the sidebar under <strong>System &amp; Guide &rarr; Software Update</strong>.
+                </li>
+                <li>
+                  <strong>Real-Time Version Sync:</strong> When you click <em>Apply Live</em>, the system updates its internal version indicator immediately in real time across the modal, header, and sidebar without waiting for a manual app relaunch.
+                </li>
+                <li>
+                  <strong>24-Hour Smart Throttle:</strong> Automatic background checks run unobtrusively once every 24 hours, completely eliminating network traffic spam and popup flicker.
+                </li>
               </ul>
             </div>
           </div>
@@ -696,8 +828,8 @@ export function Handbook(): React.JSX.Element {
             <h2 className="mt-1 text-2xl font-black text-white">{currentChapter.title}</h2>
             <p className="mt-1 text-sm text-slate-400">{currentChapter.subtitle}</p>
 
-            {currentChapter.relatedPage && (
-              <div className="mt-3">
+            <div className="mt-3 flex flex-wrap gap-2">
+              {currentChapter.relatedPage && (
                 <button
                   type="button"
                   onClick={() => setPage(currentChapter.relatedPage!)}
@@ -706,8 +838,19 @@ export function Handbook(): React.JSX.Element {
                   <span>{currentChapter.relatedPageLabel || 'Open Page'}</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
-              </div>
-            )}
+              )}
+
+              {currentChapter.action && (
+                <button
+                  type="button"
+                  onClick={currentChapter.action}
+                  className="btn-primary inline-flex items-center gap-1.5 text-xs py-1.5 px-3"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>{currentChapter.actionLabel || 'Run Action'}</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Chapter Content */}
@@ -748,5 +891,23 @@ export function Handbook(): React.JSX.Element {
         </div>
       </main>
     </div>
+  )
+}
+
+function TerminalToolsIcon(props: React.SVGProps<SVGSVGElement>): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={props.className}
+    >
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
   )
 }

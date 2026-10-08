@@ -1601,6 +1601,28 @@
   - **Live UI Reflection:**
     - Both the Sidebar (`v1.0.81`) and the Update Modal (`v1.0.81` / `TINDA POS is Up to Date`) update immediately in real-time with zero system reboot or manual refresh required.
 
+---
+
+## 75. Store Handbook Comprehensive Modernization & Chapter 11 (Software Updates & Zero-Restart Live Patches) (v1.0.82)
+* **Complete In-System Handbook Modernization (`Handbook.tsx`):**
+  - **11 Full Operational Chapters:**
+    1. *Welcome to TINDA POS (`intro`):* Offline philosophy, zero cloud lockout, 172 pre-seeded DTI products, and real-time Cloudflare D1 store sync dashboard.
+    2. *Daily Workflow & Shift Management (`shift`):* Cash float entry, real-time Net Sales reconciliation (void handling & D1 sync), and evening cash count / Z-Reading.
+    3. *POS Terminal & Cashier Masterclass (`pos`):* High-speed searching (`F1`), quantity editing (`F2`), discounts (`F4`), cash (`F9`), GCash (`F10`), Utang (`F11`), hold & resume (`F8`), Terminal Tools (`F3`), and Dual-Screen Customer TV display.
+    4. *Barcode Scanning (`scanner`):* Dual barcode engine, instant auto-capture in product form, and wireless smartphone companion with dual-canvas center-reticle crop and 120ms Wi-Fi burst tolerance.
+    5. *Inventory, Products & Multi-Units (`inventory`):* Piece vs case conversion math, low stock alert badges, 1-tap quick restock drawer, and near-expiry color-coded badges.
+    6. *Customer & Utang Management (`utang`):* Suki credit ledgers, itemized package breakdown icon drawer, partial/full settlements, and credit limits.
+    7. *Database Backups & Zero Data Loss (`backup`):* SQLite WAL durability, 1-click snapshot creation, and USB flash drive safety protocols.
+    8. *Keyboard Shortcuts Cheat Sheet (`hotkeys`):* Full reference matrix for `F1`–`F12`, `Esc`, `Alt+B`, and `Ctrl+P`.
+    9. *Troubleshooting & FAQ (`troubleshoot`):* Brownout recovery, scanner trailing Enter keys, and multi-PC LAN sharing.
+    10. *Thermal Printers (`printer`):* Zero-Blur integer typography, auto-detect for GOOJPRT 58H / Xprinter, Bluetooth setup, and paper scratch test.
+    11. *Software Updates & Zero-Restart Live Patches (`updates`):* Dual-mode update architecture (Option A: 0.82 MB live 0.3s patch vs Option B: 130 MB full platform build), sidebar update hub, minimize to sidebar, and 24-hour smart throttle.
+* **Direct In-Handbook Action Triggers:**
+  - Added interactive buttons in Chapter 11 to directly trigger `openHub()` on `useUpdate` store, enabling store cashiers to check and inspect updates directly from the handbook.
+* **Verification & Packaging:**
+  - 65 test files, 429 tests passing 100%.
+  - Bundled as `TindaPOS-Feature-Patch-1.0.82.zip` (0.82 MB, 859 KB).
+
 
 
 
