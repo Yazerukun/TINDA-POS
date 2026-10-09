@@ -64,6 +64,7 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     notes: (row.notes as string | null) ?? null,
     units,
     stock_status: stockStatusFor(stock, threshold),
+    item_type: ((row.item_type as string) || 'STANDARD') as import('@shared/types').ProductItemType,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string
   }
@@ -123,7 +124,11 @@ export function searchProductsSimple(db: Database.Database, q: string, limit = 1
 export function getProduct(db: Database.Database, id: number): Product {
   const row = db.prepare(`${BASE_SELECT} WHERE p.id = ?`).get(id) as Record<string, unknown> | undefined
   if (!row) throw new Error('Product not found.')
-  return rowToProduct(db, row)
+  const prod = rowToProduct(db, row)
+  if (prod.item_type === 'COMPOSITE') {
+    prod.recipe = getRecipe(db, id)
+  }
+  return prod
 }
 
 export function findByBarcode(db: Database.Database, barcode: string): Product | undefined {
@@ -290,6 +295,12 @@ export function createProduct(db: Database.Database, input: ProductInput, userId
             input.notes?.trim() || null
           )
     const productId = Number(info.lastInsertRowid)
+    if (input.item_type) {
+      db.prepare('UPDATE products SET item_type = ? WHERE id = ?').run(input.item_type, productId)
+    }
+    if (input.recipe && input.recipe.length > 0) {
+      saveRecipe(db, productId, input.recipe)
+    }
     insertUnits(db, productId, input.units)
     if (input.expiration_mode !== undefined) configureExpiration(db, productId, input.expiration_mode, input.expiration_date ?? null, userId)
     if (input.initial_stock_base) {
@@ -407,6 +418,12 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
         merged.notes?.trim() || null,
         id
       )
+    }
+    if (input.item_type) {
+      db.prepare('UPDATE products SET item_type = ? WHERE id = ?').run(input.item_type, id)
+    }
+    if (input.recipe !== undefined) {
+      saveRecipe(db, id, input.recipe)
     }
     db.prepare('DELETE FROM product_units WHERE product_id = ?').run(id)
     insertUnits(db, id, merged.units)
@@ -527,3 +544,124 @@ export function outOfStockProducts(db: Database.Database): Product[] {
     .all() as Record<string, unknown>[]
   return rows.map((r) => rowToProduct(db, r))
 }
+
+export function getRecipe(db: Database.Database, parentProductId: number): import('@shared/types').ProductRecipeItem[] {
+  return db
+    .prepare(`
+      SELECT r.id, r.parent_product_id, r.component_product_id, r.quantity, r.unit_name,
+             p.name AS component_name, p.purchase_cost_c AS component_cost_c
+      FROM product_recipes r
+      JOIN products p ON p.id = r.component_product_id
+      WHERE r.parent_product_id = ?
+      ORDER BY r.id ASC
+    `)
+    .all(parentProductId) as import('@shared/types').ProductRecipeItem[]
+}
+
+export function saveRecipe(
+  db: Database.Database,
+  parentProductId: number,
+  items: { component_product_id: number; quantity: number; unit_name?: string }[]
+): void {
+  const insert = db.prepare(`
+    INSERT INTO product_recipes (parent_product_id, component_product_id, quantity, unit_name)
+    VALUES (?, ?, ?, ?)
+  `)
+  db.prepare('DELETE FROM product_recipes WHERE parent_product_id = ?').run(parentProductId)
+  for (const it of items) {
+    if (it.component_product_id && it.quantity > 0) {
+      insert.run(parentProductId, it.component_product_id, it.quantity, it.unit_name?.trim() || 'pc')
+    }
+  }
+}
+
+export function hasRecipeCycle(
+  db: Database.Database,
+  parentId: number,
+  componentId: number,
+  visited = new Set<number>()
+): boolean {
+  if (parentId === componentId) return true
+  if (visited.has(componentId)) return false
+  visited.add(componentId)
+
+  const children = db
+    .prepare('SELECT component_product_id FROM product_recipes WHERE parent_product_id = ?')
+    .all(componentId) as { component_product_id: number }[]
+
+  for (const c of children) {
+    if (c.component_product_id === parentId) return true
+    if (hasRecipeCycle(db, parentId, c.component_product_id, visited)) return true
+  }
+  return false
+}
+
+export function calculateRollupCost(
+  db: Database.Database,
+  productId: number,
+  visited = new Set<number>()
+): number {
+  if (visited.has(productId)) return 0
+  visited.add(productId)
+
+  const p = db.prepare('SELECT item_type, purchase_cost_c FROM products WHERE id = ?').get(productId) as
+    | { item_type: string; purchase_cost_c: number }
+    | undefined
+  if (!p) return 0
+  if (p.item_type !== 'COMPOSITE') {
+    return p.purchase_cost_c
+  }
+
+  const recipe = db
+    .prepare('SELECT component_product_id, quantity FROM product_recipes WHERE parent_product_id = ?')
+    .all(productId) as { component_product_id: number; quantity: number }[]
+
+  let totalCost = 0
+  for (const r of recipe) {
+    const compCost = calculateRollupCost(db, r.component_product_id, new Set(visited))
+    totalCost += Math.round(compCost * r.quantity)
+  }
+  return totalCost
+}
+
+export function resolveLeafComponents(
+  db: Database.Database,
+  productId: number,
+  multiplier = 1,
+  visited = new Set<number>()
+): Map<number, { qty: number; unit: string; name: string }> {
+  if (visited.has(productId)) {
+    throw new Error(`Circular BOM dependency detected on product #${productId}`)
+  }
+  visited.add(productId)
+
+  const leafMap = new Map<number, { qty: number; unit: string; name: string }>()
+  const p = db.prepare('SELECT id, name, base_unit, item_type FROM products WHERE id = ?').get(productId) as
+    | { id: number; name: string; base_unit: string; item_type: string }
+    | undefined
+  if (!p) return leafMap
+
+  if (p.item_type !== 'COMPOSITE') {
+    leafMap.set(p.id, { qty: multiplier, unit: p.base_unit, name: p.name })
+    return leafMap
+  }
+
+  const recipe = db
+    .prepare('SELECT component_product_id, quantity, unit_name FROM product_recipes WHERE parent_product_id = ?')
+    .all(productId) as { component_product_id: number; quantity: number; unit_name: string }[]
+
+  for (const r of recipe) {
+    const childLeaves = resolveLeafComponents(db, r.component_product_id, r.quantity * multiplier, new Set(visited))
+    for (const [leafId, leafData] of childLeaves) {
+      const existing = leafMap.get(leafId)
+      if (existing) {
+        existing.qty += leafData.qty
+      } else {
+        leafMap.set(leafId, { qty: leafData.qty, unit: leafData.unit, name: leafData.name })
+      }
+    }
+  }
+
+  return leafMap
+}
+

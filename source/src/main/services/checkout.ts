@@ -27,15 +27,28 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
     const it = raw as CartItem
     let costC = it.cost_base_c ?? 0
     let stockBase: number | null = it.stock_base ?? null
-    if (it.product_id) {
+    if (it.product_id && it.product_id > 0) {
       const p = prodRepo.getProduct(db, it.product_id)
-      costC = p.purchase_cost_c
-      stockBase = p.stock
-      if (p.expiration_mode && p.expiration_mode !== 'NONE' && it.qty_base > (p.sellable_stock ?? 0)) {
-        throw new Error(`${p.name}: only ${p.sellable_stock ?? 0} ${p.base_unit} available for sale. Expired or undated stock is blocked.`)
-      }
-      if (!settings.allow_negative_inventory && it.qty_base > p.stock) {
-        throw new Error(`Insufficient stock for "${p.name}". Available: ${p.stock} ${p.base_unit}.`)
+      if (p.item_type === 'COMPOSITE') {
+        costC = prodRepo.calculateRollupCost(db, p.id)
+        if (!settings.allow_negative_inventory) {
+          const leaves = prodRepo.resolveLeafComponents(db, p.id, it.qty_base)
+          for (const [leafId, leafData] of leaves) {
+            const leafProd = prodRepo.getProduct(db, leafId)
+            if (leafData.qty > leafProd.stock) {
+              throw new Error(`Insufficient component stock for "${p.name}". Missing ${leafData.name}: required ${leafData.qty} ${leafData.unit}, available ${leafProd.stock}.`)
+            }
+          }
+        }
+      } else {
+        costC = p.purchase_cost_c
+        stockBase = p.stock
+        if (p.expiration_mode && p.expiration_mode !== 'NONE' && it.qty_base > (p.sellable_stock ?? 0)) {
+          throw new Error(`${p.name}: only ${p.sellable_stock ?? 0} ${p.base_unit} available for sale. Expired or undated stock is blocked.`)
+        }
+        if (!settings.allow_negative_inventory && it.qty_base > p.stock) {
+          throw new Error(`Insufficient stock for "${p.name}". Available: ${p.stock} ${p.base_unit}.`)
+        }
       }
     }
     const subtotal = it.subtotal_c ?? Math.round(it.unit_price_c * it.qty)
@@ -145,7 +158,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
       const it = l.cart
       const saleItemId = salesRepo.insertSaleItem(db, {
         sale_id: saleId,
-        product_id: it.product_id,
+        product_id: it.product_id && it.product_id > 0 ? it.product_id : null,
         product_name: it.name,
         unit_name: it.unit_name,
         qty: it.qty,
@@ -154,8 +167,25 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
         subtotal_c: it.subtotal_c,
         cost_base_c: it.cost_base_c ?? 0
       })
-      if (it.product_id) {
-        prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
+      if (it.product_id && it.product_id > 0) {
+        const prod = prodRepo.getProduct(db, it.product_id)
+        if (prod.item_type === 'COMPOSITE') {
+          const leaves = prodRepo.resolveLeafComponents(db, it.product_id, it.qty_base)
+          for (const [leafId, leafData] of leaves) {
+            prodRepo.adjustStock(
+              db,
+              leafId,
+              -leafData.qty,
+              'SALE',
+              `Component for ${it.name} (${leafData.qty} ${leafData.unit})`,
+              u.id,
+              txnNo,
+              { sale_item_id: saleItemId }
+            )
+          }
+        } else {
+          prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
+        }
       }
     }
 

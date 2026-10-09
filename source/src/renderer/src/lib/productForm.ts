@@ -5,7 +5,7 @@
 // never wipe its existing selling units or replace them with a blank unit,
 // otherwise the backend rejects the save with "Unit name is required".
 
-import type { Product, ProductInput } from '@shared/types'
+import type { Product, ProductInput, ProductItemType } from '@shared/types'
 
 export interface ProductUnitInput {
   name: string
@@ -20,6 +20,7 @@ export interface ProductFormData {
   name: string
   sku: string
   barcode: string
+  item_type?: ProductItemType
   category_id: number | null
   base_unit: string
   purchase_cost_c: number
@@ -59,6 +60,7 @@ export function newProductForm(defaultLowStock = 5): ProductFormData {
     name: '',
     sku: '',
     barcode: '',
+    item_type: 'STANDARD',
     category_id: null,
     base_unit: 'pc',
     purchase_cost_c: 0,
@@ -86,6 +88,7 @@ export function editProductForm(product: Product): ProductFormData {
     name: product.name,
     sku: product.sku,
     barcode: product.barcode ?? '',
+    item_type: product.item_type ?? 'STANDARD',
     category_id: product.category_id,
     base_unit: product.base_unit,
     purchase_cost_c: product.purchase_cost_c,
@@ -130,6 +133,7 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
     name: form.name,
     sku: form.sku,
     barcode: form.barcode || null,
+    item_type: form.item_type,
     category_id: form.category_id,
     base_unit: form.base_unit,
     purchase_cost_c: form.purchase_cost_c,
@@ -157,6 +161,7 @@ export function createProductInput(form: ProductFormData): ProductInput {
     name: form.name,
     sku: form.sku,
     barcode: form.barcode || null,
+    item_type: form.item_type ?? 'STANDARD',
     category_id: form.category_id,
     base_unit: form.base_unit,
     purchase_cost_c: form.purchase_cost_c,

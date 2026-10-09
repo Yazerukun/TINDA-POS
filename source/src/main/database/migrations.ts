@@ -63,6 +63,27 @@ export function ensureSchemaColumns(db: Database.Database): void {
         db.exec('ALTER TABLE ewallet_audits ADD COLUMN maribank_difference_c INTEGER NOT NULL DEFAULT 0')
       }
     }
+
+    const prodCols = new Set(
+      (db.prepare("PRAGMA table_info('products')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (!prodCols.has('item_type')) {
+      db.exec("ALTER TABLE products ADD COLUMN item_type TEXT NOT NULL DEFAULT 'STANDARD'")
+    }
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS product_recipes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        parent_product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+        component_product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+        quantity REAL NOT NULL DEFAULT 1.0,
+        unit_name TEXT NOT NULL DEFAULT 'pc',
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+        UNIQUE(parent_product_id, component_product_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_product_recipes_parent ON product_recipes(parent_product_id);
+      CREATE INDEX IF NOT EXISTS idx_product_recipes_component ON product_recipes(component_product_id);
+    `)
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }
@@ -718,6 +739,26 @@ ALTER TABLE ewallet_audits ADD COLUMN maribank_out_c INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE ewallet_audits ADD COLUMN expected_maribank_c INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE ewallet_audits ADD COLUMN actual_maribank_c INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE ewallet_audits ADD COLUMN maribank_difference_c INTEGER NOT NULL DEFAULT 0;
+`
+  },
+  {
+    version: 14,
+    name: 'composite_items_bom',
+    sql: `
+ALTER TABLE products ADD COLUMN item_type TEXT NOT NULL DEFAULT 'STANDARD';
+
+CREATE TABLE IF NOT EXISTS product_recipes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  parent_product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  component_product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  quantity REAL NOT NULL DEFAULT 1.0,
+  unit_name TEXT NOT NULL DEFAULT 'pc',
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  UNIQUE(parent_product_id, component_product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_product_recipes_parent ON product_recipes(parent_product_id);
+CREATE INDEX IF NOT EXISTS idx_product_recipes_component ON product_recipes(component_product_id);
 `
   }
 ]

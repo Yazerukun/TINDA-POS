@@ -330,6 +330,21 @@ handle('products:restore', (_e: IpcMainInvokeEvent, id: number) => {
   return prodRepo.setProductStatus(db(), id, 'ACTIVE', user().id)
 })
 handle('products:count', (_e: IpcMainInvokeEvent, status?: string) => prodRepo.productCount(db(), status))
+handle('products:getRecipe', (_e: IpcMainInvokeEvent, id: number) => {
+  return prodRepo.getRecipe(db(), id)
+})
+handle('products:saveRecipe', (_e: IpcMainInvokeEvent, id: number, items: unknown) => {
+  sessionSvc.requirePermission('products:manage')
+  prodRepo.saveRecipe(db(), id, items as { component_product_id: number; quantity: number; unit_name?: string }[])
+  emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [id] })
+  return { ok: true }
+})
+handle('products:checkCycle', (_e: IpcMainInvokeEvent, parentId: number, componentId: number) => {
+  return { hasCycle: prodRepo.hasRecipeCycle(db(), parentId, componentId) }
+})
+handle('products:rollupCost', (_e: IpcMainInvokeEvent, id: number) => {
+  return { rollupCostC: prodRepo.calculateRollupCost(db(), id) }
+})
 handle('products:csvTemplate', () => { sessionSvc.requirePermission('products:manage'); return importSvc.CSV_TEMPLATE })
 handle('products:previewCsv', (_e: IpcMainInvokeEvent, text: string) => { sessionSvc.requirePermission('products:manage'); return importSvc.previewCsv(db(), text) })
 handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'SKIP' | 'UPDATE') => {

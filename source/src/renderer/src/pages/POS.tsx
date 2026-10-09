@@ -37,7 +37,9 @@ import {
   Pin,
   PinOff,
   SlidersHorizontal,
-  Package
+  Package,
+  Calculator,
+  Sparkles
 } from 'lucide-react'
 import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
@@ -46,6 +48,10 @@ import { CameraScannerModal } from '../components/CameraScannerModal'
 import { CounterCameraScanner } from '../components/CounterCameraScanner'
 import { QuickExpenseModal } from '../components/QuickExpenseModal'
 import { PosToolsModal } from '../components/PosToolsModal'
+import { FastButtonsBar } from '../components/FastButtonsBar'
+import { CashierCalculatorModal } from '../components/CashierCalculatorModal'
+import { PromoBundlesModal } from '../components/PromoBundlesModal'
+import { getStoredPromoBundles, evaluateCartPromos, type PromoBundle } from '../utils/promoBundles'
 import { useGuide } from '../stores/guide'
 import { useSettings } from '../stores/settings'
 import { PinnedCategoriesBar } from '../components/PinnedCategoriesBar'
@@ -110,6 +116,7 @@ interface CartState {
   customer_name: string | null
   discount_pesos: number
   add: (p: Product, qtyToAdd?: number) => void
+  addCustomItem: (name: string, price_c: number, unit_name?: string, qty?: number, cost_base_c?: number) => void
   setQty: (product_id: number, qty: number) => void
   setItemPrice: (product_id: number, priceC: number) => void
   resetItemPrice: (product_id: number) => void
@@ -184,6 +191,35 @@ export const usePosCart = create<CartState>((set) => ({
             is_custom_price: isCustom,
             cost_base_c: p.purchase_cost_c,
             stock_base: stock,
+            conversion_to_base: 1
+          }
+        ]
+      }
+    }),
+  addCustomItem: (name: string, price_c: number, unit_name = 'pc', qty = 1, cost_base_c = 0) =>
+    set((s) => {
+      const customId = -Math.floor(Date.now() % 100000000)
+      const safePrice = Math.max(0, price_c)
+      const safeQty = Math.max(1, qty)
+      const safeCost = Math.max(0, cost_base_c)
+      return {
+        items: [
+          ...s.items,
+          {
+            product_id: customId,
+            name: name.trim() || 'Custom Item',
+            description: null,
+            unit_name: unit_name || 'pc',
+            qty: safeQty,
+            unit_price_c: safePrice,
+            base_price_c: safePrice,
+            wholesale_price_c: null,
+            wholesale_min_qty: null,
+            is_wholesale: false,
+            custom_price_c: safePrice,
+            is_custom_price: true,
+            cost_base_c: safeCost,
+            stock_base: 999999,
             conversion_to_base: 1
           }
         ]
@@ -325,6 +361,8 @@ export function POS(): React.JSX.Element {
   })
 
   const [posToolsOpen, setPosToolsOpen] = useState(false)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
+  const [promoModalOpen, setPromoModalOpen] = useState(false)
 
   const refreshCatCounts = async () => {
     try {
@@ -477,6 +515,9 @@ export function POS(): React.JSX.Element {
       customerName: cartCustomer ?? undefined
     }).catch(() => {})
   }, [cartItems, cartDiscount, cartCustomer])
+
+  const cartSubtotalC = cartItems.reduce((sum, x) => sum + Math.round(x.qty * x.unit_price_c), 0)
+  const cartTotalPesos = Math.max(0, cartSubtotalC - cartDiscount) / 100
 
   useEffect(() => {
     let alive = true
@@ -741,7 +782,7 @@ export function POS(): React.JSX.Element {
       }
       if (e.key === 'F3') {
         e.preventDefault()
-        setPosToolsOpen((prev) => !prev)
+        setCalculatorOpen((prev) => !prev)
         return
       }
       if (e.key === 'F7') {
@@ -1025,8 +1066,51 @@ export function POS(): React.JSX.Element {
               <span className="hidden sm:inline">Grid</span>
             </button>
           </div>
+
+          {/* Quick Cashier Calculator Button */}
+          <button
+            type="button"
+            onClick={() => setCalculatorOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 active:scale-95 transition-all shadow-sm shrink-0"
+            title="Open Cashier Calculator & Sukli Calculator (F3)"
+          >
+            <Calculator className="h-4 w-4" />
+            <span className="hidden sm:inline">Calc</span>
+            <span className="rounded bg-emerald-500/20 px-1 py-0.2 text-[10px] text-emerald-200 border border-emerald-500/30 font-mono">
+              F3
+            </span>
+          </button>
+
+          {/* Promo Bundles & Combos Button */}
+          <button
+            type="button"
+            onClick={() => setPromoModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 active:scale-95 transition-all shadow-sm shrink-0"
+            title="Browse Promo Bundles & Meal Combos"
+          >
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            <span className="hidden sm:inline">Promos</span>
+          </button>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
+
+        {/* Fast Buttons (Speed Keys) Strip: Yelo, Yosi, Candy, etc. */}
+        <FastButtonsBar
+          products={products}
+          onAddToCart={(p, qty) => {
+            if (saleStock(p) > 0) {
+              usePosCart.getState().add(p, qty)
+              warnIfNearExpiry(p)
+            } else {
+              toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+            }
+          }}
+          onProductsChanged={async () => {
+            const res = await window.api.products.search('', { status: 'ACTIVE', limit: 2000 })
+            setProducts(res.rows)
+            void refreshCatCounts()
+          }}
+        />
 
         {/* Apple Cupertino Pinned Quick Categories & Bundles Bar */}
         <PinnedCategoriesBar
@@ -1412,6 +1496,8 @@ export function POS(): React.JSX.Element {
         counterCameraEnabled={counterCameraEnabled}
         onToggleCounterCamera={handleToggleCounterCamera}
         onScan={(code) => void handleScan(code)}
+        onOpenCalculator={() => setCalculatorOpen(true)}
+        onOpenPromos={() => setPromoModalOpen(true)}
       />
 
       <CameraScannerModal
@@ -1459,6 +1545,23 @@ export function POS(): React.JSX.Element {
           setCategories(updated)
           void refreshCatCounts()
         }}
+      />
+
+      {/* Cashier Quick Calculator & Sukli Assistant Modal (F3) */}
+      <CashierCalculatorModal
+        open={calculatorOpen}
+        onClose={() => setCalculatorOpen(false)}
+        currentCartTotalPesos={cartTotalPesos}
+        onAddCustomItemToCart={(item) => {
+          usePosCart.getState().addCustomItem(item.name, item.price_c)
+        }}
+      />
+
+      {/* Promo Bundles & Combos Modal */}
+      <PromoBundlesModal
+        open={promoModalOpen}
+        onClose={() => setPromoModalOpen(false)}
+        products={products}
       />
     </div>
   )
@@ -1778,13 +1881,33 @@ function PriceOverrideModal({
 function CartPanel({
   counterCameraEnabled,
   onToggleCounterCamera,
-  onScan
+  onScan,
+  onOpenCalculator,
+  onOpenPromos
 }: {
   counterCameraEnabled: boolean
   onToggleCounterCamera: (enabled: boolean) => void
   onScan: (code: string) => void
+  onOpenCalculator?: () => void
+  onOpenPromos?: () => void
 }): React.JSX.Element {
   const { items, discount_pesos, customer_name } = usePosCart()
+  const [promoBundles, setPromoBundles] = useState<PromoBundle[]>(() => getStoredPromoBundles())
+
+  useEffect(() => {
+    const handleUpdate = () => setPromoBundles(getStoredPromoBundles())
+    window.addEventListener('tinda:promo-bundles-changed', handleUpdate)
+    return () => window.removeEventListener('tinda:promo-bundles-changed', handleUpdate)
+  }, [])
+
+  const evaluatedPromos = useMemo(() => {
+    return evaluateCartPromos(items, promoBundles)
+  }, [items, promoBundles])
+
+  const totalPromoSavingsC = useMemo(() => {
+    return evaluatedPromos.reduce((sum, p) => sum + p.savingsC, 0)
+  }, [evaluatedPromos])
+
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [checkoutMethod, setCheckoutMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'>('CASH')
   const [customerOpen, setCustomerOpen] = useState(false)
@@ -2030,6 +2153,28 @@ function CartPanel({
           {items.length > 0 && <span className="badge bg-brand-600/20 text-brand-300">{items.length}</span>}
         </h2>
         <div className="flex items-center gap-1">
+          {onOpenPromos && (
+            <button
+              type="button"
+              onClick={onOpenPromos}
+              className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-amber-400 hover:text-amber-300"
+              title="Browse Promo Bundles & Meal Combos"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Promos
+            </button>
+          )}
+          {onOpenCalculator && (
+            <button
+              type="button"
+              onClick={onOpenCalculator}
+              className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-emerald-400 hover:text-emerald-300"
+              title="Open Cashier Calculator & Sukli Assistant (F3)"
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              Calc
+            </button>
+          )}
           <button onClick={() => setHeldOpen(true)} className="btn-ghost-2 rounded-lg px-2 py-1 text-xs" title="Resume held sales">
             Held {heldSales.length > 0 && `(${heldSales.length})`}
           </button>
@@ -2139,6 +2284,33 @@ function CartPanel({
       </div>
 
       {stockConflict && <div className="mx-4 mb-2 rounded-lg border border-danger-500/30 bg-danger-500/10 p-2 text-xs text-danger-300">Current stock changed. Please adjust the cart to the available quantity before checkout.</div>}
+
+      {evaluatedPromos.length > 0 && (
+        <div className="mx-4 mb-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-xs text-emerald-200">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
+              Promo Bundle Recognized!
+            </span>
+            <span className="font-black text-emerald-300">Save {money(totalPromoSavingsC)}</span>
+          </div>
+          <p className="mt-0.5 text-[11px] text-slate-300">
+            {evaluatedPromos.map((p) => `${p.appliedCount}x ${p.bundle.name}`).join(', ')}
+          </p>
+          <div className="mt-2 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                usePosCart.getState().setDiscountPesos(totalPromoSavingsC)
+                toastSuccess('Promo Savings Applied', `Deducted ${money(totalPromoSavingsC)} for combo package!`)
+              }}
+              className="rounded bg-emerald-500 px-2.5 py-1 text-[11px] font-bold text-ink-950 hover:bg-emerald-400 transition"
+            >
+              Apply {money(totalPromoSavingsC)} Savings
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2 border-t border-ink-line px-4 py-3 text-base">
         <div className="flex items-center justify-between text-slate-400">

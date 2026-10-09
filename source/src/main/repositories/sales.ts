@@ -185,7 +185,7 @@ export function insertSaleItem(
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     input.sale_id,
-    input.product_id,
+    input.product_id && input.product_id > 0 ? input.product_id : null,
     input.product_name,
     input.unit_name,
     input.qty,

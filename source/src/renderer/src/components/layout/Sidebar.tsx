@@ -22,7 +22,8 @@ import {
   Zap,
   RefreshCw,
   Loader2,
-  Bot
+  Bot,
+  Printer
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -54,6 +55,7 @@ const SECTIONS: NavSection[] = [
     items: [
       { key: 'pos', label: 'POS Cashier', icon: <ShoppingCart className="h-4 w-4" />, permission: 'pos:use', isHot: true },
       { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
+      { key: 'printing', label: 'Printing Hub', icon: <Printer className="h-4 w-4 text-sky-400" />, permission: 'pos:use' },
       { key: 'ewallet', label: 'E-Wallet & Bills', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use' }
     ]
   },

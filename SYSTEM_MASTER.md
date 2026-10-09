@@ -1766,3 +1766,39 @@
    - 3-Way Audit reports (`ewallet:printAuditReport`)
    - Register test prints (`printTest`)
 2. `BillsLoadHub.tsx` must route printing through `window.api.ewallet.printBillSlip` with dual 1-click Auto Thermal Print and Manual System Print buttons, matching the design of `EwalletAudit.tsx`.
+
+---
+
+## 81. Speed Keys, Composite BOM Engine, Printing Services Hub & Promo Bundles Architecture (v1.0.98 Spec)
+
+### 81.1 Fast Buttons (Speed Keys) & Cashier Calculator (`F3`)
+1. **High-Frequency Fast Keys:** Pinned carousel directly above category filters for 1-tap selling of fast-moving items (`Yelo` ₱5, `Yosi` ₱10, `Candy` ₱1, `Sando Bag` ₱2).
+2. **Dynamic Product Provisioning:** If a speed key item does not yet exist in the store catalog, tapping it automatically provisions a standard physical product record on-the-fly and pushes it to the cart with audible scan chime.
+3. **Customization & Photo Uploads:** Merchants can customize speed keys, bind them to existing catalog items, configure custom button photos via `products:saveImage`, pick high-contrast color themes, and reorder buttons.
+4. **`F3` Cashier Calculator Modal:** Slide-out drawer with a standard arithmetic pad and an instant Sukli (Change) tender assistant with Philippine currency bill denominations (₱20, ₱50, ₱100, ₱200, ₱500, ₱1000) and 1-click "Add as Custom Item to Cart".
+
+### 81.2 Composite & Nested Bill of Materials (BOM) Engine
+1. **Item Classification Invariant:** Every catalog product defines `item_type`:
+   - `STANDARD`: Physical inventoried item. Tracks stock directly in `products.stock`.
+   - `COMPOSITE`: Recipe or assembly manufactured from constituent ingredients.
+   - `SERVICE`: Labor, digital, or document service. Bypasses physical stock decrementing.
+2. **Database Schema:** `product_recipes` table (`parent_product_id`, `component_product_id`, `quantity`, `unit_name`).
+3. **Multi-Tier Recursive Stock Deduction:** When a composite item is sold at POS checkout, the engine recursively flattens the recipe to its raw leaf components (`resolveLeafComponents`), deducting constituent quantities atomically with audit trail note `Component for <parent>`.
+4. **Cycle Detection Guard:** `hasRecipeCycle()` performs depth-first cycle traversal preventing self-referential or circular dependencies.
+5. **Accurate Gross Profit & Roll-up Costing:** Unit cost for composite sale items dynamically computes sum of leaf component costs via `calculateRollupCost()`, guaranteeing accounting integrity.
+
+### 81.3 Printing Business & Document Services Hub
+1. **Dedicated Sidebar Hub:** Accessible under `Cashier & Register -> Printing Hub`.
+2. **Comprehensive Service Matrix:** Document Printing (B/W & Color), Photocopy (Single, B2B, ID front/back), ID Picture Studio (1x1, 2x2, Passport), PVC ID Printing (CR80 blank), Resume & Typing Encoding, Nametag Badges, Document Scanning, and Lamination (Short, Long, A4, ID).
+3. **Automated Costing Engine Formula:** Computes paper sheet cost + ink/toner coverage factor + finishing consumables + labor/encoding fee. Displays live job cost (COGS), quoted retail price, and net profit margin %.
+4. **1-Click Cart Integration:** 1-click dispatch pushes the custom print job line item directly into POS cashier cart with calculated cost, allowing seamless customer checkout and Z-read inclusion.
+
+### 81.4 Promo Bundles & Dynamic Cart Combo Engine
+1. **Supported Promo Models:** Fixed Package Combos (e.g. Pancit Canton + Egg = ₱28) and Bulk Quantity Tiers (e.g. 3 for ₱50).
+2. **Pure Real-Time Evaluator:** `evaluateCartPromos()` scans cart items on every mutation. When combination criteria are met, an active promo recognized banner displays total savings and allows 1-click discount application.
+3. **Promo Bundles Management Modal:** Cashiers can view active bundles, create custom combos, toggle promo statuses, or 1-tap add entire package deals into the cart.
+
+### 81.5 Category-Based Physical Inventory & Stock Valuation
+1. **Category Valuation Quick-Pills Bar:** Horizontal summary bar in `Inventory.tsx` displaying live product count and aggregate stock valuation (`₱XX.XX`) per category.
+2. **Classification Filters:** Quick toggle chips to isolate Standard Physical items, Composite BOM recipes, and Service items.
+

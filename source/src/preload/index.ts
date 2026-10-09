@@ -110,7 +110,13 @@ const api: TindaApi = {
     importSimplePos: (text, strategy) => invoke('products:importSimplePos', text, strategy),
     saveImage: (data) => invoke<{ filename: string; url: string }>('products:saveImage', data),
     deleteImage: (filename) => invoke<void>('products:deleteImage', filename),
-    getImageData: (filename) => invoke<string | null>('products:getImageData', filename)
+    getImageData: (filename) => invoke<string | null>('products:getImageData', filename),
+    getRecipe: (id: number) => invoke<import('@shared/types').ProductRecipeItem[]>('products:getRecipe', id),
+    saveRecipe: (id: number, items: { component_product_id: number; quantity: number; unit_name?: string }[]) =>
+      invoke<{ ok: boolean }>('products:saveRecipe', id, items),
+    checkCycle: (parentId: number, componentId: number) =>
+      invoke<{ hasCycle: boolean }>('products:checkCycle', parentId, componentId),
+    rollupCost: (id: number) => invoke<{ rollupCostC: number }>('products:rollupCost', id)
   },
   inventory: {
     expiration: () => invoke<import('@shared/types').ExpirationEntry[]>('inventory:expiration'),

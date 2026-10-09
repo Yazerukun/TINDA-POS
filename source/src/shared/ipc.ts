@@ -260,6 +260,10 @@ export interface TindaApi {
     saveImage: (data: { name: string; dataUrl: string }) => Promise<{ filename: string; url: string }>
     deleteImage: (filename: string) => Promise<void>
     getImageData: (filename: string) => Promise<string | null>
+    getRecipe: (id: number) => Promise<import('./types').ProductRecipeItem[]>
+    saveRecipe: (id: number, items: { component_product_id: number; quantity: number; unit_name?: string }[]) => Promise<{ ok: boolean }>
+    checkCycle: (parentId: number, componentId: number) => Promise<{ hasCycle: boolean }>
+    rollupCost: (id: number) => Promise<{ rollupCostC: number }>
   }
 
   inventory: {

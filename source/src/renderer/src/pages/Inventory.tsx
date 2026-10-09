@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -16,6 +16,7 @@ import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { CameraScannerModal } from '../components/CameraScannerModal'
 import { PriceTagPrintModal } from '../components/PriceTagPrintModal'
 import { InventoryPrintModal } from '../components/InventoryPrintModal'
+import { RecipeModal } from '../components/RecipeModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
   createProductInput,
@@ -31,7 +32,8 @@ export function Inventory(): React.JSX.Element {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [q, setQ] = useState('')
-  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON'>('ALL')
+  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD'>('ALL')
+  const [recipeProduct, setRecipeProduct] = useState<Product | null>(null)
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<ProductFormData | null>(null)
@@ -110,9 +112,15 @@ export function Inventory(): React.JSX.Element {
           ? '🔴 Expired items'
           : catFilter === 'EXPIRING_SOON'
             ? '🟠 Expiring soon (<30d)'
-            : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+            : catFilter === 'COMPOSITE'
+              ? '🧩 Composite BOM'
+              : catFilter === 'SERVICE'
+                ? '🛠️ Services'
+                : catFilter === 'STANDARD'
+                  ? '📦 Physical Items'
+                  : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
 
-  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON') => {
+  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD') => {
     setCatFilter(filter)
     setFilterMenuOpen(false)
   }
@@ -129,13 +137,34 @@ export function Inventory(): React.JSX.Element {
         const s = productExpirationStatus(p)
         return s === 'SOON' || s === 'NEAR'
       })
+    } else if (catFilter === 'COMPOSITE') {
+      list = list.filter((p) => p.item_type === 'COMPOSITE')
+    } else if (catFilter === 'SERVICE') {
+      list = list.filter((p) => p.item_type === 'SERVICE')
+    } else if (catFilter === 'STANDARD') {
+      list = list.filter((p) => !p.item_type || p.item_type === 'STANDARD')
     } else if (catFilter !== 'ALL') {
       list = list.filter((p) => p.category_id === catFilter)
     }
     return list
   }, [products, q, catFilter])
 
-  const totalValue = products.reduce((s, p) => s + p.stock * p.purchase_cost_c, 0)
+  const totalValue = products.reduce((s, p) => s + (p.stock > 0 ? p.stock * p.purchase_cost_c : 0), 0)
+  const filteredValue = useMemo(() => {
+    return filtered.reduce((s, p) => s + (p.stock > 0 ? p.stock * p.purchase_cost_c : 0), 0)
+  }, [filtered])
+
+  const categoryStats = useMemo(() => {
+    const map = new Map<number | 'uncategorized', { count: number; totalCostC: number }>()
+    for (const p of products) {
+      const key = p.category_id ?? 'uncategorized'
+      const cur = map.get(key) ?? { count: 0, totalCostC: 0 }
+      cur.count += 1
+      cur.totalCostC += (p.stock > 0 ? p.stock * p.purchase_cost_c : 0)
+      map.set(key, cur)
+    }
+    return map
+  }, [products])
 
   const archive = async (id: number) => {
     if (!confirm('Archive this product?')) return
@@ -291,6 +320,9 @@ export function Inventory(): React.JSX.Element {
               {([
                 { value: 'ALL' as const, label: 'All categories' },
                 ...categories.map((category) => ({ value: category.id, label: category.name })),
+                { value: 'STANDARD' as const, label: '📦 Standard physical' },
+                { value: 'COMPOSITE' as const, label: '🧩 Composite BOM' },
+                { value: 'SERVICE' as const, label: '🛠️ Service items' },
                 { value: 'LOW' as const, label: 'Low stock' },
                 { value: 'OUT' as const, label: 'Out of stock' },
                 { value: 'EXPIRED' as const, label: '🔴 Expired items' },
@@ -315,6 +347,74 @@ export function Inventory(): React.JSX.Element {
         <button onClick={() => void load()} className="btn-ghost flex items-center gap-2"><RefreshCw className="h-4 w-4" /> Refresh</button>
       </div>
 
+      {/* Category Inventory & Valuation Quick Bar */}
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+        <button
+          type="button"
+          onClick={() => setCatFilter('ALL')}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+            catFilter === 'ALL'
+              ? 'bg-brand-500 text-ink-950 font-bold shadow'
+              : 'border border-ink-line bg-ink-900/60 text-slate-300 hover:bg-ink-800'
+          }`}
+        >
+          <span>All Items</span>
+          <span className="rounded bg-black/20 px-1 py-0.2 text-[10px]">{products.length}</span>
+          <span className="text-[10px] opacity-80">({money(totalValue)})</span>
+        </button>
+        {categories.map((c) => {
+          const stat = categoryStats.get(c.id) ?? { count: 0, totalCostC: 0 }
+          const isSelected = catFilter === c.id
+          return (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setCatFilter(isSelected ? 'ALL' : c.id)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                isSelected
+                  ? 'bg-brand-500 text-ink-950 font-bold shadow'
+                  : 'border border-ink-line bg-ink-900/60 text-slate-300 hover:bg-ink-800'
+              }`}
+            >
+              <span>{c.name}</span>
+              <span className="rounded bg-black/20 px-1 py-0.2 text-[10px]">{stat.count}</span>
+              <span className="text-[10px] opacity-80">({money(stat.totalCostC)})</span>
+            </button>
+          )
+        })}
+        {/* Quick Filter: Composites */}
+        <button
+          type="button"
+          onClick={() => setCatFilter(catFilter === 'COMPOSITE' ? 'ALL' : 'COMPOSITE')}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+            catFilter === 'COMPOSITE'
+              ? 'bg-purple-500 text-white font-bold shadow'
+              : 'border border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20'
+          }`}
+        >
+          <Layers className="h-3.5 w-3.5" />
+          <span>Composite BOM</span>
+          <span className="rounded bg-black/20 px-1 py-0.2 text-[10px]">
+            {products.filter((p) => p.item_type === 'COMPOSITE').length}
+          </span>
+        </button>
+        {/* Quick Filter: Services */}
+        <button
+          type="button"
+          onClick={() => setCatFilter(catFilter === 'SERVICE' ? 'ALL' : 'SERVICE')}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+            catFilter === 'SERVICE'
+              ? 'bg-sky-500 text-white font-bold shadow'
+              : 'border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20'
+          }`}
+        >
+          <span>Services</span>
+          <span className="rounded bg-black/20 px-1 py-0.2 text-[10px]">
+            {products.filter((p) => p.item_type === 'SERVICE').length}
+          </span>
+        </button>
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
@@ -331,7 +431,15 @@ export function Inventory(): React.JSX.Element {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="line-clamp-2 break-words text-sm font-semibold text-white" title={p.name}>{p.name}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="line-clamp-2 break-words text-sm font-semibold text-white" title={p.name}>{p.name}</p>
+                          {p.item_type === 'COMPOSITE' && (
+                            <span className="badge border border-purple-500/30 bg-purple-500/15 text-purple-300 text-[10px] px-1.5 py-0.5">BOM Recipe</span>
+                          )}
+                          {p.item_type === 'SERVICE' && (
+                            <span className="badge border border-sky-500/30 bg-sky-500/15 text-sky-300 text-[10px] px-1.5 py-0.5">Service</span>
+                          )}
+                        </div>
                         {p.description && (
                           <p className="line-clamp-2 break-words text-xs text-slate-400 mt-0.5" title={p.description}>{p.description}</p>
                         )}
@@ -357,10 +465,20 @@ export function Inventory(): React.JSX.Element {
               </div>
               <div className="mt-3 flex items-center justify-between pt-2 border-t border-ink-line/50">
                 <div>
-                  <p className="text-lg font-black text-white">{p.stock} <span className="text-xs font-medium text-slate-500">{p.base_unit}</span></p>
+                  <p className="text-lg font-black text-white">
+                    {p.item_type === 'SERVICE' ? '—' : p.stock}{' '}
+                    <span className="text-xs font-medium text-slate-500">
+                      {p.item_type === 'SERVICE' ? 'service' : p.item_type === 'COMPOSITE' ? 'yield' : p.base_unit}
+                    </span>
+                  </p>
                   <p className="text-xs text-slate-500">{money(p.purchase_cost_c)} cost</p>
                 </div>
                 <div className="flex gap-1">
+                  {p.item_type === 'COMPOSITE' && (
+                    <button onClick={() => setRecipeProduct(p)} className="btn-ghost-2 rounded-lg p-2 text-purple-400 hover:text-purple-300" title="Manage Recipe / BOM">
+                      <Layers className="h-4 w-4" />
+                    </button>
+                  )}
                   <button onClick={() => { setSelectedTagProduct(p); setPrintPriceTagsOpen(true) }} className="btn-ghost-2 rounded-lg p-2 text-sky-400" title="Print Shelf Price Tag"><Tag className="h-4 w-4" /></button>
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
                   <button onClick={() => setEditing(editProductForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
@@ -373,7 +491,28 @@ export function Inventory(): React.JSX.Element {
         </div>
       )}
 
-      {editing && <ProductModal form={editing} categories={categories} products={products} onSave={saveProduct} onClose={() => setEditing(null)} />}
+      {editing && (
+        <ProductModal
+          form={editing}
+          categories={categories}
+          products={products}
+          onSave={saveProduct}
+          onOpenRecipe={(p) => setRecipeProduct(p)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {recipeProduct && (
+        <RecipeModal
+          open={Boolean(recipeProduct)}
+          product={recipeProduct}
+          allProducts={products}
+          onClose={() => setRecipeProduct(null)}
+          onRecipeSaved={async () => {
+            setRecipeProduct(null)
+            await load()
+          }}
+        />
+      )}
       {expirationOpen && <ExpirationList onClose={() => setExpirationOpen(false)} />}
       {priceGuideOpen && <PriceGuideModal open={priceGuideOpen} onClose={() => setPriceGuideOpen(false)} products={products} onProductsChanged={() => void load()} />}
       {printPriceTagsOpen && (
@@ -929,12 +1068,14 @@ function ProductModal({
   categories,
   products,
   onSave,
+  onOpenRecipe,
   onClose
 }: {
   form: ProductFormData
   categories: Category[]
   products: Product[]
   onSave: (f: ProductFormData) => Promise<void>
+  onOpenRecipe?: (p: Product) => void
   onClose: () => void
 }): React.JSX.Element {
   const [saving, setSaving] = useState(false)
@@ -1169,6 +1310,49 @@ function ProductModal({
           <label className="label">Name *</label>
           <input required value={f.name} onChange={(e) => set({ name: e.target.value })} className="input w-full" />
         </div>
+
+        <div>
+          <label className="label">Item Classification</label>
+          <select
+            value={f.item_type ?? 'STANDARD'}
+            onChange={(e) => set({ item_type: e.target.value as any })}
+            className="input w-full font-medium"
+          >
+            <option value="STANDARD">📦 Standard Physical Item</option>
+            <option value="COMPOSITE">🧩 Composite BOM (Recipe)</option>
+            <option value="SERVICE">🛠️ Service / Non-inventory</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="label">SKU</label>
+          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" placeholder="Auto-generated if blank" />
+        </div>
+
+        {f.item_type === 'COMPOSITE' && (
+          <div className="col-span-2 rounded-lg border border-purple-500/30 bg-purple-500/10 p-3 text-xs text-purple-200 flex items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-purple-300">🧩 Composite Item (Recipe / Bill of Materials)</p>
+              <p className="text-[11px] text-purple-300/80 mt-0.5">
+                Stock is dynamically derived from component ingredients. When sold at POS, component quantities deduct automatically.
+              </p>
+            </div>
+            {f.id && onOpenRecipe && (
+              <button
+                type="button"
+                onClick={() => {
+                  const target = products.find((p) => p.id === f.id)
+                  if (target) onOpenRecipe(target)
+                }}
+                className="btn-ghost shrink-0 flex items-center gap-1.5 text-xs bg-purple-600/30 hover:bg-purple-600/50 text-white border border-purple-400/40"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                Configure Recipe
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="col-span-2">
           <label className="label flex items-center justify-between">
             <span>Description / Specifications (Optional)</span>
@@ -1181,10 +1365,6 @@ function ProductModal({
             className="input w-full resize-none text-sm leading-relaxed"
             placeholder="Detailed specifications, dimensions (e.g. 1/2&quot; x 100mm), variant details..."
           />
-        </div>
-        <div>
-          <label className="label">SKU</label>
-          <input value={f.sku} onChange={(e) => set({ sku: e.target.value })} className="input w-full" placeholder="Auto-generated if blank" />
         </div>
         <div>
           <div className="flex items-center justify-between mb-1">

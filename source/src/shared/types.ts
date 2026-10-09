@@ -77,6 +77,18 @@ export interface ExpirationEntry {
   quantity: number
 }
 
+export type ProductItemType = 'STANDARD' | 'COMPOSITE' | 'SERVICE'
+
+export interface ProductRecipeItem {
+  id?: number
+  parent_product_id: number
+  component_product_id: number
+  component_name?: string
+  component_cost_c?: number
+  quantity: number
+  unit_name: string
+}
+
 export interface Product {
   id: number
   category_id: number | null
@@ -104,6 +116,8 @@ export interface Product {
   notes: string | null
   units: ProductUnit[]
   stock_status: StockStatus
+  item_type?: ProductItemType
+  recipe?: ProductRecipeItem[]
   created_at: string
   updated_at: string
 }
@@ -129,6 +143,8 @@ export interface ProductInput {
   notes: string | null
   units: { name: string; conversion_to_base: number; barcode: string | null; selling_price_c: number; is_default: boolean }[]
   initial_stock_base?: number
+  item_type?: ProductItemType
+  recipe?: { component_product_id: number; quantity: number; unit_name: string }[]
 }
 
 export type InventoryMovementType =
