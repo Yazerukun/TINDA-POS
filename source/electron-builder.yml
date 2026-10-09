@@ -22,6 +22,11 @@ asarUnpack:
 npmRebuild: false
 electronLanguages:
   - en-US
+extraResources:
+  - from: resources/drivers
+    to: drivers
+    filter:
+      - "**/*"
 compression: store
 win:
   target:

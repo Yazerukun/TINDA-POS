@@ -1,5 +1,7 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, shell, app } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
+import { join } from 'node:path'
+import { existsSync } from 'node:fs'
 import type { Sale, StoreSettings } from '@shared/types'
 import { formatReceiptDate, receiptHtml } from '@shared/receiptHtml'
 import { autoDetectThermalPrinter, autoDetectLabelPrinter, inferPaperWidth } from '@shared/printer'
@@ -263,8 +265,22 @@ export async function printDocument(
 
   try {
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(html)}`)
-    // Give Chromium 400ms buffer to layout tables and render CSS print assets
-    await new Promise((r) => setTimeout(r, 400))
+    // Ensure document layout is completely parsed and painted before dispatching print
+    try {
+      await window.webContents.executeJavaScript(`
+        new Promise((resolve) => {
+          if (document.readyState === 'complete') {
+            requestAnimationFrame(() => requestAnimationFrame(resolve))
+          } else {
+            window.addEventListener('load', () => {
+              requestAnimationFrame(() => requestAnimationFrame(resolve))
+            })
+          }
+        })
+      `)
+    } catch {
+      await new Promise((r) => setTimeout(r, 600))
+    }
 
     if (window.isDestroyed()) {
       return { ok: false, code: 'FAILED', message: 'Print window closed before printing.' }
@@ -280,8 +296,7 @@ export async function printDocument(
     const printParams: Electron.WebContentsPrintOptions = {
       silent: !isManual,
       printBackground: true,
-      color: false, // Monochrome direct thermal: prevents chromatic dithering & driver reject
-      dpi: { horizontal: 203, vertical: 203 }, // 203 DPI native Chiteng / thermal printhead
+      color: true, // Color enabled: Windows GDI driver converts RGB to thermal burn pulses (fixes blank label issue)
       pageSize: effectivePageSize,
       margins: {
         marginType: isCustomLabel ? 'none' : 'printableArea'
@@ -327,7 +342,7 @@ export async function printLabelTest(
   options?: { manual?: boolean; deviceName?: string }
 ): Promise<PrintResult> {
   const targetDevice = options?.deviceName || settings.label_printer || ''
-  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 35, includeText: true, barWidth: 1.4, fontSize: 8 })
+  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 32, includeText: true, barWidth: 1.3, fontSize: 8 })
   const testHtml = `
     <!DOCTYPE html>
     <html>
@@ -335,19 +350,23 @@ export async function printLabelTest(
       <meta charset="utf-8">
       <style>
         @page { size: 40mm 30mm; margin: 0; }
-        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        body { margin: 0; padding: 1.5mm; background: #fff; color: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
-        .hdr { font-size: 7.5px; font-weight: 900; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 0.5mm; }
-        .sub { font-size: 9px; font-weight: 800; margin: 1mm 0 0.5mm 0; }
-        .badge { display: inline-block; font-size: 6.5px; font-weight: bold; background: #000; color: #fff; padding: 0.5mm 1.5mm; border-radius: 1mm; }
-        .footer { font-size: 6px; color: #333; margin-top: 0.5mm; font-family: monospace; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { margin: 0; padding: 1.2mm; background: #ffffff !important; color: #000000 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
+        .hdr { font-size: 7.5px; font-weight: 900; text-transform: uppercase; border-bottom: 1.5px solid #000000; padding-bottom: 0.4mm; color: #000000; }
+        .sub { font-size: 8.5px; font-weight: 800; margin: 0.8mm 0 0.3mm 0; color: #000000; }
+        .badge { display: inline-block; font-size: 6.5px; font-weight: bold; background: #000000; color: #ffffff; padding: 0.4mm 1.5mm; border-radius: 1mm; }
+        .footer { font-size: 6px; color: #000000; margin-top: 0.4mm; font-family: monospace; font-weight: bold; }
+        @media print {
+          body { background: #ffffff !important; color: #000000 !important; }
+          * { color: #000000 !important; }
+        }
       </style>
     </head>
     <body>
       <div class="hdr">${settings.store_name || 'TINDA POS'}</div>
-      <div class="sub">CHITENG CT221B</div>
-      <div style="margin: 0.5mm 0;">${testSvg}</div>
-      <div><span class="badge">HARDWARE READY</span></div>
+      <div class="sub">CHITENG CT221B READY</div>
+      <div style="margin: 0.4mm 0;">${testSvg}</div>
+      <div><span class="badge">HARDWARE OK</span></div>
       <div class="footer">${new Date().toLocaleTimeString()}</div>
     </body>
     </html>
@@ -359,6 +378,62 @@ export async function printLabelTest(
     widthMm: 40,
     heightMm: 30
   })
+}
+
+export function getDriverInstallerPath(): string | null {
+  const candidates = [
+    join(process.resourcesPath || '', 'drivers', 'Label-Printer-Driver-V1.5.exe'),
+    join(app?.getAppPath?.() || process.cwd(), 'resources', 'drivers', 'Label-Printer-Driver-V1.5.exe'),
+    'C:\\Users\\mtafl\\AppData\\Local\\Temp\\Label Printer Driver V1.5.exe'
+  ]
+  for (const c of candidates) {
+    if (c && existsSync(c)) return c
+  }
+  return null
+}
+
+export function getDriverTutorialPath(): string | null {
+  const candidates = [
+    join(process.resourcesPath || '', 'drivers', 'Chiteng-CT221B-Tutorial.pdf'),
+    join(app?.getAppPath?.() || process.cwd(), 'resources', 'drivers', 'Chiteng-CT221B-Tutorial.pdf'),
+    'C:\\Users\\mtafl\\AppData\\Local\\Temp\\Driver installation tutorial for Windows.pdf'
+  ]
+  for (const c of candidates) {
+    if (c && existsSync(c)) return c
+  }
+  return null
+}
+
+export async function installLabelDriver(): Promise<{ ok: boolean; message: string }> {
+  const exePath = getDriverInstallerPath()
+  if (!exePath) {
+    return { ok: false, message: 'Label printer driver installer package not found on this system.' }
+  }
+  try {
+    const errorMsg = await shell.openPath(exePath)
+    if (errorMsg) {
+      return { ok: false, message: errorMsg }
+    }
+    return { ok: true, message: 'Label printer driver installer launched successfully.' }
+  } catch (err) {
+    return { ok: false, message: err instanceof Error ? err.message : String(err) }
+  }
+}
+
+export async function openDriverTutorial(): Promise<{ ok: boolean; message: string }> {
+  const pdfPath = getDriverTutorialPath()
+  if (!pdfPath) {
+    return { ok: false, message: 'Driver tutorial guide PDF not found on this system.' }
+  }
+  try {
+    const errorMsg = await shell.openPath(pdfPath)
+    if (errorMsg) {
+      return { ok: false, message: errorMsg }
+    }
+    return { ok: true, message: 'Driver tutorial guide opened.' }
+  } catch (err) {
+    return { ok: false, message: err instanceof Error ? err.message : String(err) }
+  }
 }
 
 

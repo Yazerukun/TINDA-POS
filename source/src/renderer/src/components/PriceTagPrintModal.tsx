@@ -11,7 +11,9 @@ import {
   RefreshCw,
   Sliders,
   CheckCircle2,
-  Info
+  Info,
+  Wrench,
+  FileText
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { money } from '@shared/format'
@@ -64,6 +66,38 @@ export function PriceTagPrintModal({
   const [installedPrinters, setInstalledPrinters] = useState<PrinterChoiceLike[]>([])
   const [isRefreshingPrinters, setIsRefreshingPrinters] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
+  const [isInstallingDriver, setIsInstallingDriver] = useState(false)
+
+  const handleInstallDriver = async () => {
+    if (!window.api?.printer?.installDriver) return
+    setIsInstallingDriver(true)
+    try {
+      const res = await window.api.printer.installDriver()
+      if (res.ok) {
+        toastSuccess('Driver Setup Started', 'Follow the on-screen wizard to install the CT221B driver.')
+      } else {
+        toastError('Installer Notice', res.message)
+      }
+    } catch (e) {
+      toastError('Driver Error', String(e))
+    } finally {
+      setIsInstallingDriver(false)
+    }
+  }
+
+  const handleOpenTutorial = async () => {
+    if (!window.api?.printer?.openDriverTutorial) return
+    try {
+      const res = await window.api.printer.openDriverTutorial()
+      if (res.ok) {
+        toastSuccess('Tutorial Opened', 'Windows driver installation guide opened in PDF viewer.')
+      } else {
+        toastError('Tutorial Notice', res.message)
+      }
+    } catch (e) {
+      toastError('Tutorial Error', String(e))
+    }
+  }
 
   // Product selection
   const [chosenProductId, setChosenProductId] = useState<number>(
@@ -159,38 +193,56 @@ export function PriceTagPrintModal({
           }
           * {
             box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           body {
             margin: 0;
             padding: 0;
-            background: #fff;
-            color: #000;
+            background: #ffffff !important;
+            color: #000000 !important;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
           }
           .label-tag {
             width: ${widthMm};
-            height: ${heightMm};
-            padding: ${activeDims.height <= 20 ? '1mm' : '1.5mm'};
+            max-height: ${heightMm};
+            padding: ${activeDims.height <= 20 ? '0.8mm' : '1.2mm'};
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            page-break-after: always;
             border: 1px dashed #ccc;
             overflow: hidden;
             text-align: center;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .label-tag:not(:last-child) {
+            page-break-after: always;
+            break-after: page;
           }
           @media print {
-            .label-tag { border: none; }
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+            }
+            .label-tag {
+              border: none !important;
+            }
+            * {
+              color: #000000 !important;
+            }
           }
           .store-hdr {
             font-size: ${activeDims.height <= 20 ? '6px' : '7.5px'};
-            font-weight: 800;
+            font-weight: 900;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            border-bottom: 1px solid #000;
-            padding-bottom: 0.5px;
+            border-bottom: 1.5px solid #000000;
+            padding-bottom: 0.4px;
+            color: #000000;
           }
           .p-name {
             font-size: ${activeDims.height <= 20 ? '7.5px' : '9px'};
@@ -202,20 +254,23 @@ export function PriceTagPrintModal({
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
+            color: #000000;
           }
           .price-wrap {
             font-weight: 900;
-            color: #000;
+            color: #000000;
             margin: 0.5px 0;
           }
-          .currency { font-size: ${activeDims.height <= 20 ? '9px' : '11px'}; vertical-align: top; }
-          .price { font-size: ${activeDims.height <= 20 ? '13px' : '17px'}; font-weight: 900; }
+          .currency { font-size: ${activeDims.height <= 20 ? '9px' : '11px'}; vertical-align: top; color: #000000; }
+          .price { font-size: ${activeDims.height <= 20 ? '13px' : '17px'}; font-weight: 900; color: #000000; }
           .ws-price {
             font-size: 7px;
-            font-weight: 700;
-            background: #eee;
-            padding: 0.5px;
+            font-weight: 800;
+            background: #f0f0f0;
+            border: 1px solid #000000;
+            padding: 0.5px 1px;
             border-radius: 1.5px;
+            color: #000000;
           }
           .barcode-box {
             display: flex;
@@ -226,12 +281,14 @@ export function PriceTagPrintModal({
           .barcode-box svg {
             max-width: 95%;
             height: auto;
+            color: #000000;
           }
           .sku-tag {
             font-size: 6px;
-            color: #333;
+            color: #000000;
             text-transform: uppercase;
             font-family: monospace;
+            font-weight: bold;
           }
         </style>
       </head>
@@ -342,7 +399,7 @@ export function PriceTagPrintModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
             <button
               type="button"
               onClick={() => void scanPrinters()}
@@ -365,23 +422,41 @@ export function PriceTagPrintModal({
           </div>
         </div>
 
-        {/* Driver Guidance when not detected */}
-        {!detectedPrinter && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200 flex items-start gap-2.5">
-            <Info className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-1">
+        {/* Driver Guidance & 1-Click Installer Box */}
+        <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3 text-xs text-sky-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <Info className="h-4 w-4 text-sky-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
               <p className="font-bold text-white flex items-center gap-1.5">
-                Chiteng CT221B Connection Notice
+                Chiteng CT221B Driver &amp; Setup Assistant
               </p>
-              <p className="text-[11px] text-amber-300/90 leading-relaxed">
-                A solid green light on the physical printer means power &amp; paper roll are ready. If printing does not start, please install the official PC driver from <a href="http://www.claiot.com" target="_blank" rel="noreferrer" className="underline font-bold text-amber-200 hover:text-white">www.claiot.com</a>.
-              </p>
-              <p className="text-[11px] text-amber-200 font-semibold">
-                Tip: You can also click <span className="text-white underline">"Print Dialog (Manual)"</span> below to choose your printer from the Windows list.
+              <p className="text-[11px] text-sky-300/90 leading-relaxed">
+                Solid green light indicates printer is ready. If paper ejects blank or printer isn&apos;t detected, run the bundled official driver installer.
               </p>
             </div>
           </div>
-        )}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => void handleInstallDriver()}
+              disabled={isInstallingDriver}
+              className="px-2.5 py-1.5 rounded-lg border border-sky-500/40 bg-sky-500/20 hover:bg-sky-500/30 text-white font-semibold text-xs flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+              title="Launch official Chiteng CT221B / Clabel Windows Driver Setup"
+            >
+              <Wrench className="h-3 w-3 text-sky-300" />
+              <span>{isInstallingDriver ? 'Launching...' : 'Install Driver (V1.5)'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleOpenTutorial()}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-ink-850 hover:bg-ink-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center gap-1.5 transition active:scale-95"
+              title="Open Windows Driver Installation Tutorial PDF"
+            >
+              <FileText className="h-3 w-3 text-slate-400" />
+              <span>Driver Tutorial (PDF)</span>
+            </button>
+          </div>
+        </div>
 
         {/* Product Picker */}
         <div>

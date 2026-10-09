@@ -22,6 +22,7 @@ pnpm-store/
 
 # === Installers (large .exe binaries) ===
 *.exe
+!source/resources/drivers/*.exe
 installers/*.exe
 installers/TINDA-POS-Windows/*.exe
 

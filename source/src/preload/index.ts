@@ -167,7 +167,9 @@ const api: TindaApi = {
     printLines: (lines: string[], options?: { manual?: boolean }) => invoke<import('@shared/ipc').PrintResult>('printer:printLines', lines, options),
     printDocument: (html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter'; deviceName?: string; widthMm?: number; heightMm?: number }) => invoke<import('@shared/ipc').PrintResult>('printer:printDocument', html, options),
     testPrintLabel: (options?: { manual?: boolean; deviceName?: string }) => invoke<import('@shared/ipc').PrintResult>('printer:testPrintLabel', options),
-    saveLabel: (input: { name: string; paperSize?: string }) => invoke<import('@shared/types').StoreSettings>('printer:saveLabel', input)
+    saveLabel: (input: { name: string; paperSize?: string }) => invoke<import('@shared/types').StoreSettings>('printer:saveLabel', input),
+    installDriver: () => invoke<{ ok: boolean; message: string }>('printer:installDriver'),
+    openDriverTutorial: () => invoke<{ ok: boolean; message: string }>('printer:openDriverTutorial')
   },
   transactions: {
     list: (opts) => invoke<{ rows: import('@shared/types').Sale[]; total: number }>('transactions:list', opts),

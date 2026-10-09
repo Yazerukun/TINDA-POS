@@ -659,6 +659,12 @@ handle('printer:saveLabel', (_e: IpcMainInvokeEvent, input: { name: string; pape
     label_paper_size: input.paperSize || '40x30'
   })
 })
+handle('printer:installDriver', async () => {
+  return printingSvc.installLabelDriver()
+})
+handle('printer:openDriverTutorial', async () => {
+  return printingSvc.openDriverTutorial()
+})
 
 // ---- Transactions ----
 handle('transactions:list', (_e: IpcMainInvokeEvent, opts: unknown) => listSales(db(), (opts ?? {}) as object))

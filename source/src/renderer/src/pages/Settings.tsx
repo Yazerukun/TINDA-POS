@@ -33,6 +33,8 @@ import {
   Globe,
   BookOpen,
   Zap,
+  Wrench,
+  FileText,
   Tag
 } from 'lucide-react'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
@@ -1414,7 +1416,7 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
             <span>Chiteng CT221B Setup &amp; Alignment Instructions:</span>
           </div>
           <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
-            <li><strong>PC USB Driver:</strong> When plugged in for the first time, Windows installs the driver automatically. If needed, download the official PC driver from <a href="http://www.ctaiot.com" target="_blank" rel="noreferrer" className="text-indigo-300 underline font-semibold">www.ctaiot.com</a>.</li>
+            <li><strong>PC USB Driver:</strong> When plugged in for the first time, Windows may install the generic driver. Use the bundled <strong>V1.5 Driver Installer</strong> below to ensure high-contrast direct thermal printing.</li>
             <li><strong>Paper Roll Loading:</strong> Slide the paper guide to <code>OPEN</code>, insert the thermal label roll against the left guide, push the clamp to hug the roll snugly, and slide latch back to <code>CLOSE</code>.</li>
             <li><strong>No Ink Needed:</strong> Uses direct thermal barcode paper. High-density Code 128 barcodes print in ~0.5 seconds per label.</li>
           </ul>
@@ -1439,6 +1441,28 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
             className="btn-ghost flex items-center gap-2 text-sky-300 border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
           >
             <Printer className="h-4 w-4" /> Manual Dialog Test
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await window.api.printer.installDriver()
+              if (!res.ok) alert(res.message || 'Failed to launch installer')
+            }}
+            className="btn-ghost flex items-center gap-2 text-amber-300 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20"
+            title="Launch bundled CT221B / Clabel Windows Driver Installer (V1.5)"
+          >
+            <Wrench className="h-4 w-4" /> Install CT221B Driver (V1.5)
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await window.api.printer.openDriverTutorial()
+              if (!res.ok) alert(res.message || 'Failed to open tutorial PDF')
+            }}
+            className="btn-ghost flex items-center gap-2 text-emerald-300 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20"
+            title="Open CT221B Windows Driver Setup Guide (PDF)"
+          >
+            <FileText className="h-4 w-4" /> Driver Guide (PDF)
           </button>
         </div>
       </div>
