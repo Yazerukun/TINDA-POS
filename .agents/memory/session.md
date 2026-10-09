@@ -5,6 +5,35 @@ IDLE | None | 2026-10-09 16:03
 
 ## Recent Handoff History
 
+### 2026-10-09 16:38 | agy (v1.0.94 Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
+- **Task**: Fix Chiteng CT221B printer execution & architect resilient auto-update engine with auto-retry and Windows file-lock shielding.
+- **Done**:
+  - Auto-incremented version from `1.0.93` to `1.0.94` across all 5 standard files.
+  - In `printing.ts`: Enforced monochrome direct thermal printing (`color: false`), 203 DPI rasterization (`dpi: { horizontal: 203, vertical: 203 }`), extended Windows Print Spooler delay buffer to 2,500ms, and implemented auto-target label printer resolution.
+  - In `printer.ts`: Expanded `LABEL_PRINTER_KEYWORD_REGEX` to recognize additional driver variants.
+  - In `PriceTagPrintModal.tsx`: Added Cupertino driver guidance alert with official PC driver links (`www.claiot.com`) and automatic fallback routing to the Windows System Print Dialog when no label printer is detected.
+  - In `updateDownload.ts`: Raised timeout thresholds to 30s/60s and added `retryOperation` helper.
+  - In `updateTransport.ts`: Wrapped patch downloads in 3-attempt resilient retry and expanded `officialResponseUrl` allowlist to include official Azure Blob storage (`*.blob.core.windows.net`) and Fastly CDN edges.
+  - In `patchService.ts`: Integrated Windows file-lock retry shield (`safeRmDirWithRetry` and `safeRenameWithRetry` with 5 attempts) to prevent `EBUSY` / `EPERM` crashes.
+  - In `UpdateModal.tsx`: Added gentle error recovery notice with direct GitHub Release manual links.
+  - Passed 449/449 Vitest unit tests, 0 TypeScript errors, and all master invariants.
+  - Published live feature patch `TindaPOS-Feature-Patch-1.0.94.zip` to GitHub Releases `Yazerukun/TINDA-POS`.
+- **Files Touched**:
+  - `source/src/main/services/printing.ts`
+  - `source/src/shared/printer.ts`
+  - `source/src/renderer/src/components/PriceTagPrintModal.tsx`
+  - `source/src/main/services/updateDownload.ts`
+  - `source/src/main/services/updateTransport.ts`
+  - `source/src/main/services/patchService.ts`
+  - `source/src/renderer/src/components/update/UpdateModal.tsx`
+  - `source/package.json`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+- **Next Steps**:
+  - Ready for cashier update detection and verification.
+
 ### 2026-10-09 16:00 | agy (v1.0.93 Comprehensive Master Full Desktop Release Edition)
 - **Task**: Full Windows desktop compilation (`Setup.exe` & `Portable.exe`), GitHub release publishing, and asset upload.
 - **Done**:

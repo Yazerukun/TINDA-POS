@@ -27,7 +27,20 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.93 (Comprehensive Master Full Desktop Release Edition)**
+- Current Version: **v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)**
+
+## Key Features in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
+1. **Chiteng CT221B Thermal Hardware Spooler & Direct Monochrome Standard**:
+   - Switched label print jobs to strict direct thermal monochrome (`color: false`) and 203 DPI native rasterization (`dpi: { horizontal: 203, vertical: 203 }`), eliminating color conversions that cause thermal printer drivers to reject print jobs.
+   - Extended Windows Print Spooler delay buffer before window destruction from 600ms to 2,500ms, ensuring Windows finishes streaming raw EMF/GDI commands to the USB printer port before the temporary webContents is torn down.
+   - Auto-target resolution: Automatically detects connected label printers and routes jobs specifically to the label device instead of falling back to default office/inkjet printers.
+   - Intelligent driver detection guidance & manual print fallback: When no dedicated label printer driver is configured in Windows, the studio displays a clear Cupertino notice with official PC driver links (`www.claiot.com`) and automatically routes to the Windows System Print Dialog so merchants can pick their printer directly without silent failures.
+   - Expanded keyword match engine in `LABEL_PRINTER_KEYWORD_REGEX` supporting Chinese and English driver variants (`ct221b`, `clabel`, `chiteng`, `驰腾`, `dudian`, `度点`, `pos-label`, etc.).
+2. **Resilient Auto-Update Engine (Zero Network Drops & Anti-Lock Windows Shield)**:
+   - Extended request timeout thresholds (30s connect timeout, 60s idle chunk timeout) with a 3-attempt exponential backoff retry loop (`retryOperation`) for slow or jittery mobile/prepaid store connections.
+   - Expanded CDN origin allowlist to include official Azure Blob storage (`*.blob.core.windows.net`) and Fastly CDN edges used by GitHub Releases, eliminating "unexpected update source" errors on asset redirects.
+   - Integrated Windows file-lock retry shield (`safeRmDirWithRetry` and `safeRenameWithRetry` with 5 attempts and 200ms delay) to prevent `EBUSY` / `EPERM` crashes when Windows Defender or search indexing scans freshly extracted patches.
+   - Gentle Cupertino update error state with direct manual download links to GitHub Releases.
 
 ## Key Features in v1.0.93 (Comprehensive Master Full Desktop Release Edition)
 1. **Full Windows Desktop Application Compilation (`Setup.exe` & `Portable.exe`)**:

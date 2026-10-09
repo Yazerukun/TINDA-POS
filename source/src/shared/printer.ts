@@ -134,7 +134,7 @@ export function printerStatusLabel(status: PrinterStatus): string {
 }
 
 export const LABEL_PRINTER_KEYWORD_REGEX =
-  /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian|度点|label|barcode|sticker|niimbot|phomemo|tsc|zebra|dymo|gprinter.*label|xprinter.*label|4bar|beeprt|idprt|polono|supvan|aclas)/i
+  /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian|度点|label|barcode|sticker|niimbot|phomemo|tsc|zebra|dymo|gprinter|xprinter.*label|4bar|beeprt|idprt|polono|supvan|aclas|bluetooth.*label|pos-?label)/i
 
 export function isLabelPrinterName(name: string): boolean {
   if (!name) return false

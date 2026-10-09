@@ -175,6 +175,31 @@ export async function extractZipArchive(zipPath: string, targetDir: string): Pro
   }
 }
 
+async function safeRmDirWithRetry(dirPath: string, attempts = 5, delayMs = 200): Promise<void> {
+  if (!existsSync(dirPath)) return
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      rmSync(dirPath, { recursive: true, force: true })
+      return
+    } catch (err) {
+      if (i === attempts) throw err
+      await new Promise((r) => setTimeout(r, delayMs * i))
+    }
+  }
+}
+
+async function safeRenameWithRetry(oldPath: string, newPath: string, attempts = 5, delayMs = 200): Promise<void> {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      renameSync(oldPath, newPath)
+      return
+    } catch (err) {
+      if (i === attempts) throw err
+      await new Promise((r) => setTimeout(r, delayMs * i))
+    }
+  }
+}
+
 /**
  * Applies a downloaded feature patch archive.
  * Performs validation, atomic swap, and initial sentinel configuration.
@@ -185,9 +210,7 @@ export async function applyPatchArchive(zipPath: string, expectedVersion: string
   const backupDir = join(appDirs().root, 'patches_prev')
 
   // Clean staging directory
-  if (existsSync(stagingDir)) {
-    rmSync(stagingDir, { recursive: true, force: true })
-  }
+  await safeRmDirWithRetry(stagingDir)
   mkdirSync(stagingDir, { recursive: true })
 
   // Extract archive
@@ -196,31 +219,29 @@ export async function applyPatchArchive(zipPath: string, expectedVersion: string
   // Verify manifest
   const manifestPath = join(stagingDir, 'manifest.json')
   if (!existsSync(manifestPath)) {
-    rmSync(stagingDir, { recursive: true, force: true })
+    await safeRmDirWithRetry(stagingDir).catch(() => undefined)
     throw new Error('Patch archive is invalid: missing manifest.json.')
   }
 
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as PatchManifest
   if (manifest.version !== expectedVersion) {
-    rmSync(stagingDir, { recursive: true, force: true })
+    await safeRmDirWithRetry(stagingDir).catch(() => undefined)
     throw new Error(`Patch version mismatch: expected ${expectedVersion}, found ${manifest.version}.`)
   }
 
   const rendererHtml = join(stagingDir, 'renderer', 'index.html')
   if (!existsSync(rendererHtml)) {
-    rmSync(stagingDir, { recursive: true, force: true })
+    await safeRmDirWithRetry(stagingDir).catch(() => undefined)
     throw new Error('Patch archive is invalid: missing renderer payload.')
   }
 
-  // Swap directories safely
+  // Swap directories safely with Windows file lock retries
   try {
-    if (existsSync(backupDir)) {
-      rmSync(backupDir, { recursive: true, force: true })
-    }
+    await safeRmDirWithRetry(backupDir)
     if (existsSync(patchDir)) {
-      renameSync(patchDir, backupDir)
+      await safeRenameWithRetry(patchDir, backupDir)
     }
-    renameSync(stagingDir, patchDir)
+    await safeRenameWithRetry(stagingDir, patchDir)
 
     // Initialize sentinel
     const sentinel: PatchSentinel = {
@@ -233,13 +254,11 @@ export async function applyPatchArchive(zipPath: string, expectedVersion: string
     writePatchSentinel(sentinel)
 
     // Remove backup after successful swap
-    if (existsSync(backupDir)) {
-      rmSync(backupDir, { recursive: true, force: true })
-    }
+    await safeRmDirWithRetry(backupDir).catch(() => undefined)
   } catch (err) {
     // If swap failed and backup exists, restore previous patch
     if (!existsSync(patchDir) && existsSync(backupDir)) {
-      renameSync(backupDir, patchDir)
+      await safeRenameWithRetry(backupDir, patchDir).catch(() => undefined)
     }
     throw err
   }

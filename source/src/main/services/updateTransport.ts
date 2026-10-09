@@ -9,7 +9,7 @@ import type { UpdateProgressHandler, UpdateTransport } from './updateService'
 import { UpdateCheckError } from './updateService'
 import { appDirs, getDb } from '../database/connection'
 import { createBackupSync, validateBackupDatabase } from '../repositories/backup'
-import { consumeWithIdleTimeout, UPDATE_REQUEST_START_TIMEOUT_MS } from './updateDownload'
+import { consumeWithIdleTimeout, retryOperation, UPDATE_REQUEST_START_TIMEOUT_MS } from './updateDownload'
 import { downloadInstalledUpdate } from './installedUpdate'
 import { applyPatchArchive } from './patchService'
 
@@ -285,47 +285,50 @@ export class ElectronUpdateTransport implements UpdateTransport {
     }
     if (!isOfficialUpdateUrl(asset.url)) throw new Error('The patch file has an unexpected source.')
 
-    let res: Response
-    try {
-      res = await fetchWithStartTimeout(asset.url, { headers: { 'User-Agent': 'TINDA-POS' } })
-    } catch (err) {
-      throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
-    }
-    if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`)
-    if (res.url && !officialResponseUrl(res.url)) throw new Error('The patch download redirected to an unexpected source.')
-
     const dir = join(appDirs().root, 'updates')
     await mkdir(dir, { recursive: true })
     const filePath = join(dir, asset.name)
-    const total = Number(res.headers.get('content-length')) || 0
 
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const out = createWriteStream(filePath)
-        const reader = res.body?.getReader()
-        let received = 0
-        if (!reader) {
-          out.end()
-          reject(new Error('The server did not provide a downloadable patch file.'))
-          return
-        }
-        out.on('error', (err) => reject(err))
-        void consumeWithIdleTimeout(reader, (value) => {
-            received += value?.byteLength ?? 0
-            out.write(Buffer.from(value))
-            if (total > 0) onProgress(received, total)
-          })
-          .then(() => out.end(() => resolve()))
-          .catch((err: unknown) => {
-            out.destroy()
-            reject(err instanceof Error && err.message ? err : new Error('Download failed'))
-          })
-      })
-      return { filePath }
-    } catch (err) {
-      await unlink(filePath).catch(() => undefined)
-      throw err
-    }
+    return await retryOperation(async () => {
+      let res: Response
+      try {
+        res = await fetchWithStartTimeout(asset.url, { headers: { 'User-Agent': 'TINDA-POS' } })
+      } catch (err) {
+        throw new Error(err instanceof Error && err.message ? `Download failed: ${err.message}` : 'Download failed')
+      }
+      if (!res.ok) throw new Error(`Download failed (HTTP ${res.status}).`)
+      if (res.url && !officialResponseUrl(res.url)) throw new Error('The patch download redirected to an unexpected source.')
+
+      const total = Number(res.headers.get('content-length')) || 0
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const out = createWriteStream(filePath)
+          const reader = res.body?.getReader()
+          let received = 0
+          if (!reader) {
+            out.end()
+            reject(new Error('The server did not provide a downloadable patch file.'))
+            return
+          }
+          out.on('error', (err) => reject(err))
+          void consumeWithIdleTimeout(reader, (value) => {
+              received += value?.byteLength ?? 0
+              out.write(Buffer.from(value))
+              if (total > 0) onProgress(received, total)
+            })
+            .then(() => out.end(() => resolve()))
+            .catch((err: unknown) => {
+              out.destroy()
+              reject(err instanceof Error && err.message ? err : new Error('Download failed'))
+            })
+        })
+        return { filePath }
+      } catch (err) {
+        await unlink(filePath).catch(() => undefined)
+        throw err
+      }
+    }, 3, 1500)
   }
 
   async applyPatch(filePath: string, version: string): Promise<void> {
@@ -410,6 +413,8 @@ function officialResponseUrl(url: string): boolean {
     if (GITHUB_ASSET_HOSTS.has(parsed.host)) return true
     if (parsed.host.endsWith('.githubusercontent.com') || parsed.host.endsWith('.github.com')) return true
     if (parsed.host.endsWith('.amazonaws.com') && parsed.host.includes('github')) return true
+    if (parsed.host.endsWith('.blob.core.windows.net')) return true
+    if (parsed.host.endsWith('.fastly.net')) return true
     if (parsed.host === 'github.com') return parsed.pathname.startsWith(`/${UPDATE_OWNER}/${UPDATE_REPO}/`)
     return false
   } catch {

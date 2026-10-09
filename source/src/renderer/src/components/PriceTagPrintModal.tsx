@@ -243,10 +243,15 @@ export function PriceTagPrintModal({
 
     try {
       const targetDevice = detectedPrinter?.name || settings?.label_printer || undefined
+      const effectiveManual = manual || !targetDevice
+
+      if (!targetDevice && !manual) {
+        toastInfo('Select Printer Device', 'No dedicated label printer configured. Opening print dialog to select your printer.')
+      }
 
       if (window.api?.printer?.printDocument) {
         const res = await window.api.printer.printDocument(fullHtml, {
-          manual,
+          manual: effectiveManual,
           title: `Price Tag - ${activeProduct.name}`,
           deviceName: targetDevice,
           widthMm: activeDims.width,
@@ -255,8 +260,8 @@ export function PriceTagPrintModal({
 
         if (res.ok) {
           toastSuccess(
-            manual ? 'System Print Dialog' : 'Price Tags Printed',
-            `${copies} label(s) sent to ${targetDevice || 'default printer'}.`
+            effectiveManual ? 'System Print Dialog Opened' : 'Price Tags Printed',
+            `${copies} label(s) dispatched to ${targetDevice || 'printer'}.`
           )
           onClose()
         } else if (res.code !== 'DISABLED') {
@@ -359,6 +364,24 @@ export function PriceTagPrintModal({
             </button>
           </div>
         </div>
+
+        {/* Driver Guidance when not detected */}
+        {!detectedPrinter && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200 flex items-start gap-2.5">
+            <Info className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-white flex items-center gap-1.5">
+                Chiteng CT221B Connection Notice
+              </p>
+              <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                A solid green light on the physical printer means power &amp; paper roll are ready. If printing does not start, please install the official PC driver from <a href="http://www.claiot.com" target="_blank" rel="noreferrer" className="underline font-bold text-amber-200 hover:text-white">www.claiot.com</a>.
+              </p>
+              <p className="text-[11px] text-amber-200 font-semibold">
+                Tip: You can also click <span className="text-white underline">"Print Dialog (Manual)"</span> below to choose your printer from the Windows list.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Product Picker */}
         <div>

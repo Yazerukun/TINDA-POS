@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.93-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.94-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-449_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,25 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.93](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Feature-Patch-1.0.93.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.93 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Setup-1.0.93.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Portable-1.0.93.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.94](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Feature-Patch-1.0.94.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.94 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Setup-1.0.94.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Portable-1.0.94.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
+
+> **Chiteng CT221B Direct Thermal Monochrome Spooler, 203 DPI Native Rasterization, Extended 2.5s Spool Buffer, Auto-Target Routing, Driver Guidance Notice, and Resilient Auto-Update Engine with 3-Strike Retry & Windows File-Lock Shield.**
+
+- 🏷️ **Chiteng CT221B Thermal Spooler & Direct Monochrome Standard**:
+  - Enforced strict direct thermal monochrome (`color: false`) and 203 DPI native rasterization (`dpi: { horizontal: 203, vertical: 203 }`) to eliminate color conversions that cause thermal printer drivers to reject print jobs.
+  - Extended Windows Print Spooler delay buffer before window destruction from 600ms to 2,500ms, ensuring Windows finishes streaming raw EMF/GDI spool commands to the USB printer port before the temporary webContents is closed.
+  - Auto-target resolution: Automatically detects connected label printers and routes jobs specifically to the label device instead of falling back to default office/inkjet printers.
+  - Driver installation guidance & manual print fallback: When no dedicated label printer driver is configured in Windows, the studio displays a clear Cupertino notice with official PC driver links (`www.claiot.com`) and automatically routes to the Windows System Print Dialog so merchants can pick their printer directly without silent failures.
+  - Expanded keyword match engine in `LABEL_PRINTER_KEYWORD_REGEX` supporting Chinese and English driver variants (`ct221b`, `clabel`, `chiteng`, `驰腾`, `dudian`, `度点`, `pos-label`, etc.).
+- 🛡️ **Resilient Auto-Update Engine (Zero Network Drops & Anti-Lock Windows Shield)**:
+  - Extended request timeout thresholds (30s connect timeout, 60s idle chunk timeout) with a 3-attempt exponential backoff retry loop (`retryOperation`) for slow or jittery mobile/prepaid store connections.
+  - Expanded CDN origin allowlist to include official Azure Blob storage (`*.blob.core.windows.net`) and Fastly CDN edges used by GitHub Releases, eliminating "unexpected update source" errors on asset redirects.
+  - Integrated Windows file-lock retry shield (`safeRmDirWithRetry` and `safeRenameWithRetry` with 5 attempts and 200ms delay) to prevent `EBUSY` / `EPERM` crashes when Windows Defender or search indexing scans freshly extracted patches.
+  - Gentle Cupertino update error state with direct manual download links to GitHub Releases.
 
 ## ✨ What's New in v1.0.93 (Comprehensive Master Full Desktop Release Edition)
 

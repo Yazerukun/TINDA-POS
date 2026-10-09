@@ -343,13 +343,26 @@ export function UpdateModal(): React.JSX.Element | null {
           </div>
         )}
 
-        {/* Error State */}
+        {/* Error State with Gentle Recovery */}
         {isError && (
-          <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300 flex items-start gap-2.5">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-            <div>
-              <p className="font-semibold text-red-200">Update Encountered an Error</p>
-              <p className="mt-0.5 text-red-300/90 leading-relaxed">{event.message}</p>
+          <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-300 flex items-start gap-2.5">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+            <div className="space-y-1">
+              <p className="font-semibold text-white">Connection or Download Interrupted</p>
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">{event.message}</p>
+              {event.available?.version && (
+                <p className="pt-1 text-[11px] text-slate-300">
+                  Click <strong>Retry Download</strong> below, or download installer manually from{' '}
+                  <a
+                    href={`https://github.com/Yazerukun/TINDA-POS/releases/tag/v${event.available.version}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline text-brand-300 hover:text-white font-semibold"
+                  >
+                    GitHub Releases →
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         )}

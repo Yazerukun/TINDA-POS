@@ -2,7 +2,7 @@ import { BrowserWindow } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
 import type { Sale, StoreSettings } from '@shared/types'
 import { formatReceiptDate, receiptHtml } from '@shared/receiptHtml'
-import { autoDetectThermalPrinter, inferPaperWidth } from '@shared/printer'
+import { autoDetectThermalPrinter, autoDetectLabelPrinter, inferPaperWidth } from '@shared/printer'
 import { generateBarcodeSvg } from '@shared/barcodeSvg'
 import { buildReceiptLines } from './checkout'
 
@@ -270,18 +270,26 @@ export async function printDocument(
       return { ok: false, code: 'FAILED', message: 'Print window closed before printing.' }
     }
 
+    const printers = await window.webContents.getPrintersAsync()
+    let targetPrinter = options?.deviceName
+    if (!targetPrinter && isCustomLabel) {
+      const detected = autoDetectLabelPrinter(printers)
+      if (detected) targetPrinter = detected.name
+    }
+
     const printParams: Electron.WebContentsPrintOptions = {
       silent: !isManual,
       printBackground: true,
-      color: true,
+      color: false, // Monochrome direct thermal: prevents chromatic dithering & driver reject
+      dpi: { horizontal: 203, vertical: 203 }, // 203 DPI native Chiteng / thermal printhead
       pageSize: effectivePageSize,
       margins: {
         marginType: isCustomLabel ? 'none' : 'printableArea'
       }
     }
 
-    if (options?.deviceName) {
-      printParams.deviceName = options.deviceName
+    if (targetPrinter) {
+      printParams.deviceName = targetPrinter
     }
 
     return await new Promise((resolve) => {
@@ -294,7 +302,7 @@ export async function printDocument(
               code: 'PRINTED',
               message: isManual
                 ? 'Document sent to system print dialog.'
-                : 'Document printed successfully.'
+                : `Document printed successfully to "${targetPrinter || 'thermal printer'}".`
             })
           } else {
             const isCancelled = /cancel/i.test(failureReason || '')
@@ -308,8 +316,8 @@ export async function printDocument(
       )
     })
   } finally {
-    // Keep window alive briefly for Windows Spooler to buffer
-    await new Promise((r) => setTimeout(r, 600))
+    // Keep window alive for Windows Print Spooler to finish buffering raw EMF/GDI spool
+    await new Promise((r) => setTimeout(r, 2500))
     if (!window.isDestroyed()) window.destroy()
   }
 }

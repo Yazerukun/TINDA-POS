@@ -1,5 +1,24 @@
-export const UPDATE_REQUEST_START_TIMEOUT_MS = 15000
-export const UPDATE_DOWNLOAD_IDLE_TIMEOUT_MS = 30000
+export const UPDATE_REQUEST_START_TIMEOUT_MS = 30000
+export const UPDATE_DOWNLOAD_IDLE_TIMEOUT_MS = 60000
+
+export async function retryOperation<T>(
+  operation: () => Promise<T>,
+  attempts = 3,
+  delayMs = 1200
+): Promise<T> {
+  let lastError: unknown
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await operation()
+    } catch (err) {
+      lastError = err
+      if (i < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs * i))
+      }
+    }
+  }
+  throw lastError
+}
 
 export interface DownloadStreamReader<T> {
   read(): Promise<{ done: boolean; value?: T }>
