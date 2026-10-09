@@ -5,7 +5,7 @@ import { useNav } from '../stores/nav'
 import { useUpdate } from '../stores/update'
 import { Sidebar } from '../components/layout/Sidebar'
 import { ToastHost } from '../components/ui/ToastHost'
-import { UpdateModal } from '../components/update/UpdateModal'
+import { UnifiedUpdateCapsule } from '../components/update/UnifiedUpdateCapsule'
 import { Dashboard } from '../pages/Dashboard'
 import { POS } from '../pages/POS'
 import { Inventory } from '../pages/Inventory'
@@ -92,7 +92,7 @@ export function Shell(): React.JSX.Element {
         </div>
       </main>
       <ToastHost />
-      <UpdateModal />
+      <UnifiedUpdateCapsule />
       <HelpGuideModal />
       <FloatingWidgetsDock />
       <TindaCommunityChat />

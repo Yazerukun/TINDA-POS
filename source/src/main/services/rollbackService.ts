@@ -44,7 +44,7 @@ export class RollbackService {
       }
     } catch {}
 
-    const url = 'https://api.github.com/repos/Yazerukun/TINDA-POS/releases'
+    const url = 'https://api.github.com/repos/Yazerukun/TINDA-POS/releases?per_page=100'
     let releases: ReleaseInfo[] = []
     try {
       const headers: Record<string, string> = {
