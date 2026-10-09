@@ -142,7 +142,15 @@ describe('patchService tests', () => {
     writeFileSync(join(testZipSource, 'hello.txt'), 'TINDA POS ZIP TEST', 'utf8')
 
     const zipFile = join(testDir, 'test.zip')
-    execSync(`python3 -m zipfile -c "${zipFile}" hello.txt`, { cwd: testZipSource })
+    if (process.platform === 'win32') {
+      execSync(`tar -a -cf "${zipFile}" hello.txt`, { cwd: testZipSource })
+    } else {
+      try {
+        execSync(`zip -q "${zipFile}" hello.txt`, { cwd: testZipSource })
+      } catch {
+        execSync(`python3 -m zipfile -c "${zipFile}" hello.txt`, { cwd: testZipSource })
+      }
+    }
 
     const destDir = join(testDir, 'extracted')
     const { extractZipArchive } = await import('../patchService')

@@ -1690,3 +1690,29 @@
   - `TindaPOS-Setup-1.0.84.exe.blockmap` — Delta update blockmap
   - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
   - `SHA256SUMS-v1.0.84.txt` — Official release cryptographic hashes
+
+---
+
+## 78. Architectural Blueprint: Unified Cupertino Minimize-to-Dock Architecture for Tinda Community Chat & FloatingWidgetsDock (v1.0.85 Spec)
+* **Root Problem Diagnosed:**
+  - In previous implementations, `FloatingWidgetsDock.tsx` evaluated `if (isAiOpen || isChatOpen) return null`, completely hiding the bottom dock whenever either widget was opened.
+  - Clicking the `<Minus />` button inside `TindaCommunityChat.tsx` merely collapsed the window into a floating 240px draggable bar (`isOpen && isMinimized`) positioned arbitrarily on top of cashier screens, leaving screen clutter and obstructing the POS cart and dashboard items.
+  - On compact 330px widths, the header suffered from button congestion (6 buttons: Volume, Dev Key, Refresh, Width Toggle, Minus, Close) with unconstrained title widths, risking action buttons being pushed off-screen or rendered unclickable.
+  - The width toggle used `<Minimize2 />` iconography, creating visual confusion with window minimization. The tooltip also retained outdated legacy strings (`"Minimize Lounge"`).
+* **Architectural Upgrades & Design Contract:**
+  1. **True Seamless Minimize-to-Dock Lifecycle:**
+     - `FloatingWidgetsDock.tsx` visibility logic upgraded to check `isAnyFullyOpen = (isAiOpen && !isAiMinimized) || (isChatOpen && !isChatMinimized)`. When Chat or TindaBot is minimized, the unified `FloatingWidgetsDock` surfaces immediately.
+     - Clicking the **Minimize (`—`)** button in `TindaCommunityChat` smoothly transitions the window into the unified dock capsule (`[ 🤖 Ask AI ] [ 💬 Chat · Minimized 🟢 ] [ — ]`).
+     - Preserves DOM state in memory without unmounting (using zero-opacity/scale transition or non-destructive CSS display toggles) so draft text, loaded messages, scroll offsets, and active connections are preserved with 0ms resume latency.
+  2. **Reactive Minimized Dock State & Unread Pipeline:**
+     - The `FloatingWidgetsDock` `[ 💬 Chat ]` button reflects an active minimized badge with live online peer indicators (`🟢`).
+     - When background messages or developer announcements arrive, the dock triggers the Web Audio notification chime and flashes the pulsing `NEW` indicator badge.
+     - 1-tap on `[ 💬 Chat ]` in the dock restores the window immediately at its designated or dragged coordinate.
+  3. **330px Ergonomic Header De-cluttering & Cupertino Typography:**
+     - Restructure header layout with strict `min-w-0` title truncation.
+     - Primary window controls (**Minimize to Dock**, **Close**, **Width Toggle**) are fixed and guaranteed 100% visible across all screen sizes.
+     - Width toggle uses explicit `<Columns2 />` icon with clear tooltips (`"Compact 330px"` / `"Expand 390px"`).
+     - Standardize tooltips to 100% Strict English (`"Minimize to Dock"`, `"Close Chat"`).
+  4. **Full Parity Across Widgets:**
+     - Synchronize the exact same seamless minimize-to-dock lifecycle across both `TindaCommunityChat` and `TindaAiAssistantModal` for consistent, predictable desktop UX.
+

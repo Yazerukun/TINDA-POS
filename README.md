@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.84-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.85-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-429_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,27 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.84](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Feature-Patch-1.0.84.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.84 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Setup-1.0.84.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-Portable-1.0.84.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.84/TindaPOS-1.0.84.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.85](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Feature-Patch-1.0.85.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.85 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Setup-1.0.85.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Portable-1.0.85.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-1.0.85.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)
+
+> **Seamless Minimize-to-Dock Lifecycle, In-Memory State Retention with Zero-Lag Resume, Reactive Minimized Dock Indicators & Unread Badges, and De-cluttered 330px Ergonomic Headers.**
+
+- 💬 **True Seamless Minimize-to-Dock Lifecycle**:
+  - Clicking **Minimize (`—`)** in Community Chat or TindaBot AI smoothly docks the window directly into the unified `FloatingWidgetsDock` capsule (`[ 🤖 Ask AI ] [ 💬 Chat · Min 🟢 ] [ — ]`).
+  - Completely eliminates awkward orphaned floating bars on screen, ensuring the POS checkout cart and totals remain 100% unobstructed.
+  - Active DOM state stays in memory without unmounting: draft input text, loaded messages, scroll position, audio context, and background connections resume instantly with 0.0s latency.
+- 🟢 **Reactive Minimized Dock State & Unread Pipeline**:
+  - Minimized buttons in the dock show active status indicators with live peer counters.
+  - Incoming background messages and developer announcements trigger the Web Audio chime and flash the pulsing `NEW` red badge.
+  - 1-click on `Chat` in the dock instantly pops the window back up at its exact screen coordinate.
+- 📐 **330px Ergonomic Header De-cluttering & Cupertino Standards**:
+  - Restructured header with strict `min-w-0` truncation so titles and store names never squeeze or push action buttons off-screen.
+  - Primary window controls (**Minimize to Dock**, **Close**, **Width Toggle**) are guaranteed 100% visible across all screen sizes.
+  - Width toggle icon upgraded from confusing `<Minimize2 />` to explicit `<Columns2 />` with clear tooltips (`"Compact 330px"` / `"Expand 390px"`).
+  - All tooltips standardized to 100% Strict English (`"Minimize to Dock"`, `"Close Chat"`).
 
 ## ✨ What's New in v1.0.84 (Compact TindaBot & Non-Blocking POS Clearance Edition)
 

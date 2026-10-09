@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Megaphone,
   Minus,
+  Columns2,
   Maximize2,
   Minimize2,
   Volume2,
@@ -459,9 +460,9 @@ export function TindaCommunityChat(): React.JSX.Element | null {
     e.preventDefault()
     hasDraggedRef.current = false
     const currentX =
-      position?.x ?? Math.max(16, window.innerWidth - (isMinimized ? 300 : 440))
+      position?.x ?? Math.max(16, window.innerWidth - (isChatWide ? 400 : 340))
     const currentY =
-      position?.y ?? Math.max(40, window.innerHeight - (isMinimized ? 80 : 620))
+      position?.y ?? Math.max(40, window.innerHeight - 480)
 
     dragRef.current = {
       startX: e.clientX,
@@ -482,8 +483,8 @@ export function TindaCommunityChat(): React.JSX.Element | null {
         hasDraggedRef.current = true
       }
 
-      const panelWidth = isMinimized ? 240 : isChatWide ? 390 : 330
-      const panelHeight = isMinimized ? 42 : 460
+      const panelWidth = isChatWide ? 390 : 330
+      const panelHeight = 460
 
       const maxX = Math.max(10, window.innerWidth - panelWidth - 10)
       const maxY = Math.max(10, window.innerHeight - panelHeight - 10)
@@ -558,8 +559,8 @@ export function TindaCommunityChat(): React.JSX.Element | null {
     return null
   }
 
-  const panelWidth = isMinimized ? 240 : isChatWide ? 390 : 330
-  const panelHeight = isMinimized ? 42 : 460
+  const panelWidth = isChatWide ? 390 : 330
+  const panelHeight = 460
 
   // Default coordinate if not dragged:
   // In POS page, Cart sits at right: 0 to ~370-416px.
@@ -580,203 +581,121 @@ export function TindaCommunityChat(): React.JSX.Element | null {
       }
 
   return (
-    <>
-      {/* 1. MINIMIZED FLOATING BAR (Draggable & Compact) */}
-      {isOpen && isMinimized && (
-        <div
-          style={{
-            ...stylePosition,
-            width: '240px',
-            height: '42px'
-          }}
-          onMouseDown={handleDragStart}
-          className={`fixed z-50 flex items-center justify-between gap-2 rounded-2xl border border-ink-700/80 bg-ink-950/95 px-3 py-1 text-xs text-white shadow-2xl backdrop-blur-xl transition-shadow select-none ${
-            isDragging ? 'cursor-grabbing ring-2 ring-brand-500/60 shadow-brand-500/20' : 'cursor-grab hover:border-ink-600'
-          }`}
-          title="Click to restore or hold and drag anywhere"
-        >
-          <div
-            className="flex items-center gap-2 cursor-pointer py-1 pl-1 min-w-0"
-            onClick={(e) => {
-              if (hasDraggedRef.current) {
-                e.stopPropagation()
-                return
-              }
-              setIsMinimized(false)
-              setHasUnreadMessages(false)
-            }}
-          >
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-brand-500/20 text-brand-400">
-              <MessageSquare className="h-3 w-3" />
+    <div
+      style={{
+        ...stylePosition,
+        width: `${panelWidth}px`,
+        height: `${panelHeight}px`,
+        display: isMinimized ? 'none' : 'flex'
+      }}
+      className={`fixed z-50 flex flex-col rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
+        isDragging ? 'ring-2 ring-brand-500/60 shadow-brand-500/25' : ''
+      }`}
+    >
+      {/* Draggable Header */}
+      <div
+        onMouseDown={handleDragStart}
+        className={`flex items-center justify-between border-b border-ink-800 bg-ink-900/90 px-3 py-2 backdrop-blur select-none ${
+          isDragging ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+          <GripHorizontal className="h-4 w-4 text-slate-500 shrink-0" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shrink-0">
+            <MessageSquare className="h-3.5 w-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-white text-xs truncate">Community Chat</h3>
+              {isDevActive && (
+                <span className="flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-300 border border-amber-500/30 shrink-0">
+                  <Crown className="h-2.5 w-2.5" /> DEV
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-1.5 font-bold truncate">
-              <span className="truncate">Chat</span>
+            <div className="flex items-center gap-1 text-[10px] text-slate-400">
               {isOnline ? (
-                <span className="flex items-center gap-1 text-emerald-400 text-[10px] shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>{onlineCount}</span>
+                <span className="flex items-center gap-1 text-emerald-400 shrink-0">
+                  <Wifi className="h-2.5 w-2.5" /> Online
                 </span>
               ) : (
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                <span className="flex items-center gap-1 text-amber-400 shrink-0">
+                  <WifiOff className="h-2.5 w-2.5" /> Offline
+                </span>
               )}
-            </div>
-            {hasUnreadMessages && (
-              <span className="rounded-full bg-red-600 px-1.5 py-0.2 text-[9px] font-black text-white animate-pulse shrink-0">
-                NEW
+              <span className="text-slate-600">·</span>
+              <span className="text-slate-400 truncate">
+                {settings?.store_name || 'My Store'}
               </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={toggleSound}
-              title={soundEnabled ? 'Mute new message chime' : 'Enable new message chime'}
-              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-            >
-              {soundEnabled ? (
-                <Volume2 className="h-3 w-3 text-emerald-400" />
-              ) : (
-                <VolumeX className="h-3 w-3 text-slate-500" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (hasDraggedRef.current) return
-                setIsMinimized(false)
-                setHasUnreadMessages(false)
-              }}
-              title="Expand Chat"
-              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-            >
-              <Maximize2 className="h-3 w-3" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              title="Close"
-              className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
-            >
-              <X className="h-3 w-3" />
-            </button>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* 2. EXPANDED DRAGGABLE FLOATING WINDOW (Non-Blocking & Compact) */}
-      {isOpen && !isMinimized && (
-        <div
-          style={{
-            ...stylePosition,
-            width: `${panelWidth}px`,
-            height: `${panelHeight}px`
-          }}
-          className={`fixed z-50 flex flex-col rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
-            isDragging ? 'ring-2 ring-brand-500/60 shadow-brand-500/25' : ''
-          }`}
-        >
-          {/* Draggable Header */}
-          <div
-            onMouseDown={handleDragStart}
-            className={`flex items-center justify-between border-b border-ink-800 bg-ink-900/90 px-3.5 py-2.5 backdrop-blur select-none ${
-              isDragging ? 'cursor-grabbing' : 'cursor-grab'
-            }`}
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            onClick={toggleSound}
+            title={soundEnabled ? 'Mute message chime' : 'Enable message chime'}
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
           >
-            <div className="flex items-center gap-2">
-              <GripHorizontal className="h-4 w-4 text-slate-500" />
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                <MessageSquare className="h-4 w-4" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-white text-xs">TINDA Community Chat</h3>
-                  {isDevActive && (
-                    <span className="flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-bold text-amber-300 border border-amber-500/30">
-                      <Crown className="h-2.5 w-2.5" /> DEV
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 text-[11px]">
-                  {isOnline ? (
-                    <span className="flex items-center gap-1 text-emerald-400">
-                      <Wifi className="h-2.5 w-2.5" /> Online
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-amber-400">
-                      <WifiOff className="h-2.5 w-2.5" /> Offline
-                    </span>
-                  )}
-                  <span className="text-slate-600">·</span>
-                  <span className="text-slate-400 truncate max-w-[120px]">
-                    {settings?.store_name || 'My Store'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Header Action Buttons */}
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={toggleSound}
-                title={soundEnabled ? 'Mute message chime' : 'Enable message chime'}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              >
-                {soundEnabled ? (
-                  <Volume2 className="h-3.5 w-3.5 text-emerald-400" />
-                ) : (
-                  <VolumeX className="h-3.5 w-3.5 text-slate-500" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDevInput(devKey)
-                  setShowDevPrompt((v) => !v)
-                }}
-                title="Dev Verification Key"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              >
-                <Key className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  void fetchMessages()
-                  void fetchAnnouncements()
-                }}
-                title="Refresh messages"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setChatWide(!isChatWide)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-                title={isChatWide ? 'I-compact ang lapad (330px)' : 'I-expand ang lapad (390px)'}
-              >
-                {isChatWide ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsMinimized(true)}
-                title="Minimize Lounge"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                title="Close"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+            {soundEnabled ? (
+              <Volume2 className="h-3.5 w-3.5 text-emerald-400" />
+            ) : (
+              <VolumeX className="h-3.5 w-3.5 text-slate-500" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setDevInput(devKey)
+              setShowDevPrompt((v) => !v)
+            }}
+            title="Dev Authorization Key"
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+          >
+            <Key className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              void fetchMessages()
+              void fetchAnnouncements()
+            }}
+            title="Refresh messages"
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setChatWide(!isChatWide)}
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
+            title={isChatWide ? 'Compact width (330px)' : 'Expand width (390px)'}
+          >
+            <Columns2 className="h-3.5 w-3.5 text-slate-300" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsMinimized(true)}
+            title="Minimize to Dock"
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-amber-300 transition"
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false)
+              setIsMinimized(false)
+            }}
+            title="Close Chat"
+            className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
           {/* Dev Key Modal / Prompt */}
           {showDevPrompt && (
@@ -1081,7 +1000,5 @@ export function TindaCommunityChat(): React.JSX.Element | null {
             </div>
           </form>
         </div>
-      )}
-    </>
   )
 }

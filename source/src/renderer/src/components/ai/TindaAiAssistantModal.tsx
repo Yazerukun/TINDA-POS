@@ -10,6 +10,7 @@ import {
   Key,
   ShieldCheck,
   Minus,
+  Columns2,
   Maximize2,
   Minimize2,
   GripHorizontal
@@ -92,8 +93,8 @@ export function TindaAiAssistantModal(): React.JSX.Element | null {
     e.preventDefault()
     hasDraggedRef.current = false
 
-    const panelW = isAiMinimized ? 240 : isAiWide ? 390 : 330
-    const panelH = isAiMinimized ? 42 : 460
+    const panelW = isAiWide ? 390 : 330
+    const panelH = 460
 
     const currentX =
       position?.x ?? Math.max(16, window.innerWidth - panelW - (page === 'pos' ? 390 : 16))
@@ -119,8 +120,8 @@ export function TindaAiAssistantModal(): React.JSX.Element | null {
         hasDraggedRef.current = true
       }
 
-      const panelW = isAiMinimized ? 240 : isAiWide ? 390 : 330
-      const panelH = isAiMinimized ? 42 : 460
+      const panelW = isAiWide ? 390 : 330
+      const panelH = 460
 
       const maxX = Math.max(10, window.innerWidth - panelW - 10)
       const maxY = Math.max(10, window.innerHeight - panelH - 10)
@@ -230,8 +231,8 @@ export function TindaAiAssistantModal(): React.JSX.Element | null {
     return null
   }
 
-  const panelWidth = isAiMinimized ? 240 : isAiWide ? 390 : 330
-  const panelHeight = isAiMinimized ? 42 : 460
+  const panelWidth = isAiWide ? 390 : 330
+  const panelHeight = 460
 
   // Coordinated default positioning:
   // In POS page, Cart takes right: 0 to ~370-416px.
@@ -263,116 +264,77 @@ export function TindaAiAssistantModal(): React.JSX.Element | null {
       style={{
         ...stylePosition,
         width: `${panelWidth}px`,
-        height: isAiMinimized ? '42px' : `${panelHeight}px`,
+        height: `${panelHeight}px`,
+        display: isAiMinimized ? 'none' : 'flex',
         cursor: isDragging ? 'grabbing' : 'auto'
       }}
       className={`z-50 flex flex-col rounded-2xl border border-ink-line/80 bg-ink-950/95 backdrop-blur-xl shadow-2xl overflow-hidden transition-[height,width] duration-150 ${
         isDragging ? 'select-none ring-2 ring-brand-500/50' : ''
       }`}
     >
-      {/* Minimized Compact Bar View */}
-      {isAiMinimized ? (
-        <div
-          onMouseDown={handleDragStart}
-          className="flex h-full w-full items-center justify-between px-3 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 cursor-grab active:cursor-grabbing select-none"
-          title="I-drag para ilipat o i-click ang maximize"
-        >
-          <div
-            className="flex items-center gap-2 min-w-0 cursor-pointer"
-            onClick={() => {
-              if (hasDraggedRef.current) return
-              setAiMinimized(false)
-            }}
-          >
-            <GripHorizontal className="h-3 w-3 text-slate-500 shrink-0" />
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-brand-500 to-indigo-600 text-white">
-              <Bot className="h-3 w-3" />
-            </div>
-            <span className="text-xs font-bold text-slate-200 truncate">TindaBot</span>
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+      {/* Draggable Header */}
+      <div
+        onMouseDown={handleDragStart}
+        className="flex items-center justify-between border-b border-ink-line/60 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 px-3 py-2 cursor-grab active:cursor-grabbing select-none"
+        title="Drag to reposition anywhere on screen"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <GripHorizontal className="h-3 w-3 text-slate-500 shrink-0" />
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-sm">
+            <Bot className="h-3.5 w-3.5" />
           </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={() => setAiMinimized(false)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
-              title="I-expand si TindaBot"
-            >
-              <Maximize2 className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setAiOpen(false)}
-              className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
-              title="Isara"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-slate-100 truncate">TindaBot</h3>
+              <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[8px] font-bold text-emerald-400 border border-emerald-500/30">
+                Online
+              </span>
+            </div>
           </div>
         </div>
-      ) : (
-        <>
-          {/* Draggable Header */}
-          <div
-            onMouseDown={handleDragStart}
-            className="flex items-center justify-between border-b border-ink-line/60 bg-gradient-to-r from-ink-950 via-ink-900 to-brand-950/40 px-3 py-2 cursor-grab active:cursor-grabbing select-none"
-            title="I-drag para ilipat kahit saan sa screen"
+
+        {/* Header Controls: Width toggle, Settings, Minimize, Close */}
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          <button
+            type="button"
+            onClick={() => setAiWide(!isAiWide)}
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
+            title={isAiWide ? 'Compact width (330px)' : 'Expand width (390px)'}
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <GripHorizontal className="h-3 w-3 text-slate-500 shrink-0" />
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-sm">
-                <Bot className="h-3.5 w-3.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-xs font-bold text-slate-100 truncate">TindaBot</h3>
-                  <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[8px] font-bold text-emerald-400 border border-emerald-500/30">
-                    Online
-                  </span>
-                </div>
-              </div>
-            </div>
+            <Columns2 className="h-3 w-3 text-slate-300" />
+          </button>
 
-            {/* Header Controls: Width toggle, Settings, Minimize, Close */}
-            <div className="flex items-center gap-1 shrink-0 ml-1">
-              <button
-                type="button"
-                onClick={() => setAiWide(!isAiWide)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
-                title={isAiWide ? 'I-compact ang lapad (330px)' : 'I-expand ang lapad (390px)'}
-              >
-                {isAiWide ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
-              </button>
+          <button
+            type="button"
+            onClick={() => setIsConfigOpen(!isConfigOpen)}
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
+            title="AI Settings & Models"
+          >
+            <Settings className="h-3 w-3" />
+          </button>
 
-              <button
-                type="button"
-                onClick={() => setIsConfigOpen(!isConfigOpen)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
-                title="AI Settings & Models"
-              >
-                <Settings className="h-3 w-3" />
-              </button>
+          <button
+            type="button"
+            onClick={() => setAiMinimized(true)}
+            className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-amber-300 transition"
+            title="Minimize to Dock"
+          >
+            <Minus className="h-3 w-3" />
+          </button>
 
-              <button
-                type="button"
-                onClick={() => setAiMinimized(true)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-ink-800 hover:text-slate-200 transition"
-                title="I-minimize sa compact bar"
-              >
-                <Minus className="h-3 w-3" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAiOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
-                title="Isara si TindaBot"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setAiOpen(false)
+              setAiMinimized(false)
+            }}
+            className="rounded-lg p-1 text-slate-400 hover:bg-rose-500/20 hover:text-rose-400 transition"
+            title="Close TindaBot"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
 
           {/* Settings Overlay View */}
           {isConfigOpen ? (
@@ -589,8 +551,6 @@ export function TindaAiAssistantModal(): React.JSX.Element | null {
               </form>
             </div>
           )}
-        </>
-      )}
     </div>
   )
 }
