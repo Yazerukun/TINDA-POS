@@ -1,8 +1,8 @@
-version: 1.0.97
+version: 1.0.98
 files:
-  - url: TindaPOS-Setup-1.0.97.exe
-    sha512: OS/lu8/Mamj/AakKtI2hKhn/TdBRj55qKdlqFmeQbRzLFIduoaHwcTttnnRCIz1BaAU5olUI2lz4SBCYNvO3lw==
-    size: 116866853
-path: TindaPOS-Setup-1.0.97.exe
-sha512: OS/lu8/Mamj/AakKtI2hKhn/TdBRj55qKdlqFmeQbRzLFIduoaHwcTttnnRCIz1BaAU5olUI2lz4SBCYNvO3lw==
-releaseDate: '2026-10-09T12:46:34.368Z'
+  - url: TindaPOS-Setup-1.0.98.exe
+    sha512: Sa+Dv+CXJk6cAO1CzjmSNg2r0AjBVAIrSTnLrrO0wtItIwfjXApnrYhHwGp8VIcvhZv60DdE/Uh0bYs7tNwY5w==
+    size: 116884087
+path: TindaPOS-Setup-1.0.98.exe
+sha512: Sa+Dv+CXJk6cAO1CzjmSNg2r0AjBVAIrSTnLrrO0wtItIwfjXApnrYhHwGp8VIcvhZv60DdE/Uh0bYs7tNwY5w==
+releaseDate: '2026-10-09T16:16:49.650Z'
