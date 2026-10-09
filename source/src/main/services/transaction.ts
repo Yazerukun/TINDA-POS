@@ -234,8 +234,8 @@ export function deleteTransaction(saleId: number, options?: { restoreStock?: boo
       }
     }
 
-    // 2. Reverse customer utang ledger if applicable
-    if (sale.customer_id && sale.payments.some((p) => p.method === 'UTANG')) {
+    // 2. Reverse customer utang ledger if applicable (only if not already voided, as voiding already reversed the credit)
+    if (sale.status !== 'VOIDED' && sale.customer_id && sale.payments.some((p) => p.method === 'UTANG')) {
       const utangAmt = sale.payments.filter((p) => p.method === 'UTANG').reduce((s, p) => s + p.amount_c, 0)
       if (utangAmt > 0) {
         const customer = getCustomer(db, sale.customer_id)

@@ -27,7 +27,25 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)**
+- Current Version: **v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)**
+
+## Key Features in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)
+1. **Root-Cause Utang Double-Reversal Fix**:
+   - Fixed `deleteTransaction` in `transaction.ts` to strictly check `sale.status !== 'VOIDED'` before reversing customer utang credit ledger.
+   - Completely prevents deleting an already-voided credit transaction from applying a duplicate reversal, resolving the customer balance corruption reported by merchants.
+2. **Interactive Utang Ledger Entry Deletion & One-Tap Balance Re-Sync Engine**:
+   - Added individual row delete button (`Trash2`) on every ledger activity row in the Utang modal (`LedgerEntryRow`) with an Apple-grade Cupertino confirmation modal.
+   - Backend `deleteCreditLedgerEntry` purges the ledger row and replays remaining chronological credit events (`recalculateCustomerBalance`), resetting running audit balances and restoring the accurate customer balance.
+   - Added a 1-tap **Sync Balance** (`RotateCcw`) button directly on the Balance status card in `LedgerModal` to recalculate customer balance instantly from historical ledger records.
+3. **Apple-Grade Split / Mixed Payment POS Checkout Engine**:
+   - Integrated a fluid Cupertino mode switcher in `CheckoutModal`: `[ Single Payment ] [ 🔀 Split / Mixed Payment ]`.
+   - Allows cashiers to seamlessly allocate multi-method payment distributions across 💵 Cash, 📱 GCash, 📱 Maya, 🏛️ MariBank, and 👛 Utang (Credit).
+   - Real-time reconciliation HUD displaying Total Due, Total Allocated, Remaining Due / Over-allocation, and live Cash Sukli (Change) calculation when larger bills are tendered.
+   - 1-tap **Fill Remaining** accelerators per payment method for ultra-rapid split transactions.
+   - 100% full parity across thermal receipts, dual-screen CFD displays, shift X/Z read reports, and real-time Sales Monitor.
+4. **Zero-Database Risk & Instant In-App Live Patch Standard**:
+   - Zero database table alterations required (`payments` table already natively stores multi-method entries per sale).
+   - Released as live feature patch (`npm run publish:patch`) in <10 seconds.
 
 ## Key Features in v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)
 1. **5-Payment Method Apple Cupertino Grid in Checkout Modal**:

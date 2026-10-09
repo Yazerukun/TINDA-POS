@@ -137,3 +137,59 @@ export function canExtendCredit(customer: Customer, extra: number, allowOverlimi
   if (allowOverlimit) return true
   return customer.balance_c + extra <= customer.credit_limit_c
 }
+
+/**
+ * Recalculate customer's balance by chronologically replaying all credit ledger entries.
+ * Returns the recalculated customer and synchronizes running balances.
+ */
+export function recalculateCustomerBalance(db: Database.Database, customerId: number): Customer {
+  const entries = db
+    .prepare('SELECT * FROM credit_ledger WHERE customer_id = ? ORDER BY id ASC')
+    .all(customerId) as CreditLedgerEntry[]
+
+  let runningBalance = 0
+  const updateStmt = db.prepare(
+    'UPDATE credit_ledger SET balance_before_c = ?, balance_after_c = ? WHERE id = ?'
+  )
+
+  for (const entry of entries) {
+    const before = runningBalance
+    switch (entry.entry_type) {
+      case 'CREDIT_SALE':
+      case 'ADJUSTMENT':
+        runningBalance = before + entry.amount_c
+        break
+      case 'PAYMENT':
+      case 'REVERSAL':
+      case 'REFUND':
+        runningBalance = Math.max(0, before - entry.amount_c)
+        break
+    }
+    updateStmt.run(before, runningBalance, entry.id)
+  }
+
+  const finalBalance = Math.max(0, runningBalance)
+  db.prepare(`UPDATE customers SET balance_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
+    finalBalance,
+    customerId
+  )
+
+  return getCustomer(db, customerId)
+}
+
+/**
+ * Delete a specific credit ledger entry and automatically re-sync / recalculate the customer's balance.
+ */
+export function deleteCreditLedgerEntry(
+  db: Database.Database,
+  entryId: number
+): { ok: boolean; customer: Customer } {
+  const entry = db.prepare('SELECT * FROM credit_ledger WHERE id = ?').get(entryId) as CreditLedgerEntry | undefined
+  if (!entry) throw new Error('Ledger entry not found.')
+
+  const customerId = entry.customer_id
+  db.prepare('DELETE FROM credit_ledger WHERE id = ?').run(entryId)
+
+  const customer = recalculateCustomerBalance(db, customerId)
+  return { ok: true, customer }
+}

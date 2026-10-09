@@ -504,6 +504,30 @@ handle('customers:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) 
   return custRepo.updateCustomer(db(), id, input as Parameters<typeof custRepo.updateCustomer>[2])
 })
 handle('customers:ledger', (_e: IpcMainInvokeEvent, id: number, opts?: unknown) => custRepo.customerLedger(db(), id, (opts as { limit?: number } | undefined)?.limit))
+handle('customers:deleteLedgerEntry', (_e: IpcMainInvokeEvent, entryId: number) => {
+  user()
+  const res = custRepo.deleteCreditLedgerEntry(db(), entryId)
+  auditRepo.audit(db(), {
+    action: 'CUSTOMER_UPDATE',
+    user_id: user().id,
+    entity_type: 'CUSTOMER',
+    entity_id: res.customer.id,
+    reason: `Deleted credit ledger entry #${entryId}`
+  })
+  return res
+})
+handle('customers:recalculateBalance', (_e: IpcMainInvokeEvent, customerId: number) => {
+  user()
+  const customer = custRepo.recalculateCustomerBalance(db(), customerId)
+  auditRepo.audit(db(), {
+    action: 'CUSTOMER_UPDATE',
+    user_id: user().id,
+    entity_type: 'CUSTOMER',
+    entity_id: customerId,
+    reason: `Recalculated ledger balance: ${customer.balance_c}`
+  })
+  return customer
+})
 handle('customers:pay', (_e: IpcMainInvokeEvent, input: unknown) => {
   user()
   const i = input as { customer_id: number; amount_c: number; method?: string; notes?: string }

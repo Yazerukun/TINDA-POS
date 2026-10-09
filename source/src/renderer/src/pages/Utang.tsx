@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -339,6 +339,10 @@ export function Utang(): React.JSX.Element {
           entries={ledger}
           onClose={() => setSelected(null)}
           onPay={() => setAction({ type: 'PAY', customer: selected })}
+          onUpdateCustomer={(updated) => {
+            setSelected(updated)
+            setRows((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+          }}
         />
       )}
       {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => void actionDone()} />}
@@ -349,7 +353,13 @@ export function Utang(): React.JSX.Element {
 
 // ─── Ledger Entry Row with expandable items for CREDIT_SALE ─────────────────
 
-function LedgerEntryRow({ entry }: { entry: CreditLedgerEntry }): React.JSX.Element {
+function LedgerEntryRow({
+  entry,
+  onDelete
+}: {
+  entry: CreditLedgerEntry
+  onDelete?: (entry: CreditLedgerEntry) => void
+}): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
   const [sale, setSale] = useState<Sale | null>(null)
   const [loadingItems, setLoadingItems] = useState(false)
@@ -409,6 +419,16 @@ function LedgerEntryRow({ entry }: { entry: CreditLedgerEntry }): React.JSX.Elem
               {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             </button>
           )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(entry)}
+              className="flex items-center justify-center rounded p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              title="Delete ledger entry & re-sync balance"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -461,24 +481,79 @@ function LedgerEntryRow({ entry }: { entry: CreditLedgerEntry }): React.JSX.Elem
 
 // ─── Ledger Modal ────────────────────────────────────────────────────────────
 
-function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer; entries: CreditLedgerEntry[]; onClose: () => void; onPay: () => void }): React.JSX.Element {
+function LedgerModal({
+  customer,
+  entries,
+  onClose,
+  onPay,
+  onUpdateCustomer
+}: {
+  customer: Customer
+  entries: CreditLedgerEntry[]
+  onClose: () => void
+  onPay: () => void
+  onUpdateCustomer?: (updated: Customer) => void
+}): React.JSX.Element {
+  const [currentCustomer, setCurrentCustomer] = useState<Customer>(customer)
+  const [currentEntries, setCurrentEntries] = useState<CreditLedgerEntry[]>(entries)
+  const [deletingEntry, setDeletingEntry] = useState<CreditLedgerEntry | null>(null)
+  const [syncing, setSyncing] = useState(false)
   const [vipModalOpen, setVipModalOpen] = useState(false)
 
+  useEffect(() => {
+    setCurrentCustomer(customer)
+  }, [customer])
+
+  useEffect(() => {
+    setCurrentEntries(entries)
+  }, [entries])
+
   const sukiRating = useMemo(() => {
-    if (entries.length === 0) return { stars: 5, label: 'New Suki Customer' }
-    const payments = entries.filter((e) => e.amount_c < 0).length
-    const credits = entries.filter((e) => e.amount_c > 0).length
-    if (customer.balance_c > customer.credit_limit_c && customer.credit_limit_c > 0) {
+    if (currentEntries.length === 0) return { stars: 5, label: 'New Suki Customer' }
+    const payments = currentEntries.filter((e) => e.amount_c < 0).length
+    const credits = currentEntries.filter((e) => e.amount_c > 0).length
+    if (currentCustomer.balance_c > currentCustomer.credit_limit_c && currentCustomer.credit_limit_c > 0) {
       return { stars: 2, label: 'Over Limit — High Risk' }
     }
-    if (payments >= credits || customer.balance_c === 0) {
+    if (payments >= credits || currentCustomer.balance_c === 0) {
       return { stars: 5, label: 'Trusted Suki — Prompt Repayment' }
     }
     if (payments > 0) {
       return { stars: 4, label: 'Reliable Suki — Regular Payer' }
     }
     return { stars: 3, label: 'Pending Initial Payment' }
-  }, [customer, entries])
+  }, [currentCustomer, currentEntries])
+
+  const handleSyncBalance = async () => {
+    setSyncing(true)
+    try {
+      const updated = await window.api.customers.recalculateBalance(currentCustomer.id)
+      setCurrentCustomer(updated)
+      const freshEntries = await window.api.customers.ledger(updated.id)
+      setCurrentEntries(freshEntries)
+      toastSuccess('Balance Recalculated', `${updated.full_name}'s balance synced to ${money(updated.balance_c)}`)
+      onUpdateCustomer?.(updated)
+    } catch (e) {
+      toastError('Sync Failed', String((e as Error)?.message || e))
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const confirmDeleteEntry = async () => {
+    if (!deletingEntry) return
+    try {
+      const res = await window.api.customers.deleteLedgerEntry(deletingEntry.id)
+      toastSuccess('Entry Deleted', `Customer balance recalculated to ${money(res.customer.balance_c)}`)
+      setCurrentCustomer(res.customer)
+      const freshEntries = await window.api.customers.ledger(res.customer.id)
+      setCurrentEntries(freshEntries)
+      setDeletingEntry(null)
+      onUpdateCustomer?.(res.customer)
+    } catch (e) {
+      toastError('Delete Failed', String((e as Error)?.message || e))
+    }
+  }
 
   const copySmsReminder = async () => {
     try {
@@ -489,8 +564,8 @@ function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer
       }
       const settings = await window.api.settings.get()
       const storeName = settings.store_name || 'Our Store'
-      const amountStr = money(customer.balance_c)
-      const msg = `Good day ${customer.full_name}, gentle reminder from ${storeName} regarding your outstanding credit balance of ${amountStr}. Thank you for your continued patronage!`
+      const amountStr = money(currentCustomer.balance_c)
+      const msg = `Good day ${currentCustomer.full_name}, gentle reminder from ${storeName} regarding your outstanding credit balance of ${amountStr}. Thank you for your continued patronage!`
       await navigator.clipboard.writeText(msg)
       toastSuccess('Polite reminder copied to clipboard! Ready to paste into SMS or Messenger.')
     } catch (e) {
@@ -500,7 +575,7 @@ function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer
 
   return (
     <>
-      <Modal open onClose={onClose} title={customer.full_name} maxWidth="max-w-lg" footer={
+      <Modal open onClose={onClose} title={currentCustomer.full_name} maxWidth="max-w-lg" footer={
         <div className="flex items-center justify-between w-full">
           <button
             type="button"
@@ -516,9 +591,21 @@ function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer
         </div>
       }>
         <div className="mb-3 grid grid-cols-3 gap-2">
-          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Balance</p><p className="text-sm font-black text-amber-400">{money(customer.balance_c)}</p></div>
-          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Limit</p><p className="text-sm font-black text-slate-200">{money(customer.credit_limit_c)}</p></div>
-          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Available</p><p className="text-sm font-black text-emerald-400">{money(Math.max(0, customer.credit_limit_c - customer.balance_c))}</p></div>
+          <div className="card p-2 text-center relative group">
+            <p className="text-[10px] uppercase text-slate-500">Balance</p>
+            <p className="text-sm font-black text-amber-400">{money(currentCustomer.balance_c)}</p>
+            <button
+              type="button"
+              onClick={() => void handleSyncBalance()}
+              disabled={syncing}
+              title="Recalculate balance from all ledger entries"
+              className="absolute top-1 right-1 p-1 rounded-md text-slate-500 hover:text-brand-300 hover:bg-brand-500/10 transition-colors"
+            >
+              <RotateCcw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Limit</p><p className="text-sm font-black text-slate-200">{money(currentCustomer.credit_limit_c)}</p></div>
+          <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Available</p><p className="text-sm font-black text-emerald-400">{money(Math.max(0, currentCustomer.credit_limit_c - currentCustomer.balance_c))}</p></div>
         </div>
 
         {/* VIP Suki Trust Scorecard */}
@@ -540,12 +627,75 @@ function LedgerModal({ customer, entries, onClose, onPay }: { customer: Customer
         </div>
 
         <div className="max-h-80 space-y-1 overflow-y-auto">
-          {entries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
-          {entries.map((e) => (
-            <LedgerEntryRow key={e.id} entry={e} />
+          {currentEntries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
+          {currentEntries.map((e) => (
+            <LedgerEntryRow key={e.id} entry={e} onDelete={(entry) => setDeletingEntry(entry)} />
           ))}
         </div>
       </Modal>
+
+      {deletingEntry && (
+        <Modal
+          open
+          onClose={() => setDeletingEntry(null)}
+          title="Delete Ledger Entry"
+          maxWidth="max-w-md"
+          footer={
+            <div className="flex justify-end gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => setDeletingEntry(null)}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteEntry()}
+                className="btn-danger flex items-center gap-1.5"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete & Recalculate</span>
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+              <div className="flex items-center gap-2 font-semibold text-rose-200">
+                <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                <span>Delete this entry and recalculate balance?</span>
+              </div>
+              <p className="mt-1 text-slate-400">
+                This will permanently remove the record and automatically recalculate {currentCustomer.full_name}'s total balance.
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-ink-line bg-ink-950 p-3 text-xs space-y-1.5">
+              <div className="flex justify-between text-slate-400">
+                <span>Entry Type:</span>
+                <span className="font-semibold text-white capitalize">{deletingEntry.entry_type.replace(/_/g, ' ').toLowerCase()}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Amount:</span>
+                <span className={`font-mono font-bold ${deletingEntry.amount_c >= 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  {deletingEntry.amount_c >= 0 ? '+' : ''}{money(deletingEntry.amount_c)}
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Date:</span>
+                <span className="text-slate-300">{shortDateTime(deletingEntry.created_at)}</span>
+              </div>
+              {deletingEntry.notes && (
+                <div className="flex justify-between text-slate-400">
+                  <span>Notes:</span>
+                  <span className="text-slate-300 break-words text-right max-w-[200px]">{deletingEntry.notes}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
 
       <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} />
     </>

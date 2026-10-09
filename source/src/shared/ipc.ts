@@ -297,6 +297,8 @@ export interface TindaApi {
     create: (input: CustomerInput) => Promise<Customer>
     update: (id: number, input: Partial<CustomerInput>) => Promise<Customer>
     ledger: (id: number, opts?: { limit?: number }) => Promise<CreditLedgerEntry[]>
+    deleteLedgerEntry: (entryId: number) => Promise<{ ok: boolean; customer: Customer }>
+    recalculateBalance: (customerId: number) => Promise<Customer>
     pay: (input: { customer_id: number; amount_c: number; method?: string; notes?: string }) => Promise<CreditLedgerEntry>
     adjust: (input: { customer_id: number; amount_c: number; notes: string; reason: string }) => Promise<CreditLedgerEntry>
     revoke: (input: { customer_id: number; amount_c: number; notes: string; reason: string }) => Promise<CreditLedgerEntry>

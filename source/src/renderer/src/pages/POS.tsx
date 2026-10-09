@@ -32,7 +32,8 @@ import {
   Volume2,
   VolumeX,
   Printer,
-  Wrench
+  Wrench,
+  Layers
 } from 'lucide-react'
 import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
@@ -2333,6 +2334,7 @@ function CheckoutModal({
   onClose: () => void
 }): React.JSX.Element {
   const { items, customer_id, customer_name, discount_pesos } = usePosCart()
+  const [isSplit, setIsSplit] = useState(false)
   const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'>(initialMethod)
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
@@ -2342,11 +2344,79 @@ function CheckoutModal({
   const [printing, setPrinting] = useState(false)
   const setPage = useNav((state) => state.setPage)
 
+  // Split payment state
+  const [splitState, setSplitState] = useState({
+    cashAmount: '',
+    cashTendered: '',
+    gcashAmount: '',
+    gcashRef: '',
+    mayaAmount: '',
+    mayaRef: '',
+    maribankAmount: '',
+    maribankRef: '',
+    utangAmount: ''
+  })
+
   const cashInputRef = useRef<HTMLInputElement>(null)
   const refInputRef = useRef<HTMLInputElement>(null)
 
   const cashC = Math.round((parseFloat(cash) || 0) * 100)
   const change = cashC - total
+
+  // Split calculations
+  const splitCashAllocatedC = Math.max(0, Math.round((parseFloat(splitState.cashAmount) || 0) * 100))
+  const splitCashTenderedC = Math.max(
+    0,
+    Math.round((parseFloat(splitState.cashTendered || splitState.cashAmount) || 0) * 100)
+  )
+  const splitGcashC = Math.max(0, Math.round((parseFloat(splitState.gcashAmount) || 0) * 100))
+  const splitMayaC = Math.max(0, Math.round((parseFloat(splitState.mayaAmount) || 0) * 100))
+  const splitMaribankC = Math.max(0, Math.round((parseFloat(splitState.maribankAmount) || 0) * 100))
+  const splitUtangC = Math.max(0, Math.round((parseFloat(splitState.utangAmount) || 0) * 100))
+
+  const totalAllocatedC = splitCashAllocatedC + splitGcashC + splitMayaC + splitMaribankC + splitUtangC
+  const remainingC = total - totalAllocatedC
+  const splitCashChangeC = splitCashAllocatedC > 0 ? Math.max(0, splitCashTenderedC - splitCashAllocatedC) : 0
+
+  const fillRemaining = (target: 'cash' | 'gcash' | 'maya' | 'maribank' | 'utang') => {
+    const otherAllocatedC =
+      (target === 'cash' ? 0 : splitCashAllocatedC) +
+      (target === 'gcash' ? 0 : splitGcashC) +
+      (target === 'maya' ? 0 : splitMayaC) +
+      (target === 'maribank' ? 0 : splitMaribankC) +
+      (target === 'utang' ? 0 : splitUtangC)
+    const neededC = Math.max(0, total - otherAllocatedC)
+    const neededPesos = neededC > 0 ? (neededC / 100).toFixed(2) : ''
+
+    setSplitState((prev) => {
+      switch (target) {
+        case 'cash':
+          return { ...prev, cashAmount: neededPesos, cashTendered: neededPesos }
+        case 'gcash':
+          return { ...prev, gcashAmount: neededPesos }
+        case 'maya':
+          return { ...prev, mayaAmount: neededPesos }
+        case 'maribank':
+          return { ...prev, maribankAmount: neededPesos }
+        case 'utang':
+          return { ...prev, utangAmount: neededPesos }
+      }
+    })
+  }
+
+  const resetSplit = () => {
+    setSplitState({
+      cashAmount: '',
+      cashTendered: '',
+      gcashAmount: '',
+      gcashRef: '',
+      mayaAmount: '',
+      mayaRef: '',
+      maribankAmount: '',
+      maribankRef: '',
+      utangAmount: ''
+    })
+  }
 
   const openShift = async () => {
     const shift = await window.api.shifts.current()
@@ -2359,27 +2429,41 @@ function CheckoutModal({
 
   useEffect(() => {
     let qrPayload: string | undefined = undefined
-    if (method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK') {
+    if (!isSplit && (method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK')) {
       const storeName = 'TINDA POS'
       const pesos = (total / 100).toFixed(2)
       qrPayload = `${method.toLowerCase()}://pay?amount=${pesos}&store=${encodeURIComponent(storeName)}&ref=${Date.now()}`
     }
     void window.api.phoneScanner?.updateCfd({
       status: 'PAYMENT',
-      paymentMethod: method,
+      paymentMethod: isSplit ? 'SPLIT' : method,
       total_c: total,
-      amount_tendered_c: method === 'CASH' ? cashC : total,
-      change_c: method === 'CASH' ? Math.max(0, change) : 0,
+      amount_tendered_c: isSplit
+        ? (splitCashTenderedC > splitCashAllocatedC ? totalAllocatedC + (splitCashTenderedC - splitCashAllocatedC) : totalAllocatedC)
+        : (method === 'CASH' ? cashC : total),
+      change_c: isSplit ? splitCashChangeC : (method === 'CASH' ? Math.max(0, change) : 0),
       qrCodeUrl: qrPayload
     }).catch(() => {})
-  }, [method, total, cashC, change])
+  }, [isSplit, method, total, cashC, change, totalAllocatedC, splitCashAllocatedC, splitCashTenderedC, splitCashChangeC])
 
   const doCheckout = async () => {
     if (submitting) return
-    if (method === 'UTANG' && customer_id === null) {
-      setPickerOpen(true)
-      toastError('Customer required', 'Please select the customer for this Utang.')
-      return
+    if (isSplit) {
+      if (totalAllocatedC !== total) {
+        toastError('Payment mismatch', `Please allocate exactly ${money(total)}. Currently allocated: ${money(totalAllocatedC)}.`)
+        return
+      }
+      if (splitUtangC > 0 && customer_id === null) {
+        setPickerOpen(true)
+        toastError('Customer required', 'Please select a customer for the Utang portion.')
+        return
+      }
+    } else {
+      if (method === 'UTANG' && customer_id === null) {
+        setPickerOpen(true)
+        toastError('Customer required', 'Please select the customer for this Utang.')
+        return
+      }
     }
     if (cartHasStockConflict(items)) {
       toastError('Stock changed', 'Please adjust the cart to the available quantity before checkout.')
@@ -2387,12 +2471,52 @@ function CheckoutModal({
     }
     setSubmitting(true)
     try {
-      const payments: PaymentInput[] =
-        method === 'UTANG'
-          ? [{ method, amount_c: total }]
-          : method === 'CASH'
-            ? [{ method, amount_c: cashC, reference: null }]
-            : [{ method, amount_c: total, reference: reference || null }]
+      let payments: PaymentInput[] = []
+      if (!isSplit) {
+        payments =
+          method === 'UTANG'
+            ? [{ method, amount_c: total }]
+            : method === 'CASH'
+              ? [{ method, amount_c: cashC, reference: null }]
+              : [{ method, amount_c: total, reference: reference || null }]
+      } else {
+        if (splitCashAllocatedC > 0) {
+          payments.push({
+            method: 'CASH',
+            amount_c: splitCashTenderedC > splitCashAllocatedC ? splitCashTenderedC : splitCashAllocatedC,
+            reference: null
+          })
+        }
+        if (splitGcashC > 0) {
+          payments.push({
+            method: 'GCASH',
+            amount_c: splitGcashC,
+            reference: splitState.gcashRef.trim() || null
+          })
+        }
+        if (splitMayaC > 0) {
+          payments.push({
+            method: 'MAYA',
+            amount_c: splitMayaC,
+            reference: splitState.mayaRef.trim() || null
+          })
+        }
+        if (splitMaribankC > 0) {
+          payments.push({
+            method: 'MARIBANK',
+            amount_c: splitMaribankC,
+            reference: splitState.maribankRef.trim() || null
+          })
+        }
+        if (splitUtangC > 0) {
+          payments.push({
+            method: 'UTANG',
+            amount_c: splitUtangC,
+            reference: null
+          })
+        }
+      }
+
       const payload = {
         items: items.map((i) => ({
           product_id: i.product_id,
@@ -2416,9 +2540,11 @@ function CheckoutModal({
       void window.api.phoneScanner?.updateCfd({
         status: 'COMPLETED',
         total_c: res.sale.total_c,
-        amount_tendered_c: method === 'CASH' ? cashC : res.sale.total_c,
-        change_c: method === 'CASH' ? Math.max(0, change) : 0,
-        paymentMethod: method
+        amount_tendered_c: isSplit
+          ? (splitCashTenderedC > splitCashAllocatedC ? totalAllocatedC + (splitCashTenderedC - splitCashAllocatedC) : totalAllocatedC)
+          : (method === 'CASH' ? cashC : res.sale.total_c),
+        change_c: isSplit ? splitCashChangeC : (method === 'CASH' ? Math.max(0, change) : 0),
+        paymentMethod: isSplit ? 'SPLIT' : method
       }).catch(() => {})
       if (res.print.ok || res.print.code === 'DISABLED') toastSuccess('Sale completed successfully', res.sale.transaction_no)
       else toastError('Sale completed successfully', res.print.message)
@@ -2443,35 +2569,37 @@ function CheckoutModal({
         void doCheckout()
         return
       }
-      if (e.key === 'F9') {
-        e.preventDefault()
-        setMethod('CASH')
-        setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
-        return
-      }
-      if (e.key === 'F10') {
-        e.preventDefault()
-        setMethod('GCASH')
-        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
-        return
-      }
-      if (e.key === 'F11') {
-        e.preventDefault()
-        setMethod('MAYA')
-        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
-        return
-      }
-      if (e.key === 'F12') {
-        e.preventDefault()
-        setMethod('MARIBANK')
-        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
-        return
+      if (!isSplit) {
+        if (e.key === 'F9') {
+          e.preventDefault()
+          setMethod('CASH')
+          setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
+          return
+        }
+        if (e.key === 'F10') {
+          e.preventDefault()
+          setMethod('GCASH')
+          setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+          return
+        }
+        if (e.key === 'F11') {
+          e.preventDefault()
+          setMethod('MAYA')
+          setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+          return
+        }
+        if (e.key === 'F12') {
+          e.preventDefault()
+          setMethod('MARIBANK')
+          setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+          return
+        }
       }
     }
 
     window.addEventListener('keydown', handleCheckoutHotkeys)
     return () => window.removeEventListener('keydown', handleCheckoutHotkeys)
-  }, [done, pickerOpen, method, cash, reference, items, customer_id, total, submitting])
+  }, [done, pickerOpen, isSplit, method, cash, reference, items, customer_id, total, submitting, totalAllocatedC, splitState])
 
   if (done) {
     const retryPrint = async (manual = false) => {
@@ -2538,151 +2666,456 @@ function CheckoutModal({
     <Modal open onClose={onClose} title="Checkout" maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel (Esc)</button>
-        <button onClick={doCheckout} disabled={submitting} className="btn-primary flex items-center gap-2">
+        <button
+          onClick={doCheckout}
+          disabled={submitting || (isSplit && remainingC !== 0)}
+          className="btn-primary flex items-center gap-2"
+        >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          Charge {money(total)} (Enter)
+          {isSplit
+            ? remainingC === 0
+              ? `Charge Split ${money(total)} (Enter)`
+              : remainingC > 0
+                ? `Allocate ${money(remainingC)} More`
+                : `Over-allocated by ${money(Math.abs(remainingC))}`
+            : `Charge ${money(total)} (Enter)`}
         </button>
       </>
     }>
-      <div className="space-y-4">
-        <div className="rounded-lg border border-ink-line bg-ink-950 p-3 text-center">
-          <p className="text-xs text-slate-500">TOTAL</p>
+      <div className="space-y-3.5">
+        {/* Total Summary Card */}
+        <div className="rounded-xl border border-ink-line bg-ink-950 p-3 text-center">
+          <p className="text-xs text-slate-500 font-semibold">TOTAL</p>
           <p className="text-3xl font-black text-white">{money(total)}</p>
-          <p className="mt-1 text-xs text-slate-500">Subtotal {money(subtotal)} · Discount {money(discount_pesos)}</p>
+          <p className="mt-0.5 text-xs text-slate-500">Subtotal {money(subtotal)} · Discount {money(discount_pesos)}</p>
         </div>
 
-        <div className="grid grid-cols-5 gap-1.5">
-          {methods.map((m) => (
-            <button
-              key={m.key}
-              onClick={() => {
-                setMethod(m.key)
-                if (m.key === 'CASH') {
-                  setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
-                } else if (m.key === 'GCASH' || m.key === 'MAYA' || m.key === 'MARIBANK') {
-                  setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
-                }
-              }}
-              className={`btn-ghost flex flex-col items-center justify-center gap-1 py-2 px-1 text-xs transition-all ${
-                method === m.key ? m.activeClass : 'text-slate-300 hover:text-white hover:border-slate-700'
-              }`}
-            >
-              {m.icon}
-              <span className="truncate w-full text-center text-[11px] font-medium sm:text-xs">{m.label}</span>
-              {m.shortcut ? (
-                <span className="text-[10px] text-slate-500 font-mono">[{m.shortcut}]</span>
-              ) : (
-                <span className="text-[10px] opacity-0 font-mono">[--]</span>
-              )}
-            </button>
-          ))}
+        {/* Single vs Split Payment Mode Switcher */}
+        <div className="grid grid-cols-2 p-1 bg-ink-950 border border-ink-line rounded-xl text-xs">
+          <button
+            type="button"
+            onClick={() => setIsSplit(false)}
+            className={`py-1.5 font-semibold rounded-lg transition-all ${
+              !isSplit ? 'bg-ink-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Single Payment
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsSplit(true)
+              if (!splitState.cashAmount && !splitState.gcashAmount && !splitState.mayaAmount && !splitState.maribankAmount && !splitState.utangAmount) {
+                const initialPesos = (total / 100).toFixed(2)
+                if (method === 'CASH') setSplitState(s => ({ ...s, cashAmount: initialPesos, cashTendered: initialPesos }))
+                else if (method === 'GCASH') setSplitState(s => ({ ...s, gcashAmount: initialPesos }))
+                else if (method === 'MAYA') setSplitState(s => ({ ...s, mayaAmount: initialPesos }))
+                else if (method === 'MARIBANK') setSplitState(s => ({ ...s, maribankAmount: initialPesos }))
+                else if (method === 'UTANG') setSplitState(s => ({ ...s, utangAmount: initialPesos }))
+              }
+            }}
+            className={`py-1.5 font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              isSplit ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Layers className="h-3.5 w-3.5" />
+            <span>Split / Mixed Payment</span>
+          </button>
         </div>
 
-        {method === 'CASH' && (
-          <div>
-            <label className="mb-1 block text-xs text-slate-400">Cash Received</label>
-            <input
-              ref={cashInputRef}
-              type="number"
-              value={cash}
-              onChange={(e) => setCash(e.target.value)}
-              className="input w-full text-lg font-bold"
-              autoFocus
-            />
-
-            {/* Quick Cash Denomination & Increment Chips */}
-            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick cash denomination buttons">
-              <button
-                type="button"
-                onClick={() => setCash(cashInputFromCents(total))}
-                className="rounded-md border border-brand-500/40 bg-brand-500/10 px-2 py-1 text-xs font-bold text-brand-300 hover:bg-brand-500/20 transition-colors"
-                title="Exact total payment"
-              >
-                Exact ({money(total)})
-              </button>
-              {[20, 50, 100, 200, 500, 1000].map((bill) => {
-                const billCents = bill * 100
-                if (billCents < total && billCents !== 1000 && billCents !== 500) return null
-                return (
-                  <button
-                    key={`exact-${bill}`}
-                    type="button"
-                    onClick={() => setCash(String(bill))}
-                    className="rounded-md border border-ink-line bg-ink-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:border-brand-500/50 hover:bg-ink-800 transition-colors"
-                  >
-                    ₱{bill}
-                  </button>
-                )
-              })}
-              {[20, 50, 100].map((addAmount) => (
+        {!isSplit ? (
+          <>
+            <div className="grid grid-cols-5 gap-1.5">
+              {methods.map((m) => (
                 <button
-                  key={`add-${addAmount}`}
-                  type="button"
+                  key={m.key}
                   onClick={() => {
-                    const currentVal = parseFloat(cash) || (total / 100)
-                    setCash(String(Math.round((currentVal + addAmount) * 100) / 100))
+                    setMethod(m.key)
+                    if (m.key === 'CASH') {
+                      setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
+                    } else if (m.key === 'GCASH' || m.key === 'MAYA' || m.key === 'MARIBANK') {
+                      setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+                    }
                   }}
-                  className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
-                  title={`Add ₱${addAmount} to cash`}
+                  className={`btn-ghost flex flex-col items-center justify-center gap-1 py-2 px-1 text-xs transition-all ${
+                    method === m.key ? m.activeClass : 'text-slate-300 hover:text-white hover:border-slate-700'
+                  }`}
                 >
-                  +₱{addAmount}
+                  {m.icon}
+                  <span className="truncate w-full text-center text-[11px] font-medium sm:text-xs">{m.label}</span>
+                  {m.shortcut ? (
+                    <span className="text-[10px] text-slate-500 font-mono">[{m.shortcut}]</span>
+                  ) : (
+                    <span className="text-[10px] opacity-0 font-mono">[--]</span>
+                  )}
                 </button>
               ))}
             </div>
 
-            <div className="mt-2 flex justify-between text-xs">
-              <span className="text-slate-500">Change (sukli)</span>
-              <span className={change >= 0 ? 'font-bold text-emerald-400' : 'font-bold text-danger-400'}>
-                {money(Math.max(0, change))}
-              </span>
-            </div>
-          </div>
-        )}
+            {method === 'CASH' && (
+              <div>
+                <label className="mb-1 block text-xs text-slate-400">Cash Received</label>
+                <input
+                  ref={cashInputRef}
+                  type="number"
+                  value={cash}
+                  onChange={(e) => setCash(e.target.value)}
+                  className="input w-full text-lg font-bold"
+                  autoFocus
+                />
 
-        {(method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK') && (
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs text-slate-400">
-                {method === 'MARIBANK' ? 'MariBank Reference No. / Transaction ID' : `${method === 'GCASH' ? 'GCash' : 'Maya'} Reference No.`}
-              </label>
-              {method === 'MARIBANK' && (
-                <span className="text-[10px] font-semibold text-[#FF8533] bg-[#FF6A00]/10 border border-[#FF6A00]/30 px-1.5 py-0.5 rounded">
-                  Shopee / SeaBank Transfer
-                </span>
-              )}
-            </div>
-            <input
-              ref={refInputRef}
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="input w-full"
-              placeholder={method === 'MARIBANK' ? 'e.g. MB-9823471 or Shopee Ref' : 'e.g. 1234-5678'}
-              autoFocus
-            />
-          </div>
-        )}
+                {/* Quick Cash Denomination & Increment Chips */}
+                <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick cash denomination buttons">
+                  <button
+                    type="button"
+                    onClick={() => setCash(cashInputFromCents(total))}
+                    className="rounded-md border border-brand-500/40 bg-brand-500/10 px-2 py-1 text-xs font-bold text-brand-300 hover:bg-brand-500/20 transition-colors"
+                    title="Exact total payment"
+                  >
+                    Exact ({money(total)})
+                  </button>
+                  {[20, 50, 100, 200, 500, 1000].map((bill) => {
+                    const billCents = bill * 100
+                    if (billCents < total && billCents !== 1000 && billCents !== 500) return null
+                    return (
+                      <button
+                        key={`exact-${bill}`}
+                        type="button"
+                        onClick={() => setCash(String(bill))}
+                        className="rounded-md border border-ink-line bg-ink-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:border-brand-500/50 hover:bg-ink-800 transition-colors"
+                      >
+                        ₱{bill}
+                      </button>
+                    )
+                  })}
+                  {[20, 50, 100].map((addAmount) => (
+                    <button
+                      key={`add-${addAmount}`}
+                      type="button"
+                      onClick={() => {
+                        const currentVal = parseFloat(cash) || (total / 100)
+                        setCash(String(Math.round((currentVal + addAmount) * 100) / 100))
+                      }}
+                      className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                      title={`Add ₱${addAmount} to cash`}
+                    >
+                      +₱{addAmount}
+                    </button>
+                  ))}
+                </div>
 
-        {method === 'UTANG' && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-            {customer_id === null ? (
-              <>
-                <p className="flex items-start gap-2 text-sm text-amber-300">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>Please select the customer for this Utang before checkout.</span>
-                </p>
-                <button onClick={() => setPickerOpen(true)} className="btn-primary mt-2 flex w-full items-center justify-center gap-2 py-2">
-                  <User className="h-4 w-4" /> Select Customer
-                </button>
-              </>
-            ) : (
-              <div className="flex items-center justify-between gap-2">
-                <p className="break-words text-sm text-emerald-300">
-                  <Check aria-label="Selected" className="mr-1 inline h-4 w-4" />
-                  Selected: {customer_name ?? `Customer #${customer_id}`}
-                </p>
-                <button onClick={() => setPickerOpen(true)} className="shrink-0 text-xs text-brand-400 hover:text-brand-300">Change</button>
+                <div className="mt-2 flex justify-between text-xs">
+                  <span className="text-slate-500">Change (sukli)</span>
+                  <span className={change >= 0 ? 'font-bold text-emerald-400' : 'font-bold text-danger-400'}>
+                    {money(Math.max(0, change))}
+                  </span>
+                </div>
               </div>
             )}
+
+            {(method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK') && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-slate-400">
+                    {method === 'MARIBANK' ? 'MariBank Reference No. / Transaction ID' : `${method === 'GCASH' ? 'GCash' : 'Maya'} Reference No.`}
+                  </label>
+                  {method === 'MARIBANK' && (
+                    <span className="text-[10px] font-semibold text-[#FF8533] bg-[#FF6A00]/10 border border-[#FF6A00]/30 px-1.5 py-0.5 rounded">
+                      Shopee / SeaBank Transfer
+                    </span>
+                  )}
+                </div>
+                <input
+                  ref={refInputRef}
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                  className="input w-full"
+                  placeholder={method === 'MARIBANK' ? 'e.g. MB-9823471 or Shopee Ref' : 'e.g. 1234-5678'}
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {method === 'UTANG' && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                {customer_id === null ? (
+                  <>
+                    <p className="flex items-start gap-2 text-sm text-amber-300">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>Please select the customer for this Utang before checkout.</span>
+                    </p>
+                    <button onClick={() => setPickerOpen(true)} className="btn-primary mt-2 flex w-full items-center justify-center gap-2 py-2">
+                      <User className="h-4 w-4" /> Select Customer
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="break-words text-sm text-emerald-300">
+                      <Check aria-label="Selected" className="mr-1 inline h-4 w-4" />
+                      Selected: {customer_name ?? `Customer #${customer_id}`}
+                    </p>
+                    <button onClick={() => setPickerOpen(true)} className="shrink-0 text-xs text-brand-400 hover:text-brand-300">Change</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          /* Split / Mixed Payment Mode UI */
+          <div className="space-y-2.5">
+            {/* Live Allocation Summary Pill */}
+            <div className="rounded-xl border border-ink-line bg-ink-950 p-2.5 space-y-1.5">
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-1.5 rounded-lg bg-ink-900 border border-ink-line">
+                  <p className="text-[10px] uppercase text-slate-500 font-bold">Total Due</p>
+                  <p className="font-mono font-bold text-white text-xs sm:text-sm">{money(total)}</p>
+                </div>
+                <div className="p-1.5 rounded-lg bg-ink-900 border border-ink-line">
+                  <p className="text-[10px] uppercase text-slate-500 font-bold">Allocated</p>
+                  <p className={`font-mono font-bold text-xs sm:text-sm ${totalAllocatedC === total ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {money(totalAllocatedC)}
+                  </p>
+                </div>
+                <div className="p-1.5 rounded-lg bg-ink-900 border border-ink-line">
+                  <p className="text-[10px] uppercase text-slate-500 font-bold">
+                    {remainingC > 0 ? 'Remaining' : remainingC < 0 ? 'Over' : 'Status'}
+                  </p>
+                  <p className={`font-mono font-bold text-xs sm:text-sm ${remainingC === 0 ? 'text-emerald-400' : remainingC > 0 ? 'text-rose-400' : 'text-amber-400'}`}>
+                    {remainingC === 0 ? 'Exact' : money(Math.abs(remainingC))}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] pt-1">
+                {splitCashAllocatedC > 0 && splitCashChangeC > 0 ? (
+                  <span className="text-emerald-400 font-semibold">
+                    Cash Sukli (Change): <span className="font-mono">{money(splitCashChangeC)}</span>
+                  </span>
+                ) : (
+                  <span className="text-slate-500">Allocate amounts across multiple methods</span>
+                )}
+                <button
+                  type="button"
+                  onClick={resetSplit}
+                  className="text-slate-400 hover:text-slate-200 underline text-[10px]"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            {/* Split Methods List */}
+            <div className="space-y-2 max-h-[290px] overflow-y-auto pr-1">
+              {/* Cash Row */}
+              <div className="rounded-xl border border-ink-line bg-ink-950/80 p-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Banknote className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-xs font-semibold text-slate-200">Cash</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining('cash')}
+                    className="text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20"
+                  >
+                    Fill Remaining
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Charge Amount (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.cashAmount}
+                      onChange={(e) => setSplitState(s => ({ ...s, cashAmount: e.target.value }))}
+                      placeholder="0.00"
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Tendered Bill (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.cashTendered}
+                      onChange={(e) => setSplitState(s => ({ ...s, cashTendered: e.target.value }))}
+                      placeholder={splitState.cashAmount || '0.00'}
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* GCash Row */}
+              <div className="rounded-xl border border-ink-line bg-ink-950/80 p-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Smartphone className="h-3.5 w-3.5 text-sky-400" />
+                    <span className="text-xs font-semibold text-slate-200">GCash</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining('gcash')}
+                    className="text-[10px] font-semibold text-sky-400 hover:text-sky-300 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20"
+                  >
+                    Fill Remaining
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Amount (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.gcashAmount}
+                      onChange={(e) => setSplitState(s => ({ ...s, gcashAmount: e.target.value }))}
+                      placeholder="0.00"
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Ref No. (Optional)</label>
+                    <input
+                      value={splitState.gcashRef}
+                      onChange={(e) => setSplitState(s => ({ ...s, gcashRef: e.target.value }))}
+                      placeholder="e.g. 1234-5678"
+                      className="input w-full text-xs font-mono !py-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Maya Row */}
+              <div className="rounded-xl border border-ink-line bg-ink-950/80 p-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Smartphone className="h-3.5 w-3.5 text-teal-400" />
+                    <span className="text-xs font-semibold text-slate-200">Maya</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining('maya')}
+                    className="text-[10px] font-semibold text-teal-400 hover:text-teal-300 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20"
+                  >
+                    Fill Remaining
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Amount (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.mayaAmount}
+                      onChange={(e) => setSplitState(s => ({ ...s, mayaAmount: e.target.value }))}
+                      placeholder="0.00"
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Ref No. (Optional)</label>
+                    <input
+                      value={splitState.mayaRef}
+                      onChange={(e) => setSplitState(s => ({ ...s, mayaRef: e.target.value }))}
+                      placeholder="e.g. 8765-4321"
+                      className="input w-full text-xs font-mono !py-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* MariBank Row */}
+              <div className="rounded-xl border border-ink-line bg-ink-950/80 p-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Landmark className="h-3.5 w-3.5 text-[#FF8533]" />
+                    <span className="text-xs font-semibold text-[#FF8533]">MariBank (Shopee)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining('maribank')}
+                    className="text-[10px] font-semibold text-[#FF8533] hover:text-[#FFA366] bg-[#FF6A00]/10 px-1.5 py-0.5 rounded border border-[#FF6A00]/20"
+                  >
+                    Fill Remaining
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Amount (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.maribankAmount}
+                      onChange={(e) => setSplitState(s => ({ ...s, maribankAmount: e.target.value }))}
+                      placeholder="0.00"
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Ref No. (Optional)</label>
+                    <input
+                      value={splitState.maribankRef}
+                      onChange={(e) => setSplitState(s => ({ ...s, maribankRef: e.target.value }))}
+                      placeholder="e.g. MB-9823471"
+                      className="input w-full text-xs font-mono !py-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Utang Row */}
+              <div className="rounded-xl border border-ink-line bg-ink-950/80 p-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Wallet className="h-3.5 w-3.5 text-violet-400" />
+                    <span className="text-xs font-semibold text-violet-300">Utang (Credit)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fillRemaining('utang')}
+                    className="text-[10px] font-semibold text-violet-400 hover:text-violet-300 bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/20"
+                  >
+                    Fill Remaining
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 items-end">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Credit Amount (₱)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={splitState.utangAmount}
+                      onChange={(e) => setSplitState(s => ({ ...s, utangAmount: e.target.value }))}
+                      placeholder="0.00"
+                      className="input w-full text-xs font-bold font-mono !py-1"
+                    />
+                  </div>
+                  <div>
+                    {customer_id ? (
+                      <div className="flex items-center justify-between p-1.5 rounded-lg bg-ink-900 border border-ink-line text-xs">
+                        <span className="text-emerald-400 truncate text-[11px] font-medium">{customer_name || `Customer #${customer_id}`}</span>
+                        <button type="button" onClick={() => setPickerOpen(true)} className="text-[10px] text-brand-400 ml-1 hover:underline">Change</button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPickerOpen(true)}
+                        className="btn-ghost w-full py-1.5 px-2 text-[11px] text-amber-400 border-amber-500/30 flex items-center justify-center gap-1"
+                      >
+                        <User className="h-3 w-3" /> Select Suki Customer
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
