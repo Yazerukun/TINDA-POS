@@ -28,7 +28,7 @@ import { toastSuccess } from '../../stores/toast'
  * and frees the bottom-right corner for Community Chat.
  */
 export function UnifiedUpdateCapsule(): React.JSX.Element | null {
-  const { event, download, install, dismiss } = useUpdate()
+  const { event, download, install, dismiss, hubOpen, closeHub } = useUpdate()
   const { isVip } = useLicense()
   const { user } = useAuth()
 
@@ -45,18 +45,24 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Initialize and check update in background on mount
+  // Sync with hubOpen (e.g. triggered via Sidebar "Check for Updates" or Settings)
   useEffect(() => {
-    void useUpdate.getState().init().then(() => {
-      void useUpdate.getState().check(false)
-    })
-  }, [])
+    if (hubOpen) {
+      if (event?.status === 'UP_TO_DATE' || event?.status === 'IDLE') {
+        toastSuccess('TINDA POS is Up to Date', `Running version v${event?.installedVersion || '1.0.95'}`)
+        closeHub()
+      } else {
+        setExpanded(true)
+      }
+    }
+  }, [hubOpen, event?.status, event?.installedVersion, closeHub])
 
   // Close flyout when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setExpanded(false)
+        closeHub()
       }
     }
     if (expanded) {
@@ -65,7 +71,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [expanded])
+  }, [expanded, closeHub])
 
   if (!event) return null
 
@@ -212,6 +218,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
           onClick={() => {
             void dismiss()
             setExpanded(false)
+            closeHub()
           }}
           className="rounded-full p-1 text-slate-400 hover:bg-ink-800 hover:text-white transition"
           aria-label="Dismiss notification"
@@ -247,7 +254,10 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
             </div>
             <button
               type="button"
-              onClick={() => setExpanded(false)}
+              onClick={() => {
+                setExpanded(false)
+                closeHub()
+              }}
               className="rounded p-1 text-slate-400 hover:bg-ink-800 hover:text-white"
             >
               <X className="h-3.5 w-3.5" />
@@ -323,7 +333,10 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
             ) : (
               <button
                 type="button"
-                onClick={() => setExpanded(false)}
+                onClick={() => {
+                  setExpanded(false)
+                  closeHub()
+                }}
                 className="btn-ghost px-3 py-1.5 text-xs text-slate-400 hover:text-white"
               >
                 Close

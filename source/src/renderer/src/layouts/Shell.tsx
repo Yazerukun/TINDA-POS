@@ -34,19 +34,19 @@ export function Shell(): React.JSX.Element {
   useEffect(() => {
     load().catch(() => console.error('settings load failed'))
 
-    // Initialize update store and run immediate check after mount (1.5 seconds)
+    // Initialize update store and run silent background check after mount (3 seconds)
     const initTimer = setTimeout(() => {
       void useUpdate.getState().init().then(() => {
-        void useUpdate.getState().check(true)
+        void useUpdate.getState().check(false)
       })
-    }, 1500)
+    }, 3000)
 
-    // Real-time background check every 10 seconds
+    // Periodic background check every 15 minutes when app is active
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         void useUpdate.getState().check(false)
       }
-    }, 10000)
+    }, 15 * 60 * 1000)
 
     // Real-time check on window focus (when cashier switches back or clicks app)
     const onFocus = () => {
