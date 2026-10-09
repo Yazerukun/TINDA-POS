@@ -1728,3 +1728,41 @@
 2. **Silent Background Processing:** Update checking and downloads execute smoothly on low-priority worker threads with zero UI frame drops.
 3. **Shift Close Deferral ("Apply on Shift Close"):** Cashiers and VIP merchants can defer application until register closing (`tinda_apply_on_shift_close: true`). Updates auto-apply on cashier logout or system reboot without disrupting busy peak hours.
 4. **Automated VIP Database Snapshot:** Automated safety backup of SQLite database is guaranteed prior to applying any executable restart.
+
+---
+
+## 80. Universal Thermal Receipt Alignment & High-Density Solid Black Standard (v1.0.97 Spec)
+
+### 80.1 Zero First-Letter Clipping Contract ("Walay Putol sa Sinugdanan")
+1. **Hardware Blind Spot Protection:** Standard 58mm and 80mm POS thermal print mechanisms position their heating element array with a mechanical gutter of 3.5mm–5.0mm inward from the left paper guide.
+2. **Safe Gutter Margin Rules:**
+   - In `receiptHtml.ts`, `.tp-sheet` must strictly center content (`margin: 0 auto !important;`) and enforce safe left padding:
+     - 58mm Paper: `padding: 2mm 3.5mm 2mm 4.5mm !important;`
+     - 80mm Paper: `padding: 2mm 4mm 2mm 5.0mm !important;`
+   - Even if a generic printer driver reports zero physical margins, text coordinates begin at $X \ge 4.5\text{mm}$, preventing any leftmost characters (`Biller:`, `Date:`, `Ref #:`, `Customer:`, `TOTAL PAID`) from being clipped.
+3. **Driver Printable Area Integration:** Chromium `webContents.print()` options in `submitPrint()` must pass `margins: { marginType: 'printableArea' }` rather than `'none'`. This aligns Chromium coordinate placement with the printer driver's hardware printable area.
+
+### 80.2 High-Density Solid Black Print Standard ("Dili Blury, Klaro ug Itom")
+1. **Full-Fidelity RGB Spooling (`color: true`):** Chromium passes 24-bit RGB graphics directly to Windows GDI. The manufacturer thermal driver converts dark pixels into full-strength thermal burn heat pulses, completely bypassing Chromium's fuzzy 1-bit Floyd-Steinberg error diffusion and halftoning speckles.
+2. **Native Resolution DEVMODE Preservation:** Electron print options must avoid hardcoding `dpi: { horizontal: 203, vertical: 203 }`, allowing Windows GDI and the vendor printer driver to communicate at native hardware resolutions without GDI bitmap resampling blur.
+3. **Bold Monospace Typography Stack:**
+   - Standard font family: `font-family: Consolas, 'Lucida Console', Monaco, 'Courier New', monospace;`.
+   - Font weights: `font-weight: 800 !important;` for standard body rows, `font-weight: 900 !important;` for headings and grand totals.
+   - Text rendering directives:
+     ```css
+     -webkit-print-color-adjust: exact !important;
+     print-color-adjust: exact !important;
+     color: #000000 !important;
+     -webkit-text-stroke: 0.15px #000000 !important;
+     text-rendering: geometricPrecision !important;
+     ```
+   - Micro-emboldened 0.15px text stroke delivers thick, solid black thermal burn lines without faint grey borders.
+
+### 80.3 100% Manual vs Automatic Print Parity Contract
+1. Every receipt type in TINDA POS must produce visually identical physical output regardless of whether dispatched via **Silent Automatic Print** or **Manual Windows Print Dialog**:
+   - Checkout receipts (`printSale` / `autoPrintAfterCheckout`)
+   - Bills & E-Load payment slips (`ewallet:printBillSlip`)
+   - E-Wallet Cash In / Cash Out slips (`ewallet:printSlip`)
+   - 3-Way Audit reports (`ewallet:printAuditReport`)
+   - Register test prints (`printTest`)
+2. `BillsLoadHub.tsx` must route printing through `window.api.ewallet.printBillSlip` with dual 1-click Auto Thermal Print and Manual System Print buttons, matching the design of `EwalletAudit.tsx`.

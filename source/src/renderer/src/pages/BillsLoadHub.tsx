@@ -166,62 +166,32 @@ export function BillsLoadHub(): React.JSX.Element {
     setReferenceNo('')
   }
 
-  const printReceipt = (tx: BillTransaction) => {
-    const printWin = window.open('', '_blank', 'width=380,height=500')
-    if (!printWin) {
-      toastError('Popup Blocked', 'Please allow popups to print receipt.')
-      return
+  const printReceipt = async (tx: BillTransaction, manual = false) => {
+    try {
+      if (window.api?.ewallet?.printBillSlip) {
+        const res = await window.api.ewallet.printBillSlip(
+          {
+            biller: tx.biller,
+            referenceNo: tx.referenceNo,
+            accountNo: tx.accountNo,
+            customerName: tx.customerName,
+            customerPhone: tx.customerPhone,
+            amount: tx.amount,
+            serviceFee: tx.serviceFee,
+            sourceWallet: tx.sourceWallet,
+            createdAt: tx.createdAt
+          },
+          { manual }
+        )
+        if (res.ok) {
+          toastSuccess(manual ? 'Manual Print Dialog' : 'Receipt Printed', manual ? 'System print dialog opened.' : 'Bills & E-Load slip printed successfully.')
+        } else {
+          toastError('Printing Notice', res.message)
+        }
+      }
+    } catch (e) {
+      toastError('Print Error', String(e))
     }
-    printWin.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Bills Receipt - ${tx.biller}</title>
-        <style>
-          @page { size: 58mm auto; margin: 0; }
-          body {
-            font-family: Consolas, monospace;
-            font-size: 11px;
-            margin: 0;
-            padding: 2mm;
-            color: #000;
-            line-height: 1.25;
-            text-align: center;
-          }
-          .hdr { font-size: 13px; font-weight: 900; margin-bottom: 2px; }
-          .sep { border-top: 1px dashed #000; margin: 4px 0; }
-          .row { display: flex; justify-content: space-between; text-align: left; margin: 2px 0; font-size: 10px; }
-          .bold { font-weight: 900; }
-          .total { font-size: 13px; font-weight: 900; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 3px 0; margin: 4px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="hdr">BILLS &amp; E-LOAD RECEIPT</div>
-        <div style="font-size: 9px;">OFFICIAL ACKNOWLEDGMENT</div>
-        <div class="sep"></div>
-        <div class="row"><span>Date:</span><span>${new Date(tx.createdAt).toLocaleString('en-PH')}</span></div>
-        <div class="row"><span>Ref #:</span><span class="bold">${tx.referenceNo}</span></div>
-        <div class="row"><span>Biller:</span><span class="bold">${tx.biller}</span></div>
-        <div class="row"><span>Acct / No:</span><span class="bold">${tx.accountNo}</span></div>
-        <div class="row"><span>Customer:</span><span>${tx.customerName}</span></div>
-        <div class="row"><span>Paid Via:</span><span>Customer Cash</span></div>
-        <div class="row"><span>Processed:</span><span>${tx.sourceWallet} Business</span></div>
-        <div class="sep"></div>
-        <div class="row"><span>Bill Amount:</span><span>P${tx.amount.toFixed(2)}</span></div>
-        <div class="row"><span>Service Fee:</span><span>+P${tx.serviceFee.toFixed(2)}</span></div>
-        <div class="total row"><span class="bold">TOTAL COLLECTED:</span><span class="bold">P${(tx.amount + tx.serviceFee).toFixed(2)}</span></div>
-        <div class="sep"></div>
-        <div style="font-size: 9px; margin-top: 4px;">Please keep this receipt as proof of payment. Thank you!</div>
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(function() { window.close(); }, 500);
-          }
-        </script>
-      </body>
-      </html>
-    `)
-    printWin.document.close()
   }
 
   const filteredRecords = records.filter(
@@ -534,14 +504,24 @@ export function BillsLoadHub(): React.JSX.Element {
                         ₱{(r.amount + r.serviceFee).toFixed(2)}
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => printReceipt(r)}
-                          className="btn-ghost p-1 text-slate-400 hover:text-white"
-                          title="Print Thermal Receipt Slip"
-                        >
-                          <Printer className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void printReceipt(r, false)}
+                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 transition"
+                            title="Thermal Print Receipt (Auto)"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void printReceipt(r, true)}
+                            className="px-1.5 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded-lg hover:bg-ink-800 border border-ink-line transition"
+                            title="Manual Print (System Dialog)"
+                          >
+                            Manual
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

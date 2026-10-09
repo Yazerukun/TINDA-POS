@@ -194,41 +194,41 @@ function rowsToHtml(lines: string[], currency: string): string {
 }
 
 const baseCss = `
-  .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 700; }
-  .tp-sheet * { box-sizing: border-box; color: #000000 !important; -webkit-font-smoothing: none !important; -moz-osx-font-smoothing: grayscale !important; font-smooth: never !important; text-rendering: geometricPrecision !important; }
-  .tp-community-tag { font-size: 8.5px; font-weight: 700; letter-spacing: 0.02em; margin-top: 2px; }
-  .tp-sheet { font-family: 'Courier New', Courier, Consolas, monospace; line-height: 1.1; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-  .tp-row { font-size: 10px; line-height: 1.1; font-weight: 700; margin: 0; padding: 0; }
+  .tp-sheet { margin: 0 auto; box-sizing: border-box; background: white; color: black; font-weight: 800; }
+  .tp-sheet * { box-sizing: border-box; color: #000000 !important; text-rendering: geometricPrecision !important; }
+  .tp-community-tag { font-size: 8.5px; font-weight: 800; letter-spacing: 0.02em; margin-top: 2px; }
+  .tp-sheet { font-family: Consolas, 'Lucida Console', Monaco, 'Courier New', monospace; line-height: 1.15; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  .tp-row { font-size: 10.5px; line-height: 1.15; font-weight: 800; margin: 0; padding: 0; }
   .tp-center { text-align: center; }
-  .tp-heading { font-size: 12px; font-weight: 900; line-height: 1.1; margin: 0; letter-spacing: -0.01em; }
-  .tp-subheader { font-size: 9.5px; font-weight: 700; line-height: 1.05; margin: 0; }
-  .tp-small { font-size: 9px; font-weight: 700; line-height: 1.05; margin: 0; }
+  .tp-heading { font-size: 13px; font-weight: 900; line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
+  .tp-subheader { font-size: 10px; font-weight: 800; line-height: 1.1; margin: 0; }
+  .tp-small { font-size: 9.5px; font-weight: 800; line-height: 1.1; margin: 0; }
   .tp-item, .tp-sum, .tp-total, .tp-sukli, .tp-denomline { break-inside: avoid; }
   .tp-gap { height: 1px; }
-  .tp-sep { border-top: 1px dashed #000000; margin: 2px 0; height: 0; }
-  .tp-sep-double { border-top: 3px double #000000; margin: 2px 0; height: 0; }
-  .tp-section-head { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 1px; letter-spacing: 0.02em; line-height: 1.1; }
-  .tp-section-head.tp-sub { font-size: 9px; font-weight: 700; margin-top: 0; color: #000; line-height: 1.05; }
-  .tp-item { margin: 0; padding: 0.5px 0; line-height: 1.1; }
-  .tp-item .tp-name { font-size: 10px; font-weight: 700; line-height: 1.1; margin: 0; }
-  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10px; line-height: 1.1; margin: 0; padding-right: 3px; font-weight: 700; }
-  .tp-qty { font-size: 10px; white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; shrink: 0; }
+  .tp-sep { border-top: 1.5px dashed #000000; margin: 2px 0; height: 0; }
+  .tp-sep-double { border-top: 3.5px double #000000; margin: 2px 0; height: 0; }
+  .tp-section-head { font-size: 10.5px; font-weight: 900; text-transform: uppercase; margin-top: 1px; letter-spacing: 0.02em; line-height: 1.15; }
+  .tp-section-head.tp-sub { font-size: 9.5px; font-weight: 800; margin-top: 0; color: #000; line-height: 1.1; }
+  .tp-item { margin: 0; padding: 0.5px 0; line-height: 1.15; }
+  .tp-item .tp-name { font-size: 10.5px; font-weight: 800; line-height: 1.15; margin: 0; }
+  .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10.5px; line-height: 1.15; margin: 0; padding-right: 3px; font-weight: 800; }
+  .tp-qty { font-size: 10.5px; white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; shrink: 0; }
   .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 900; padding-right: 3px; }
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 900; }
-  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10px; line-height: 1.1; margin: 0; padding-right: 3px; }
+  .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10.5px; line-height: 1.15; margin: 0; padding-right: 3px; }
   .tp-lbl { flex: 1; min-width: 0; }
-  .tp-sum { font-size: 10px; margin: 0; line-height: 1.1; }
-  .tp-total { font-size: 11.5px; font-weight: 900; line-height: 1.15; border-top: 3px double #000000; border-bottom: 3px double #000000; margin: 2px 0; padding: 1px 3px 1px 0; }
+  .tp-sum { font-size: 10.5px; margin: 0; line-height: 1.15; }
+  .tp-total { font-size: 12px; font-weight: 900; line-height: 1.2; border-top: 3.5px double #000000; border-bottom: 3.5px double #000000; margin: 2px 0; padding: 1px 3px 1px 0; }
   .tp-total.has-adjacent-top-sep { border-top: none !important; }
   .tp-total.has-adjacent-bottom-sep { border-bottom: none !important; }
-  .tp-total .tp-amt { font-weight: 900; font-size: 12px; text-align: right; padding-right: 2px; }
-  .tp-sukli { font-size: 10px; font-weight: 800; line-height: 1.1; margin: 0; padding-right: 3px; }
-  .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 800; }
+  .tp-total .tp-amt { font-weight: 900; font-size: 12.5px; text-align: right; padding-right: 2px; }
+  .tp-sukli { font-size: 10.5px; font-weight: 900; line-height: 1.15; margin: 0; padding-right: 3px; }
+  .tp-sukli .tp-lbl, .tp-sukli .tp-amt { font-weight: 900; }
   .tp-sukli .tp-amt { text-align: right; padding-right: 3px; }
-  .tp-footer { font-size: 9px; font-weight: 700; text-align: center; margin-top: 2px; line-height: 1.1; }
-  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 9.5px; line-height: 1.1; }
-  .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 700; }
-  .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .tp-footer { font-size: 9.5px; font-weight: 800; text-align: center; margin-top: 2px; line-height: 1.15; }
+  .tp-denomline { display: table; width: 100%; table-layout: fixed; font-size: 10px; line-height: 1.15; }
+  .tp-denom { display: table-cell; text-align: left; width: 34%; white-space: nowrap; font-weight: 800; }
+  .tp-denomline .tp-qty { display: table-cell; text-align: center; width: 26%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 800; }
   .tp-denomline .tp-amt { display: table-cell; text-align: right; width: 40%; white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 900; padding-right: 3px; }
   .tp-badge-status { font-weight: 900; letter-spacing: 0.05em; }
   .tp-status-balanced { color: #000; }
@@ -239,7 +239,9 @@ export function receiptCss(width: ReceiptWidth): string {
   const is58 = width !== '80mm'
   const paperWidth = is58 ? '58mm' : '80mm'
   const contentWidth = is58 ? '48mm' : '72mm'
-  const printWidth = is58 ? '46mm' : '70mm'
+  const printWidth = is58 ? '48mm' : '72mm'
+  const paddingLeft = is58 ? '4.5mm' : '5mm'
+  const paddingRight = is58 ? '3.5mm' : '4mm'
   const fontSize = is58 ? '11px' : '12px'
   return `
     ${baseCss}
@@ -253,8 +255,6 @@ export function receiptCss(width: ReceiptWidth): string {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         -webkit-font-smoothing: none !important;
-        -moz-osx-font-smoothing: grayscale !important;
-        font-smooth: never !important;
         text-rendering: geometricPrecision !important;
       }
       * {
@@ -264,52 +264,53 @@ export function receiptCss(width: ReceiptWidth): string {
         text-rendering: geometricPrecision !important;
         text-shadow: none !important;
         box-shadow: none !important;
+        -webkit-text-stroke: 0.15px #000000 !important;
       }
       .tp-sheet {
-        width: ${printWidth} !important;
+        width: 100% !important;
         max-width: ${printWidth} !important;
-        margin: 0 0 0 1.5mm !important;
-        padding: 1.5mm 3.5mm 1.5mm 1.5mm !important;
-        font-weight: 700 !important;
+        margin: 0 auto !important;
+        padding: 2mm ${paddingRight} 2mm ${paddingLeft} !important;
+        font-weight: 800 !important;
         letter-spacing: -0.01em !important;
-        line-height: 1.1 !important;
+        line-height: 1.15 !important;
         box-sizing: border-box !important;
       }
       .tp-heading {
-        font-size: 12px !important;
+        font-size: 13px !important;
         font-weight: 900 !important;
-        line-height: 1.1 !important;
-      }
-      .tp-total {
-        font-size: 11.5px !important;
-        font-weight: 900 !important;
-        margin: 2px 0 !important;
         line-height: 1.15 !important;
       }
-      .tp-total .tp-amt {
+      .tp-total {
         font-size: 12px !important;
+        font-weight: 900 !important;
+        margin: 2px 0 !important;
+        line-height: 1.2 !important;
+      }
+      .tp-total .tp-amt {
+        font-size: 12.5px !important;
         font-weight: 900 !important;
         padding-right: 2px !important;
       }
       .tp-sep {
-        border-top: 1px dashed #000000 !important;
+        border-top: 1.5px dashed #000000 !important;
         margin: 2px 0 !important;
         height: 0 !important;
       }
       .tp-sep-double {
-        border-top: 3px double #000000 !important;
+        border-top: 3.5px double #000000 !important;
         margin: 2px 0 !important;
         height: 0 !important;
       }
       .tp-row, .tp-item, .tp-sum, .tp-sukli {
-        line-height: 1.1 !important;
+        line-height: 1.15 !important;
         margin: 0 !important;
       }
       .tp-amt {
         padding-right: 3px !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm 3mm; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 2mm ${paddingRight} 2mm ${paddingLeft}; font-size: ${fontSize}; }
   `
 }
 

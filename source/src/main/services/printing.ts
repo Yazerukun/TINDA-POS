@@ -102,12 +102,11 @@ export async function submitPrint(
         silent: !isManual,
         deviceName: printerName,
         printBackground: true,
-        color: false, // Monochrome: avoids chromatic dithering and blur on 203 DPI thermal printheads
-        dpi: { horizontal: 203, vertical: 203 },
+        color: true, // Color (24-bit RGB): Windows driver thresholds pixels into solid thermal burn pulses without 1-bit Floyd-Steinberg dithering blur
         copies,
         pageSize: pageSizeMicrons,
         margins: {
-          marginType: 'none'
+          marginType: 'printableArea'
         }
       },
       (success, failureReason) => {
