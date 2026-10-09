@@ -1,21 +1,21 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.91 (CHITENG CT221B BARCODE & THERMAL LABEL PRINTER EDITION)
+- v1.0.92 (RESILIENT PINNED CATEGORIES DUAL-STORE & LIVE VISIBILITY REPAIR EDITION)
 
 TARGET:
-- v1.0.92 (NEXT RELEASE CYCLE)
+- v1.0.93 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Publishing Live Patch v1.0.91
+- Publishing Live Patch v1.0.92
 
 COMPLETED:
-- Stage 01: Native Chiteng / Clabel CT221B Thermal Label Printer Support (auto-detection regex, hardware keyword matching).
-- Stage 02: Pure Vector Code 128 (Subset B) SVG barcode generator with standard quiet zones & checksums.
-- Stage 03: Electron Custom Micron Zero-Margin Spooling Engine & 1-tap alignment test sticker.
-- Stage 04: Redesigned PriceTagPrintModal (Apple Cupertino Label Studio, CT221B 40x30mm presets, stock count match).
-- Stage 05: Dedicated Chiteng CT221B Label Printer Hub in Settings -> Receipt & Hardware.
-- Stage 06: Quality Gates passed: Vitest (75/75), Typecheck (0 errors), check_master_invariants.
+- Stage 01: Universal parsePinnedCategoryIds engine supporting numbers, strings, arrays, and comma sequences.
+- Stage 02: Client-side dual-store persistence engine (localStorage + background SQLite sync) in categoryCustomization.ts.
+- Stage 03: Real-time event synchronization (tinda-pinned-categories-changed) across POS, Dashboard, dropdown, and modals.
+- Stage 04: Numeric type coercion (Number(c.id) === Number(id)) preventing string/number filtering mismatch.
+- Stage 05: Ergonomic category selection with search term auto-clear (setQ('')) and toggle-to-all.
+- Stage 06: Quality Gates passed: Vitest (81/81 shared tests, 4/4 dashboard tests), Typecheck (0 errors), check_master_invariants.
 
 PENDING APPROVAL:
 - None (Approved by Owner).

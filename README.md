@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.91-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.92-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-436_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-449_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,28 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.91](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Feature-Patch-1.0.91.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.91 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Setup-1.0.91.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Portable-1.0.91.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.92](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Feature-Patch-1.0.92.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.92 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Setup-1.0.92.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Portable-1.0.92.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)
+
+> **Root-Cause Pinned Categories Visibility Repair, Universal Settings Array Parser, Client-Side Dual-Store (localStorage + SQLite) Persistence, Real-Time Event Sync, and Search Auto-Clear.**
+
+- 🔍 **Root-Cause Pinned Categories Visibility Repair ("Dili Makita ang Gi Pin")**:
+  - Fixed SQLite settings serialization dropping single numeric strings (e.g. `'8'`) due to strict array validation.
+  - Implemented universal `parsePinnedCategoryIds` supporting arrays, single numbers, raw strings, and comma-delimited values.
+- 💾 **Client-Side Dual-Store Persistence Engine**:
+  - Zero-latency persistence in `localStorage` (`tinda_pinned_categories_v1`) combined with background SQLite settings synchronization.
+  - Guarantees pinned categories are never wiped out during in-app hot-patch updates on older Electron base builds.
+- ⚡ **Cross-Component Real-Time Event Synchronization (`tinda-pinned-categories-changed`)**:
+  - Instant 0ms broadcast across `PinnedCategoriesBar`, POS Category Dropdown, `CustomizeCategoriesModal`, and Dashboard.
+  - Toggling or pinning updates all visible chips, badges, and counters concurrently.
+- 🔢 **Resilient Numeric Equality Matching**:
+  - Upgraded category matching from strict `===` to type-coerced `Number(c.id) === Number(id)`, preventing items from disappearing due to string/number ID discrepancies.
+- 🎯 **Ergonomic Category Filtering & Search Auto-Clear**:
+  - Clicking a category chip now clears any lingering search text (`setQ('')`), ensuring all products in the selected category are immediately displayed.
+  - Clicking an active pinned category toggles back to 'All Items' for fluid navigation.
 
 ## ✨ What's New in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)
 

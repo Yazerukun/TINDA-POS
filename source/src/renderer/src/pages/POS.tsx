@@ -50,7 +50,13 @@ import { useGuide } from '../stores/guide'
 import { useSettings } from '../stores/settings'
 import { PinnedCategoriesBar } from '../components/PinnedCategoriesBar'
 import { CustomizeCategoriesModal } from '../components/CustomizeCategoriesModal'
-import { getCategoryVisuals, getCategoryCustomizations } from '../utils/categoryCustomization'
+import {
+  getCategoryVisuals,
+  getCategoryCustomizations,
+  reconcilePinnedCategoryIds,
+  togglePinnedCategoryId,
+  PINNED_CATEGORIES_CHANGED_EVENT
+} from '../utils/categoryCustomization'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money, isWeighableUnit, formatQuantity } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
@@ -293,6 +299,21 @@ export function POS(): React.JSX.Element {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [customizeModalOpen, setCustomizeModalOpen] = useState(false)
   const [catCounts, setCatCounts] = useState<Record<number | 'ALL', number>>({ ALL: 0 })
+  const [posPinnedIds, setPosPinnedIds] = useState<number[]>(() =>
+    reconcilePinnedCategoryIds(settings?.pos_pinned_categories)
+  )
+
+  useEffect(() => {
+    setPosPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+  }, [settings?.pos_pinned_categories])
+
+  useEffect(() => {
+    const handleSync = () => {
+      setPosPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+    }
+    window.addEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+    return () => window.removeEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+  }, [settings?.pos_pinned_categories])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
@@ -477,7 +498,7 @@ export function POS(): React.JSX.Element {
 
   const selectedCategory = catFilter === 'ALL'
     ? 'All categories'
-    : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+    : categories.find((category) => Number(category.id) === Number(catFilter))?.name ?? 'All categories'
 
   const PAGE_SIZE = 120
 
@@ -792,7 +813,8 @@ export function POS(): React.JSX.Element {
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
     setCategoryMenuOpen(false)
-    void search(q, categoryId === 'ALL' ? null : categoryId)
+    setQ('')
+    void search('', categoryId === 'ALL' ? null : categoryId)
   }
 
   return (
@@ -865,14 +887,14 @@ export function POS(): React.JSX.Element {
                   {catFilter === 'ALL' && <Check className="h-4 w-4" />}
                 </button>
                 {categories.map((category) => {
-                  const isPinned = (settings?.pos_pinned_categories || []).includes(category.id)
+                  const isPinned = posPinnedIds.some((id) => Number(id) === Number(category.id))
                   const customMap = getCategoryCustomizations()
                   const visuals = getCategoryVisuals(category.name, customMap[category.id])
                   return (
                     <div
                       key={category.id}
                       className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-ink-700 transition-colors ${
-                        catFilter === category.id ? 'text-brand-300 bg-ink-800' : 'text-slate-200'
+                        Number(catFilter) === Number(category.id) ? 'text-brand-300 bg-ink-800' : 'text-slate-200'
                       }`}
                     >
                       <button
@@ -880,19 +902,18 @@ export function POS(): React.JSX.Element {
                         onClick={() => chooseCategory(category.id)}
                         className="flex min-w-0 items-center gap-2 flex-1 text-left py-0.5"
                         role="option"
-                        aria-selected={catFilter === category.id}
+                        aria-selected={Number(catFilter) === Number(category.id)}
                       >
                         <span className="text-sm shrink-0">{visuals.icon}</span>
                         <span className="truncate">{category.name}</span>
-                        {catFilter === category.id && <Check className="h-4 w-4 shrink-0 text-brand-400 ml-auto mr-1" />}
+                        {Number(catFilter) === Number(category.id) && <Check className="h-4 w-4 shrink-0 text-brand-400 ml-auto mr-1" />}
                       </button>
                       <button
                         type="button"
                         onClick={async (e) => {
                           e.stopPropagation()
-                          const curr = settings?.pos_pinned_categories || []
-                          const next = isPinned ? curr.filter((id) => id !== category.id) : [...curr, category.id]
-                          await updateSettings({ pos_pinned_categories: next })
+                          const next = await togglePinnedCategoryId(category.id, posPinnedIds, updateSettings)
+                          setPosPinnedIds(next)
                           toastSuccess(isPinned ? 'Category unpinned from POS' : 'Category pinned to POS bar')
                         }}
                         className={`p-1 rounded hover:bg-ink-600 transition-colors shrink-0 ml-1 ${

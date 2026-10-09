@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   X,
   Plus,
@@ -20,6 +20,10 @@ import {
   getCategoryCustomizations,
   saveCategoryCustomization,
   getCategoryVisuals,
+  reconcilePinnedCategoryIds,
+  savePinnedCategoryIds,
+  togglePinnedCategoryId,
+  PINNED_CATEGORIES_CHANGED_EVENT,
   type CategoryCustomization
 } from '../utils/categoryCustomization'
 import { useSettings } from '../stores/settings'
@@ -48,19 +52,29 @@ export function CustomizeCategoriesModal({
   const [newCatAutoPin, setNewCatAutoPin] = useState(true)
   const [creating, setCreating] = useState(false)
   const [customMap, setCustomMap] = useState(getCategoryCustomizations)
+  const [pinnedIds, setPinnedIds] = useState<number[]>(() =>
+    reconcilePinnedCategoryIds(settings?.pos_pinned_categories)
+  )
+
+  useEffect(() => {
+    setPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+  }, [settings?.pos_pinned_categories])
+
+  useEffect(() => {
+    const handleSync = () => {
+      setPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+    }
+    window.addEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+    return () => window.removeEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+  }, [settings?.pos_pinned_categories])
 
   if (!open) return null
 
-  const pinnedIds: number[] = settings?.pos_pinned_categories || []
-
   const togglePin = async (categoryId: number) => {
     try {
-      const isCurrentlyPinned = pinnedIds.includes(categoryId)
-      const nextPinned = isCurrentlyPinned
-        ? pinnedIds.filter((id) => id !== categoryId)
-        : [...pinnedIds, categoryId]
-
-      await updateSettings({ pos_pinned_categories: nextPinned })
+      const isCurrentlyPinned = pinnedIds.some((id) => Number(id) === Number(categoryId))
+      const nextPinned = await togglePinnedCategoryId(categoryId, pinnedIds, updateSettings)
+      setPinnedIds(nextPinned)
       toastSuccess(isCurrentlyPinned ? 'Category unpinned from POS' : 'Category pinned to POS bar')
     } catch (err) {
       toastError('Failed to update pinned categories', String((err as Error)?.message || err))
@@ -93,8 +107,8 @@ export function CustomizeCategoriesModal({
       setCustomMap(getCategoryCustomizations())
 
       if (newCatAutoPin) {
-        const nextPinned = Array.from(new Set([...pinnedIds, created.id]))
-        await updateSettings({ pos_pinned_categories: nextPinned })
+        const nextPinned = await savePinnedCategoryIds([...pinnedIds, created.id], updateSettings)
+        setPinnedIds(nextPinned)
       }
 
       setNewCatName('')
@@ -118,10 +132,12 @@ export function CustomizeCategoriesModal({
 
     try {
       await window.api.categories.remove(cat.id)
-      if (pinnedIds.includes(cat.id)) {
-        await updateSettings({
-          pos_pinned_categories: pinnedIds.filter((id) => id !== cat.id)
-        })
+      if (pinnedIds.some((id) => Number(id) === Number(cat.id))) {
+        const nextPinned = await savePinnedCategoryIds(
+          pinnedIds.filter((id) => Number(id) !== Number(cat.id)),
+          updateSettings
+        )
+        setPinnedIds(nextPinned)
       }
       await onCategoriesChanged()
       toastSuccess(`Category "${cat.name}" removed`)
@@ -134,14 +150,17 @@ export function CustomizeCategoriesModal({
     const bundleCategoryIds = categories
       .filter((c) => {
         const vis = getCategoryVisuals(c.name, customMap[c.id])
-        return vis.isBundle && !pinnedIds.includes(c.id)
+        return vis.isBundle && !pinnedIds.some((id) => Number(id) === Number(c.id))
       })
       .map((c) => c.id)
 
     if (bundleCategoryIds.length === 0) return
 
-    const nextPinned = Array.from(new Set([...pinnedIds, ...bundleCategoryIds]))
-    await updateSettings({ pos_pinned_categories: nextPinned })
+    const nextPinned = await savePinnedCategoryIds(
+      Array.from(new Set([...pinnedIds, ...bundleCategoryIds])),
+      updateSettings
+    )
+    setPinnedIds(nextPinned)
     toastSuccess(`Pinned ${bundleCategoryIds.length} bundle categories to POS!`)
   }
 
@@ -151,7 +170,7 @@ export function CustomizeCategoriesModal({
 
   const unpinnedBundlesCount = categories.filter((c) => {
     const vis = getCategoryVisuals(c.name, customMap[c.id])
-    return vis.isBundle && !pinnedIds.includes(c.id)
+    return vis.isBundle && !pinnedIds.some((id) => Number(id) === Number(c.id))
   }).length
 
   return (
@@ -322,7 +341,7 @@ export function CustomizeCategoriesModal({
               )}
 
               {filteredCategories.map((category) => {
-                const isPinned = pinnedIds.includes(category.id)
+                const isPinned = pinnedIds.some((id) => Number(id) === Number(category.id))
                 const custom = customMap[category.id]
                 const visuals = getCategoryVisuals(category.name, custom)
                 const count = productsCountMap[category.id] || 0

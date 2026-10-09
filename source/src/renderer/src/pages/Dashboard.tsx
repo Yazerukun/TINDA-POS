@@ -25,7 +25,9 @@ import { AppLogo } from '../components/AppLogo'
 import {
   getCategoryVisuals,
   getCategoryCustomizations,
-  getCategoryStyle
+  getCategoryStyle,
+  reconcilePinnedCategoryIds,
+  PINNED_CATEGORIES_CHANGED_EVENT
 } from '../utils/categoryCustomization'
 
 function StatCard({
@@ -121,11 +123,13 @@ export function Dashboard(): React.JSX.Element | null {
     refresh()
     const unsubscribe = window.api.inventory.onChanged(refresh)
     window.addEventListener('focus', refresh)
+    window.addEventListener(PINNED_CATEGORIES_CHANGED_EVENT, refresh)
     const timer = window.setInterval(refresh, 15000)
     return () => {
       alive = false
       unsubscribe()
       window.removeEventListener('focus', refresh)
+      window.removeEventListener(PINNED_CATEGORIES_CHANGED_EVENT, refresh)
       window.clearInterval(timer)
     }
   }, [])
@@ -231,10 +235,10 @@ export function Dashboard(): React.JSX.Element | null {
 
       {/* Pinned Bundles & Quick Categories Hub */}
       {(() => {
-        const pinnedIds: number[] = settings?.pos_pinned_categories || []
+        const pinnedIds = (reconcilePinnedCategoryIds(settings?.pos_pinned_categories) || [])
         const customMap = getCategoryCustomizations()
-        const pinnedList = pinnedIds
-          .map((id) => (categories || []).find((c) => c && c.id === id))
+        const pinnedList = (pinnedIds || [])
+          .map((id) => (categories || []).find((c) => c && Number(c.id) === Number(id)))
           .filter((c): c is Category => Boolean(c))
 
         return (

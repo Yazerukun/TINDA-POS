@@ -27,7 +27,23 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)**
+- Current Version: **v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)**
+
+## Key Features in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)
+1. **Root-Cause Pinned Categories Visibility & Array Parser Repair**:
+   - Resolved the issue where pinned categories were invisible ("dili makita ang gi pin") caused by SQLite storing numeric or comma-delimited values (e.g. `'8'`) that were dropped by strict `Array.isArray` checks.
+   - Built a universal `parsePinnedCategoryIds` engine that handles JSON arrays, raw numeric strings, single numbers, and comma-delimited sequences safely.
+2. **Client-Side Dual-Store Persistence Engine (`localStorage` + SQLite Settings)**:
+   - Synchronous, zero-latency persistence in `localStorage` (`tinda_pinned_categories_v1`) coupled with background SQLite synchronization.
+   - Eliminates state loss during in-app hot-patch updates on un-restarted Electron base apps.
+3. **Cross-Component Real-Time Event Sync (`tinda-pinned-categories-changed`)**:
+   - Instant 0ms broadcast across `PinnedCategoriesBar`, `POS.tsx` dropdown, `CustomizeCategoriesModal`, and `Dashboard.tsx`.
+   - Category chips, dropdown pin icons, and dashboard cards update concurrently within the exact same frame.
+4. **Resilient Type-Coerced Number Comparison**:
+   - Replaced fragile strict equality checks (`c.id === id`) with universal numeric matching (`Number(c.id) === Number(id)`), ensuring items are never filtered out due to string/number serialization mismatches.
+5. **Ergonomic Category Filtering & Search Auto-Clear**:
+   - Clicking a category chip now resets the search bar (`setQ('')`), ensuring products in the selected category are immediately displayed rather than colliding with lingering search text.
+   - Clicking an active pinned category chip toggles back to 'All Items' for fluid navigation.
 
 ## Key Features in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)
 1. **Chiteng / Clabel CT221B Auto-Detection (Plug & Play)**:

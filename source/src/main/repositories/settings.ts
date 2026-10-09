@@ -47,6 +47,38 @@ export const defaultSettings: StoreSettings = {
   label_paper_size: '40x30'
 }
 
+export function parsePinnedCategoryIds(raw: unknown): number[] {
+  if (Array.isArray(raw)) {
+    return Array.from(new Set(raw.map((n) => Number(n)).filter((n) => !isNaN(n) && n > 0)))
+  }
+  if (typeof raw === 'number' && !isNaN(raw) && raw > 0) {
+    return [raw]
+  }
+  if (typeof raw !== 'string') return []
+  const trimmed = raw.trim()
+  if (!trimmed) return []
+
+  try {
+    const parsed = JSON.parse(trimmed)
+    if (Array.isArray(parsed)) {
+      return Array.from(new Set(parsed.map((n) => Number(n)).filter((n) => !isNaN(n) && n > 0)))
+    }
+    if (typeof parsed === 'number' && !isNaN(parsed) && parsed > 0) {
+      return [parsed]
+    }
+  } catch {}
+
+  const cleaned = trimmed.replace(/^\[|\]$/g, '')
+  return Array.from(
+    new Set(
+      cleaned
+        .split(',')
+        .map((s) => Number(s.trim()))
+        .filter((n) => !isNaN(n) && n > 0)
+    )
+  )
+}
+
 export function getSettings(db: Database.Database): StoreSettings {
   const rows = db.prepare('SELECT key, value FROM settings').all() as { key: string; value: string }[]
   const map: Record<string, string> = {}
@@ -59,12 +91,7 @@ export function getSettings(db: Database.Database): StoreSettings {
     if (typeof cur === 'number') out[key] = Number(v)
     else if (typeof cur === 'boolean') out[key] = v === '1' || v === 'true'
     else if (key === 'pos_pinned_categories') {
-      try {
-        const parsed = JSON.parse(v)
-        out[key] = Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
-      } catch {
-        out[key] = []
-      }
+      out[key] = parsePinnedCategoryIds(v)
     } else out[key] = v
   }
   return out as unknown as StoreSettings
@@ -79,7 +106,9 @@ export function updateSettings(db: Database.Database, patch: Partial<StoreSettin
     for (const [k, v] of Object.entries(p ?? {})) {
       let val = ''
       if (typeof v === 'boolean') val = v ? '1' : '0'
-      else if (Array.isArray(v)) val = JSON.stringify(v)
+      else if (k === 'pos_pinned_categories') {
+        val = JSON.stringify(parsePinnedCategoryIds(v))
+      } else if (Array.isArray(v)) val = JSON.stringify(v)
       else if (v === null || v === undefined) continue
       else val = String(v)
       upsert.run(k, val)

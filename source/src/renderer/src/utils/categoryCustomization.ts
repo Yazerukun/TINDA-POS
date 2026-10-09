@@ -173,3 +173,100 @@ export function getCategoryVisuals(
 
   return { icon: custom?.icon || '🏷️', color: custom?.color || 'slate', isBundle: false }
 }
+
+export const PINNED_CATEGORIES_STORAGE_KEY = 'tinda_pinned_categories_v1'
+export const PINNED_CATEGORIES_CHANGED_EVENT = 'tinda-pinned-categories-changed'
+
+export function getStoredPinnedCategoryIds(): number[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(PINNED_CATEGORIES_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      return Array.from(new Set(parsed.map(Number).filter((n) => !isNaN(n) && n > 0)))
+    }
+    if (typeof parsed === 'number' && !isNaN(parsed) && parsed > 0) {
+      return [parsed]
+    }
+    return []
+  } catch {
+    return []
+  }
+}
+
+export function reconcilePinnedCategoryIds(settingsIds?: unknown): number[] {
+  const localIds = getStoredPinnedCategoryIds()
+  let fromSettings: number[] = []
+
+  if (Array.isArray(settingsIds)) {
+    fromSettings = settingsIds.map(Number).filter((n) => !isNaN(n) && n > 0)
+  } else if (typeof settingsIds === 'number' && !isNaN(settingsIds) && settingsIds > 0) {
+    fromSettings = [settingsIds]
+  } else if (typeof settingsIds === 'string' && settingsIds.trim()) {
+    const trimmed = settingsIds.trim()
+    try {
+      const p = JSON.parse(trimmed)
+      if (Array.isArray(p)) fromSettings = p.map(Number).filter((n) => !isNaN(n) && n > 0)
+      else if (typeof p === 'number' && !isNaN(p) && p > 0) fromSettings = [p]
+    } catch {
+      fromSettings = trimmed
+        .replace(/^\[|\]$/g, '')
+        .split(',')
+        .map((s) => Number(s.trim()))
+        .filter((n) => !isNaN(n) && n > 0)
+    }
+  }
+
+  // Merge unique IDs with preference for existing items
+  const merged = Array.from(new Set([...fromSettings, ...localIds]))
+
+  // Keep localStorage up to date
+  if (typeof window !== 'undefined' && merged.length > 0 && merged.length !== localIds.length) {
+    try {
+      localStorage.setItem(PINNED_CATEGORIES_STORAGE_KEY, JSON.stringify(merged))
+    } catch {}
+  }
+
+  return merged
+}
+
+export async function savePinnedCategoryIds(
+  nextIds: number[],
+  updateSettingsFn?: (patch: any) => Promise<any>
+): Promise<number[]> {
+  const clean = Array.from(new Set(nextIds.map(Number).filter((n) => !isNaN(n) && n > 0)))
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(PINNED_CATEGORIES_STORAGE_KEY, JSON.stringify(clean))
+      window.dispatchEvent(new CustomEvent(PINNED_CATEGORIES_CHANGED_EVENT, { detail: clean }))
+    } catch (err) {
+      console.warn('Failed to save pinned categories to localStorage:', err)
+    }
+  }
+
+  if (updateSettingsFn) {
+    try {
+      await updateSettingsFn({ pos_pinned_categories: clean })
+    } catch (err) {
+      console.warn('Failed to sync pinned categories to backend settings:', err)
+    }
+  }
+
+  return clean
+}
+
+export async function togglePinnedCategoryId(
+  categoryId: number,
+  currentIds: number[],
+  updateSettingsFn?: (patch: any) => Promise<any>
+): Promise<number[]> {
+  const targetId = Number(categoryId)
+  const isCurrentlyPinned = currentIds.some((id) => Number(id) === targetId)
+  const nextPinned = isCurrentlyPinned
+    ? currentIds.filter((id) => Number(id) !== targetId)
+    : [...currentIds, targetId]
+
+  return savePinnedCategoryIds(nextPinned, updateSettingsFn)
+}
+

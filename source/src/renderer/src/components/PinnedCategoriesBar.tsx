@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Sparkles,
   SlidersHorizontal,
@@ -11,7 +11,9 @@ import {
   CATEGORY_COLOR_STYLES,
   getCategoryStyle,
   getCategoryCustomizations,
-  getCategoryVisuals
+  getCategoryVisuals,
+  reconcilePinnedCategoryIds,
+  PINNED_CATEGORIES_CHANGED_EVENT
 } from '../utils/categoryCustomization'
 import { useSettings } from '../stores/settings'
 import { CustomizeCategoriesModal } from './CustomizeCategoriesModal'
@@ -35,13 +37,27 @@ export function PinnedCategoriesBar({
 }: PinnedCategoriesBarProps): React.JSX.Element {
   const { settings } = useSettings()
   const [modalOpen, setModalOpen] = useState(false)
+  const [pinnedIds, setPinnedIds] = useState<number[]>(() =>
+    reconcilePinnedCategoryIds(settings?.pos_pinned_categories)
+  )
   const customMap = getCategoryCustomizations()
 
-  const pinnedIds: number[] = settings?.pos_pinned_categories || []
+  // Sync whenever settings change or when custom event fires
+  useEffect(() => {
+    setPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+  }, [settings?.pos_pinned_categories])
 
-  // Resolve pinned category objects in order
+  useEffect(() => {
+    const handleSync = () => {
+      setPinnedIds(reconcilePinnedCategoryIds(settings?.pos_pinned_categories))
+    }
+    window.addEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+    return () => window.removeEventListener(PINNED_CATEGORIES_CHANGED_EVENT, handleSync)
+  }, [settings?.pos_pinned_categories])
+
+  // Resolve pinned category objects in order with type-resilient Number matching
   const pinnedCategories = pinnedIds
-    .map((id) => categories.find((c) => c.id === id))
+    .map((id) => categories.find((c) => Number(c.id) === Number(id)))
     .filter((c): c is Category => c !== undefined)
 
   return (
@@ -75,7 +91,7 @@ export function PinnedCategoriesBar({
 
           {/* Pinned Category Chips */}
           {pinnedCategories.map((category) => {
-            const isActive = activeCategory === category.id
+            const isActive = activeCategory !== 'ALL' && Number(activeCategory) === Number(category.id)
             const visuals = getCategoryVisuals(category.name, customMap[category.id])
             const style = getCategoryStyle(visuals.color)
             const count = productsCountMap[category.id] || 0
@@ -84,7 +100,7 @@ export function PinnedCategoriesBar({
               <button
                 key={category.id}
                 type="button"
-                onClick={() => onSelectCategory(category.id)}
+                onClick={() => onSelectCategory(isActive ? 'ALL' : category.id)}
                 className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition-all shrink-0 select-none ${
                   isActive ? style.active : style.inactive
                 }`}
