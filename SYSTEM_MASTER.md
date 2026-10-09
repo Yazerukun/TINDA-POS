@@ -1448,7 +1448,18 @@
 4. **DAL (Data Access Layer)**:
    - **Paths:** [`source/src/main/repositories/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/main/repositories/) and [`source/src/main/db/`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/main/db/).
    - **Modules:** `sales.ts`, `products.ts`, `customers.ts`, `shifts.ts`, `settings.ts`, `users.ts`, `audit.ts`.
-   - **Rule:** Encapsulates all SQL statements (`SELECT`, `INSERT`, `UPDATE`), schema migrations, indexed queries, and atomic SQLite transactions (`db.transaction`). Exposes clean repository functions (`salesRepo.createSaleRecord()`, `prodRepo.adjustStock()`) consumed by the BLL.
 
+---
 
+## 66. UNIFIED VIP-FIRST AUTO-UPDATER ARCHITECTURE STANDARD (OCTOBER 2026)
 
+### 66.1 Single Surface Invariant ("Isa Nalang Sya Kabuok")
+1. **Zero Fragmented Popups:** Auto-update presentation across the entire application is consolidated into a single unified component: [`UnifiedUpdateCapsule.tsx`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/renderer/src/components/update/UnifiedUpdateCapsule.tsx).
+2. **Dashboard Modal Deprecation:** Blocking `<Modal>` dialogs and giant in-page update banners in [`Dashboard.tsx`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/renderer/src/pages/Dashboard.tsx) are permanently prohibited. Dashboard real estate is 100% reserved for executive metrics, shift statuses, and sales reporting.
+3. **Dedicated Screen Placement:** The capsule is anchored at `fixed top-3 right-6 z-40`. This permanently prevents visual overlap with the Community Chat floating widget docked at `bottom-5 right-5 z-40`.
+
+### 66.2 VIP Non-Disruption Guardrails ("Dili Sagabal sa VIP")
+1. **Zero Cashier Flow Interruption:** Updates never block the viewport, never steal keyboard focus during active customer checkout, and never prevent thermal receipt printing.
+2. **Silent Background Processing:** Update checking and downloads execute smoothly on low-priority worker threads with zero UI frame drops.
+3. **Shift Close Deferral ("Apply on Shift Close"):** Cashiers and VIP merchants can defer application until register closing (`tinda_apply_on_shift_close: true`). Updates auto-apply on cashier logout or system reboot without disrupting busy peak hours.
+4. **Automated VIP Database Snapshot:** Automated safety backup of SQLite database is guaranteed prior to applying any executable restart.
