@@ -9,15 +9,16 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
 - Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
-  2. **ponytail**: The lazy senior dev — shortest diff, YAGNI, standard library first, root-cause bugfixes.
+  2. **ponytail & ponytail-review**: The lazy senior dev — shortest diff, YAGNI, standard library first, native platform features, root-cause bugfixes, and bloat-hunting reviews in `.agents/skills/ponytail-review/`.
   3. **caveman**: Terse high-density voice — zero conversational fluff, answer-first, exact code payload.
   4. **smart-ralph**: Spec-driven multi-step execution with 4-phase quality gates.
   5. **headroom**: Automatic context window and token optimization.
-  6. **agentmemory**: Continuous learning engine with persistent recall and auto-save of bugfix lessons and release milestones.
-  7. **agency-agents**: 14 active curated specialist skills in `.agents/skills/` (Desktop App Engineer, DB Optimizer, Reality Checker, Code Reviewer, etc.) with on-demand sync from `D:\agency-agents`.
-  8. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
-  9. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
-  10. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
+  6. **agentmemory & hindsight**: Continuous learning engine with persistent recall, auto-save of bugfix lessons, and Hindsight v0.10.2 embedded memory (`tinda-pos` profile) for hardware profiling and architectural continuity.
+  7. **agency-agents & autoskills**: Curated specialist skills in `.agents/skills/` (14 agency specialists + 13 autoskills v0.3.6 audited stack skills: React 19 best practices, Tailwind patterns, Hook Form, Zod, Vitest, Vite, Node patterns) with integrity locks in `skills-lock.json`.
+  8. **graphify**: Offline deterministic AST knowledge graph (v0.9.80) in `graphify-out/graph.json` for instant call-path tracing (`graphify query`, `graphify path`), zero-token architecture navigation, and pre-refactoring impact analysis.
+  9. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
+  10. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
+  11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -25,7 +26,104 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)**
+- Current Version: **v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)**
+
+## Key Features in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
+1. **Full Update Migration from Settings > About into Sidebar Hub**:
+   - Completely removed `SoftwareUpdatePanel` from `Settings -> About`, streamlining the About page exclusively for store info, developer details, support, and legal links.
+   - Added a dedicated **Fast Updates** navigation entry in the Sidebar under *System & Guide* with dynamic `⚡ NEW` notification badge when an update is detected.
+2. **True Zero-Restart In-Place Live Patch Engine**:
+   - Upgraded patch extraction and reload pipeline to preserve patches matching or exceeding the installed base version (`compareSemver > 0`), fixing false-positive deletion during patch swaps.
+   - In-app hot-patch applying reloads BrowserWindow webContents in ~0.3s without terminating background Node/Electron processes, maintaining SQLite database handles, and never restarting the Windows system or closing cashier shifts.
+3. **Interactive Sidebar Fast Update Center Card**:
+   - 1-tap "Download Now (No Restart · 2s)" action with live percentage bar.
+   - 1-tap "Apply Live (0.3s · Zero Restart)" action.
+   - Clicking the version status card (`v1.0.79 · Up to date`) opens the full Cupertino Update Hub modal with manual GitHub checks, Release Notes, and Version Rollback safeguards.
+
+## Key Features in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
+1. **Dedicated Sidebar Fast Update Center Widget**:
+   - Added a persistent Apple-grade Cupertino Update Card directly in the left navigation sidebar above the cashier profile.
+   - Real-time dynamic states: `Update Available` (with pulsing `⚡ Fast Update` badge and 1-tap `Update Now` button), `Downloading...` (live animated progress bar and percentage), `Ready to Apply` (`Apply Patch (Live · 0.3s)` action), and `Up to date` with instant manual refresh icon.
+   - Cashiers can initiate, monitor, and apply updates directly from the sidebar without leaving checkout.
+2. **Real-Time Proactive Pop-Up Detection Engine**:
+   - Upgraded update engine with 10-second background polling, window focus trigger, and network reconnect listener.
+   - Bypasses GitHub API rate limits using zero-quota `raw.githubusercontent.com` CDN manifest fallback.
+   - When a fast feature patch is published, the centered Cupertino `UpdateModal` surfaces immediately across cashier screens.
+
+## Key Features in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
+1. **GitHub Release Redirect & In-App Hot-Patch Engine Fix**:
+   - Fixed the root cause of the "Update encountered an error, retry download" alert during fast in-app hot-patch downloads.
+   - In Electron's `net.fetch`, Chromium follows 302 redirects to GitHub release storage CDNs (`release-assets.githubusercontent.com`) but leaves `res.url` blank, causing redundant strict origin checks to reject valid downloads.
+   - Normalized redirect validation and expanded asset CDN host allowlisting to guarantee seamless patch downloading, extraction, and sub-second live reloads.
+2. **Unrestricted E-Wallet & Bills Center (Full Parity)**:
+   - Permanently unlocked all 5 operational tabs (`Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, `Audit History`) without VIP crystal badges or paywalls.
+
+## Key Features in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
+1. **Unrestricted E-Wallet & Bills Center Access for All Merchants**:
+   - Completely removed the VIP crystal badge (`💎 VIP`) from the left sidebar navigation and module header.
+   - Permanently unlocked all 5 core operational tabs for all merchants and cashiers: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+   - Cashiers can immediately record cash-ins, cash-outs, utility bills, and e-load without requiring VIP Pro license activation or paywalls.
+2. **Clean Apple Cupertino Layout & Zero-Distraction Workflow**:
+   - Stripped away license gating banners and paywall locks inside the E-Wallet & Bills module.
+   - Provided direct, uninterrupted access to financial registers, transaction history, thermal receipt burning, manual print dialogs, and shift reconciliation.
+3. **100% Strict English Standard & Zero-Waste Receipt Integrity**:
+   - Fully standardized terminology across all tabs, modals, and print stubs with zero dialect strings.
+
+## Key Features in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
+1. **Fast In-App Feature Hot-Patch Engine (Dual-Track Architecture)**:
+   - Solved the full build bottleneck by decoupling pure application code (~0.8 MB compressed zip) from the redundant Chromium runtime (103 MB).
+   - Introduces `npm run build:patch` via `tools/bundle_patch.mjs` which packages in ~3-5 seconds with SHA-256 integrity verification.
+   - 100% universal support for both Installed and Portable builds without requiring elevated Windows UAC permissions.
+2. **5-Point Steelclad Database & User Safety Shield**:
+   - **Physical Data Isolation**: Store database (`tindapos.db`) remains completely decoupled in `%APPDATA%\tinda-pos\database` or `TindaPOS-Data\database`. Code updates never touch or overwrite user records.
+   - **Automated Pre-Update Backup Snapshot**: `createBackupSync(db, 'BEFORE_UPDATE')` creates an integrity-verified snapshot before any code is extracted or applied.
+   - **Cashier Operation Guard**: Active checkout rings, payments, and audits lock out updates to prevent transaction interruption.
+   - **Additive Non-Destructive Migrations**: Only additive table alters; legacy sales, items, and utang records are never wiped.
+   - **Crash Sentinel & Auto-Rollback Engine**: Startup health monitor automatically reverts to the previous working bundle if a patch fails to boot within two consecutive attempts.
+3. **Proactive Zero-Click Apple Cupertino Update Pop-up Modal (`UpdateModal.tsx`)**:
+   - Automatically surfaces front-and-center across all views upon app launch or background detection, eliminating the need to manually check Settings.
+   - Translucent frosted glass backdrop, version badge, release highlights, and prominent database safety guarantee badge.
+   - 1-tap "Update & Restart Now (Takes 5 seconds)" action with real-time download progress bar and "Remind Me Later" option.
+4. **100% Strict English Standardization**:
+   - Pure professional English enforced across all update dialogs, notifications, status alerts, receipts, and system tools with zero dialect words.
+
+## Key Features in v1.0.74 (Audit & History Delete Safeguards Edition)
+1. **Interactive Cupertino Deletion for E-Wallet Audit Records**:
+   - Added individual row Delete button (`Trash2`) in the Audit History ledger table (`EwalletAudit.tsx`).
+   - Launches an Apple-grade Cupertino confirmation modal detailing the audit's date, cashier, drawer cash status, and 3-way variance across Cash, GCash, Maya, and MariBank, preventing accidental loss while providing clean record management.
+   - Wired with backend `deleteEwalletAudit(id)` in `ewallet.ts` repository and `ewallet:deleteAudit` IPC channel.
+2. **Bulk Audit Ledger Clearing ("Clear All Audits")**:
+   - Added a top-level **Clear All Audits** action button in the Audit History header with a confirmation safeguard dialog.
+   - Cleans test audits and historical logs cleanly via `clearAllEwalletAudits()` in SQLite.
+3. **Live Audit Sheet Reset & Today's Audit Delete Banner**:
+   - Added **Reset Sheet** button with `RotateCcw` icon to instantly wipe counted denomination quantities, float target presets, and notes back to defaults.
+   - Introduced dynamic top-of-sheet status banner whenever an audit has already been recorded for today, featuring a 1-tap **Delete Saved Audit** button to allow cashiers to recount and re-audit without leaving the screen.
+
+## Key Features in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
+1. **Zero-Wrap Deterministic Receipt Timestamps & Reference Alignment**:
+   - Replaced multi-line locale timestamps with deterministic, compact single-line format (`MM/DD/YYYY h:mm A`, e.g., `10/08/2026 9:49 PM`), completely eliminating date wrapping on 32-column 58mm rolls.
+   - Synchronized across sales checkout receipts, printer test stubs, X/Z shift reports, E-Wallet Cash In/Out claim slips, Bills payment receipts, and audit reports.
+2. **Standardized Double-Divider Total Hierarchy (Exact 1.jfif & 2.jfif Reference Standard)**:
+   - Total blocks strictly bordered with crisp double dividers (`================================`) above and below grand totals (`TOTAL`, `TOTAL PAID`, `TOTAL CASH RECEIVED / RELEASED`).
+   - Added Cash Tendered and Change calculations and display directly to Bills & E-Load center and thermal slips.
+   - Enhanced `rowsToHtml` with adjacent-separator detection to avoid redundant border doubling while ensuring clean 1:1 parity between Auto Print and Manual Print dialogs.
+3. **Ultra-Compact Typography & Strict English Standardization**:
+   - Standardized monospace font stack with `line-height: 1.05`, 10px body, 11px bold headers, 9px footers, and micro-margins (`2mm`) for crisp, dark, zero-waste thermal printing.
+   - 100% strict professional English across all user-facing E-Wallet and Bills UI elements and receipts (clearing all legacy terms).
+
+## Key Features in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
+1. **Native Operations Sheets & Inventory Document Printing Pipeline**:
+   - Replaced fragile browser `window.open` popup printing with native Electron IPC `printing:printDocument`.
+   - Spawns a dedicated hidden BrowserWindow with proper `@page` CSS and page sizing (A4 / Letter), executing direct printing or opening native Windows OS Print Dialog without popup blockers.
+   - Provides 1-tap **Auto Print** and **Manual Print (Dialog)** in `InventoryPrintModal.tsx` for Physical Count Sheets, Stock on Hand Reports, Purchase Orders, and Stock Adjustment Logs.
+2. **Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger**:
+   - Upgraded `ewallet:printAuditReport` to support optional `{ manual?: boolean }` Windows System Print Dialog execution.
+   - Added dual **Auto Print** (Thermal direct) and **Manual Print** (OS Print Dialog) buttons to both the live **Audit Sheet** footer and the **Audit History** ledger table.
+3. **MariBank Digital Banking & E-Wallet Integration**:
+   - Added **MariBank** alongside GCash and Maya across E-Wallet Cash In / Out, Bills & E-Load center, transactions ledger, and shift audits.
+   - Distinct vibrant MariBank brand identity (`#FF6A00` Shopee/Sea orange gradient badges and chip selectors).
+   - Added Migration 12 for SQLite database schema: `ewallet_audits` (MariBank float reconciliation columns) and updated `ewallet_transactions` channel check constraint.
+   - Updated thermal audit receipt printer to include MariBank reconciliation breakdown.
 
 ## Key Features in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
 1. **Clean Fee Notation & No-Seconds Receipt Timestamps**:

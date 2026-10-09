@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.71-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.79-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-417_Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/Community_Chat-Next--Gen_Multimedia-10b981?style=for-the-badge" alt="Next-Gen Chat">
+<img src="https://img.shields.io/badge/Tests-425_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Update_Engine-Dual--Track_Hot--Patch-10b981?style=for-the-badge" alt="Dual-Track Update Engine">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -17,9 +17,133 @@
 
 <br />
 
-[⬇️ Download v1.0.71 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.71/TindaPOS-Setup-1.0.71.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.71/TindaPOS-Portable-1.0.71.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.71/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.79](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Feature-Patch-1.0.79.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.79 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Setup-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-Portable-1.0.79.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.79/TindaPOS-User-Guide.pdf)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
+
+> **Complete Migration of Updates from Settings > About into the Sidebar Hub, True Zero-Restart Live Hot-Patching (Reloads in 0.3s Without Killing Processes or System Restart), and Interactive Fast Updates Nav Item.**
+
+- 📱 **100% Sidebar-Centric Update Hub**:
+  - Removed update checking and recovery cards from `Settings -> About`, dedicating the About page purely to store attribution, support, and licensing.
+  - Added a dedicated **Fast Updates** item in the main left Sidebar under *System & Guide* with dynamic pulsing `⚡ NEW` badge upon update detection.
+  - Clicking any update element opens the full Cupertino Update Hub modal with version details, release notes, and version rollback safeguards.
+- ⚡ **True Zero-Restart In-Place Live Patching Engine**:
+  - Code patches (~0.8 MB) download and unpack directly into the live application directory without closing the app, rebooting Windows, or losing cashier cart context.
+  - Fixed semver comparison boundary to ensure active patches are never prematurely cleaned up.
+  - 1-tap "Apply Live (0.3s · Zero Restart)" reloads the UI in-place in 300ms while keeping SQLite database connections, hardware barcode listeners, and local network servers active.
+
+## ✨ What's New in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
+
+> **Dedicated Real-Time Sidebar Update Center Widget, 10-Second High-Frequency Proactive Pop-up Engine, Instant GitHub CDN Raw Fallback (Bypassing API Rate Limits), and One-Tap Live Hot-Patching.**
+
+- 📱 **Dedicated Sidebar Fast Update Center Widget (`Sidebar.tsx`)**:
+  - Permanently mounted in the lower navigation sidebar directly above the cashier identity card with Cupertino translucent materials and glowing state indicators.
+  - Dynamically transitions through 4 interactive operational states:
+    - `Update Available`: Pulsing cyan status orb, `⚡ Fast Update` badge, new version pill, and 1-tap `Update Now` button.
+    - `Downloading...`: Live percentage ticker (`X%`) and animated gradient progress bar.
+    - `Ready to Apply`: Emerald glow card with 1-tap `Apply Patch (Live · 0.3s)` button.
+    - `Up to date`: Clean compact card with subtle version pill and instant manual check button (`RotateCcw`).
+- ⚡ **10-Second Proactive Pop-up Engine (`Shell.tsx` & `UpdateModal.tsx`)**:
+  - Automatically pops up the center Cupertino update modal front-and-center across all screens when an update is released.
+  - Periodic background polling reduced to 10 seconds with automatic triggers on application launch (1.5s post-boot), window focus (`focus`), and network reconnection (`online`).
+  - Cashiers never need to navigate into Settings or click "Check for Updates" manually.
+- 🛡️ **Rate-Limit-Free CDN Fallback Engine (`updateTransport.ts`)**:
+  - Added direct fallback manifest fetching from `raw.githubusercontent.com/.../latest.yml`, bypassing GitHub's unauthenticated REST API 60 req/hr rate limits during rapid polling.
+- 🚀 **Fast Hot-Patch First Pipeline**:
+  - Delivers rapid UI and bugfix updates in ~1.3 seconds via `npm run build:patch` (compressed ~0.8 MB) without requiring full 107 MB installer downloads or Windows UAC elevation.
+
+</div>
+
+## ✨ What's New in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
+
+> **Fixed Root-Cause GitHub Releases CDN 302 Redirect Handling in Electron Network Transport, Eliminating the "Update encountered an error, retry download" Warning During Fast Feature Hot-Patching.**
+
+- ⚡ **Fixed In-App Feature Hot-Patch Download Engine**:
+  - Solved Chromium network transport issue where HTTP 302 redirect responses from GitHub Releases CDN (`release-assets.githubusercontent.com`) return empty `res.url` strings, which previously triggered false-positive source rejections.
+  - Added robust validation fallback and full CDN host coverage so hot-patches download, unpack, and live-reload smoothly.
+- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
+  - Permanently unlocked all 5 operational tabs without VIP crystal badges or upgrade paywalls.
+
+## ✨ What's New in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
+
+> **Unrestricted Access to E-Wallet & Bills Center for All Merchants, Removal of VIP Crystal Paywall Badges, Direct Operational Tab Access, and Pure Apple Cupertino Layout.**
+
+- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
+  - Removed the VIP crystal badge (`💎 VIP`) from the navigation sidebar and module header.
+  - Permanently unlocked all 5 operational tabs for all merchants and cashiers: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
+  - Cashiers can immediately record Cash In, Cash Out, Utility Bills payments, and E-Load transactions without any license restrictions or paywall modals.
+- 🎨 **Streamlined Apple Cupertino User Interface**:
+  - Eliminated paywall banners and upgrade prompts inside the financial reconciliation hub.
+  - Full-featured cash register controls, fee calculation chips, thermal receipt generation, and manual OS print dialogs available natively.
+- 🛡️ **Continued Dual-Track Hot-Patch Engine & Database Safety Shield**:
+  - Instant feature updates delivered via lightweight ~0.8 MB hot-patches with zero data disruption.
+
+## ✨ What's New in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
+
+> **Dual-Track Update Architecture with 5-Second In-App Feature Hot-Patching, Proactive Center Cupertino Update Alert Modal, 5-Point Steelclad Database Safety Shield, and 100% Strict English Standardization.**
+
+- ⚡ **Fast In-App Feature Hot-Patch Engine**:
+  - Eliminates the 2-minute build and 107 MB download bottleneck for minor features, UI enhancements, and bugfixes by packaging only compiled application code into a compact ~0.8 MB archive.
+  - Bundled in ~3 seconds via `npm run build:patch` (`tools/bundle_patch.mjs`) with SHA-256 verification.
+  - Downloads in ~3 seconds on Philippine store WiFi and applies seamlessly with a 2-second restart.
+- 🛡️ **5-Point Steelclad Database & User Safety Shield**:
+  - **Decoupled Data Storage**: Store SQLite database (`tindapos.db`) remains completely decoupled in `%APPDATA%\tinda-pos\database\` or `TindaPOS-Data\database\`, ensuring code updates never touch store sales or inventory.
+  - **Pre-Update Automated Backup Snapshot**: Automatically creates a verified `BEFORE_UPDATE` backup snapshot before applying code patches.
+  - **Cashier Operation Guard**: Active checkout cart ringing and payment processing lock out updates, preventing transaction interruption.
+  - **Additive Migrations Only**: Non-destructive schema updates safeguard existing products, prices, and utang balances.
+  - **Crash Sentinel & Auto-Rollback**: Automatic boot health monitor reverts to the prior stable bundle if a patch fails to boot within two consecutive attempts.
+- 🚀 **Proactive Zero-Click Apple Cupertino Update Pop-up Modal**:
+  - Directly surfaces an elegant frosted-glass modal in the center of the screen as soon as an update is detected, without requiring users to manually check Settings.
+  - Displays version badge, release highlights, and database safety guarantees with a 1-tap "Update & Restart Now (Takes 5 seconds)" action and progress tracking.
+- 🌐 **100% Strict Professional English Standardization**:
+  - Enforced pure professional English across all update dialogs, notifications, receipts, and system tools with zero dialect words.
+
+> **Complete Deletion Safeguards in E-Wallet Audit Sheet & Historical Audit Ledger, Interactive Cupertino Confirmation Modals, Dynamic Today's Audit Delete Banner, and 1-Tap Count Reset.**
+
+- 🗑️ **Interactive Cupertino Deletion for Audit Records**:
+  - Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals to each row in the Audit History ledger.
+  - Displays full audit metrics before deletion: Date, Cashier, Cash/GCash/Maya/MariBank differences, and Total Fees earned.
+- 🧹 **Bulk "Clear All Audits" Safeguard**:
+  - Added "Clear All Audits" action in the Audit History header with modal confirmation, allowing store owners to wipe test audits or start completely fresh.
+- 🔄 **Audit Sheet 1-Tap Reset & Today's Audit Delete Banner**:
+  - Added **Reset Sheet** button with `RotateCcw` icon to instantly clear all denomination inputs, float amounts, and notes.
+  - Interactive top banner on the Audit Sheet when an audit is recorded for today, featuring a 1-tap **Delete Saved Audit** button for effortless recounting.
+
+## ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
+
+> **Standardized Thermal Receipt Layouts Across Auto Print and Manual Print matching Retail Reference Specifications, Zero-Wrap Deterministic Timestamps, Double-Divider Total Hierarchy, and Bills Cash Tendered & Change Breakdown.**
+
+- 🧾 **Deterministic Zero-Wrap Receipt Timestamps**:
+  - Replaced wrapping date formats with compact, single-line timestamps (`MM/DD/YYYY h:mm A`, e.g. `10/08/2026 9:49 PM`).
+  - Guaranteed single-line display across narrow 58mm (32-col) and 80mm rolls on checkout receipts, test prints, X/Z shift reports, E-Wallet stubs, and Bills slips.
+- ⚡ **Standardized Double-Divider Total Hierarchy**:
+  - Grand total blocks strictly enclosed in double dividers (`================================`) above and below.
+  - Enhanced `rowsToHtml` renderer to eliminate redundant double borders when consecutive separators occur.
+- 💰 **Bills Cash Tendered & Change Calculation**:
+  - Added Cash Tendered input and real-time Change calculation to the Bills & E-Load center.
+  - Printed directly on thermal slips and manual printouts.
+- 🎯 **Ultra-Compact Typography & Strict English Standard**:
+  - Tight `line-height: 1.05`, 2mm micro-margins, and integer dot font sizing (`11px` bold headers, `10px` body, `9px` footers) for zero paper waste.
+  - 100% strict English standardization across all financial and cashier modules.
+
+## ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
+
+> **Native Electron Printable Inventory & Operations Documents, Dual Auto/Manual System Dialog Printing in E-Wallet Audit & History, and Complete MariBank Digital Banking Integration.**
+
+- 🖨️ **Native Inventory & Operations Document Printing Pipeline**:
+  - Replaced fragile browser popup printing with native Electron IPC `printer.printDocument`, resolving printing failures across all Windows printer drivers.
+  - Dedicated hidden BrowserWindow renderer with `@page` formatting and A4/Letter dimensions for crisp Stock on Hand Reports, Physical Count Sheets, Purchase Orders (P.O.), and Stock Adjustment Logs.
+  - Added dual **Auto Print (A4)** and **Manual Print (Dialog)** options to `InventoryPrintModal` and `PriceTagPrintModal`.
+- ⚖️ **Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger**:
+  - Upgraded audit printing IPC to support direct Windows System Print Dialog execution (`{ manual: true }`).
+  - Added dual **Auto Print** (Thermal direct) and **Manual Print** (OS Print Dialog) buttons to both the live **Audit Sheet** and the **Audit History** ledger table.
+- 🏦 **MariBank Digital Banking & E-Wallet Integration**:
+  - Added **MariBank** alongside GCash and Maya across Cash In / Out, Bills & E-Load center, transactions ledger, and shift audits.
+  - Distinct Shopee/Sea orange (`#FF6A00`) brand theme and badges.
+  - SQLite database Migration 13 for `ewallet_audits` (MariBank reconciliation float columns) and `ewallet_transactions` channel check constraints.
+  - Comprehensive thermal receipt audit printing breakdown including MariBank drawer reconciliations.
 
 ## ✨ What's New in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
 
@@ -476,10 +600,10 @@ TINDA POS is built specifically for everyday Philippine store operations. Checko
 
 | Deliverable | Description | Download Link |
 |---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Portable-1.0.65.exe) |
-| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/SHA256SUMS-v1.0.65.txt) |
+| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe) |
+| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Portable-1.0.74.exe) |
+| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf) |
+| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/SHA256SUMS-v1.0.74.txt) |
 
 > ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
 
@@ -620,6 +744,6 @@ Unauthorized resale, commercial rebranding, or redistribution without permission
 
 Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
 
-**[⬇️ Download v1.0.65 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-Setup-1.0.65.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.65/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
+**[⬇️ Download v1.0.74 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
 
 </div>
