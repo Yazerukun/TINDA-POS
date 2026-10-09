@@ -1,7 +1,7 @@
 {
   "name": "tinda-pos",
   "productName": "TINDA POS",
-  "version": "1.0.94",
+  "version": "1.0.95",
   "description": "TINDA POS — Offline POS System for Sari-Sari Stores",
   "main": "out/main/index.js",
   "author": "TINDA POS",
@@ -24,6 +24,9 @@
     "postinstall": "electron-builder install-app-deps",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build:win": "electron-vite build && electron-builder --win",
+    "build:win:setup": "electron-vite build && electron-builder --win nsis",
+    "build:win:portable": "electron-vite build && electron-builder --win portable",
+    "build:win:all": "electron-vite build && electron-builder --win",
     "build:patch": "electron-vite build && node ../tools/bundle_patch.mjs",
     "publish:patch": "npm run build:patch && node ../tools/publish_patch.mjs",
     "dist": "electron-vite build && electron-builder --dir"
