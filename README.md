@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.92-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.93-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-449_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,25 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.92](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Feature-Patch-1.0.92.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.92 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Setup-1.0.92.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.92/TindaPOS-Portable-1.0.92.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.93](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Feature-Patch-1.0.93.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.93 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Setup-1.0.93.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.93/TindaPOS-Portable-1.0.93.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.93 (Comprehensive Master Full Desktop Release Edition)
+
+> **Complete Windows Desktop Application Compilation (Setup.exe & Portable.exe), All Innovations Consolidated into Native Base Executable, and Multi-Track Zero-Downtime Delivery.**
+
+- 💿 **Full Windows Desktop Application Compilation (`Setup.exe` & `Portable.exe`)**:
+  - Full standalone production build compiling Electron Chromium runtime, native Better-SQLite3 binary bindings, and optimized client bundle into standard NSIS installer and zero-install portable executable.
+  - Hardened NSIS installer (`allowToChangeInstallationDirectory`, Desktop & Start Menu shortcuts, zero AppData data deletion on uninstall).
+- 📦 **All Innovations Consolidated into Native Base Executable**:
+  - **Pinned Categories Dual-Store Engine**: Persistent `localStorage` + SQLite settings sync, universal `parsePinnedCategoryIds` parser, 0ms cross-component event sync, search auto-clear.
+  - **Chiteng CT221B Barcode & Label Printer Support**: Plug-and-play auto-detection, pure vector Code 128 (Subset B) barcode engine, Cupertino label studio, and dual-printer separation.
+  - **Pinned Package & Combo Categories**: 1-tap POS chips, visual category customization hub (custom emojis & color themes), and dashboard bundle shortcuts.
+  - **Line-Item Price Editing for Credit Sales**: Live utang recalculation and permanent mistake cleaner.
+  - **Split / Mixed Payment POS Engine**: Seamless multi-method payment distribution across Cash, GCash, Maya, MariBank, and Utang.
+- ⚡ **Multi-Track Zero-Downtime Delivery**:
+  - Provided simultaneously as full Windows Setup installer (`TindaPOS-Setup-1.0.93.exe`), single-file portable (`TindaPOS-Portable-1.0.93.exe`), and live instant feature patch (`TindaPOS-Feature-Patch-1.0.93.zip`).
 
 ## ✨ What's New in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)
 

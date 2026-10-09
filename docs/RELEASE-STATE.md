@@ -1,21 +1,21 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.92 (RESILIENT PINNED CATEGORIES DUAL-STORE & LIVE VISIBILITY REPAIR EDITION)
+- v1.0.93 (COMPREHENSIVE MASTER FULL DESKTOP RELEASE EDITION)
 
 TARGET:
-- v1.0.93 (NEXT RELEASE CYCLE)
+- v1.0.94 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Publishing Live Patch v1.0.92
+- Compiling Full Windows Desktop Application (Setup & Portable) v1.0.93
 
 COMPLETED:
-- Stage 01: Universal parsePinnedCategoryIds engine supporting numbers, strings, arrays, and comma sequences.
-- Stage 02: Client-side dual-store persistence engine (localStorage + background SQLite sync) in categoryCustomization.ts.
-- Stage 03: Real-time event synchronization (tinda-pinned-categories-changed) across POS, Dashboard, dropdown, and modals.
-- Stage 04: Numeric type coercion (Number(c.id) === Number(id)) preventing string/number filtering mismatch.
-- Stage 05: Ergonomic category selection with search term auto-clear (setQ('')) and toggle-to-all.
-- Stage 06: Quality Gates passed: Vitest (81/81 shared tests, 4/4 dashboard tests), Typecheck (0 errors), check_master_invariants.
+- Stage 01: Universal parsePinnedCategoryIds engine and client-side dual-store persistence engine (v1.0.92).
+- Stage 02: Native Chiteng CT221B Barcode & Thermal Label Printer plug-and-play support (v1.0.91).
+- Stage 03: Pinned Package & Bundle Categories on POS screen and visual customization hub (v1.0.90).
+- Stage 04: Line-Item Price Editing for Credit Sales & Permanent Mistake Purger (v1.0.89).
+- Stage 05: Split / Mixed Payment POS Engine across Cash, GCash, Maya, MariBank, Utang (v1.0.87).
+- Stage 06: Quality Gates passed: Vitest (85/85 tests), Typecheck (0 errors), check_master_invariants.
 
 PENDING APPROVAL:
 - None (Approved by Owner).

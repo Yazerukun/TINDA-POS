@@ -27,7 +27,20 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)**
+- Current Version: **v1.0.93 (Comprehensive Master Full Desktop Release Edition)**
+
+## Key Features in v1.0.93 (Comprehensive Master Full Desktop Release Edition)
+1. **Full Windows Desktop Application Compilation (`Setup.exe` & `Portable.exe`)**:
+   - Complete standalone production compilation bundling Electron runtime, native Better-SQLite3 binary bindings, and optimized client bundle into standard NSIS installer and zero-install portable executable.
+   - Built with high-security NSIS installer (`allowToChangeInstallationDirectory`, Desktop & Start Menu shortcuts, zero AppData data deletion on uninstall).
+2. **All Latest Innovations Bundled into Native Base Executable**:
+   - Includes v1.0.92 resilient pinned categories dual-store engine (`localStorage` + SQLite settings sync, universal `parsePinnedCategoryIds` parser, 0ms cross-component event sync, search auto-clear).
+   - Includes v1.0.91 Chiteng CT221B portable thermal barcode & label printer plug-and-play auto-detection, pure vector Code 128 (Subset B) barcode engine, Cupertino label studio, and dual-printer separation.
+   - Includes v1.0.90 Pinned Package & Bundle category chips on POS, visual category customization hub (custom emojis & Cupertino color themes), and dashboard bundle shortcuts.
+   - Includes v1.0.89 Line-item price editing for credit sales, permanent utang ledger mistake purger, and sign/color standards.
+   - Includes v1.0.87 Split/Mixed payment POS engine across Cash, GCash, Maya, MariBank, and Utang.
+3. **Multi-Track Delivery & Zero Downtime**:
+   - Available as full Windows NSIS installer (`TindaPOS-Setup-1.0.93.exe`), standalone single-file portable (`TindaPOS-Portable-1.0.93.exe`), and live instant feature patch (`TindaPOS-Feature-Patch-1.0.93.zip`).
 
 ## Key Features in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)
 1. **Root-Cause Pinned Categories Visibility & Array Parser Repair**:
