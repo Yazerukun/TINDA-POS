@@ -1451,14 +1451,279 @@
 
 ---
 
-## 66. UNIFIED VIP-FIRST AUTO-UPDATER ARCHITECTURE STANDARD (OCTOBER 2026)
+<<<<<<< HEAD
+## 66. Native Document Printing, Audit Dual Print Engine & MariBank Ecosystem Integration (v1.0.72)
+* **Problem Addressed & User Feedback:**
+  1. *Printable Inventory & Operations Reports Failure:* Users clicking Print on physical count sheets, stock-on-hand reports, and purchase orders encountered failures because the modal invoked `window.open()`, which is blocked or restricted by Electron's chromium security boundary.
+  2. *Audit Sheet & History Dual Printing:* Store cashiers needed both Auto Print (direct thermal burning) and Manual Print (Windows System Print Dialog pre-bound to printer) for E-Wallet shift audits and historical audits to troubleshoot locked spoolers or choose specific report printers.
+  3. *MariBank Provider Integration Request:* Community sari-sari stores and retail merchants actively requested MariBank (SeaMoney / Shopee digital banking ecosystem in the Philippines) support alongside GCash and Maya for cash-in, cash-out, bills, and multi-wallet drawer reconciliations.
 
-### 66.1 Single Surface Invariant ("Isa Nalang Sya Kabuok")
+* **Key Architectural Implementations:**
+  - **Native Document Printing Pipeline (`printing.ts`, `ipc/index.ts`, `InventoryPrintModal.tsx`):**
+    - Replaced unreliable renderer `window.open` popup printing with native Electron IPC `printing:printDocument`.
+    - Spawns a dedicated hidden BrowserWindow, renders complete CSS-styled A4 / Letter printable sheets with `@page` print rules, and triggers `webContents.print()`.
+    - Supports both **Auto Print** (direct to detected printer) and **Manual Print** (invokes native Windows print dialog with printer, copies, and PDF export options).
+  - **Dual Printing for E-Wallet Audit Sheet & Audit History (`EwalletAudit.tsx`, `ipc/index.ts`):**
+    - Extended `ewallet:printAuditReport` IPC channel to accept `{ manual?: boolean }`.
+    - Added dedicated **Auto Print** and **Manual Print** buttons in both the live **Audit Sheet** footer and the **Audit History** ledger table.
+  - **MariBank Provider Integration (`types.ts`, `ewallet.ts`, `EwalletAudit.tsx`, `migrations.ts`):**
+    - Expanded `EwalletChannel` and `sourceWallet` to include `'MARIBANK'`.
+    - Designed custom vibrant brand styling for MariBank (`#FF6A00` Shopee/Sea orange gradient badges and chip selectors).
+    - Added SQLite database migration for `ewallet_audits` (starting, in, out, expected, actual, variance columns for MariBank) and updated `ewallet_transactions` check constraint.
+    - Updated `EwalletShiftSummary` and `formatEwalletAuditLines` in `receiptHtml.ts` to cleanly format MariBank cash flow alongside GCash and Maya without breaking existing transactions.
+
+---
+
+## 67. Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition (v1.0.73)
+* **Problem Addressed & Reference Alignment (1.jfif & 2.jfif):**
+  1. *Receipt Timestamp Wrapping:* Previous date/time formatting (`dt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })`) produced strings like `Oct 8, 2026, 9:49 AM` (26+ chars), which awkwardly wrapped onto a second line (`Oct 8, 2026, 9:49 \n AM`) on narrow 58mm (32-column) thermal paper rolls.
+  2. *Reference Standard Visual Hierarchy:* Reference images `1.jfif` (Bills & E-Load slip) and `2.jfif` (Sales receipt) established an explicit retail typography hierarchy: single-line date format (`10/08/2026 9:49 PM`), double-line dividers (`================================`) framing grand totals (`TOTAL`, `TOTAL PAID`, `TOTAL CASH RECEIVED / RELEASED`), and cash tendered with change breakdown.
+  3. *Zero-Waste Micro Thermal Spacing:* Monospace line-height optimized to `1.05`, integer dot sizing (`10px` body, `11px` bold headers/totals, `9px` footers), and tight `2mm` page padding.
+  4. *Strict English Standard:* Cleaned up residual Bisaya/Filipino terminology across user-facing E-Wallet and Bills UI and receipt outputs to 100% professional English.
+
+* **Key Architectural Implementations:**
+  - **Deterministic Zero-Wrap Date Formatter (`receiptHtml.ts`):**
+    - Created `formatReceiptDate()` returning standard single-line `MM/DD/YYYY h:mm A` (`10/08/2026 9:49 PM`, exactly 19 chars), guaranteeing zero line-wraps across 58mm and 80mm paper widths.
+    - Synchronized across `checkout.ts` (`buildReceiptLines`), `printing.ts` (`testPrintLines`), `readReport.ts` (`localTime`), `formatEwalletSlipLines`, `formatBillSlipLines`, and `formatEwalletAuditLines`.
+  - **Double-Divider Total Blocks (`receiptHtml.ts`, `checkout.ts`):**
+    - Standardized double-line framing around grand total lines across sales receipts, E-wallet claim slips, and bills payments.
+    - Updated `rowsToHtml()` with adjacent separator detection (`has-adjacent-top-sep`, `has-adjacent-bottom-sep`) to eliminate redundant border doubling.
+  - **Bills Cash Tendered & Change Calculation (`EwalletAudit.tsx`, `receiptHtml.ts`):**
+    - Extended `BillRecord` interface and form with optional `cashReceived` and `change` fields.
+    - Added real-time change calculation UI in the Bills & E-Load center and passed both tender amounts to `formatBillSlipLines` for automatic rendering on thermal receipts.
+  - **Strict English Localization Standard:**
+    - Standardized all UI labels from "Tubo" to "Fee", "Total Fees Earned", and "Service Fee" across all tabs, summary chips, transaction tables, and confirmation modals.
+
+---
+
+## 68. Audit Delete Safeguards, Fast Feature Patcher & Unrestricted E-Wallet (v1.0.74 – v1.0.76)
+* **Problem Addressed:**
+  1. Cashiers needed ability to safely remove mistake entries in Audit Sheet and Audit History without corrupting database integrity.
+  2. Large installer downloads (112 MB) caused friction for fast UI/feature fixes.
+  3. E-Wallet Center was previously locked behind a VIP badge, restricting cashiers in sari-sari retail operations.
+* **Key Architectural Implementations:**
+  - **Audit Safeguards (`auditRepo.ts`, `EwalletAudit.tsx`):** Added delete options with double-confirmation modals and atomic SQLite deletions.
+  - **Fast Feature Patcher Engine (`patchService.ts`, `bundle_patch.mjs`):** Lightweight patch delivery (~0.8 MB) containing pre-built renderer artifacts.
+  - **Unrestricted E-Wallet Access:** Unlocked GCash, Maya, and MariBank recording, fee tracking, and slip printing for 100% of store accounts without VIP key requirements.
+
+---
+
+## 69. Sidebar Fast Updates Hub & Zero-Restart Live Engine (v1.0.77 – v1.0.79)
+* **Problem Addressed:**
+  - Update controls were hidden deep inside Settings > About, making merchants unaware of critical system improvements.
+  - Full app restarts dropped cashier active workflows and required re-login.
+* **Key Architectural Implementations:**
+  - **Sidebar Fast Updates Navigation:** Promoted Fast Updates into the primary navigation bar with real-time status pills.
+  - **Cupertino Update Hub (`UpdateModal.tsx`):** Proactive alert hub offering single-click download and live zero-restart patching.
+  - **Zero-Restart Live Reload (`patchService.ts`):** Reloads active `BrowserWindow` instances in ~300ms without restarting the Electron process or closing database connections.
+
+---
+
+## 70. Apply Live Asset Resolution & Pop-up Debounce Standard (v1.0.80)
+* **Problem Addressed:**
+  1. *Blank White Screen on Live Apply:* Electron's `loadFile()` failed to resolve relative sibling JS/CSS assets (`index-*.js`, `index-*.css`) inside the patch folder, rendering an empty white window.
+  2. *Pop-up Loop:* 10-second background polling repeatedly reset `modalDismissed: false`, re-showing the modal every 10 seconds even after dismissed.
+* **Key Architectural Implementations:**
+  - Switched from `loadFile()` to `loadURL(pathToFileURL(entry).href)` to resolve asset paths relative to the extracted patch folder.
+  - Added `dismissedVersion` tracking so polling only re-alerts when a genuinely newer version tag arrives.
+  - Enhanced `app:info` IPC handler to return the active patch version rather than base installer version.
+
+---
+
+## 71. Linux Real-Time In-App Update Engine & Native Linux AppImage Build (v1.0.80-L / v1.0.81)
+* **Problem Addressed & Root Cause Analysis:**
+  1. *In-App Update Failure on Linux:* When clicking Download/Apply on Linux, updates failed completely with error `tar (GNU tar): This does not look like a tar archive`.
+     - **Root Cause:** `extractZipArchive()` was hardcoded to `execFileAsync('tar', ['-xf', ...])`. Windows 10/11 includes `bsdtar` (which transparently extracts zip files), but Linux uses `GNU tar`, which strictly rejects zip archives.
+  2. *Cold-Boot Blank Screen & Rollback Loop:* On cold launch with a patch present, `main/index.ts` still invoked `mainWindow.loadFile(patchedEntry)` (which failed asset loading) and never invoked `markPatchStable()` on `did-finish-load`, causing `sentinel.attempts >= 2` and triggering an automatic rollback that wiped the patch on reboot.
+  3. *Linux Executable Availability:* Linux merchants required native Linux executables (`.AppImage`) compiled and verified on Linux.
+* **Key Architectural Implementations:**
+  - **Format-Aware Archive Extractor (`patchService.ts`):**
+    - Inspects the first 4 bytes of the archive: detects `0x50, 0x4b` (PK ZIP header) vs POSIX tarballs.
+    - Routes ZIP extraction to native `unzip` (with `python3 -m zipfile -e` fallback) on Linux/macOS, and `tar -xf` / PowerShell on Windows.
+    - Guarantees seamless extraction for both ZIP archives and tarballs without fatal exits.
+  - **Cold-Boot Patched Entry Stability Hook (`main/index.ts`):**
+    - Updated entry loading to `mainWindow.loadURL(pathToFileURL(patchedEntry).href)`.
+    - Added `mainWindow.webContents.once('did-finish-load', () => markPatchStable())` on initial boot, ensuring successful launches immediately set sentinel to `STABLE` and prevent rollback loops.
+  - **Cross-Platform Zip Bundler (`tools/bundle_patch.mjs`):**
+    - Employs native `zip` CLI / `python3 -m zipfile` on Linux/macOS and `tar -a` on Windows, ensuring generated patch archives are 100% valid ZIP files on all operating systems.
+  - **Native Linux AppImage Pipeline:**
+    - Successfully built `TindaPOS-1.0.80.AppImage` (131 MB) and unpacked Linux binary target in `builds/linux-unpacked/tinda-pos`.
+
+---
+
+## 72. Official Release v1.0.81: Linux Zero-Restart Live Patch & Network Diagnostic Edition
+* **Tag & Artifacts:**
+  - Tag: `v1.0.81`
+  - Release URL: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.81`
+  - Asset: `TindaPOS-Feature-Patch-1.0.81.zip` (0.82 MB / 859,245 bytes)
+  - SHA-256: `e015b91c0a044cf4c7e553885371493f85b060326fbdfa45222080fc184a777d`
+* **Features Shipped:**
+  - **Linux Live Hot-Patching:** Feature patches can be downloaded and applied in real-time on Linux without restarting the application process or dropping database connections.
+  - **Zero-Restart Live Reload:** Swapped renderer in-place using `reloadLiveWithPatch()` in <300ms.
+  - **Silent Network Probing:** Standardized captive portal check to HTTP endpoint `http://www.msftconnecttest.com/connecttest.txt`, eliminating SSL handshake warnings (`net_error -200`).
+* **Verification Invariant:**
+  - Full vitest regression test suite: 65/65 test suites (429/429 tests) passing at 100%.
+
+---
+
+## 73. Unified Dual-Mode Update Engine (Option A: Live Patch vs Option B: Full Build)
+* **Problem Addressed:**
+  - Update notifications were firing repeatedly on window focus due to `onFocus` calling `check(true)` with manual override.
+  - Previous modal only offered the hot-patch and omitted full standalone packages/installers.
+  - Users needed one clean, cohesive modal to choose between an instant live hot-patch (`0.82 MB`) or full offline build (`131 MB AppImage`).
+* **Architectural Upgrades:**
+  - **Single Unified Cupertino Modal (`UpdateModal.tsx`):**
+    - Both **Option A: Fast Live Patch (Zero Restart ⚡ · 0.8 MB)** and **Option B: Full Platform Build (AppImage · 131 MB)** presented side-by-side in one dialog.
+    - Cashiers can click **`Update via Patch (Live · 0.3s)`** for zero-downtime updates, or **`Download Full Build`** to save the standalone package directly into `~/Downloads/TINDA-POS-Updates/`.
+    - Modal can be minimized cleanly to the sidebar (`— Minimize to Sidebar`) under `System & Guide` (`Software Update`).
+  - **Window Focus Debounce Safeguard (`Shell.tsx`):**
+    - Changed `window.addEventListener('focus')` and `online` checks to `check(false)` so background polling respects dismissed/minimized modal states and never creates duplicate or pop-up loops.
+  - **Auto-Check Throttling Invariant (`updateService.ts`):**
+    - Throttled auto-checks retain existing `UPDATE_AVAILABLE` states instead of falsely overwriting them back to `UP_TO_DATE`.
+  - **Official Artifacts Attached to Release `v1.0.81`:**
+    - `TindaPOS-Feature-Patch-1.0.81.zip` (836 KB) — Fast In-App Patch
+    - `TindaPOS-1.0.81.AppImage` (131 MB) — Full Linux Standalone Build
+    - `SHA256SUMS-v1.0.81.txt` — Verification hashes
+
+---
+
+## 74. Real-Time Dynamic In-Memory Version Sync on Live Hot-Patching
+* **Root Cause Diagnosed:**
+  - `UpdateService` only initialized `this.state.installedVersion` once inside the constructor on boot.
+  - When `restartAndInstall()` reloaded the renderer via `reloadLiveWithPatch()`, the main process kept holding the stale `installedVersion: "1.0.80"` in memory, and `getState()` returned that cached version instead of checking the newly extracted patch manifest.
+  - In `updateTransport.ts`, `installedVersion()` checked `sentinel.status === 'STABLE'`, but during the hot-reload phase the sentinel was still temporarily `PENDING` until `did-finish-load` resolved.
+* **Architectural Fix Implemented:**
+  - **Dynamic In-Memory Version Sync (`updateService.ts`):**
+    - `getState()` now dynamically queries `this.deps.transport.installedVersion()` on every call, synchronizing `this.state.installedVersion` whenever a patch is loaded or swapped.
+    - Inside `install()`, when applying a feature patch, `this.set()` immediately sets `status: 'UP_TO_DATE'`, updates `installedVersion` to the newly applied patch version, clears `available`, and broadcasts the updated state to all windows.
+  - **Hot-Patch Status Leniency (`updateTransport.ts`):**
+    - `installedVersion()` now honors both `STABLE` and `PENDING` statuses if a valid `manifest.json` is present in `~/.config/TINDA POS/patches`, ensuring the newly unpacked patch version reflects instantly across all IPC channels before and during reload.
+  - **Live UI Reflection:**
+    - Both the Sidebar (`v1.0.81`) and the Update Modal (`v1.0.81` / `TINDA POS is Up to Date`) update immediately in real-time with zero system reboot or manual refresh required.
+
+---
+
+## 75. Store Handbook Comprehensive Modernization & Chapter 11 (Software Updates & Zero-Restart Live Patches) (v1.0.82)
+* **Complete In-System Handbook Modernization (`Handbook.tsx`):**
+  - **11 Full Operational Chapters:**
+    1. *Welcome to TINDA POS (`intro`):* Offline philosophy, zero cloud lockout, 172 pre-seeded DTI products, and real-time Cloudflare D1 store sync dashboard.
+    2. *Daily Workflow & Shift Management (`shift`):* Cash float entry, real-time Net Sales reconciliation (void handling & D1 sync), and evening cash count / Z-Reading.
+    3. *POS Terminal & Cashier Masterclass (`pos`):* High-speed searching (`F1`), quantity editing (`F2`), discounts (`F4`), cash (`F9`), GCash (`F10`), Utang (`F11`), hold & resume (`F8`), Terminal Tools (`F3`), and Dual-Screen Customer TV display.
+    4. *Barcode Scanning (`scanner`):* Dual barcode engine, instant auto-capture in product form, and wireless smartphone companion with dual-canvas center-reticle crop and 120ms Wi-Fi burst tolerance.
+    5. *Inventory, Products & Multi-Units (`inventory`):* Piece vs case conversion math, low stock alert badges, 1-tap quick restock drawer, and near-expiry color-coded badges.
+    6. *Customer & Utang Management (`utang`):* Suki credit ledgers, itemized package breakdown icon drawer, partial/full settlements, and credit limits.
+    7. *Database Backups & Zero Data Loss (`backup`):* SQLite WAL durability, 1-click snapshot creation, and USB flash drive safety protocols.
+    8. *Keyboard Shortcuts Cheat Sheet (`hotkeys`):* Full reference matrix for `F1`–`F12`, `Esc`, `Alt+B`, and `Ctrl+P`.
+    9. *Troubleshooting & FAQ (`troubleshoot`):* Brownout recovery, scanner trailing Enter keys, and multi-PC LAN sharing.
+    10. *Thermal Printers (`printer`):* Zero-Blur integer typography, auto-detect for GOOJPRT 58H / Xprinter, Bluetooth setup, and paper scratch test.
+    11. *Software Updates & Zero-Restart Live Patches (`updates`):* Dual-mode update architecture (Option A: 0.82 MB live 0.3s patch vs Option B: 130 MB full platform build), sidebar update hub, minimize to sidebar, and 24-hour smart throttle.
+* **Permanent Zero-Rate-Limit Transport Architecture (`updateTransport.ts`):**
+  - **Root Cause Eliminated:** Addressed public GitHub REST API (`api.github.com/repos/.../releases`) 60 req/hr IP-based rate limiting (HTTP 403 Forbidden).
+  - **Direct Redirect Engine (`fetchLatestRedirectFallback`):** Inspects `https://github.com/Yazerukun/TINDA-POS/releases/latest` with a fast `HEAD` request (`redirect: 'follow'`). The target URL provides the current release tag in <100ms with zero authentication, zero token requirement, and zero 403 rate limits.
+  - Automatically maps canonical asset paths for fast feature patches (`TindaPOS-Feature-Patch-${v}.zip`), Windows installer (`TindaPOS-Setup-${v}.exe`), Windows portable (`TindaPOS-Portable-${v}.exe`), and Linux AppImage (`TindaPOS-${v}.AppImage`).
+* **Direct In-Handbook Action Triggers:**
+  - Added interactive buttons in Chapter 11 to directly trigger `openHub()` on `useUpdate` store, enabling store cashiers to check and inspect updates directly from the handbook.
+* **Verification & Official Release Artifacts (`v1.0.82`):**
+  - All 65 test suites (429 tests) passing 100%.
+  - `TindaPOS-Feature-Patch-1.0.82.zip` (839.77 KiB) — Live hot-patch (~0.3s apply)
+  - `TindaPOS-1.0.82.AppImage` (130.86 MiB) — Linux standalone package
+  - `TindaPOS-Setup-1.0.82.exe` (107.34 MiB) — Windows NSIS installer
+  - `TindaPOS-Setup-1.0.82.exe.blockmap` (117.20 KiB) — Differential update blockmap
+  - `TindaPOS-Portable-1.0.82.exe` (107.12 MiB) — Standalone Windows executable
+  - `latest.yml` (348 B) — Windows electron-updater sha512 manifest
+  - `SHA256SUMS-v1.0.82.txt` (556 B) — Cryptographic verification hashes
+
+---
+
+## 76. In-Store TindaBot AI Assistant & Multi-Model Free Pool Architecture (v1.0.83)
+* **Design Philosophy & Operational Goal:**
+  - Bridge the gap between complex retail store operations (E-Wallet starting balances, bills payment reconciliation, Senior/PWD 20% discount compliance, barcode generation) and cashiers through an intelligent in-app copilot.
+  - Non-custodial financial security: System never asks for or stores user MPIN, bank passwords, or OTPs. All merchant capital stays in physical smartphones; TINDA POS acts purely as the automated ledger and discrepancy audit engine.
+* **Grounded In-Store Knowledge Engine (`tindaAiKnowledge.ts`):**
+  - Synthesizes all 11 chapters of the TINDA POS Store Handbook into zero-latency semantic patterns.
+  - Speaks natural, conversational **Tagalog, Bisaya (Cebuano), and English**.
+  - Generates actionable UI deep-links (`[Buksan ang E-Wallet Audit Sheet ↗]`, `[Pumunta sa Bills & E-Load Hub ↗]`, `[Pumunta sa Inventory ↗]`) with instant screen navigation.
+* **Zero-Key-Leak Desktop Vault (`src/main/services/aiService.ts`):**
+  - AI requests run strictly in Electron Main Process (`ai:ask` IPC channel) via `net.fetch`.
+  - Zero credential exposure in React frontend, web inspector, or network requests.
+* **Automated Multi-Model Free Failover Pool:**
+  - Tier 1: Local OpenCode Free Pool (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with automatic sequential failover on timeout or busy status.
+  - Tier 2: Cloud Failover to Google Gemini 2.5 Flash Lite Free Tier via embedded vault credentials.
+  - Tier 3: Tertiary instant offline handbook fallback ensuring 100% zero-downtime reliability even without internet connection.
+* **Floating Draggable & Minimizable Widget (`TindaAiAssistantModal.tsx`):**
+  - Positioned side-by-side with Community Chat (`right-56` vs `right-5`) to eliminate UI button overlap.
+  - Floating drag handle (`⠿`) with viewport clamping and persistent coordinate memory (`localStorage: tinda_aibot_pos`).
+  - Single-line minimize (`—` / `⤢`) to prevent obstructing checkout queues or receipt printing.
+* **Official Release Artifacts (`v1.0.83`):**
+  - `TindaPOS-Feature-Patch-1.0.83.zip` (853 KiB) — Fast live update
+  - `TindaPOS-1.0.83.AppImage` (130.88 MiB) — Linux standalone binary
+  - `TindaPOS-Setup-1.0.83.exe` (107.36 MiB) — Windows NSIS installer
+  - `TindaPOS-Portable-1.0.83.exe` (107.14 MiB) — Windows portable executable
+  - `TindaPOS-Setup-1.0.83.exe.blockmap` (118 KiB) — Delta update blockmap
+  - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
+  - `SHA256SUMS-v1.0.83.txt` — Official release cryptographic hashes
+
+---
+
+## 77. Compact TindaBot & Non-Blocking POS Clearance Architecture (v1.0.84)
+* **Ergonomic UX Challenge:**
+  - On POS screens (`page === 'pos'`), the cart and checkout controls dominate the right column (`md:w-[23rem]` / 368px to `xl:w-[26rem]` / 416px).
+  - Previous bottom-right launchers physically overlapped with the Cart Total, `Hold (F8)`, `Clear`, and the primary `CHECKOUT (F9 Cash / F10 GCash)` action buttons.
+  - Previous modal dimensions (`420px × 580px`) were unnecessarily wide on 1366x768 and standard retail touchscreens.
+* **Architectural Implementation:**
+  - **Sleek 330px Modal Geometry (`TindaAiAssistantModal.tsx` & `TindaCommunityChat.tsx`):**
+    - Redesigned default width to **`330px`** (25% reduction in screen footprint) and height to **`450px`**.
+    - Header width toggle button (`⤢` / 330px ↔ 390px) for flexible reading of longer responses.
+    - Drag-protected micro-bar minimization (`240px × 42px`) with status pulse dot, restore, and close buttons.
+  - **Unified FloatingWidgetsDock (`FloatingWidgetsDock.tsx` & `floatingWidgets.ts`):**
+    - Replaced scattered individual buttons with a consolidated capsule dock: `[ 🤖 Ask AI ] [ 💬 Chat ] [ — ]`.
+    - **Zero Checkout Obstruction**: On `page === 'pos'`, the dock automatically shifts to `bottom-3.5 right-[24.5rem] xl:right-[27.5rem]`, placing it strictly to the left of the cart column. The entire cart, totals, and checkout buttons remain 100% unobstructed.
+    - **Distraction-Free Collapse Mode**: 1-click collapse to a miniature 36px floating badge (`[ ✦ ]`) during busy cashier rushes.
+  - **Side-by-Side Coexistence**:
+    - When both TindaBot and Community Chat are open, they tile side-by-side (`right: 390px` and `right: 730px` in POS mode) with zero overlap.
+    - Preserves persistent drag coordinates in `localStorage`.
+* **Official Release Artifacts (`v1.0.84`):**
+  - `TindaPOS-Feature-Patch-1.0.84.zip` — Fast live hot-patch (~0.3s apply)
+  - `TindaPOS-1.0.84.AppImage` — Standalone Linux binary
+  - `TindaPOS-Setup-1.0.84.exe` — Windows NSIS installer
+  - `TindaPOS-Portable-1.0.84.exe` — Standalone Windows executable
+  - `TindaPOS-Setup-1.0.84.exe.blockmap` — Delta update blockmap
+  - `latest.yml` & `latest-linux.yml` — Verified auto-updater manifests
+  - `SHA256SUMS-v1.0.84.txt` — Official release cryptographic hashes
+
+---
+
+## 78. Architectural Blueprint: Unified Cupertino Minimize-to-Dock Architecture for Tinda Community Chat & FloatingWidgetsDock (v1.0.85 Spec)
+* **Root Problem Diagnosed:**
+  - In previous implementations, `FloatingWidgetsDock.tsx` evaluated `if (isAiOpen || isChatOpen) return null`, completely hiding the bottom dock whenever either widget was opened.
+  - Clicking the `<Minus />` button inside `TindaCommunityChat.tsx` merely collapsed the window into a floating 240px draggable bar (`isOpen && isMinimized`) positioned arbitrarily on top of cashier screens, leaving screen clutter and obstructing the POS cart and dashboard items.
+  - On compact 330px widths, the header suffered from button congestion (6 buttons: Volume, Dev Key, Refresh, Width Toggle, Minus, Close) with unconstrained title widths, risking action buttons being pushed off-screen or rendered unclickable.
+  - The width toggle used `<Minimize2 />` iconography, creating visual confusion with window minimization. The tooltip also retained outdated legacy strings (`"Minimize Lounge"`).
+* **Architectural Upgrades & Design Contract:**
+  1. **True Seamless Minimize-to-Dock Lifecycle:**
+     - `FloatingWidgetsDock.tsx` visibility logic upgraded to check `isAnyFullyOpen = (isAiOpen && !isAiMinimized) || (isChatOpen && !isChatMinimized)`. When Chat or TindaBot is minimized, the unified `FloatingWidgetsDock` surfaces immediately.
+     - Clicking the **Minimize (`—`)** button in `TindaCommunityChat` smoothly transitions the window into the unified dock capsule (`[ 🤖 Ask AI ] [ 💬 Chat · Minimized 🟢 ] [ — ]`).
+     - Preserves DOM state in memory without unmounting (using zero-opacity/scale transition or non-destructive CSS display toggles) so draft text, loaded messages, scroll offsets, and active connections are preserved with 0ms resume latency.
+  2. **Reactive Minimized Dock State & Unread Pipeline:**
+     - The `FloatingWidgetsDock` `[ 💬 Chat ]` button reflects an active minimized badge with live online peer indicators (`🟢`).
+     - When background messages or developer announcements arrive, the dock triggers the Web Audio notification chime and flashes the pulsing `NEW` indicator badge.
+     - 1-tap on `[ 💬 Chat ]` in the dock restores the window immediately at its designated or dragged coordinate.
+  3. **330px Ergonomic Header De-cluttering & Cupertino Typography:**
+     - Restructure header layout with strict `min-w-0` title truncation.
+     - Primary window controls (**Minimize to Dock**, **Close**, **Width Toggle**) are fixed and guaranteed 100% visible across all screen sizes.
+     - Width toggle uses explicit `<Columns2 />` icon with clear tooltips (`"Compact 330px"` / `"Expand 390px"`).
+     - Standardize tooltips to 100% Strict English (`"Minimize to Dock"`, `"Close Chat"`).
+  4. **Full Parity Across Widgets:**
+---
+
+## 79. Unified VIP-First Auto-Updater Architecture Standard (v1.0.95)
+
+### 79.1 Single Surface Invariant ("Isa Nalang Sya Kabuok")
 1. **Zero Fragmented Popups:** Auto-update presentation across the entire application is consolidated into a single unified component: [`UnifiedUpdateCapsule.tsx`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/renderer/src/components/update/UnifiedUpdateCapsule.tsx).
 2. **Dashboard Modal Deprecation:** Blocking `<Modal>` dialogs and giant in-page update banners in [`Dashboard.tsx`](file:///C:/Users/mtafl/Desktop/TINDA/TINDA-POS-Source/source/src/renderer/src/pages/Dashboard.tsx) are permanently prohibited. Dashboard real estate is 100% reserved for executive metrics, shift statuses, and sales reporting.
 3. **Dedicated Screen Placement:** The capsule is anchored at `fixed top-3 right-6 z-40`. This permanently prevents visual overlap with the Community Chat floating widget docked at `bottom-5 right-5 z-40`.
 
-### 66.2 VIP Non-Disruption Guardrails ("Dili Sagabal sa VIP")
+### 79.2 VIP Non-Disruption Guardrails ("Dili Sagabal sa VIP")
 1. **Zero Cashier Flow Interruption:** Updates never block the viewport, never steal keyboard focus during active customer checkout, and never prevent thermal receipt printing.
 2. **Silent Background Processing:** Update checking and downloads execute smoothly on low-priority worker threads with zero UI frame drops.
 3. **Shift Close Deferral ("Apply on Shift Close"):** Cashiers and VIP merchants can defer application until register closing (`tinda_apply_on_shift_close: true`). Updates auto-apply on cashier logout or system reboot without disrupting busy peak hours.
