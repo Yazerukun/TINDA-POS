@@ -147,23 +147,18 @@ async function main() {
 Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
 
 ### 🌟 What's New in ${TAG}:
-1. **🟠 5-Payment Method Apple Cupertino Grid in Checkout Modal:**
-   - Expanded Checkout Modal from 448px to 512px (\`max-w-lg\`) with a spacious 5-column button grid.
-   - Added **MariBank** with distinct Shopee/SeaBank vibrant orange identity (\`#FF6A00\` border, \`#FF8533\` text, \`Landmark\` icon, and glow shadow), alongside Cash, GCash, Maya, and Utang.
-2. **⚡ Ergonomic Hotkeys & 1-Tap Workflow Accelerators:**
-   - Cart Screen: \`F12\` opens Checkout with MariBank pre-selected and autofocuses reference input (\`F9\` Cash, \`F10\` GCash, \`F11\` Maya, \`F12\` MariBank).
-   - Modal Screen: \`F12\` switches active method to MariBank and focuses reference field.
-   - Enter key executes instant charge (\`Charge ₱... (Enter)\`).
-3. **🏷️ Dedicated MariBank Reference Input & Customer Facing Display (CFD):**
-   - Dynamic label \`MariBank Reference No. / Transaction ID\` with \`Shopee / SeaBank Transfer\` tag and placeholder \`e.g. MB-9823471 or Shopee Ref\`.
-   - Dual-Screen Customer Facing Display (CFD) displays \`.badge-maribank\`, dynamic QR payload \`maribank://pay?amount=...\`, and prompt *"Scan with your MariBank App"*.
-4. **🧾 Thermal Receipts, Shift X/Z Reconciliation & Sales Monitor Parity:**
-   - Compact thermal receipts format \`MARIBANK ₱XX.XX\` with tabular numerals and reference number.
-   - Shift X-Read and Z-Read reports aggregate \`maribank_c\` in payment breakdown and ledger totals.
-   - Real-time Sales Monitor displays vibrant orange \`MARIBANK\` badge and counts in daily totals.
-5. **🛡️ Zero Database Risk & Instant In-App Live Patch Standard:**
-   - Zero database table alterations required (\`payments.method TEXT NOT NULL\` has no check constraint).
-   - Lightweight ~0.83 MB hot patch applies live in 0.3s without restarting the desktop application.
+1. **🛡️ Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee:**
+   - Fixed \`window.api.customers.deleteledgerEntry is not a function\` during hot-patch updates on older base app installations.
+   - Automatically applies universal mathematical ledger offset using existing \`adjust\` and \`revoke\` APIs if native backend IPC is missing, preventing crashes.
+   - Added \`deleteledgerEntry\` alias in preload and shared IPC for casing safety.
+2. **✏️ Interactive 1-Tap "Set Exact Balance" Tool in Utang Modal:**
+   - Added Cupertino **Set / Fix Balance** (\`Pencil\`) button in customer Balance card.
+   - Allows store owners and cashiers to directly set the customer's total outstanding balance to their exact verified figure (e.g. ₱325,065.00), automatically logging the difference as an audited balance correction.
+3. **🔄 Resilient Frontend Balance Recalculation Engine:**
+   - \`Sync Balance\` (\`RotateCcw\`) automatically replays all chronological ledger entries in the frontend if native IPC is not exposed, calculating running debt and synchronizing customer balance seamlessly.
+4. **🔀 Split / Mixed Payment POS Checkout Engine & Void Protection:**
+   - Preserved full Apple-grade Split / Mixed Payment checkout engine across Cash, GCash, Maya, MariBank, and Utang.
+   - Preserved transaction void-check guard preventing duplicate utang deductions on transaction deletion.
 
 ### 📦 Patch Verification Hash:
 \`\`\`

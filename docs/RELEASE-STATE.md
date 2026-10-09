@@ -1,19 +1,19 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.87 (SPLIT MIXED PAYMENT & UTANG LEDGER REPAIR EDITION)
+- v1.0.88 (RESILIENT UTANG LEDGER REPAIR & DIRECT BALANCE CORRECTION EDITION)
 
 TARGET:
-- v1.0.88 (NEXT RELEASE CYCLE)
+- v1.0.89 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Publishing Live Patch v1.0.87
+- Publishing Live Patch v1.0.88
 
 COMPLETED:
-- Stage 01: Split Mixed Payment POS Checkout (2-pill Cupertino mode switcher, Cash, GCash, Maya, MariBank, Utang allocations, live Sukli calculation, 1-tap Fill Remaining accelerators).
-- Stage 02: Utang Ledger Repair Engine (Root-cause fix for double-reversal on delete voided sale, interactive row delete button with Cupertino dialog, 1-tap Sync Balance button, chronological replay audit recalculation).
-- Stage 03: Comprehensive Quality Assurance (all 66 vitest unit test files / 435 tests passing, 0 TypeScript compiler errors, master invariants passed).
-- Stage 04: Fast Feature Patch Packaging (`TindaPOS-Feature-Patch-1.0.87.zip` bundled with SHA-256 integrity).
+- Stage 01: Resilient Ledger Offset Fallback (Fixed window.api.customers.deleteledgerEntry is not a function across hot-patched older base apps; automatic mathematical offset via universal adjust and revoke APIs).
+- Stage 02: 1-Tap Direct "Set Exact Balance" Tool (Pencil button in Balance card allowing immediate direct balance calibration to verified totals).
+- Stage 03: Resilient Frontend Balance Recalculation Engine (Replays chronological credit events in client to re-sync customer balance seamlessly).
+- Stage 04: Lowercase and Camelcase Preload Aliases (deleteledgerEntry and deleteLedgerEntry parity).
 
 PENDING APPROVAL:
 - None (Approved by Owner).

@@ -27,7 +27,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)**
+- Current Version: **v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)**
+
+## Key Features in v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)
+1. **Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee**:
+   - Fixed `window.api.customers.deleteledgerEntry is not a function` error during live hot-patch updates on older base app installations.
+   - Implemented an automatic universal ledger offset fallback: if native IPC is missing from an un-restarted Electron base app, deleting an entry automatically offsets the financial impact using universal `customers.adjust` and `customers.revoke` without crashing.
+   - Added `deleteledgerEntry` lowercase alias to `shared/ipc.ts` and `preload/index.ts` to prevent any casing discrepancies.
+2. **Interactive 1-Tap "Set Exact Balance" Tool in Utang Modal**:
+   - Added a dedicated Cupertino **Set / Fix Balance** (`Pencil`) button in the customer Balance status card.
+   - Allows store owners and cashiers to directly set the customer's total outstanding credit to their exact verified figure (e.g. ₱325,065.00), automatically logging the difference as an audited balance correction.
+3. **Resilient Frontend Balance Recalculation Engine**:
+   - `Sync Balance` (`RotateCcw`) automatically replays all chronological ledger entries in the frontend if native IPC is not exposed, calculating running debt and synchronizing `customers.balance_c` seamlessly.
+4. **Maintained Split Mixed Payment POS Engine & Root-Cause Double Reversal Fix**:
+   - Preserved full Apple-grade Split / Mixed Payment checkout engine across Cash, GCash, Maya, MariBank, and Utang.
+   - Preserved transaction void-check guard preventing duplicate utang deductions on transaction deletion.
 
 ## Key Features in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)
 1. **Root-Cause Utang Double-Reversal Fix**:

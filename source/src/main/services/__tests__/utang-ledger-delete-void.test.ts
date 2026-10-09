@@ -158,7 +158,7 @@ describe('Utang Ledger Void, Delete, and Recalculation Integrity', () => {
     // Remaining entries
     const remaining = customerLedger(db, customer.id)
     expect(remaining.length).toBe(1)
-    expect(remaining[0].balance_after_c).toBe(10000)
+    expect(remaining[0]!.balance_after_c).toBe(10000)
   })
 
   it('supports Split / Mixed Payment checkout with multiple methods including Utang', () => {

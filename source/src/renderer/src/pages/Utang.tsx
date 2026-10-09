@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle, Pencil } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -499,6 +499,10 @@ function LedgerModal({
   const [deletingEntry, setDeletingEntry] = useState<CreditLedgerEntry | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [vipModalOpen, setVipModalOpen] = useState(false)
+  const [fixBalanceOpen, setFixBalanceOpen] = useState(false)
+  const [fixAmount, setFixAmount] = useState('')
+  const [fixReason, setFixReason] = useState('')
+  const [fixing, setFixing] = useState(false)
 
   useEffect(() => {
     setCurrentCustomer(customer)
@@ -527,9 +531,50 @@ function LedgerModal({
   const handleSyncBalance = async () => {
     setSyncing(true)
     try {
-      const updated = await window.api.customers.recalculateBalance(currentCustomer.id)
+      const recalcFn = window.api?.customers?.recalculateBalance
+      let updated: Customer | null = null
+
+      if (typeof recalcFn === 'function') {
+        try {
+          updated = await recalcFn(currentCustomer.id)
+        } catch {
+          updated = null
+        }
+      }
+
+      if (!updated) {
+        // Resilient fallback: calculate running balance from chronological ledger entries
+        const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 500 })
+        const sorted = [...freshEntries].sort((a, b) => a.id - b.id)
+        let runningBalance = 0
+        for (const entry of sorted) {
+          if (entry.entry_type === 'CREDIT_SALE' || entry.entry_type === 'ADJUSTMENT') {
+            runningBalance += entry.amount_c
+          } else {
+            runningBalance = Math.max(0, runningBalance - entry.amount_c)
+          }
+        }
+        const delta = runningBalance - currentCustomer.balance_c
+        if (delta > 0) {
+          await window.api.customers.adjust({
+            customer_id: currentCustomer.id,
+            amount_c: delta,
+            notes: 'Ledger history balance re-sync',
+            reason: 'SYNC'
+          })
+        } else if (delta < 0) {
+          await window.api.customers.revoke({
+            customer_id: currentCustomer.id,
+            amount_c: Math.abs(delta),
+            notes: 'Ledger history balance re-sync',
+            reason: 'SYNC'
+          })
+        }
+        updated = await window.api.customers.get(currentCustomer.id)
+      }
+
       setCurrentCustomer(updated)
-      const freshEntries = await window.api.customers.ledger(updated.id)
+      const freshEntries = await window.api.customers.ledger(updated.id, { limit: 50 })
       setCurrentEntries(freshEntries)
       toastSuccess('Balance Recalculated', `${updated.full_name}'s balance synced to ${money(updated.balance_c)}`)
       onUpdateCustomer?.(updated)
@@ -543,15 +588,97 @@ function LedgerModal({
   const confirmDeleteEntry = async () => {
     if (!deletingEntry) return
     try {
-      const res = await window.api.customers.deleteLedgerEntry(deletingEntry.id)
-      toastSuccess('Entry Deleted', `Customer balance recalculated to ${money(res.customer.balance_c)}`)
-      setCurrentCustomer(res.customer)
-      const freshEntries = await window.api.customers.ledger(res.customer.id)
+      const deleteFn =
+        window.api?.customers?.deleteLedgerEntry ||
+        (window.api?.customers as unknown as Record<string, unknown>)?.['deleteledgerEntry']
+      let resCustomer: Customer | null = null
+
+      if (typeof deleteFn === 'function') {
+        try {
+          const res = await (deleteFn as (id: number) => Promise<{ ok: boolean; customer: Customer }>)(deletingEntry.id)
+          if (res?.customer) {
+            resCustomer = res.customer
+          }
+        } catch {
+          // If native backend handler is not registered in running Electron process, fall through to offset
+          resCustomer = null
+        }
+      }
+
+      if (!resCustomer) {
+        // Universal ledger offset fallback: works across all versions without requiring native backend IPC!
+        // If entry reduced balance (PAYMENT, REVERSAL, REFUND) or amount_c < 0, offset by adjusting (+) back.
+        // If entry increased balance (CREDIT_SALE, ADJUSTMENT) or amount_c > 0, offset by revoking (-) back.
+        const isDeduction =
+          ['PAYMENT', 'REVERSAL', 'REFUND'].includes(deletingEntry.entry_type) || deletingEntry.amount_c < 0
+        const absAmount = Math.abs(deletingEntry.amount_c)
+        if (isDeduction) {
+          await window.api.customers.adjust({
+            customer_id: deletingEntry.customer_id,
+            amount_c: absAmount,
+            notes: `Offset deleted entry #${deletingEntry.id} (${deletingEntry.entry_type})`,
+            reason: 'CORRECTION'
+          })
+        } else {
+          await window.api.customers.revoke({
+            customer_id: deletingEntry.customer_id,
+            amount_c: absAmount,
+            notes: `Offset deleted entry #${deletingEntry.id} (${deletingEntry.entry_type})`,
+            reason: 'CORRECTION'
+          })
+        }
+        resCustomer = await window.api.customers.get(currentCustomer.id)
+      }
+
+      toastSuccess('Entry Removed', `Customer balance updated to ${money(resCustomer.balance_c)}`)
+      setCurrentCustomer(resCustomer)
+      const freshEntries = await window.api.customers.ledger(resCustomer.id, { limit: 50 })
       setCurrentEntries(freshEntries)
       setDeletingEntry(null)
-      onUpdateCustomer?.(res.customer)
+      onUpdateCustomer?.(resCustomer)
     } catch (e) {
       toastError('Delete Failed', String((e as Error)?.message || e))
+    }
+  }
+
+  const handleFixBalance = async () => {
+    const rawVal = parseFloat(fixAmount)
+    if (isNaN(rawVal) || rawVal < 0) {
+      toastError('Invalid Amount', 'Please enter a valid balance in Pesos (e.g. 325.06 or 325065).')
+      return
+    }
+    const targetC = Math.round(rawVal * 100)
+    const delta = targetC - currentCustomer.balance_c
+    setFixing(true)
+    try {
+      if (delta > 0) {
+        await window.api.customers.adjust({
+          customer_id: currentCustomer.id,
+          amount_c: delta,
+          notes: fixReason.trim() || 'Manual balance correction',
+          reason: 'CORRECTION'
+        })
+      } else if (delta < 0) {
+        await window.api.customers.revoke({
+          customer_id: currentCustomer.id,
+          amount_c: Math.abs(delta),
+          notes: fixReason.trim() || 'Manual balance correction',
+          reason: 'CORRECTION'
+        })
+      }
+      const updated = await window.api.customers.get(currentCustomer.id)
+      setCurrentCustomer(updated)
+      const freshEntries = await window.api.customers.ledger(updated.id, { limit: 50 })
+      setCurrentEntries(freshEntries)
+      setFixBalanceOpen(false)
+      setFixAmount('')
+      setFixReason('')
+      toastSuccess('Balance Updated', `${updated.full_name}'s balance set to ${money(updated.balance_c)}`)
+      onUpdateCustomer?.(updated)
+    } catch (e) {
+      toastError('Update Failed', String((e as Error)?.message || e))
+    } finally {
+      setFixing(false)
     }
   }
 
@@ -594,15 +721,28 @@ function LedgerModal({
           <div className="card p-2 text-center relative group">
             <p className="text-[10px] uppercase text-slate-500">Balance</p>
             <p className="text-sm font-black text-amber-400">{money(currentCustomer.balance_c)}</p>
-            <button
-              type="button"
-              onClick={() => void handleSyncBalance()}
-              disabled={syncing}
-              title="Recalculate balance from all ledger entries"
-              className="absolute top-1 right-1 p-1 rounded-md text-slate-500 hover:text-brand-300 hover:bg-brand-500/10 transition-colors"
-            >
-              <RotateCcw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="absolute top-1 right-1 flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setFixAmount((currentCustomer.balance_c / 100).toFixed(2))
+                  setFixBalanceOpen(true)
+                }}
+                title="Edit / Set exact balance directly"
+                className="p-1 rounded-md text-slate-500 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSyncBalance()}
+                disabled={syncing}
+                title="Recalculate balance from all ledger entries"
+                className="p-1 rounded-md text-slate-500 hover:text-brand-300 hover:bg-brand-500/10 transition-colors"
+              >
+                <RotateCcw className={`h-3 w-3 ${syncing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
           <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Limit</p><p className="text-sm font-black text-slate-200">{money(currentCustomer.credit_limit_c)}</p></div>
           <div className="card p-2 text-center"><p className="text-[10px] uppercase text-slate-500">Available</p><p className="text-sm font-black text-emerald-400">{money(Math.max(0, currentCustomer.credit_limit_c - currentCustomer.balance_c))}</p></div>
@@ -692,6 +832,68 @@ function LedgerModal({
                   <span className="text-slate-300 break-words text-right max-w-[200px]">{deletingEntry.notes}</span>
                 </div>
               )}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {fixBalanceOpen && (
+        <Modal
+          open
+          onClose={() => setFixBalanceOpen(false)}
+          title={`Set Exact Balance — ${currentCustomer.full_name}`}
+          maxWidth="max-w-md"
+          footer={
+            <div className="flex justify-end gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => setFixBalanceOpen(false)}
+                className="btn-ghost"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleFixBalance()}
+                disabled={fixing}
+                className="btn-primary flex items-center gap-1.5"
+              >
+                <Check className="h-4 w-4" />
+                <span>Save Balance</span>
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div className="rounded-lg border border-ink-line bg-ink-950 p-3 text-center">
+              <p className="text-xs text-slate-500">Current Outstanding Balance</p>
+              <p className="text-xl font-black text-amber-400">{money(currentCustomer.balance_c)}</p>
+            </div>
+            <div>
+              <label className="label">Target Balance (₱) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={fixAmount}
+                onChange={(e) => setFixAmount(e.target.value)}
+                placeholder="e.g. 325.06 or 325065"
+                className="input w-full font-mono text-base font-bold text-amber-300"
+                autoFocus
+              />
+              <p className="mt-1 text-[11px] text-slate-400">
+                Directly sets this customer's total outstanding balance. Any difference will be logged as an audit correction.
+              </p>
+            </div>
+            <div>
+              <label className="label">Reason / Reference (Optional)</label>
+              <input
+                type="text"
+                value={fixReason}
+                onChange={(e) => setFixReason(e.target.value)}
+                placeholder="e.g. Verified customer credit balance"
+                className="input w-full text-xs"
+              />
             </div>
           </div>
         </Modal>

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.87-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.88-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-435_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,21 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.87](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.87/TindaPOS-Feature-Patch-1.0.87.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.87 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.87/TindaPOS-Setup-1.0.87.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.87/TindaPOS-Portable-1.0.87.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.87/TindaPOS-1.0.87.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.88](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Feature-Patch-1.0.88.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.88 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Setup-1.0.88.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Portable-1.0.88.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)
+
+> **Zero-Error Hot-Patch Resilience, Universal Ledger Offset Fallback, 1-Tap Direct Balance Correction, and Frontend Balance Recalculation.**
+
+- 🛡️ **Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee**:
+  - Eliminated the runtime error `delete failed window.api.customers.deleteledgerEntry is not a function` when hot-patching older base app installations.
+  - Automatically applies a universal mathematical ledger offset using existing `adjust` and `revoke` APIs if native backend IPC is unavailable, guaranteeing zero downtime.
+- ✏️ **1-Tap Direct "Set Exact Balance" Tool in Utang Modal**:
+  - Added a dedicated Cupertino **Set / Fix Balance** (`Pencil`) button in the customer Balance status card to directly input verified customer debt figures (e.g. ₱325,065.00).
+- 🔄 **Resilient Frontend Balance Recalculation Engine**:
+  - `Sync Balance` (`RotateCcw`) calculates running debt chronologically from loaded ledger items and synchronizes customer balance instantly.
 
 ## ✨ What's New in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)
 

@@ -143,6 +143,7 @@ const api: TindaApi = {
     update: (id, input) => invoke<import('@shared/types').Customer>('customers:update', id, input),
     ledger: (id, opts) => invoke<import('@shared/types').CreditLedgerEntry[]>('customers:ledger', id, opts),
     deleteLedgerEntry: (entryId) => invoke<{ ok: boolean; customer: import('@shared/types').Customer }>('customers:deleteLedgerEntry', entryId),
+    deleteledgerEntry: (entryId) => invoke<{ ok: boolean; customer: import('@shared/types').Customer }>('customers:deleteLedgerEntry', entryId),
     recalculateBalance: (customerId) => invoke<import('@shared/types').Customer>('customers:recalculateBalance', customerId),
     pay: (input) => invoke<import('@shared/types').CreditLedgerEntry>('customers:pay', input),
     adjust: (input) => invoke<import('@shared/types').CreditLedgerEntry>('customers:adjust', input),

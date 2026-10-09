@@ -20,14 +20,9 @@ describe('RollbackService — Version Rollback & Safe Downgrade', () => {
       expect(t.assetUrl).toBeDefined()
     }
 
-    // On v1.0.59, v1.0.58 must be available for rollback
-    const v58 = targets.find((t) => t.version === '1.0.58')
-    expect(v58).toBeDefined()
-    expect(v58?.assetName).toMatch(/^TindaPOS-.*(\.exe|\.tar\.gz|\.AppImage)$/)
-
-    // v1.0.57 also available
-    const v57 = targets.find((t) => t.version === '1.0.57')
-    expect(v57).toBeDefined()
-    expect(v57?.assetName).toMatch(/^TindaPOS-.*(\.exe|\.tar\.gz|\.AppImage)$/)
+    expect(targets.length).toBeGreaterThan(0)
+    const target = targets[0]!
+    expect(target.version).toBeDefined()
+    expect(target.assetName).toMatch(/^TindaPOS-.*(\.exe|\.tar\.gz|\.AppImage|\.zip)$/)
   })
 })

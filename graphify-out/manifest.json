@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791509335.068018,
-    "seen": 1791509849.2515228,
-    "ast_hash": "f07c18f0903c3bdbe0de059fee7d7d1c",
+    "mtime": 1791514147.2006142,
+    "seen": 1791514510.5096593,
+    "ast_hash": "c5529bd0ca8da3dee01f2398de84aaf5",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "source/src/main/ipc/index.ts": {
-    "mtime": 1791508867.244661,
-    "seen": 1791509849.2542713,
-    "ast_hash": "c5b499b14dcdfe8ad6c4d5ac0cebb6d9",
+    "mtime": 1791510862.5181546,
+    "seen": 1791511602.7244625,
+    "ast_hash": "39183f8e2ec3a1d06e2428da473fd960",
     "semantic_hash": ""
   },
   "source/src/main/repositories/__tests__/cashCounts.test.ts": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "source/src/main/repositories/customers.ts": {
-    "mtime": 1791163706.6287622,
-    "seen": 1791428449.1201522,
-    "ast_hash": "b6c366d2518370618ee013cee7396cf1",
+    "mtime": 1791510839.2371712,
+    "seen": 1791511602.7271607,
+    "ast_hash": "4b3a20e56df840e60060e0c7399597c4",
     "semantic_hash": ""
   },
   "source/src/main/repositories/ewallet.ts": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/rollback-service.test.ts": {
-    "mtime": 1791506106.8642223,
-    "seen": 1791507416.979202,
-    "ast_hash": "1e55971a98b40d35cf59fa17279e3700",
+    "mtime": 1791514389.0128858,
+    "seen": 1791514510.5281208,
+    "ast_hash": "95a6aef1e859a6e0f41a0dfd38d4f9a9",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/simple-pos-import.test.ts": {
@@ -666,9 +666,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/transaction.ts": {
-    "mtime": 1791339065.972451,
-    "seen": 1791428449.1203172,
-    "ast_hash": "74a51fb3484864eae5c22e6e11332af4",
+    "mtime": 1791510820.3447528,
+    "seen": 1791511602.7460673,
+    "ast_hash": "3bce45d00e65724367ace5eee3d635f4",
     "semantic_hash": ""
   },
   "source/src/main/services/updateDownload.ts": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "source/src/preload/index.ts": {
-    "mtime": 1791506106.871294,
-    "seen": 1791507416.9965525,
-    "ast_hash": "76f3c660388596cbb819f33f2764828a",
+    "mtime": 1791514061.4038453,
+    "seen": 1791514510.545288,
+    "ast_hash": "ac83b9afcab4879a8307285026505f02",
     "semantic_hash": ""
   },
   "source/src/renderer/src/App.tsx": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791509360.3048172,
-    "seen": 1791509849.2815416,
-    "ast_hash": "80536505942da993fbc33a8abb1c71a7",
+    "mtime": 1791514188.7737358,
+    "seen": 1791514510.5492594,
+    "ast_hash": "e2406aac1810455313fdcfc3d32abd92",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/POS.tsx": {
-    "mtime": 1791509054.3333302,
-    "seen": 1791509849.2924795,
-    "ast_hash": "f0567a6e3aabc0093bc311f93885be57",
+    "mtime": 1791511249.3447268,
+    "seen": 1791511602.760677,
+    "ast_hash": "4936ab07a06f72ee4b9b309a18fbf53a",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Reports.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Settings.tsx": {
-    "mtime": 1791509373.475886,
-    "seen": 1791509849.2924883,
-    "ast_hash": "972b25d68c0244c45195964af49d11fa",
+    "mtime": 1791514193.308384,
+    "seen": 1791514510.5692592,
+    "ast_hash": "ecf98efcca0243908166f9bb0dd61c37",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Suppliers.tsx": {
@@ -1086,9 +1086,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Utang.tsx": {
-    "mtime": 1791163706.8180077,
-    "seen": 1791428449.1204627,
-    "ast_hash": "3ec214a98defc5273a307d5fddb8e318",
+    "mtime": 1791514137.1385717,
+    "seen": 1791514510.5697901,
+    "ast_hash": "8a4fa839fe369ddb73a879a655f7247d",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/__tests__/dashboard-refunds.test.ts": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/ipc.ts": {
-    "mtime": 1791508848.5746553,
-    "seen": 1791509849.299075,
-    "ast_hash": "76d7cd3af00ebb6a92b1cdf3869a4a27",
+    "mtime": 1791514052.5787897,
+    "seen": 1791514510.5793886,
+    "ast_hash": "f2990cbcab7ffbb1b133ca6e91213c35",
     "semantic_hash": ""
   },
   "source/src/shared/pos.ts": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791509424.671738,
-    "seen": 1791509849.3783484,
-    "ast_hash": "16b73d279e82294953e7bbefda17bc97",
+    "mtime": 1791514205.109144,
+    "seen": 1791514510.709749,
+    "ast_hash": "a9d3266cc5cf5d1555e0c31b15aa0945",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791509472.3908317,
-    "seen": 1791509849.3789964,
-    "ast_hash": "0aca740a20901ecdea28c40f36734aa8",
+    "mtime": 1791514223.3964605,
+    "seen": 1791514510.7107341,
+    "ast_hash": "8c88d0c53c15802080e9332f52c4ec23",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791509483.6332858,
-    "seen": 1791509849.382993,
-    "ast_hash": "51640222154c470ce0c07b49b4e62f82",
+    "mtime": 1791514236.975216,
+    "seen": 1791514510.7165751,
+    "ast_hash": "8d2e15f9c6a39f90796a42684923b288",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3972,9 +3972,15 @@
     "semantic_hash": ""
   },
   "tools/publish_patch.mjs": {
-    "mtime": 1791509637.408759,
-    "seen": 1791509849.306864,
-    "ast_hash": "a8dc5f1ef7e9d5262492f3bb70c20d30",
+    "mtime": 1791514433.9718113,
+    "seen": 1791514510.59149,
+    "ast_hash": "9851258ba59f0ee2e997b433f666910b",
+    "semantic_hash": ""
+  },
+  "source/src/main/services/__tests__/utang-ledger-delete-void.test.ts": {
+    "mtime": 1791514253.5312786,
+    "seen": 1791514510.5297663,
+    "ast_hash": "ac26a17104a476981e1c6935aeb5ff76",
     "semantic_hash": ""
   }
 }
