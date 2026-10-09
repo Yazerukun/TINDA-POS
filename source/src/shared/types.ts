@@ -452,6 +452,7 @@ export interface StoreSettings {
   cloud_sync_key: string
   cloud_last_synced_at: string | null
   cloud_sync_pending: boolean
+  pos_pinned_categories: number[]
 }
 
 export type LanRole = 'standalone' | 'master' | 'satellite'

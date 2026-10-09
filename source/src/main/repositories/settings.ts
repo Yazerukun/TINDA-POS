@@ -41,7 +41,8 @@ export const defaultSettings: StoreSettings = {
   cloud_store_id: '',
   cloud_sync_key: '',
   cloud_last_synced_at: null,
-  cloud_sync_pending: false
+  cloud_sync_pending: false,
+  pos_pinned_categories: []
 }
 
 export function getSettings(db: Database.Database): StoreSettings {
@@ -55,7 +56,14 @@ export function getSettings(db: Database.Database): StoreSettings {
     const cur = (out as Record<string, unknown>)[key]
     if (typeof cur === 'number') out[key] = Number(v)
     else if (typeof cur === 'boolean') out[key] = v === '1' || v === 'true'
-    else out[key] = v
+    else if (key === 'pos_pinned_categories') {
+      try {
+        const parsed = JSON.parse(v)
+        out[key] = Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : []
+      } catch {
+        out[key] = []
+      }
+    } else out[key] = v
   }
   return out as unknown as StoreSettings
 }
@@ -69,6 +77,7 @@ export function updateSettings(db: Database.Database, patch: Partial<StoreSettin
     for (const [k, v] of Object.entries(p ?? {})) {
       let val = ''
       if (typeof v === 'boolean') val = v ? '1' : '0'
+      else if (Array.isArray(v)) val = JSON.stringify(v)
       else if (v === null || v === undefined) continue
       else val = String(v)
       upsert.run(k, val)

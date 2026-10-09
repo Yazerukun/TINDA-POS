@@ -27,7 +27,23 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)**
+- Current Version: **v1.0.90 (Pinned Package & Bundle Category Hub Edition)**
+
+## Key Features in v1.0.90 (Pinned Package & Bundle Category Hub Edition)
+1. **Pinned Package & Bundle Categories on POS Screen**:
+   - Integrated a fluid horizontal Apple Cupertino pinned categories bar above the product grid.
+   - 1-tap filtering for rapid checkout of fast-moving packages, value combos, and promo bundles.
+   - Dynamic real-time product counters per pinned chip and pulsing bundle indicators.
+2. **Dashboard Quick Bundles & Pinned Categories Hub**:
+   - Added dedicated "Quick Bundles & Pinned Categories" Cupertino Card on the Dashboard showing active pinned categories with live catalog item counts.
+   - 1-tap "Sell in POS →" direct navigation automatically switches to POS mode and pre-selects the filtered category.
+3. **Full Category Customization Hub (`CustomizeCategoriesModal.tsx`)**:
+   - Merchants can fully customize category visuals with custom emojis (📦, 🎁, 🛍️, 🍔, 🥤, 🍿, 🥫, ⚡, 🔥, 🏷️, etc.) and Cupertino badge accent themes (Indigo, Emerald, Amber, Rose, Cyan, Violet, Slate).
+   - Seamless 1-tap Pin/Unpin toggles directly inside category list and POS dropdown.
+   - In-app category creation with instant icon/color assignment.
+4. **Zero-Database Risk & Instant Live Patch Standard**:
+   - Leverages existing `pos_pinned_categories` setting and persistent local storage for visuals.
+   - Zero migrations, zero schema changes, and 100% hot-patch compatible (`npm run publish:patch`).
 
 ## Key Features in v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)
 1. **Line-Item Price Editing for Credit Sales (Items Taken on Credit)**:

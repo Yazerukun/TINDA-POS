@@ -8,16 +8,25 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Package,
+  Pin,
+  ArrowRight
 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyState'
-import type { Product, Sale, ReportSummary } from '@shared/types'
+import type { Product, Sale, ReportSummary, Category } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
 import { productExpirationStatus } from '@shared/expiration'
 import { useAuth } from '../stores/auth'
 import { useSettings } from '../stores/settings'
+import { useNav } from '../stores/nav'
 import { AppLogo } from '../components/AppLogo'
+import {
+  getCategoryVisuals,
+  getCategoryCustomizations,
+  getCategoryStyle
+} from '../utils/categoryCustomization'
 
 function StatCard({
   label,
@@ -53,6 +62,7 @@ function StatCard({
 export function Dashboard(): React.JSX.Element | null {
   const { user, shiftOpen } = useAuth()
   const { settings } = useSettings()
+  const { setPage, setActiveCategoryFilter } = useNav()
   const [summary, setSummary] = useState<ReportSummary | null>(null)
   const [recent, setRecent] = useState<Sale[]>([])
   const [alertProducts, setAlertProducts] = useState<Product[]>([])
@@ -60,6 +70,8 @@ export function Dashboard(): React.JSX.Element | null {
   const [error, setError] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [expiryAlerts, setExpiryAlerts] = useState<{ expired: Product[]; soon: Product[] }>({ expired: [], soon: [] })
+  const [categories, setCategories] = useState<Category[]>([])
+  const [catProductCounts, setCatProductCounts] = useState<Record<number, number>>({})
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -73,16 +85,25 @@ export function Dashboard(): React.JSX.Element | null {
       try {
         const now = new Date()
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-        const [sales, prods, u, tx] = await Promise.all([
+        const [sales, prods, u, tx, cats] = await Promise.all([
           window.api.reports.sales({ from: today, to: today }),
           window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
           window.api.reports.utang(),
-          window.api.transactions.list({ from: `${today} 00:00:00`, to: `${today} 23:59:59`, limit: 8 })
+          window.api.transactions.list({ from: `${today} 00:00:00`, to: `${today} 23:59:59`, limit: 8 }),
+          window.api?.categories?.list ? window.api.categories.list().catch(() => []) : Promise.resolve([])
         ])
         if (!alive || request !== generation) return
         setError(null)
         setSummary(sales.summary)
         setRecent(tx.rows)
+        setCategories(cats || [])
+        const catMap: Record<number, number> = {}
+        for (const p of prods.rows || []) {
+          if (p.category_id != null) {
+            catMap[p.category_id] = (catMap[p.category_id] || 0) + 1
+          }
+        }
+        setCatProductCounts(catMap)
         const alerts = prods.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)
         setAlertProducts(alerts)
         const expired = prods.rows.filter((p) => productExpirationStatus(p) === 'EXPIRED')
@@ -207,6 +228,99 @@ export function Dashboard(): React.JSX.Element | null {
           className="animate-fadeInUp stagger-4"
         />
       </div>
+
+      {/* Pinned Bundles & Quick Categories Hub */}
+      {(() => {
+        const pinnedIds: number[] = settings?.pos_pinned_categories || []
+        const customMap = getCategoryCustomizations()
+        const pinnedList = pinnedIds
+          .map((id) => (categories || []).find((c) => c && c.id === id))
+          .filter((c): c is Category => Boolean(c))
+
+        return (
+          <div className="animate-fadeInUp rounded-2xl border border-ink-line bg-gradient-to-r from-ink-900 via-ink-850 to-ink-900 p-4 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+                  <Package className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                    Quick Bundles & Pinned Categories
+                    <span className="badge border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 text-[10px] font-bold">
+                      {pinnedList.length} Active
+                    </span>
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPage('pos')}
+                className="flex items-center gap-1 text-xs font-semibold text-brand-300 hover:text-brand-200 transition-colors"
+              >
+                <span>Go to POS</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {pinnedList.length === 0 ? (
+              <div className="flex items-center justify-between rounded-xl border border-dashed border-ink-line bg-ink-850/50 p-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">📦</span>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-300">No categories pinned yet</p>
+                    <p className="text-[11px] text-slate-500">Pin packages, meal combos, and promo bundles in POS for rapid 1-tap selling.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPage('pos')}
+                  className="btn-primary text-xs px-3 py-1.5 font-bold flex items-center gap-1.5"
+                >
+                  <Pin className="h-3.5 w-3.5" />
+                  <span>Pin in POS</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                {pinnedList.map((category) => {
+                  const visuals = getCategoryVisuals(category.name, customMap[category.id])
+                  const count = (catProductCounts && catProductCounts[category.id]) || 0
+                  const style = getCategoryStyle(visuals.color)
+
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveCategoryFilter(category.id)
+                        setPage('pos')
+                      }}
+                      className={`flex flex-col justify-between rounded-xl border p-2.5 text-left transition-all hover:scale-[1.02] shadow-sm ${style.inactive}`}
+                      title={`Sell ${category.name} in POS`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xl leading-none">{visuals.icon}</span>
+                        <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.2 ${style.badge}`}>
+                          {count} items
+                        </span>
+                      </div>
+                      <div className="mt-2 min-w-0">
+                        <p className="truncate text-xs font-bold text-white tracking-tight">{category.name}</p>
+                        <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400 group-hover:text-slate-200">
+                          <span>Sell in POS</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fadeInUp stagger-5">
         <div className="space-y-4">

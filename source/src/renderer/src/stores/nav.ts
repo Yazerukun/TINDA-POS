@@ -19,9 +19,13 @@ export type PageKey =
 interface NavState {
   page: PageKey
   setPage: (p: PageKey) => void
+  activeCategoryFilter: number | 'ALL' | null
+  setActiveCategoryFilter: (filter: number | 'ALL' | null) => void
 }
 
 export const useNav = create<NavState>((set) => ({
   page: 'dashboard',
-  setPage: (p) => set({ page: p })
+  setPage: (p) => set({ page: p }),
+  activeCategoryFilter: null,
+  setActiveCategoryFilter: (filter) => set({ activeCategoryFilter: filter })
 }))

@@ -33,7 +33,11 @@ import {
   VolumeX,
   Printer,
   Wrench,
-  Layers
+  Layers,
+  Pin,
+  PinOff,
+  SlidersHorizontal,
+  Package
 } from 'lucide-react'
 import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
@@ -43,6 +47,10 @@ import { CounterCameraScanner } from '../components/CounterCameraScanner'
 import { QuickExpenseModal } from '../components/QuickExpenseModal'
 import { PosToolsModal } from '../components/PosToolsModal'
 import { useGuide } from '../stores/guide'
+import { useSettings } from '../stores/settings'
+import { PinnedCategoriesBar } from '../components/PinnedCategoriesBar'
+import { CustomizeCategoriesModal } from '../components/CustomizeCategoriesModal'
+import { getCategoryVisuals, getCategoryCustomizations } from '../utils/categoryCustomization'
 import type { Product, Customer, Sale, Category, HeldSale } from '@shared/types'
 import { money, isWeighableUnit, formatQuantity } from '@shared/format'
 import { Modal } from '../components/ui/Modal'
@@ -276,12 +284,15 @@ export const usePosCart = create<CartState>((set) => ({
 }))
 
 export function POS(): React.JSX.Element {
-  const { setPage } = useNav()
+  const { setPage, activeCategoryFilter, setActiveCategoryFilter } = useNav()
+  const { settings, update: updateSettings } = useSettings()
   const [q, setQ] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [catFilter, setCatFilter] = useState<number | 'ALL'>('ALL')
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
+  const [customizeModalOpen, setCustomizeModalOpen] = useState(false)
+  const [catCounts, setCatCounts] = useState<Record<number | 'ALL', number>>({ ALL: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [priceRefs, setPriceRefs] = useState<Record<number, number>>({})
@@ -293,6 +304,19 @@ export function POS(): React.JSX.Element {
   })
 
   const [posToolsOpen, setPosToolsOpen] = useState(false)
+
+  const refreshCatCounts = async () => {
+    try {
+      const res = await window.api.products.search('', { status: 'ACTIVE', limit: 2000 })
+      const map: Record<number | 'ALL', number> = { ALL: res.total || (res.rows?.length ?? 0) }
+      for (const p of res.rows || []) {
+        if (p.category_id != null) {
+          map[p.category_id] = (map[p.category_id] || 0) + 1
+        }
+      }
+      setCatCounts(map)
+    } catch {}
+  }
 
   useEffect(() => {
     const handleToggleEvent = () => {
@@ -538,12 +562,23 @@ export function POS(): React.JSX.Element {
   useEffect(() => {
     void search('')
     window.api.categories.list().then(setCategories).catch(() => {})
+    void refreshCatCounts()
   }, [])
+
+  useEffect(() => {
+    if (activeCategoryFilter !== null && activeCategoryFilter !== undefined) {
+      setCatFilter(activeCategoryFilter)
+      void search('', activeCategoryFilter === 'ALL' ? null : activeCategoryFilter)
+      setActiveCategoryFilter(null)
+    }
+  }, [activeCategoryFilter, setActiveCategoryFilter])
+
   useEffect(() => window.api.inventory.onChanged((event) => {
     void Promise.all(event.product_ids.map(id => window.api.products.get(id)))
       .then(changed => usePosCart.getState().syncStocks(changed))
       .catch(() => {})
     void search(q, catFilter === 'ALL' ? null : catFilter)
+    void refreshCatCounts()
   }), [q, catFilter])
 
   useEffect(() => {
@@ -829,20 +864,61 @@ export function POS(): React.JSX.Element {
                   <span>All categories</span>
                   {catFilter === 'ALL' && <Check className="h-4 w-4" />}
                 </button>
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => chooseCategory(category.id)}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-ink-700 ${catFilter === category.id ? 'text-brand-300' : 'text-slate-200'}`}
-                    role="option"
-                    aria-selected={catFilter === category.id}
-                  >
-                    <span className="truncate">{category.name}</span>
-                    {catFilter === category.id && <Check className="h-4 w-4 shrink-0" />}
-                  </button>
-                ))}
+                {categories.map((category) => {
+                  const isPinned = (settings?.pos_pinned_categories || []).includes(category.id)
+                  const customMap = getCategoryCustomizations()
+                  const visuals = getCategoryVisuals(category.name, customMap[category.id])
+                  return (
+                    <div
+                      key={category.id}
+                      className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-ink-700 transition-colors ${
+                        catFilter === category.id ? 'text-brand-300 bg-ink-800' : 'text-slate-200'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => chooseCategory(category.id)}
+                        className="flex min-w-0 items-center gap-2 flex-1 text-left py-0.5"
+                        role="option"
+                        aria-selected={catFilter === category.id}
+                      >
+                        <span className="text-sm shrink-0">{visuals.icon}</span>
+                        <span className="truncate">{category.name}</span>
+                        {catFilter === category.id && <Check className="h-4 w-4 shrink-0 text-brand-400 ml-auto mr-1" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          const curr = settings?.pos_pinned_categories || []
+                          const next = isPinned ? curr.filter((id) => id !== category.id) : [...curr, category.id]
+                          await updateSettings({ pos_pinned_categories: next })
+                          toastSuccess(isPinned ? 'Category unpinned from POS' : 'Category pinned to POS bar')
+                        }}
+                        className={`p-1 rounded hover:bg-ink-600 transition-colors shrink-0 ml-1 ${
+                          isPinned ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'
+                        }`}
+                        title={isPinned ? 'Unpin from POS quick bar' : 'Pin to POS quick bar'}
+                      >
+                        <Pin className={`h-3.5 w-3.5 ${isPinned ? 'fill-indigo-400' : ''}`} />
+                      </button>
+                    </div>
+                  )
+                })}
                 {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
+                <div className="border-t border-ink-line mt-1 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryMenuOpen(false)
+                      setCustomizeModalOpen(true)
+                    }}
+                    className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold text-brand-300 hover:bg-brand-500/10 transition-colors"
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    <span>Customize Pinned & Bundles...</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -931,6 +1007,19 @@ export function POS(): React.JSX.Element {
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
 
+        {/* Apple Cupertino Pinned Quick Categories & Bundles Bar */}
+        <PinnedCategoriesBar
+          categories={categories}
+          productsCountMap={catCounts}
+          totalActiveCount={catCounts.ALL || displayedProducts.length}
+          activeCategory={catFilter}
+          onSelectCategory={chooseCategory}
+          onCategoriesChanged={async () => {
+            const updated = await window.api.categories.list()
+            setCategories(updated)
+            void refreshCatCounts()
+          }}
+        />
 
         {viewMode === 'list' ? (
           /* High-Density Enterprise Listing Table */
@@ -1336,6 +1425,19 @@ export function POS(): React.JSX.Element {
         onQuickZRead={() => void handleQuickZRead()}
         zReadingBusy={zReadingBusy}
         onOpenQuickExpense={() => setExpenseModalOpen(true)}
+      />
+
+      {/* Customize Pinned Categories & Bundles Modal */}
+      <CustomizeCategoriesModal
+        open={customizeModalOpen}
+        onClose={() => setCustomizeModalOpen(false)}
+        categories={categories}
+        productsCountMap={catCounts as Record<number, number>}
+        onCategoriesChanged={async () => {
+          const updated = await window.api.categories.list()
+          setCategories(updated)
+          void refreshCatCounts()
+        }}
       />
     </div>
   )

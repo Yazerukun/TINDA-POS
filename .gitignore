@@ -38,6 +38,8 @@ desktop.ini
 # === Editor / IDE ===
 .vscode/
 .idea/
+.claude/
+.mcp.json
 *.swp
 *.swo
 *~

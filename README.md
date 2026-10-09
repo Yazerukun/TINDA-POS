@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.89-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.90-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-436_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,25 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.89](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Feature-Patch-1.0.89.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.89 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Setup-1.0.89.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Portable-1.0.89.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.90](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Feature-Patch-1.0.90.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.90 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Setup-1.0.90.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Portable-1.0.90.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.90 (Pinned Package & Bundle Category Hub Edition)
+
+> **Pinned Package & Bundle Categories on POS & Dashboard, Full Visual Customization Hub (Custom Emojis & Color Accents), and 1-Tap Quick Selling Accelerators.**
+
+- 📌 **Pinned Categories Bar on POS Checkout**:
+  - Horizontal frosted Cupertino chip bar above the product grid displaying pinned packages, combos, and favorite categories.
+  - 1-tap filtering for rapid checkout with live active product count badges.
+- 🏪 **Dashboard Quick Bundles & Categories Hub**:
+  - Interactive "Quick Bundles & Pinned Categories" card on the Dashboard with 1-tap "Sell in POS →" direct navigation.
+- 🎨 **Full Category Customization Hub (`CustomizeCategoriesModal`)**:
+  - Custom emoji icons (📦, 🎁, 🛍️, 🍔, 🥤, 🍿, 🥫, ⚡, 🔥, 🏷️) and Cupertino color themes (Indigo, Emerald, Amber, Rose, Cyan, Violet, Slate).
+  - 1-tap Pin/Unpin toggles directly in category lists and POS dropdown.
+  - Instant category creation with pre-styled visuals.
+- ⚡ **Zero-Database Risk & Instant In-App Live Patch Standard**:
+  - 100% compatible with existing merchant databases via live patch (`npm run publish:patch`).
 
 ## ✨ What's New in v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)
 
