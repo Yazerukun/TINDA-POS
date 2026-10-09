@@ -19,6 +19,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   9. **brigade-tideline**: Brigade v1.39.0 long-term memory MCP server running locally (`tools/brigade_mcp_server.mjs`) with hybrid BM25 + HRR vector recall.
   10. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
   11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
+  12. **instant-patch-release-standard**: **MANDATORY PATCH RULE**: For all rapid feature fixes, UI refinements, and optimizations, ALWAYS publish the live in-app hot patch via `npm run publish:patch` (`tools/publish_patch.mjs`). This automatically bundles the ~0.8 MB patch zip and publishes the release on `Yazerukun/TINDA-POS` in <10 seconds with zero rate limits. Cashiers immediately detect the update via 'Check for Updates' and apply live in 0.3s without restarting the app or downloading 100MB+ full installers.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`

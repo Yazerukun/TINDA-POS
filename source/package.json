@@ -25,6 +25,7 @@
     "build:linux": "electron-vite build && electron-builder --linux",
     "build:win": "electron-vite build && electron-builder --win",
     "build:patch": "electron-vite build && node ../tools/bundle_patch.mjs",
+    "publish:patch": "npm run build:patch && node ../tools/publish_patch.mjs",
     "dist": "electron-vite build && electron-builder --dir"
   },
   "dependencies": {
