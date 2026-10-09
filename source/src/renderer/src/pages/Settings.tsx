@@ -653,7 +653,7 @@ function SoftwareUpdatePanel(): React.JSX.Element {
   const [showNotes, setShowNotes] = useState(false)
   const [rollbackOpen, setRollbackOpen] = useState(false)
 
-  const installed = event?.installedVersion || '1.0.85'
+  const installed = event?.installedVersion || '1.0.86'
   const available = event?.available?.version ?? ''
   const status = event?.status || 'IDLE'
   const isChecking = status === 'CHECKING' || checking

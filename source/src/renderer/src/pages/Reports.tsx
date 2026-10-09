@@ -423,7 +423,7 @@ function ReadPanel({report,finalize,onFinalized,onCashCount,onUpdate,onRefresh}:
   const finish=async()=>{if(!confirm('Finalize Z-Read? This will finalize the current reporting period. Transactions and history will remain saved.'))return;setBusy(true);try{await window.api.reports.finalizeZ({actual_cash_c:Math.round(Number(actual)*100)});toastSuccess('Z-Read finalized');onFinalized()}catch(e){toastError('Z-Read failed',String((e as Error).message||e))}finally{setBusy(false)}}
   const groups: { title: string; stats: [string, number | string][] }[] = [
     { title: 'Sales Summary', stats: [['Gross Sales', report.gross_sales_c], ['Discounts', report.discount_c], ['Refunds', report.refunds_c], ['Voids', report.voids_c], ['Net Sales', report.net_sales_c]] },
-    { title: 'Payment Breakdown', stats: [['Cash', report.cash_c], ['GCash', report.gcash_c], ['Maya', report.maya_c], ['Utang', report.utang_c]] },
+    { title: 'Payment Breakdown', stats: [['Cash', report.cash_c], ['GCash', report.gcash_c], ['Maya', report.maya_c], ...(report.maribank_c ? [['MariBank', report.maribank_c] as [string, number | string]] : []), ['Utang', report.utang_c]] },
     { title: 'Cash Reconciliation', stats: [['Starting Cash', report.starting_cash_c], ['Cash In', report.cash_in_c], ['Cash Out', report.cash_out_c], ['Cash Refunds', report.cash_refunds_c ?? report.refunds_c], ['Expenses', report.expenses_c], ['Expected Cash', report.expected_cash_c]] },
     { title: 'Transactions', stats: [['Transactions', String(report.transaction_count)], ['Voided Transactions', String(report.void_count)], ['Split Payments', String(report.split_count)]] }
   ]

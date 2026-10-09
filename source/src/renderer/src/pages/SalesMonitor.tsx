@@ -51,6 +51,7 @@ interface MonitorData {
     cash_c: number
     gcash_c: number
     maya_c: number
+    maribank_c?: number
     utang_c: number
   }
   recent_sales: Sale[]
@@ -114,27 +115,30 @@ export function SalesMonitorScreen(): React.JSX.Element {
         const filteredRecent = prev.recent_sales.filter((s: Sale) => s.id !== sale.id)
         const updatedRecent = [sale, ...filteredRecent].slice(0, 50)
 
-        // Calculate cash / gcash / maya / utang additions
+        // Calculate cash / gcash / maya / maribank / utang additions
         let addCash = 0
         let addGcash = 0
         let addMaya = 0
+        let addMaribank = 0
         let addUtang = 0
 
         for (const p of sale.payments) {
           if (p.method === 'CASH') addCash += p.amount_c
           else if (p.method === 'GCASH') addGcash += p.amount_c
           else if (p.method === 'MAYA') addMaya += p.amount_c
+          else if (p.method === 'MARIBANK') addMaribank += p.amount_c
           else if (p.method === 'UTANG') addUtang += p.amount_c
         }
 
         return {
           ...prev,
           today: {
-            total_sales_c: prev.today.total_sales_c + (addCash + addGcash + addMaya),
+            total_sales_c: prev.today.total_sales_c + (addCash + addGcash + addMaya + addMaribank),
             total_transactions: prev.today.total_transactions + 1,
             cash_c: prev.today.cash_c + addCash,
             gcash_c: prev.today.gcash_c + addGcash,
             maya_c: prev.today.maya_c + addMaya,
+            maribank_c: (prev.today.maribank_c ?? 0) + addMaribank,
             utang_c: prev.today.utang_c + addUtang
           },
           recent_sales: updatedRecent
@@ -259,13 +263,13 @@ export function SalesMonitorScreen(): React.JSX.Element {
         {/* E-Wallets (GCash / Maya) */}
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">GCash / Maya</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wider">E-Wallets / Digital</span>
             <Smartphone className="h-4 w-4 text-sky-400" />
           </div>
           <div className="mt-1 font-mono text-xl font-black text-sky-400">
-            {money((data?.today.gcash_c ?? 0) + (data?.today.maya_c ?? 0))}
+            {money((data?.today.gcash_c ?? 0) + (data?.today.maya_c ?? 0) + (data?.today.maribank_c ?? 0))}
           </div>
-          <div className="mt-0.5 text-[11px] text-slate-400">Digital payments</div>
+          <div className="mt-0.5 text-[11px] text-slate-400">GCash · Maya · MariBank</div>
         </div>
 
         {/* Utang / Credit */}
@@ -493,6 +497,8 @@ export function SalesMonitorScreen(): React.JSX.Element {
                             className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                               p.method === 'CASH'
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : p.method === 'MARIBANK'
+                                ? 'bg-[#FF6A00]/10 text-[#FF8533] border border-[#FF6A00]/20'
                                 : p.method === 'UTANG'
                                 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                                 : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'

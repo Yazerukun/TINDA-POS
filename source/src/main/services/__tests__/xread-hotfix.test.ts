@@ -94,4 +94,13 @@ describe('X-Read cash reconciliation hotfix', () => {
     db.prepare("UPDATE sales SET status='VOIDED' WHERE id=?").run(id)
     expect(calculateRead(db, shift.id)).toMatchObject({ net_sales_c: 0, cash_refunds_c: 0, cash_c: 0, expected_cash_c: 5000, void_count: 1 })
   })
+
+  it('correctly aggregates MARIBANK payments in X-Read report and print lines', () => {
+    const shift = shifts.openShift(db, 1, 5000)
+    sale(shift.id, 'MARIBANK', 7500)
+    const r = calculateRead(db, shift.id)
+    expect(r.maribank_c).toBe(7500)
+    const lines = readReportLines(r)
+    expect(lines).toContain('MariBank       75.00')
+  })
 })

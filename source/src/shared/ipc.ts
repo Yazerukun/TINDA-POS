@@ -31,7 +31,7 @@ import type {
 } from './types'
 
 export type PaymentInput = {
-  method: 'CASH' | 'GCASH' | 'MAYA' | 'UTANG'
+  method: 'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'
   amount_c: number
   reference?: string | null
 }

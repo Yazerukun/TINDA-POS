@@ -250,7 +250,7 @@ export interface SaleItem {
 export interface Payment {
   id: number
   sale_id: number
-  method: 'CASH' | 'GCASH' | 'MAYA' | 'UTANG'
+  method: 'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'
   amount_c: number
   reference: string | null
   created_at: string
@@ -507,6 +507,7 @@ export interface ReadReport {
   cash_c: number
   gcash_c: number
   maya_c: number
+  maribank_c?: number
   utang_c: number
   expenses_c: number
   cash_in_c: number
@@ -561,6 +562,7 @@ export interface DashboardStats {
   cash_sales_today_c: number
   gcash_today_c: number
   maya_today_c: number
+  maribank_today_c?: number
   low_stock: Product[]
   out_of_stock: Product[]
   top_selling: { product_id: number; name: string; qty_sold: number; revenue_c: number }[]

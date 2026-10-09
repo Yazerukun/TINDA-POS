@@ -1370,6 +1370,7 @@ export function generateCfdHtml(): string {
     }
     .badge-gcash { background: #007dfe; color: #ffffff; }
     .badge-maya { background: #000000; color: #22c55e; border: 1px solid #22c55e; }
+    .badge-maribank { background: linear-gradient(135deg, #FF6A00, #EE4D2D); color: #ffffff; }
     .badge-cash { background: #10b981; color: #042f2e; }
 
     /* COMPLETED VIEW */
@@ -1489,7 +1490,8 @@ export function generateCfdHtml(): string {
       if (data.status === 'PAYMENT') {
         const isGcash = (data.paymentMethod || '').toUpperCase() === 'GCASH';
         const isMaya = (data.paymentMethod || '').toUpperCase() === 'MAYA';
-        const badgeClass = isGcash ? 'badge-gcash' : isMaya ? 'badge-maya' : 'badge-cash';
+        const isMaribank = (data.paymentMethod || '').toUpperCase() === 'MARIBANK';
+        const badgeClass = isGcash ? 'badge-gcash' : isMaya ? 'badge-maya' : isMaribank ? 'badge-maribank' : 'badge-cash';
 
         mainEl.innerHTML = \`
           <div class="view-payment">
@@ -1503,7 +1505,7 @@ export function generateCfdHtml(): string {
                 <div class="qr-wrapper">
                   \${data.qrSvg}
                 </div>
-                <p style="font-size: 15px; color: #f1f5f9; font-weight: 600;">Scan with your \${isGcash ? 'GCash' : isMaya ? 'Maya' : 'e-Wallet'} App</p>
+                <p style="font-size: 15px; color: #f1f5f9; font-weight: 600;">Scan with your \${isGcash ? 'GCash' : isMaya ? 'Maya' : isMaribank ? 'MariBank' : 'e-Wallet'} App</p>
                 <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Dynamic QR generated for exact amount</p>
               \` : \`
                 <div style="background: #172033; padding: 24px; border-radius: 16px; margin: 16px 0;">

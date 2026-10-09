@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.85-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.86-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-429_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-430_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,31 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.85](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Feature-Patch-1.0.85.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.85 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Setup-1.0.85.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-Portable-1.0.85.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.85/TindaPOS-1.0.85.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.86](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.86/TindaPOS-Feature-Patch-1.0.86.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.86 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.86/TindaPOS-Setup-1.0.86.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.86/TindaPOS-Portable-1.0.86.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐧 Linux AppImage](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.86/TindaPOS-1.0.86.AppImage)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)
+
+> **MariBank 5-Method Apple Cupertino Grid, F12 1-Tap Checkout Accelerators, Dedicated Reference Input & Shopee/SeaBank Badging, Dual-Screen Customer TV QR Display, and Shift Reconciliation Parity.**
+
+- 🟠 **5-Payment Method Apple Cupertino Grid in Checkout Modal**:
+  - Expanded Checkout Modal from `max-w-md` (448px) to `max-w-lg` (512px) with a spacious 5-column button grid (`grid-cols-5 gap-1.5`).
+  - Integrated **MariBank** with distinct Shopee/SeaBank vibrant orange identity (`#FF6A00` border, `#FF8533` text, `Landmark` icon, and glow shadow), alongside Cash [F9], GCash [F10], Maya [F11], and Utang.
+- ⚡ **Ergonomic Hotkeys & 1-Tap Workflow Accelerators**:
+  - **Cart Screen**: Cashiers can press **`F12`** to jump immediately into Checkout with MariBank pre-selected and the reference input focused.
+  - **Modal Screen**: Pressing `F12` inside the modal instantly activates MariBank and selects the reference field.
+  - **Enter Key**: Finalizes payment with 1 tap (`Charge ₱... (Enter)`).
+- 🏷️ **Dedicated MariBank Reference Input & Customer Facing Display (CFD)**:
+  - Input header displays `MariBank Reference No. / Transaction ID` with `Shopee / SeaBank Transfer` tag and placeholder `e.g. MB-9823471 or Shopee Ref`.
+  - Dual-screen customer TV monitor displays `.badge-maribank` (`linear-gradient(135deg, #FF6A00, #EE4D2D)`), dynamic QR payload `maribank://pay?amount=...`, and prompt `"Scan with your MariBank App"`.
+- 🧾 **Thermal Receipts, Shift X/Z Reconciliation & Sales Monitor Parity**:
+  - Compact thermal receipts format `MARIBANK ₱XX.XX` with tabular numerals and reference number.
+  - Shift X-Read and Z-Read reports aggregate `maribank_c` in payment breakdown and ledger totals.
+  - Real-time Sales Monitor displays vibrant orange `MARIBANK` badge and includes digital bank payments in daily totals.
+- 🛡️ **Zero Database Risk & Instant In-App Live Patch Standard**:
+  - Completely non-breaking; no database table migrations needed (`payments.method TEXT NOT NULL`).
+  - Published via `npm run publish:patch` as a lightweight ~0.83 MB hot patch, applying live in 0.3s without restarting the desktop app.
 
 ## ✨ What's New in v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)
 

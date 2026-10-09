@@ -137,8 +137,8 @@ export function validateCheckout(payload: unknown) {
   const payments = Array.isArray(p.payments) && p.payments.length ? (p.payments as unknown[]).map((pm) => {
     const y = pm as Record<string, unknown>
     const method = String(y.method)
-    if (!['CASH', 'GCASH', 'MAYA', 'UTANG'].includes(method)) throw new Error('Invalid payment method.')
-    return { method, amount_c: isCentavos(y.amount_c, 'Payment amount'), reference: typeof y.reference === 'string' && y.reference ? y.reference : null } as { method: 'CASH' | 'GCASH' | 'MAYA' | 'UTANG'; amount_c: number; reference: string | null }
+    if (!['CASH', 'GCASH', 'MAYA', 'MARIBANK', 'UTANG'].includes(method)) throw new Error('Invalid payment method.')
+    return { method, amount_c: isCentavos(y.amount_c, 'Payment amount'), reference: typeof y.reference === 'string' && y.reference ? y.reference : null } as { method: 'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'; amount_c: number; reference: string | null }
   }) : []
   return {
     items: cart,

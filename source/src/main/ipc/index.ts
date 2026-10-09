@@ -177,17 +177,19 @@ handle('app:salesMonitorSummary', () => {
   let cash_c = 0
   let gcash_c = 0
   let maya_c = 0
+  let maribank_c = 0
   let utang_c = 0
 
   for (const p of paymentsSummary) {
     if (p.method === 'CASH') cash_c = p.amount_c
     else if (p.method === 'GCASH') gcash_c = p.amount_c
     else if (p.method === 'MAYA') maya_c = p.amount_c
+    else if (p.method === 'MARIBANK') maribank_c = p.amount_c
     else if (p.method === 'UTANG') utang_c = p.amount_c
   }
 
   const refunds_c = todayRefunds?.total_refunds_c ?? 0
-  const realized_sales_c = Math.max(0, cash_c + gcash_c + maya_c - refunds_c)
+  const realized_sales_c = Math.max(0, cash_c + gcash_c + maya_c + maribank_c - refunds_c)
   const recentSales = listSales(d, { limit: 50 }).rows
   const settings = settingRepo.getSettings(d)
 
@@ -201,6 +203,7 @@ handle('app:salesMonitorSummary', () => {
       cash_c,
       gcash_c,
       maya_c,
+      maribank_c,
       utang_c,
       refunds_c
     },

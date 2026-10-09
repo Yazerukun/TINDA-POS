@@ -32,12 +32,14 @@ export function dashboardStats(): DashboardStats {
   let cash = 0
   let gcash = 0
   let maya = 0
+  let maribank = 0
   let utang = 0
   for (const s of sales)
     for (const p of s.payments) {
       if (p.method === 'CASH') cash += p.amount_c
       if (p.method === 'GCASH') gcash += p.amount_c
       if (p.method === 'MAYA') maya += p.amount_c
+      if (p.method === 'MARIBANK') maribank += p.amount_c
       if (p.method === 'UTANG') utang += p.amount_c
     }
 
@@ -70,6 +72,7 @@ export function dashboardStats(): DashboardStats {
     cash_sales_today_c: cash,
     gcash_today_c: gcash,
     maya_today_c: maya,
+    maribank_today_c: maribank,
     low_stock: lowStockProducts(db),
     out_of_stock: outOfStockProducts(db),
     top_selling: topSelling.map((t) => ({ ...t, name: String(t.name) })),

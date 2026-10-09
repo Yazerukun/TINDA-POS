@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validateSetup } from '../schemas'
+import { validateSetup, validateCheckout } from '../schemas'
 
 const validPayload = {
   store: { store_name: 'Aling Nena', owner_name: 'Nena', address: 'Palengke', phone: '0917' },
@@ -42,5 +42,41 @@ describe('validateSetup', () => {
     expect(out.load_demo).toBe(true)
     expect(out.receipt.footer).toBe('Salamat')
     expect(out.receipt.header).toBe('HN')
+  })
+})
+
+describe('validateCheckout', () => {
+  const sampleCartItem = {
+    product_id: 1,
+    name: 'Rice',
+    unit_name: 'kg',
+    qty: 2,
+    qty_base: 2,
+    unit_price_c: 5000,
+    cost_base_c: 4000,
+    stock_base: 10,
+    subtotal_c: 10000
+  }
+
+  it('accepts MARIBANK as a valid payment method', () => {
+    const payload = {
+      items: [sampleCartItem],
+      discount_c: 0,
+      payments: [{ method: 'MARIBANK', amount_c: 10000, reference: 'MB-12345678' }]
+    }
+    const out = validateCheckout(payload)
+    expect(out.payments).toHaveLength(1)
+    expect(out.payments[0]!.method).toBe('MARIBANK')
+    expect(out.payments[0]!.reference).toBe('MB-12345678')
+    expect(out.payments[0]!.amount_c).toBe(10000)
+  })
+
+  it('rejects unsupported payment methods', () => {
+    const payload = {
+      items: [sampleCartItem],
+      discount_c: 0,
+      payments: [{ method: 'CRYPTO', amount_c: 10000 }]
+    }
+    expect(() => validateCheckout(payload)).toThrow(/Invalid payment method/)
   })
 })

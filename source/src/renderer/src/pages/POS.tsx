@@ -1662,7 +1662,7 @@ function CartPanel({
 }): React.JSX.Element {
   const { items, discount_pesos, customer_name } = usePosCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-  const [checkoutMethod, setCheckoutMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>('CASH')
+  const [checkoutMethod, setCheckoutMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'>('CASH')
   const [customerOpen, setCustomerOpen] = useState(false)
   const [heldOpen, setHeldOpen] = useState(false)
   const [heldSales, setHeldSales] = useState<HeldSale[]>([])
@@ -1816,6 +1816,24 @@ function CartPanel({
         if (items.length > 0 && !stockConflict) {
           e.preventDefault()
           setCheckoutMethod('GCASH')
+          setCheckoutOpen(true)
+        }
+        return
+      }
+
+      if (e.key === 'F11') {
+        if (items.length > 0 && !stockConflict) {
+          e.preventDefault()
+          setCheckoutMethod('MAYA')
+          setCheckoutOpen(true)
+        }
+        return
+      }
+
+      if (e.key === 'F12') {
+        if (items.length > 0 && !stockConflict) {
+          e.preventDefault()
+          setCheckoutMethod('MARIBANK')
           setCheckoutOpen(true)
         }
         return
@@ -2065,7 +2083,7 @@ function CartPanel({
           className="btn-primary col-span-2 min-h-12 py-3 !text-base disabled:opacity-40 flex items-center justify-center gap-2"
         >
           <span>CHECKOUT</span>
-          <span className="text-xs font-normal opacity-80">(F9 Cash / F10 GCash)</span>
+          <span className="text-xs font-normal opacity-80">(F9 Cash · F10 GCash · F12 MariBank)</span>
         </button>
       </div>
 
@@ -2311,11 +2329,11 @@ function CheckoutModal({
 }: {
   subtotal: number
   total: number
-  initialMethod?: 'CASH' | 'GCASH' | 'MAYA' | 'UTANG'
+  initialMethod?: 'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'
   onClose: () => void
 }): React.JSX.Element {
   const { items, customer_id, customer_name, discount_pesos } = usePosCart()
-  const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'UTANG'>(initialMethod)
+  const [method, setMethod] = useState<'CASH' | 'GCASH' | 'MAYA' | 'MARIBANK' | 'UTANG'>(initialMethod)
   const [cash, setCash] = useState<string>(cashInputFromCents(total))
   const [reference, setReference] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -2341,7 +2359,7 @@ function CheckoutModal({
 
   useEffect(() => {
     let qrPayload: string | undefined = undefined
-    if (method === 'GCASH' || method === 'MAYA') {
+    if (method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK') {
       const storeName = 'TINDA POS'
       const pesos = (total / 100).toFixed(2)
       qrPayload = `${method.toLowerCase()}://pay?amount=${pesos}&store=${encodeURIComponent(storeName)}&ref=${Date.now()}`
@@ -2443,6 +2461,12 @@ function CheckoutModal({
         setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
         return
       }
+      if (e.key === 'F12') {
+        e.preventDefault()
+        setMethod('MARIBANK')
+        setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+        return
+      }
     }
 
     window.addEventListener('keydown', handleCheckoutHotkeys)
@@ -2496,15 +2520,22 @@ function CheckoutModal({
     )
   }
 
-  const methods: { key: typeof method; label: string; icon: React.ReactNode; shortcut: string }[] = [
-    { key: 'CASH', label: 'Cash', icon: <Banknote className="h-4 w-4" />, shortcut: 'F9' },
-    { key: 'GCASH', label: 'GCash', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F10' },
-    { key: 'MAYA', label: 'Maya', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F11' },
-    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" />, shortcut: '' }
+  const methods: {
+    key: typeof method
+    label: string
+    icon: React.ReactNode
+    shortcut: string
+    activeClass: string
+  }[] = [
+    { key: 'CASH', label: 'Cash', icon: <Banknote className="h-4 w-4" />, shortcut: 'F9', activeClass: '!border-emerald-500 !text-emerald-400 font-semibold bg-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.15)]' },
+    { key: 'GCASH', label: 'GCash', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F10', activeClass: '!border-sky-500 !text-sky-400 font-semibold bg-sky-500/10 shadow-[0_0_12px_rgba(14,165,233,0.15)]' },
+    { key: 'MAYA', label: 'Maya', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F11', activeClass: '!border-teal-500 !text-teal-300 font-semibold bg-teal-500/10 shadow-[0_0_12px_rgba(20,184,166,0.15)]' },
+    { key: 'MARIBANK', label: 'MariBank', icon: <Landmark className="h-4 w-4 text-[#FF8533]" />, shortcut: 'F12', activeClass: '!border-[#FF6A00] !text-[#FF8533] font-semibold bg-[#FF6A00]/10 shadow-[0_0_12px_rgba(255,106,0,0.2)]' },
+    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" />, shortcut: '', activeClass: '!border-violet-500 !text-violet-400 font-semibold bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]' }
   ]
 
   return (
-    <Modal open onClose={onClose} title="Checkout" maxWidth="max-w-md" footer={
+    <Modal open onClose={onClose} title="Checkout" maxWidth="max-w-lg" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel (Esc)</button>
         <button onClick={doCheckout} disabled={submitting} className="btn-primary flex items-center gap-2">
@@ -2520,16 +2551,29 @@ function CheckoutModal({
           <p className="mt-1 text-xs text-slate-500">Subtotal {money(subtotal)} · Discount {money(discount_pesos)}</p>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-1.5">
           {methods.map((m) => (
             <button
               key={m.key}
-              onClick={() => setMethod(m.key)}
-              className={`btn-ghost flex flex-col items-center gap-1 py-2 text-xs ${method === m.key ? '!border-brand-500 !text-brand-400 font-semibold' : ''}`}
+              onClick={() => {
+                setMethod(m.key)
+                if (m.key === 'CASH') {
+                  setTimeout(() => { cashInputRef.current?.focus(); cashInputRef.current?.select() }, 50)
+                } else if (m.key === 'GCASH' || m.key === 'MAYA' || m.key === 'MARIBANK') {
+                  setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
+                }
+              }}
+              className={`btn-ghost flex flex-col items-center justify-center gap-1 py-2 px-1 text-xs transition-all ${
+                method === m.key ? m.activeClass : 'text-slate-300 hover:text-white hover:border-slate-700'
+              }`}
             >
               {m.icon}
-              <span>{m.label}</span>
-              {m.shortcut && <span className="text-[10px] text-slate-500 font-mono">[{m.shortcut}]</span>}
+              <span className="truncate w-full text-center text-[11px] font-medium sm:text-xs">{m.label}</span>
+              {m.shortcut ? (
+                <span className="text-[10px] text-slate-500 font-mono">[{m.shortcut}]</span>
+              ) : (
+                <span className="text-[10px] opacity-0 font-mono">[--]</span>
+              )}
             </button>
           ))}
         </div>
@@ -2595,15 +2639,24 @@ function CheckoutModal({
           </div>
         )}
 
-        {(method === 'GCASH' || method === 'MAYA') && (
+        {(method === 'GCASH' || method === 'MAYA' || method === 'MARIBANK') && (
           <div>
-            <label className="mb-1 block text-xs text-slate-400">Reference No.</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs text-slate-400">
+                {method === 'MARIBANK' ? 'MariBank Reference No. / Transaction ID' : `${method === 'GCASH' ? 'GCash' : 'Maya'} Reference No.`}
+              </label>
+              {method === 'MARIBANK' && (
+                <span className="text-[10px] font-semibold text-[#FF8533] bg-[#FF6A00]/10 border border-[#FF6A00]/30 px-1.5 py-0.5 rounded">
+                  Shopee / SeaBank Transfer
+                </span>
+              )}
+            </div>
             <input
               ref={refInputRef}
               value={reference}
               onChange={(e) => setReference(e.target.value)}
               className="input w-full"
-              placeholder="e.g. 1234-5678"
+              placeholder={method === 'MARIBANK' ? 'e.g. MB-9823471 or Shopee Ref' : 'e.g. 1234-5678'}
               autoFocus
             />
           </div>

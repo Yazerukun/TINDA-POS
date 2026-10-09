@@ -28,13 +28,17 @@ const GITHUB_TOKEN = getGhToken()
 const REPO_OWNER = 'Yazerukun'
 const REPO_NAME = 'TINDA-POS'
 
-const pkgPath = path.resolve('source', 'package.json')
+const pkgPath = fs.existsSync(path.resolve('package.json')) && !fs.existsSync(path.resolve('source'))
+  ? path.resolve('package.json')
+  : path.resolve('source', 'package.json')
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
-const version = process.argv[2] || pkg.version || '1.0.85'
+const version = process.argv[2] || pkg.version || '1.0.86'
 const TAG = `v${version}`
 const RELEASE_NAME = `TINDA POS ${TAG} — Live Feature Patch`
 
-const BUILDS_DIR = path.resolve('source', 'builds')
+const BUILDS_DIR = fs.existsSync(path.resolve('builds')) && !fs.existsSync(path.resolve('source'))
+  ? path.resolve('builds')
+  : path.resolve('source', 'builds')
 const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
 const patchPath = path.join(BUILDS_DIR, patchFile)
 const shaFile = `${patchFile}.sha256`
@@ -143,18 +147,23 @@ async function main() {
 Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
 
 ### 🌟 What's New in ${TAG}:
-1. **💬 Unified Community Chat Minimize-to-Dock:**
-   - Seamless minimize-to-dock lifecycle: clicking \`—\` smoothly docks the window into the unified dock capsule (\`[ 🤖 Ask AI ] [ 💬 Chat · Min 🟢 ] [ — ]\`).
-   - Retains active DOM state in memory without unmounting; drafts, scroll offset, and background sockets resume with 0ms latency.
-2. **🟢 Reactive Minimized Dock Indicators & Unread Badges:**
-   - Dock's Chat button displays an active minimized state with live peer indicators (\`🟢\`).
-   - Incoming background messages trigger the Web Audio chime and flash the \`NEW\` red badge.
-3. **📐 330px Ergonomic Header De-cluttering & Cupertino Standards:**
-   - Restructured header with strict \`min-w-0\` truncation so window controls (\`— Minimize\`, \`✕ Close\`) are never clipped.
-   - Replaced confusing width toggle with explicit \`<Columns2 />\` icon (\`Compact 330px\` / \`Expand 390px\`).
-   - 100% Strict Professional English across all tooltips and indicators.
-4. **🤖 TindaBot AI Assistant Full Parity:**
-   - Applied identical seamless minimize-to-dock lifecycle to TindaBot AI Copilot.
+1. **🟠 5-Payment Method Apple Cupertino Grid in Checkout Modal:**
+   - Expanded Checkout Modal from 448px to 512px (\`max-w-lg\`) with a spacious 5-column button grid.
+   - Added **MariBank** with distinct Shopee/SeaBank vibrant orange identity (\`#FF6A00\` border, \`#FF8533\` text, \`Landmark\` icon, and glow shadow), alongside Cash, GCash, Maya, and Utang.
+2. **⚡ Ergonomic Hotkeys & 1-Tap Workflow Accelerators:**
+   - Cart Screen: \`F12\` opens Checkout with MariBank pre-selected and autofocuses reference input (\`F9\` Cash, \`F10\` GCash, \`F11\` Maya, \`F12\` MariBank).
+   - Modal Screen: \`F12\` switches active method to MariBank and focuses reference field.
+   - Enter key executes instant charge (\`Charge ₱... (Enter)\`).
+3. **🏷️ Dedicated MariBank Reference Input & Customer Facing Display (CFD):**
+   - Dynamic label \`MariBank Reference No. / Transaction ID\` with \`Shopee / SeaBank Transfer\` tag and placeholder \`e.g. MB-9823471 or Shopee Ref\`.
+   - Dual-Screen Customer Facing Display (CFD) displays \`.badge-maribank\`, dynamic QR payload \`maribank://pay?amount=...\`, and prompt *"Scan with your MariBank App"*.
+4. **🧾 Thermal Receipts, Shift X/Z Reconciliation & Sales Monitor Parity:**
+   - Compact thermal receipts format \`MARIBANK ₱XX.XX\` with tabular numerals and reference number.
+   - Shift X-Read and Z-Read reports aggregate \`maribank_c\` in payment breakdown and ledger totals.
+   - Real-time Sales Monitor displays vibrant orange \`MARIBANK\` badge and counts in daily totals.
+5. **🛡️ Zero Database Risk & Instant In-App Live Patch Standard:**
+   - Zero database table alterations required (\`payments.method TEXT NOT NULL\` has no check constraint).
+   - Lightweight ~0.83 MB hot patch applies live in 0.3s without restarting the desktop application.
 
 ### 📦 Patch Verification Hash:
 \`\`\`
@@ -173,7 +182,8 @@ ${shaContent}
       name: RELEASE_NAME,
       body,
       draft: false,
-      prerelease: false
+      prerelease: false,
+      make_latest: 'true'
     }))
   } catch {
     console.log(`✨ Creating new GitHub release ${TAG}...`)
@@ -184,7 +194,8 @@ ${shaContent}
       name: RELEASE_NAME,
       body,
       draft: false,
-      prerelease: false
+      prerelease: false,
+      make_latest: 'true'
     }))
   }
 

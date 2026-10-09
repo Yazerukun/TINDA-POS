@@ -66,6 +66,14 @@ describe('Wireless Customer Facing Display (CFD) & Dynamic QR', () => {
     expect(state.paymentMethod).toBe('GCASH')
     expect(state.qrSvg).toBeDefined()
     expect(state.qrSvg).toContain('<svg')
+
+    const mbState = updateCfdState({
+      status: 'PAYMENT',
+      paymentMethod: 'MARIBANK',
+      qrCodeUrl: 'maribank://pay?amount=120.00&store=ALAN+STORE&ref=7890'
+    })
+    expect(mbState.paymentMethod).toBe('MARIBANK')
+    expect(mbState.qrSvg).toBeDefined()
   })
 
   it('serves CFD HTML interface over HTTP at /cfd', async () => {
@@ -83,6 +91,7 @@ describe('Wireless Customer Facing Display (CFD) & Dynamic QR', () => {
     expect(html).toContain('LIVE COUNTER')
     expect(html).toContain('/api/cfd')
     expect(html).toContain('fmtMoney')
+    expect(html).toContain('badge-maribank')
   })
 
   it('returns and accepts CFD state updates via /api/cfd', async () => {

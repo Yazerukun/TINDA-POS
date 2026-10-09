@@ -151,7 +151,7 @@ export function Handbook(): React.JSX.Element {
               <div>
                 <h4 className="font-semibold text-white">All Day: Processing Transactions &amp; Real-Time Net Sales</h4>
                 <p className="mt-1 text-xs text-slate-400">
-                  Ring up every customer through the POS screen. Whenever a sale is finished, the system calculates exact change, logs the payment method (Cash, GCash, or Utang), and instantly deducts stock from inventory.
+                  Ring up every customer through the POS screen. Whenever a sale is finished, the system calculates exact change, logs the payment method (Cash, GCash, Maya, MariBank, or Utang), and instantly deducts stock from inventory.
                 </p>
                 <div className="mt-2 rounded bg-ink-950 p-2.5 border border-emerald-500/30 text-[11px] text-emerald-300">
                   <strong>Accurate Net Sales Engine:</strong> Voided transactions are automatically excluded from realized net sales and drawer cash counts. If a manager voids a transaction, the stock is returned to inventory and the cash drawer target is updated instantly.
@@ -509,16 +509,21 @@ export function Handbook(): React.JSX.Element {
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-sky-400">F10</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">GCash / E-Wallet Checkout</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">GCash Checkout</td>
                   <td className="px-4 py-2.5 text-slate-400">Focuses GCash reference number input</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-2.5 font-mono font-bold text-amber-400">F11</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Utang (Credit) Checkout</td>
-                  <td className="px-4 py-2.5 text-slate-400">Opens Suki customer credit selector dialog</td>
+                  <td className="px-4 py-2.5 font-mono font-bold text-teal-400">F11</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Maya Checkout</td>
+                  <td className="px-4 py-2.5 text-slate-400">Focuses Maya reference number input</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-2.5 font-mono font-bold text-emerald-300">F12</td>
+                  <td className="px-4 py-2.5 font-mono font-bold text-[#FF8533]">F12</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">MariBank Checkout</td>
+                  <td className="px-4 py-2.5 text-slate-400">Focuses MariBank / Shopee reference number input</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-emerald-300">Enter</td>
                   <td className="px-4 py-2.5 font-semibold text-white">Complete Transaction</td>
                   <td className="px-4 py-2.5 text-slate-400">Finalizes sale, prints receipt, and clears cart</td>
                 </tr>

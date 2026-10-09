@@ -27,24 +27,28 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)**
+- Current Version: **v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)**
 
-## Planned Architecture in v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)
-1. **True Seamless Minimize-to-Dock Lifecycle**:
-   - Upgraded `FloatingWidgetsDock.tsx` visibility logic: surfaces automatically whenever active widgets are minimized (`(isAiOpen && !isAiMinimized) || (isChatOpen && !isChatMinimized)`).
-   - Clicking **Minimize (`—`)** in `TindaCommunityChat.tsx` smoothly folds the chat window into the unified dock capsule (`[ 🤖 Ask AI ] [ 💬 Chat · Minimized 🟢 ] [ — ]`).
-   - Retains active DOM state in memory without unmounting, guaranteeing draft text, active messages, scroll offsets, and WebSocket/polling connections are preserved with 0ms resume latency.
-2. **Reactive Minimized Dock State & Unread Pipeline**:
-   - Dock's `Chat` button displays an active minimized state badge with live online peer indicators (`🟢`).
-   - Background messages and developer announcements trigger the Web Audio notification chime and pulse the `NEW` red badge.
-   - 1-tap on `Chat` in the dock restores the window immediately at its designated or dragged coordinates.
-3. **330px Ergonomic Header De-cluttering & Cupertino Standard**:
-   - Restructure chat header with strict `min-w-0` title truncation.
-   - Primary window controls (**Minimize to Dock**, **Close**, **Width Toggle**) guaranteed 100% visible and unclipped.
-   - Width toggle upgraded from confusing `<Minimize2 />` to explicit `<Columns2 />` with clear tooltips (`"Compact 330px"` / `"Expand 390px"`).
-   - Standardize all tooltips to 100% Strict English (`"Minimize to Dock"`, `"Close Chat"`).
-4. **Full Parity Across Widgets**:
-   - Synchronize the exact same seamless minimize-to-dock lifecycle across both `TindaCommunityChat` and `TindaAiAssistantModal`.
+## Key Features in v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)
+1. **5-Payment Method Apple Cupertino Grid in Checkout Modal**:
+   - Expanded Checkout Modal from `max-w-md` (448px) to `max-w-lg` (512px) with 5-column button grid (`grid-cols-5 gap-1.5`).
+   - Integrated **MariBank** with distinct Shopee/SeaBank vibrant orange identity (`#FF6A00` border, `#FF8533` text, `Landmark` icon, and glow shadow), alongside Cash, GCash, Maya, and Utang.
+2. **Ergonomic Hotkeys & 1-Tap Workflow Accelerators**:
+   - Cart Screen: `F12` hotkey immediately opens Checkout with MariBank pre-selected and autofocuses reference number input (`F9` Cash, `F10` GCash, `F11` Maya, `F12` MariBank).
+   - Modal Screen: `F12` switches active method to MariBank and focuses the reference field.
+   - Enter key executes instant charge (`Charge ₱... (Enter)`).
+3. **Dedicated MariBank Reference Input & Customer Facing Display (CFD)**:
+   - Dynamic label `MariBank Reference No. / Transaction ID` with sub-badge `Shopee / SeaBank Transfer` and placeholder `e.g. MB-9823471 or Shopee Ref`.
+   - Dual-Screen Customer Facing Display (CFD) displays `.badge-maribank` (`linear-gradient(135deg, #FF6A00, #EE4D2D)`), dynamic QR payload `maribank://pay?amount=...`, and prompt `"Scan with your MariBank App"`.
+4. **Thermal Receipts, Shift X/Z Reconciliation & Sales Monitor Parity**:
+   - Compact thermal receipts format `MARIBANK ₱XX.XX` with tabular numerals and reference number.
+   - Shift X-Read and Z-Read reports aggregate `maribank_c` in payment breakdown and ledger totals.
+   - Real-time Sales Monitor displays vibrant orange `MARIBANK` badge and includes digital bank payments in daily totals.
+5. **Zero-Database Risk & Instant In-App Live Patch Standard**:
+   - Zero database table alterations required (`payments.method TEXT NOT NULL` has no check constraint).
+   - Released as live feature patch (`npm run publish:patch`) in <10 seconds.
+
+## Key Features in v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)
 
 
 ## Key Features in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
