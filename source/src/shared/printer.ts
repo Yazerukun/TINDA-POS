@@ -133,4 +133,74 @@ export function printerStatusLabel(status: PrinterStatus): string {
   }
 }
 
+export const LABEL_PRINTER_KEYWORD_REGEX =
+  /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian|度点|label|barcode|sticker|niimbot|phomemo|tsc|zebra|dymo|gprinter.*label|xprinter.*label|4bar|beeprt|idprt|polono|supvan|aclas)/i
+
+export function isLabelPrinterName(name: string): boolean {
+  if (!name) return false
+  return LABEL_PRINTER_KEYWORD_REGEX.test(name)
+}
+
+export interface AutoDetectedLabelPrinter {
+  name: string
+  isCt221b: boolean
+  isAutoDetected: boolean
+}
+
+/**
+ * Intelligent Label Printer Auto-Detection:
+ * Automatically matches connected CT221B (Chiteng/Clabel) or standard label printers.
+ */
+export function autoDetectLabelPrinter(
+  printers: PrinterChoiceLike[],
+  savedPrinter?: string | null
+): AutoDetectedLabelPrinter | null {
+  if (!printers || printers.length === 0) return null
+
+  const trimmedSaved = (savedPrinter || '').trim()
+
+  // 1. Saved printer is physically available
+  if (trimmedSaved) {
+    const existing = printers.find((p) => p.name === trimmedSaved)
+    if (existing) {
+      const isCt = /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian)/i.test(existing.name || '')
+      return {
+        name: existing.name,
+        isCt221b: isCt,
+        isAutoDetected: false
+      }
+    }
+  }
+
+  // 2. Search for CT221B / Chiteng / Clabel specifically first
+  const ctPrinter = printers.find((p) =>
+    /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian)/i.test(p.name || '') ||
+    /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian)/i.test(p.displayName || '')
+  )
+  if (ctPrinter) {
+    return {
+      name: ctPrinter.name,
+      isCt221b: true,
+      isAutoDetected: true
+    }
+  }
+
+  // 3. Search for any other label/barcode printer
+  const labelPrinters = printers.filter(
+    (p) => isLabelPrinterName(p.name) || isLabelPrinterName(p.displayName || '')
+  )
+  if (labelPrinters.length > 0) {
+    const defaultLabel = labelPrinters.find((p) => p.isDefault)
+    const target = defaultLabel || labelPrinters[0]!
+    return {
+      name: target.name,
+      isCt221b: false,
+      isAutoDetected: true
+    }
+  }
+
+  return null
+}
+
+
 

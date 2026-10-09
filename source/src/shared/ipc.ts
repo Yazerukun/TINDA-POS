@@ -322,7 +322,19 @@ export interface TindaApi {
     testPrint: (options?: { manual?: boolean }) => Promise<PrintResult>
     printReceipt: (saleId: number, options?: { manual?: boolean }) => Promise<PrintResult>
     printLines: (lines: string[], options?: { manual?: boolean }) => Promise<PrintResult>
-    printDocument: (html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }) => Promise<PrintResult>
+    printDocument: (
+      html: string,
+      options?: {
+        manual?: boolean
+        title?: string
+        pageSize?: 'A4' | 'Letter'
+        deviceName?: string
+        widthMm?: number
+        heightMm?: number
+      }
+    ) => Promise<PrintResult>
+    testPrintLabel: (options?: { manual?: boolean; deviceName?: string }) => Promise<PrintResult>
+    saveLabel: (input: { name: string; paperSize?: string }) => Promise<StoreSettings>
   }
 
   transactions: {

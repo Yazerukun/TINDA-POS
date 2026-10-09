@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.90-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.91-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-436_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,9 +17,31 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.90](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Feature-Patch-1.0.90.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.90 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Setup-1.0.90.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.90/TindaPOS-Portable-1.0.90.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.91](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Feature-Patch-1.0.91.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.91 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Setup-1.0.91.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.91/TindaPOS-Portable-1.0.91.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)
+
+> **Chiteng / Clabel CT221B Portable Thermal Barcode & Label Printer Integration, High-Precision Code 128 Vector Engine, Dedicated Hardware Hub & Presets, and 1-Tap Alignment Test.**
+
+- 🏷️ **Native Chiteng / Clabel CT221B Thermal Label Printer Support**:
+  - Full plug-and-play compatibility with the portable Chiteng CT221B direct thermal sticker & barcode printer (USB & Bluetooth).
+  - Intelligent auto-detection engine recognizes CT221B, Chiteng, Clabel, Dudian, 4Bar, Niimbot, and TSC label hardware on connection.
+- 📐 **Vector Code 128 1D Barcode Rendering Engine**:
+  - Built-in zero-dependency Code 128 (Subset B) vector SVG generator producing crisp, 100% scannable 1D barcodes on thermal labels.
+  - Standard start/stop codes, high-density quiet zones, and mod-103 checksums for instant scanning with 1D/2D laser guns and phone cameras.
+- 🖨️ **Apple Cupertino Label Studio (`PriceTagPrintModal`)**:
+  - Live hardware readiness HUD (`🟢 Chiteng CT221B Ready`).
+  - Pre-calibrated label roll sizes: `40×30 mm` (CT221B Standard Retail), `50×30 mm`, `30×20 mm`, `40×20 mm`, and custom mm dimensions.
+  - Live interactive preview with store name, barcode, wholesale price, and SKU.
+  - 1-tap "Match Stock Quantity" accelerator to print exact sticker counts matching inventory on hand.
+  - Silent direct printing, Windows manual print dialog, and 1-tap alignment test sticker.
+- ⚙️ **Dedicated Label Hardware Hub in Settings**:
+  - New "Chiteng CT221B Barcode & Thermal Label Printer Hub" card in Settings -> Receipt & Hardware.
+  - Independent label printer selection isolated from receipt printer, custom label roll sizes, and instant test printing.
+- ⚡ **Zero-Database Risk & Instant In-App Live Patch Standard**:
+  - 100% hot-patch compatible with existing client installations via `npm run publish:patch`.
 
 ## ✨ What's New in v1.0.90 (Pinned Package & Bundle Category Hub Edition)
 

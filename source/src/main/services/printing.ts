@@ -3,6 +3,7 @@ import type { PrinterInfo, WebContents } from 'electron'
 import type { Sale, StoreSettings } from '@shared/types'
 import { formatReceiptDate, receiptHtml } from '@shared/receiptHtml'
 import { autoDetectThermalPrinter, inferPaperWidth } from '@shared/printer'
+import { generateBarcodeSvg } from '@shared/barcodeSvg'
 import { buildReceiptLines } from './checkout'
 
 // Re-exported so existing consumers keep importing from the printing service.
@@ -227,16 +228,28 @@ export async function printTest(
 
 export async function printDocument(
   html: string,
-  options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }
+  options?: {
+    manual?: boolean
+    title?: string
+    pageSize?: 'A4' | 'Letter'
+    deviceName?: string
+    widthMm?: number
+    heightMm?: number
+  }
 ): Promise<PrintResult> {
   const isManual = options?.manual ?? false
   const title = options?.title || 'TINDA POS - Printable Document'
-  const pageSize = options?.pageSize || 'A4'
+
+  // Custom paper size in microns if width/height are specified (1mm = 1000 microns)
+  const isCustomLabel = Boolean(options?.widthMm && options?.heightMm)
+  const effectivePageSize = isCustomLabel
+    ? { width: Math.round((options!.widthMm || 40) * 1000), height: Math.round((options!.heightMm || 30) * 1000) }
+    : (options?.pageSize || 'A4')
 
   const window = new BrowserWindow({
     show: isManual,
-    width: 900,
-    height: 1050,
+    width: isCustomLabel ? 520 : 900,
+    height: isCustomLabel ? 550 : 1050,
     center: true,
     title,
     autoHideMenuBar: true,
@@ -257,17 +270,23 @@ export async function printDocument(
       return { ok: false, code: 'FAILED', message: 'Print window closed before printing.' }
     }
 
+    const printParams: Electron.WebContentsPrintOptions = {
+      silent: !isManual,
+      printBackground: true,
+      color: true,
+      pageSize: effectivePageSize,
+      margins: {
+        marginType: isCustomLabel ? 'none' : 'printableArea'
+      }
+    }
+
+    if (options?.deviceName) {
+      printParams.deviceName = options.deviceName
+    }
+
     return await new Promise((resolve) => {
       window.webContents.print(
-        {
-          silent: !isManual,
-          printBackground: true,
-          color: true,
-          pageSize,
-          margins: {
-            marginType: 'printableArea'
-          }
-        },
+        printParams,
         (success, failureReason) => {
           if (success) {
             resolve({
@@ -293,6 +312,45 @@ export async function printDocument(
     await new Promise((r) => setTimeout(r, 600))
     if (!window.isDestroyed()) window.destroy()
   }
+}
+
+export async function printLabelTest(
+  settings: StoreSettings,
+  options?: { manual?: boolean; deviceName?: string }
+): Promise<PrintResult> {
+  const targetDevice = options?.deviceName || settings.label_printer || ''
+  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 35, includeText: true, barWidth: 1.4, fontSize: 8 })
+  const testHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        @page { size: 40mm 30mm; margin: 0; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body { margin: 0; padding: 1.5mm; background: #fff; color: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
+        .hdr { font-size: 7.5px; font-weight: 900; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 0.5mm; }
+        .sub { font-size: 9px; font-weight: 800; margin: 1mm 0 0.5mm 0; }
+        .badge { display: inline-block; font-size: 6.5px; font-weight: bold; background: #000; color: #fff; padding: 0.5mm 1.5mm; border-radius: 1mm; }
+        .footer { font-size: 6px; color: #333; margin-top: 0.5mm; font-family: monospace; }
+      </style>
+    </head>
+    <body>
+      <div class="hdr">${settings.store_name || 'TINDA POS'}</div>
+      <div class="sub">CHITENG CT221B</div>
+      <div style="margin: 0.5mm 0;">${testSvg}</div>
+      <div><span class="badge">HARDWARE READY</span></div>
+      <div class="footer">${new Date().toLocaleTimeString()}</div>
+    </body>
+    </html>
+  `
+  return printDocument(testHtml, {
+    manual: options?.manual ?? false,
+    title: 'CT221B Label Test',
+    deviceName: targetDevice || undefined,
+    widthMm: 40,
+    heightMm: 30
+  })
 }
 
 

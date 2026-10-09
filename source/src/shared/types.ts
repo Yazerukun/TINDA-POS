@@ -435,6 +435,8 @@ export interface StoreSettings {
   receipt_paper_width: '58mm' | '80mm'
   receipt_copies: number
   manual_print_dialog: boolean
+  label_printer: string
+  label_paper_size: string
   theme: string
   data_dir: string
   lan_network_mode: 'standalone' | 'master' | 'satellite'

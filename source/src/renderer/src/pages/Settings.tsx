@@ -32,11 +32,12 @@ import {
   EyeOff,
   Globe,
   BookOpen,
-  Zap
+  Zap,
+  Tag
 } from 'lucide-react'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
-import { printerPick, printerStatusLabel } from '@shared/printer'
+import { printerPick, printerStatusLabel, autoDetectLabelPrinter } from '@shared/printer'
 import { Modal } from '../components/ui/Modal'
 import { AppLogo } from '../components/AppLogo'
 import { useSettings } from '../stores/settings'
@@ -1096,7 +1097,9 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     auto_print_after_sale: settings?.auto_print_after_sale ?? false,
     receipt_paper_width: settings?.receipt_paper_width ?? ('80mm' as '58mm' | '80mm'),
     receipt_copies: settings?.receipt_copies ?? 1,
-    manual_print_dialog: settings?.manual_print_dialog ?? false
+    manual_print_dialog: settings?.manual_print_dialog ?? false,
+    label_printer: settings?.label_printer ?? '',
+    label_paper_size: settings?.label_paper_size ?? '40x30'
   })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
@@ -1114,7 +1117,9 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         auto_print_after_sale: settings.auto_print_after_sale,
         receipt_paper_width: settings.receipt_paper_width,
         receipt_copies: settings.receipt_copies,
-        manual_print_dialog: settings.manual_print_dialog ?? false
+        manual_print_dialog: settings.manual_print_dialog ?? false,
+        label_printer: settings.label_printer || '',
+        label_paper_size: settings.label_paper_size || '40x30'
       })
     }
   }, [settings])
@@ -1146,6 +1151,7 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
   }, [printers, settings])
 
   const pick = printerPick(printers, f.receipt_printer)
+  const detectedLabel = autoDetectLabelPrinter(printers, f.label_printer)
 
   const save = async () => {
     setSaving(true)
@@ -1155,7 +1161,9 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         receipt_title: f.receipt_title,
         receipt_show_app_name: f.receipt_show_app_name,
         receipt_footer: f.receipt_footer,
-        manual_print_dialog: f.manual_print_dialog
+        manual_print_dialog: f.manual_print_dialog,
+        label_printer: f.label_printer,
+        label_paper_size: f.label_paper_size
       })
       await window.api.printer.save({
         name: f.receipt_printer,
@@ -1164,7 +1172,13 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         copies: f.receipt_copies,
         manualPrintDialog: f.manual_print_dialog
       })
-      toastSuccess('Receipt settings saved')
+      if (window.api?.printer?.saveLabel) {
+        await window.api.printer.saveLabel({
+          name: f.label_printer,
+          paperSize: f.label_paper_size
+        })
+      }
+      toastSuccess('Printer settings saved')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
   }
 
@@ -1183,8 +1197,26 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     } catch (e) { toastError('Test print failed', String((e as Error)?.message || e)) }
   }
 
+  const testPrintLabel = async (manual = false) => {
+    try {
+      if (window.api?.printer?.saveLabel) {
+        await window.api.printer.saveLabel({
+          name: f.label_printer,
+          paperSize: f.label_paper_size
+        })
+      }
+      const targetDevice = f.label_printer || detectedLabel?.name || undefined
+      const res = await window.api.printer.testPrintLabel({ manual, deviceName: targetDevice })
+      if (res.ok) toastSuccess(manual ? 'System dialog ready' : 'CT221B Test Sticker Printed', res.message)
+      else toastError('CT221B Test Failed', res.message)
+    } catch (e) {
+      toastError('Test print failed', String((e as Error)?.message || e))
+    }
+  }
+
   return (
-    <div className="card p-5">
+    <div className="space-y-4">
+      <div className="card p-5">
       <div className="space-y-3">
         <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Show TINDA POS App Name</p><p className="text-xs text-slate-500">Turn this off to remove TINDA POS from the receipt heading.</p></div><Toggle on={f.receipt_show_app_name} onClick={() => set({receipt_show_app_name: !f.receipt_show_app_name})}/></div>
         <div><label className="label">Receipt Title</label><input value={f.receipt_title} onChange={e=>set({receipt_title:e.target.value})} placeholder="JUAN STORE" className="input w-full"/></div>
@@ -1290,6 +1322,128 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         </div>
       </div>
     </div>
+
+    {/* Chiteng CT221B Barcode & Thermal Label Printer Hub */}
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-3 border-b border-ink-line pb-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-400">
+            <Tag className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              Chiteng CT221B Barcode &amp; Label Printer
+              {detectedLabel?.isCt221b && (
+                <span className="badge border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                  CT221B Detected
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-slate-400">Dedicated portable thermal sticker printer for shelf price tags, barcodes, and expiry labels.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => void loadPrinters()}
+          disabled={refreshing}
+          className="btn-ghost flex items-center gap-1.5 text-xs"
+        >
+          {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          Refresh
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label className="label">Target Label Printer</label>
+          <select
+            value={f.label_printer}
+            onChange={(e) => set({ label_printer: e.target.value })}
+            className="input w-full"
+          >
+            <option value="">
+              {detectedLabel ? `Auto-Detected: ${detectedLabel.name}` : 'No label printer selected (Uses System Default)'}
+            </option>
+            {printers.map((printer) => {
+              const isCt = /(ct-?221b?|ct221|clabel|chiteng|驰腾|dudian)/i.test(printer.name)
+              return (
+                <option key={printer.name} value={printer.name}>
+                  {printer.displayName || printer.name} {isCt ? '· (Chiteng CT221B)' : ''} {printer.isDefault ? '(Default)' : ''}
+                </option>
+              )
+            })}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">Default Thermal Roll Size</label>
+            <select
+              value={f.label_paper_size}
+              onChange={(e) => set({ label_paper_size: e.target.value })}
+              className="input w-full"
+            >
+              <option value="40x30">40 × 30 mm (CT221B Standard Retail)</option>
+              <option value="50x30">50 × 30 mm (Wide Shelf &amp; Pharmacy)</option>
+              <option value="30x20">30 × 20 mm (Micro Grocery Sticker)</option>
+              <option value="40x20">40 × 20 mm (Slim Barcode Pouch Tag)</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Auto-Detection Status</label>
+            <div className="input flex items-center justify-between bg-ink-900 border-ink-line text-xs">
+              <span className={detectedLabel ? 'text-emerald-400 font-semibold flex items-center gap-1' : 'text-slate-400'}>
+                {detectedLabel ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    {detectedLabel.name}
+                  </>
+                ) : (
+                  'Searching for USB / Bluetooth…'
+                )}
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">USB / BT</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Hardware Guide Callout */}
+        <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3.5 text-xs text-indigo-200 space-y-1.5">
+          <div className="flex items-center gap-2 font-bold text-indigo-300">
+            <Sparkles className="h-4 w-4 text-indigo-400" />
+            <span>Chiteng CT221B Setup &amp; Alignment Instructions:</span>
+          </div>
+          <ul className="list-disc pl-4 space-y-1 text-slate-300 text-[11px] leading-relaxed">
+            <li><strong>PC USB Driver:</strong> When plugged in for the first time, Windows installs the driver automatically. If needed, download the official PC driver from <a href="http://www.ctaiot.com" target="_blank" rel="noreferrer" className="text-indigo-300 underline font-semibold">www.ctaiot.com</a>.</li>
+            <li><strong>Paper Roll Loading:</strong> Slide the paper guide to <code>OPEN</code>, insert the thermal label roll against the left guide, push the clamp to hug the roll snugly, and slide latch back to <code>CLOSE</code>.</li>
+            <li><strong>No Ink Needed:</strong> Uses direct thermal barcode paper. High-density Code 128 barcodes print in ~0.5 seconds per label.</li>
+          </ul>
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-2">
+          <button onClick={() => void save()} disabled={saving} className="btn-primary flex items-center gap-2">
+            <Save className="h-4 w-4" /> Save Label Settings
+          </button>
+          <button
+            type="button"
+            onClick={() => void testPrintLabel(false)}
+            disabled={refreshing}
+            className="btn-ghost flex items-center gap-2 text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20"
+          >
+            <Sparkles className="h-4 w-4" /> Test Print CT221B Sticker
+          </button>
+          <button
+            type="button"
+            onClick={() => void testPrintLabel(true)}
+            disabled={refreshing}
+            className="btn-ghost flex items-center gap-2 text-sky-300 border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+          >
+            <Printer className="h-4 w-4" /> Manual Dialog Test
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   )
 }
 

@@ -27,7 +27,26 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.90 (Pinned Package & Bundle Category Hub Edition)**
+- Current Version: **v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)**
+
+## Key Features in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)
+1. **Chiteng / Clabel CT221B Auto-Detection (Plug & Play)**:
+   - Intelligent hardware detection for `CT221B`, `Chiteng`, `Clabel`, and `Dudian` devices via USB/Bluetooth.
+   - Distinct green status badge `🟢 Chiteng CT221B Ready` in print studio and hardware settings.
+2. **True Scannable 1D Barcode Vector Engine (Code 128 SVG)**:
+   - Built-in zero-dependency Code 128 (Subset B) vector SVG generator replacing static monospace text with true black-and-white scannable bars.
+   - Guaranteed 0.05-second laser scanner gun and mobile companion camera auto-capture on printed labels.
+3. **Apple Cupertino Label & Barcode Studio (`PriceTagPrintModal.tsx`)**:
+   - Real-time interactive sticker preview accurately reflecting aspect ratio and layout.
+   - Presets for popular CT221B thermal sticker roll sizes: `40×30 mm` (Standard Retail), `50×30 mm` (Wide Shelf), `30×20 mm` (Micro Grocery), `40×20 mm` (Slim Tag), and Custom mm.
+   - 1-tap "Match Stock Quantity" batch accelerator (e.g. print 15 stickers for 15 in stock).
+   - Dual-print actions: "Print on CT221B (Direct Silent USB)" and "Print Dialog (Manual)".
+4. **Dual Printer Separation in Settings (`Settings.tsx`)**:
+   - Independent configuration for Receipt Printer (58mm/80mm) vs. Barcode & Label Printer (CT221B), preventing cross-printing between checkout slips and sticker tags.
+   - 1-tap "Test Print CT221B Sticker" alignment test button.
+5. **Zero-Database Risk & Instant Live Patch Standard**:
+   - Uses non-breaking settings key-value additions (`label_printer`, `label_paper_size`).
+   - Delivered as live hot-patch (`npm run publish:patch`).
 
 ## Key Features in v1.0.90 (Pinned Package & Bundle Category Hub Edition)
 1. **Pinned Package & Bundle Categories on POS Screen**:

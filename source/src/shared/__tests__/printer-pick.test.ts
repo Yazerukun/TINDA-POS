@@ -4,7 +4,8 @@ import {
   printerStatusLabel,
   autoDetectThermalPrinter,
   inferPaperWidth,
-  isThermalPrinterName
+  isThermalPrinterName,
+  autoDetectLabelPrinter
 } from '../printer'
 import type { PrinterChoiceLike } from '../printer'
 
@@ -97,5 +98,49 @@ describe('autoDetectThermalPrinter & paper width inference', () => {
     expect(isThermalPrinterName('Canon PIXMA')).toBe(false)
   })
 })
+
+describe('autoDetectLabelPrinter & Chiteng CT221B', () => {
+  it('detects Chiteng CT221B printer specifically', () => {
+    const list = [
+      { name: 'POS-58 Receipt', isDefault: false },
+      { name: 'CT221B', isDefault: false }
+    ]
+    const detected = autoDetectLabelPrinter(list, '')
+    expect(detected).not.toBeNull()
+    expect(detected?.name).toBe('CT221B')
+    expect(detected?.isCt221b).toBe(true)
+    expect(detected?.isAutoDetected).toBe(true)
+  })
+
+  it('matches Clabel or Chiteng brand variants', () => {
+    const list = [
+      { name: 'Clabel CT221B', isDefault: false },
+      { name: 'Office Printer', isDefault: true }
+    ]
+    const detected = autoDetectLabelPrinter(list, '')
+    expect(detected?.name).toBe('Clabel CT221B')
+    expect(detected?.isCt221b).toBe(true)
+  })
+
+  it('prioritizes saved label printer if present', () => {
+    const list = [
+      { name: 'CT221B', isDefault: false },
+      { name: 'Zebra Label Printer', isDefault: false }
+    ]
+    const detected = autoDetectLabelPrinter(list, 'Zebra Label Printer')
+    expect(detected?.name).toBe('Zebra Label Printer')
+    expect(detected?.isAutoDetected).toBe(false)
+  })
+
+  it('recognizes other generic barcode/label printers', () => {
+    const list = [
+      { name: 'Generic Thermal Label 4Bar', isDefault: false }
+    ]
+    const detected = autoDetectLabelPrinter(list, '')
+    expect(detected?.name).toBe('Generic Thermal Label 4Bar')
+    expect(detected?.isCt221b).toBe(false)
+  })
+})
+
 
 

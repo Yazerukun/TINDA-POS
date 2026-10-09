@@ -645,8 +645,19 @@ handle('printer:printLines', async (_e: IpcMainInvokeEvent, lines: string[], opt
   sessionSvc.requirePermission('transactions:view')
   return printingSvc.printLines(settingRepo.getSettings(db()), lines, options)
 })
-handle('printer:printDocument', async (_e: IpcMainInvokeEvent, html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter' }) => {
+handle('printer:printDocument', async (_e: IpcMainInvokeEvent, html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter'; deviceName?: string; widthMm?: number; heightMm?: number }) => {
   return printingSvc.printDocument(html, options)
+})
+handle('printer:testPrintLabel', async (_e: IpcMainInvokeEvent, options?: { manual?: boolean; deviceName?: string }) => {
+  sessionSvc.requirePermission('settings:manage')
+  return printingSvc.printLabelTest(settingRepo.getSettings(db()), options)
+})
+handle('printer:saveLabel', (_e: IpcMainInvokeEvent, input: { name: string; paperSize?: string }) => {
+  sessionSvc.requirePermission('settings:manage')
+  return settingRepo.updateSettings(db(), {
+    label_printer: input.name,
+    label_paper_size: input.paperSize || '40x30'
+  })
 })
 
 // ---- Transactions ----
