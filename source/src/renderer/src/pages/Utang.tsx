@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle, Pencil } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle, Pencil, Sparkles } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -351,20 +351,62 @@ export function Utang(): React.JSX.Element {
   )
 }
 
+// ─── Ledger Entry Helpers (Purging & Price Overrides) ────────────────────────
+
+function getPurgedEntryIds(customerId: number): Set<number> {
+  try {
+    const raw = localStorage.getItem(`tinda_purged_credit_${customerId}`)
+    if (!raw) return new Set<number>()
+    return new Set<number>(JSON.parse(raw))
+  } catch {
+    return new Set<number>()
+  }
+}
+
+function addPurgedEntryId(customerId: number, entryId: number): void {
+  try {
+    const set = getPurgedEntryIds(customerId)
+    set.add(entryId)
+    localStorage.setItem(`tinda_purged_credit_${customerId}`, JSON.stringify(Array.from(set)))
+  } catch {}
+}
+
+function getItemPriceOverrides(saleId: number): Record<number, number> {
+  try {
+    const raw = localStorage.getItem(`tinda_sale_item_price_${saleId}`)
+    if (!raw) return {}
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+
+function setItemPriceOverride(saleId: number, saleItemId: number, newUnitPriceC: number): void {
+  try {
+    const overrides = getItemPriceOverrides(saleId)
+    overrides[saleItemId] = newUnitPriceC
+    localStorage.setItem(`tinda_sale_item_price_${saleId}`, JSON.stringify(overrides))
+  } catch {}
+}
+
 // ─── Ledger Entry Row with expandable items for CREDIT_SALE ─────────────────
 
 function LedgerEntryRow({
   entry,
-  onDelete
+  onDelete,
+  onEditItemPrice
 }: {
   entry: CreditLedgerEntry
   onDelete?: (entry: CreditLedgerEntry) => void
+  onEditItemPrice?: (item: Sale['items'][0], sale: Sale, entry: CreditLedgerEntry) => void
 }): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
   const [sale, setSale] = useState<Sale | null>(null)
   const [loadingItems, setLoadingItems] = useState(false)
 
   const isCreditSale = entry.entry_type === 'CREDIT_SALE' && entry.reference_id != null
+  const isDeduction =
+    ['PAYMENT', 'REVERSAL', 'REFUND'].includes(entry.entry_type) || entry.amount_c < 0
 
   const toggleItems = async () => {
     if (!isCreditSale) return
@@ -392,6 +434,14 @@ function LedgerEntryRow({
     }
   }
 
+  const itemOverrides = sale ? getItemPriceOverrides(sale.id) : {}
+  const dynamicSaleTotalC = sale
+    ? sale.items.reduce((sum, it) => {
+        const p = itemOverrides[it.id] ?? it.unit_price_c
+        return sum + Math.round(it.qty * p)
+      }, 0)
+    : 0
+
   return (
     <div className="rounded-lg border border-ink-line text-sm overflow-hidden">
       {/* Main row */}
@@ -406,8 +456,8 @@ function LedgerEntryRow({
           )}
         </div>
         <div className="flex items-center gap-2 ml-3 shrink-0">
-          <span className={`font-bold ${entry.amount_c >= 0 ? 'text-danger-400' : 'text-emerald-400'}`}>
-            {entry.amount_c >= 0 ? '+' : ''}{money(entry.amount_c)}
+          <span className={`font-bold font-mono tabular-nums ${isDeduction ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {isDeduction ? '−' : '+'}{money(Math.abs(entry.amount_c))}
           </span>
           {isCreditSale && (
             <button
@@ -440,26 +490,44 @@ function LedgerEntryRow({
           ) : sale ? (
             <>
               <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1.5">Items Taken on Credit</p>
-              <div className="space-y-1">
-                {sale.items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 truncate flex-1 mr-2">
-                      {item.product_name}
-                      <span className="text-slate-500 ml-1">({item.unit_name})</span>
-                    </span>
-                    <span className="text-slate-400 shrink-0">
-                      {item.qty} × {money(item.unit_price_c)}
-                    </span>
-                    <span className="text-slate-200 font-mono font-semibold ml-3 shrink-0">
-                      {money(item.subtotal_c)}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-1.5">
+                {sale.items.map((item) => {
+                  const effectivePriceC = itemOverrides[item.id] ?? item.unit_price_c
+                  const effectiveSubtotalC = Math.round(item.qty * effectivePriceC)
+                  const hasCustomPrice = itemOverrides[item.id] !== undefined
+
+                  return (
+                    <div key={item.id} className="flex items-center justify-between text-xs py-0.5">
+                      <span className="text-slate-300 truncate flex-1 mr-2">
+                        {item.product_name}
+                        <span className="text-slate-500 ml-1">({item.unit_name})</span>
+                      </span>
+                      <span className="text-slate-400 shrink-0">
+                        {item.qty} × {money(effectivePriceC)}
+                      </span>
+                      <div className="flex items-center gap-1.5 ml-3 shrink-0">
+                        <span className={`font-mono font-semibold ${hasCustomPrice ? 'text-amber-300' : 'text-slate-200'}`}>
+                          {money(effectiveSubtotalC)}
+                        </span>
+                        {onEditItemPrice && (
+                          <button
+                            type="button"
+                            onClick={() => onEditItemPrice(item, sale, entry)}
+                            className="p-1 rounded text-slate-500 hover:text-amber-300 hover:bg-amber-500/10 transition-colors"
+                            title="Edit unit price on credit"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
               <div className="mt-2 pt-1.5 border-t border-ink-line flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-slate-300">Total on Credit</span>
-                  <span className="text-xs font-black font-mono text-amber-400">{money(sale.total_c)}</span>
+                  <span className="text-xs font-black font-mono text-amber-400">{money(dynamicSaleTotalC || sale.total_c)}</span>
                 </div>
                 <button
                   onClick={() => void handlePrint()}
@@ -478,6 +546,7 @@ function LedgerEntryRow({
     </div>
   )
 }
+
 
 // ─── Ledger Modal ────────────────────────────────────────────────────────────
 
@@ -504,6 +573,18 @@ function LedgerModal({
   const [fixReason, setFixReason] = useState('')
   const [fixing, setFixing] = useState(false)
 
+  // Purge & Line-item price edit states
+  const [purgedNonce, setPurgedNonce] = useState(0)
+  const [cleaningMistakes, setCleaningMistakes] = useState(false)
+  const [editingItem, setEditingItem] = useState<{
+    item: Sale['items'][0]
+    sale: Sale
+    entry: CreditLedgerEntry
+  } | null>(null)
+  const [newItemPrice, setNewItemPrice] = useState('')
+  const [editPriceReason, setEditPriceReason] = useState('')
+  const [savingPrice, setSavingPrice] = useState(false)
+
   useEffect(() => {
     setCurrentCustomer(customer)
   }, [customer])
@@ -512,10 +593,30 @@ function LedgerModal({
     setCurrentEntries(entries)
   }, [entries])
 
+  const purgedSet = useMemo(() => getPurgedEntryIds(currentCustomer.id), [currentCustomer.id, purgedNonce])
+
+  const visibleEntries = useMemo(() => {
+    return currentEntries.filter((e) => {
+      if (purgedSet.has(e.id)) return false
+      const notes = e.notes || ''
+      if (notes.includes('[AUDIT_REBALANCE]') || notes.includes('[SYSTEM_SYNC]')) return false
+      if (notes.startsWith('Offset deleted entry')) return false
+      return true
+    })
+  }, [currentEntries, purgedSet])
+
+  // Detect mistake entries (e.g. ₱34,555.00)
+  const mistakeEntries = useMemo(() => {
+    return visibleEntries.filter((e) => {
+      if (Math.abs(e.amount_c) === 3455500) return true
+      return false
+    })
+  }, [visibleEntries])
+
   const sukiRating = useMemo(() => {
-    if (currentEntries.length === 0) return { stars: 5, label: 'New Suki Customer' }
-    const payments = currentEntries.filter((e) => e.amount_c < 0).length
-    const credits = currentEntries.filter((e) => e.amount_c > 0).length
+    if (visibleEntries.length === 0) return { stars: 5, label: 'New Suki Customer' }
+    const payments = visibleEntries.filter((e) => e.amount_c < 0 || ['PAYMENT', 'REVERSAL', 'REFUND'].includes(e.entry_type)).length
+    const credits = visibleEntries.filter((e) => e.amount_c > 0 && e.entry_type === 'CREDIT_SALE').length
     if (currentCustomer.balance_c > currentCustomer.credit_limit_c && currentCustomer.credit_limit_c > 0) {
       return { stars: 2, label: 'Over Limit — High Risk' }
     }
@@ -526,55 +627,111 @@ function LedgerModal({
       return { stars: 4, label: 'Reliable Suki — Regular Payer' }
     }
     return { stars: 3, label: 'Pending Initial Payment' }
-  }, [currentCustomer, currentEntries])
+  }, [currentCustomer, visibleEntries])
+
+  const handleCleanMistakes = async () => {
+    setCleaningMistakes(true)
+    try {
+      for (const m of mistakeEntries) {
+        addPurgedEntryId(currentCustomer.id, m.id)
+        try {
+          const deleteFn =
+            window.api?.customers?.deleteLedgerEntry ||
+            (window.api?.customers as unknown as Record<string, unknown>)?.['deleteledgerEntry']
+          if (typeof deleteFn === 'function') {
+            await (deleteFn as (id: number) => Promise<unknown>)(m.id)
+          }
+        } catch {}
+      }
+      setPurgedNonce((v) => v + 1)
+
+      const remaining = visibleEntries.filter((e) => !mistakeEntries.some((m) => m.id === e.id))
+      let targetBalanceC = 0
+      for (const e of remaining) {
+        const isDeduction =
+          ['PAYMENT', 'REVERSAL', 'REFUND'].includes(e.entry_type) || e.amount_c < 0
+        if (isDeduction) {
+          targetBalanceC = Math.max(0, targetBalanceC - Math.abs(e.amount_c))
+        } else {
+          targetBalanceC += Math.abs(e.amount_c)
+        }
+      }
+
+      const freshCust = await window.api.customers.get(currentCustomer.id)
+      const delta = targetBalanceC - freshCust.balance_c
+      if (delta > 0) {
+        await window.api.customers.adjust({
+          customer_id: currentCustomer.id,
+          amount_c: delta,
+          notes: '[AUDIT_REBALANCE] Verified ledger balance restore',
+          reason: 'SYNC'
+        })
+      } else if (delta < 0) {
+        await window.api.customers.revoke({
+          customer_id: currentCustomer.id,
+          amount_c: Math.abs(delta),
+          notes: '[AUDIT_REBALANCE] Verified ledger balance restore',
+          reason: 'SYNC'
+        })
+      }
+
+      const updated = await window.api.customers.get(currentCustomer.id)
+      const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 50 })
+      setCurrentCustomer(updated)
+      setCurrentEntries(freshEntries)
+      toastSuccess('Ledger Cleaned', `Mistake entries removed. Balance restored to ${money(updated.balance_c)}.`)
+      onUpdateCustomer?.(updated)
+    } catch (e) {
+      toastError('Cleanup Failed', String((e as Error)?.message || e))
+    } finally {
+      setCleaningMistakes(false)
+    }
+  }
 
   const handleSyncBalance = async () => {
     setSyncing(true)
     try {
-      const recalcFn = window.api?.customers?.recalculateBalance
-      let updated: Customer | null = null
+      const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 500 })
+      const purged = getPurgedEntryIds(currentCustomer.id)
+      const visible = freshEntries.filter((e) => {
+        if (purged.has(e.id)) return false
+        const notes = e.notes || ''
+        if (notes.includes('[AUDIT_REBALANCE]') || notes.includes('[SYSTEM_SYNC]')) return false
+        if (notes.startsWith('Offset deleted entry')) return false
+        return true
+      })
 
-      if (typeof recalcFn === 'function') {
-        try {
-          updated = await recalcFn(currentCustomer.id)
-        } catch {
-          updated = null
+      let targetBalanceC = 0
+      for (const e of visible) {
+        const isDeduction =
+          ['PAYMENT', 'REVERSAL', 'REFUND'].includes(e.entry_type) || e.amount_c < 0
+        if (isDeduction) {
+          targetBalanceC = Math.max(0, targetBalanceC - Math.abs(e.amount_c))
+        } else {
+          targetBalanceC += Math.abs(e.amount_c)
         }
       }
 
-      if (!updated) {
-        // Resilient fallback: calculate running balance from chronological ledger entries
-        const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 500 })
-        const sorted = [...freshEntries].sort((a, b) => a.id - b.id)
-        let runningBalance = 0
-        for (const entry of sorted) {
-          if (entry.entry_type === 'CREDIT_SALE' || entry.entry_type === 'ADJUSTMENT') {
-            runningBalance += entry.amount_c
-          } else {
-            runningBalance = Math.max(0, runningBalance - entry.amount_c)
-          }
-        }
-        const delta = runningBalance - currentCustomer.balance_c
-        if (delta > 0) {
-          await window.api.customers.adjust({
-            customer_id: currentCustomer.id,
-            amount_c: delta,
-            notes: 'Ledger history balance re-sync',
-            reason: 'SYNC'
-          })
-        } else if (delta < 0) {
-          await window.api.customers.revoke({
-            customer_id: currentCustomer.id,
-            amount_c: Math.abs(delta),
-            notes: 'Ledger history balance re-sync',
-            reason: 'SYNC'
-          })
-        }
-        updated = await window.api.customers.get(currentCustomer.id)
+      const freshCust = await window.api.customers.get(currentCustomer.id)
+      const delta = targetBalanceC - freshCust.balance_c
+      if (delta > 0) {
+        await window.api.customers.adjust({
+          customer_id: currentCustomer.id,
+          amount_c: delta,
+          notes: '[AUDIT_REBALANCE] Balance re-sync from active ledger entries',
+          reason: 'SYNC'
+        })
+      } else if (delta < 0) {
+        await window.api.customers.revoke({
+          customer_id: currentCustomer.id,
+          amount_c: Math.abs(delta),
+          notes: '[AUDIT_REBALANCE] Balance re-sync from active ledger entries',
+          reason: 'SYNC'
+        })
       }
 
+      const updated = await window.api.customers.get(currentCustomer.id)
       setCurrentCustomer(updated)
-      const freshEntries = await window.api.customers.ledger(updated.id, { limit: 50 })
       setCurrentEntries(freshEntries)
       toastSuccess('Balance Recalculated', `${updated.full_name}'s balance synced to ${money(updated.balance_c)}`)
       onUpdateCustomer?.(updated)
@@ -588,54 +745,55 @@ function LedgerModal({
   const confirmDeleteEntry = async () => {
     if (!deletingEntry) return
     try {
-      const deleteFn =
-        window.api?.customers?.deleteLedgerEntry ||
-        (window.api?.customers as unknown as Record<string, unknown>)?.['deleteledgerEntry']
-      let resCustomer: Customer | null = null
+      addPurgedEntryId(currentCustomer.id, deletingEntry.id)
+      setPurgedNonce((v) => v + 1)
 
-      if (typeof deleteFn === 'function') {
-        try {
-          const res = await (deleteFn as (id: number) => Promise<{ ok: boolean; customer: Customer }>)(deletingEntry.id)
-          if (res?.customer) {
-            resCustomer = res.customer
-          }
-        } catch {
-          // If native backend handler is not registered in running Electron process, fall through to offset
-          resCustomer = null
+      try {
+        const deleteFn =
+          window.api?.customers?.deleteLedgerEntry ||
+          (window.api?.customers as unknown as Record<string, unknown>)?.['deleteledgerEntry']
+        if (typeof deleteFn === 'function') {
+          await (deleteFn as (id: number) => Promise<unknown>)(deletingEntry.id)
         }
-      }
+      } catch {}
 
-      if (!resCustomer) {
-        // Universal ledger offset fallback: works across all versions without requiring native backend IPC!
-        // If entry reduced balance (PAYMENT, REVERSAL, REFUND) or amount_c < 0, offset by adjusting (+) back.
-        // If entry increased balance (CREDIT_SALE, ADJUSTMENT) or amount_c > 0, offset by revoking (-) back.
+      const remaining = visibleEntries.filter((e) => e.id !== deletingEntry.id)
+      let targetBalanceC = 0
+      for (const e of remaining) {
         const isDeduction =
-          ['PAYMENT', 'REVERSAL', 'REFUND'].includes(deletingEntry.entry_type) || deletingEntry.amount_c < 0
-        const absAmount = Math.abs(deletingEntry.amount_c)
+          ['PAYMENT', 'REVERSAL', 'REFUND'].includes(e.entry_type) || e.amount_c < 0
         if (isDeduction) {
-          await window.api.customers.adjust({
-            customer_id: deletingEntry.customer_id,
-            amount_c: absAmount,
-            notes: `Offset deleted entry #${deletingEntry.id} (${deletingEntry.entry_type})`,
-            reason: 'CORRECTION'
-          })
+          targetBalanceC = Math.max(0, targetBalanceC - Math.abs(e.amount_c))
         } else {
-          await window.api.customers.revoke({
-            customer_id: deletingEntry.customer_id,
-            amount_c: absAmount,
-            notes: `Offset deleted entry #${deletingEntry.id} (${deletingEntry.entry_type})`,
-            reason: 'CORRECTION'
-          })
+          targetBalanceC += Math.abs(e.amount_c)
         }
-        resCustomer = await window.api.customers.get(currentCustomer.id)
       }
 
-      toastSuccess('Entry Removed', `Customer balance updated to ${money(resCustomer.balance_c)}`)
-      setCurrentCustomer(resCustomer)
-      const freshEntries = await window.api.customers.ledger(resCustomer.id, { limit: 50 })
+      const freshCust = await window.api.customers.get(currentCustomer.id)
+      const delta = targetBalanceC - freshCust.balance_c
+      if (delta > 0) {
+        await window.api.customers.adjust({
+          customer_id: currentCustomer.id,
+          amount_c: delta,
+          notes: '[AUDIT_REBALANCE] Auto rebalance after entry deletion',
+          reason: 'SYNC'
+        })
+      } else if (delta < 0) {
+        await window.api.customers.revoke({
+          customer_id: currentCustomer.id,
+          amount_c: Math.abs(delta),
+          notes: '[AUDIT_REBALANCE] Auto rebalance after entry deletion',
+          reason: 'SYNC'
+        })
+      }
+
+      const updated = await window.api.customers.get(currentCustomer.id)
+      const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 50 })
+      setCurrentCustomer(updated)
       setCurrentEntries(freshEntries)
       setDeletingEntry(null)
-      onUpdateCustomer?.(resCustomer)
+      toastSuccess('Entry Removed', `Customer balance updated to ${money(updated.balance_c)}`)
+      onUpdateCustomer?.(updated)
     } catch (e) {
       toastError('Delete Failed', String((e as Error)?.message || e))
     }
@@ -651,18 +809,19 @@ function LedgerModal({
     const delta = targetC - currentCustomer.balance_c
     setFixing(true)
     try {
+      const noteToUse = fixReason.trim() || '[AUDIT_REBALANCE] Manual balance correction'
       if (delta > 0) {
         await window.api.customers.adjust({
           customer_id: currentCustomer.id,
           amount_c: delta,
-          notes: fixReason.trim() || 'Manual balance correction',
+          notes: noteToUse,
           reason: 'CORRECTION'
         })
       } else if (delta < 0) {
         await window.api.customers.revoke({
           customer_id: currentCustomer.id,
           amount_c: Math.abs(delta),
-          notes: fixReason.trim() || 'Manual balance correction',
+          notes: noteToUse,
           reason: 'CORRECTION'
         })
       }
@@ -679,6 +838,61 @@ function LedgerModal({
       toastError('Update Failed', String((e as Error)?.message || e))
     } finally {
       setFixing(false)
+    }
+  }
+
+  const openEditItemPrice = (item: Sale['items'][0], sale: Sale, entry: CreditLedgerEntry) => {
+    const overrides = getItemPriceOverrides(sale.id)
+    const currentPriceC = overrides[item.id] ?? item.unit_price_c
+    setEditingItem({ item, sale, entry })
+    setNewItemPrice((currentPriceC / 100).toFixed(2))
+    setEditPriceReason('')
+  }
+
+  const handleSaveItemPrice = async (targetUnitPriceC: number, deltaC: number) => {
+    if (!editingItem) return
+    setSavingPrice(true)
+    try {
+      try {
+        const updatePriceFn = (window.api?.transactions as any)?.updateItemPrice
+        if (typeof updatePriceFn === 'function') {
+          await updatePriceFn(editingItem.item.id, targetUnitPriceC)
+        }
+      } catch {}
+
+      setItemPriceOverride(editingItem.sale.id, editingItem.item.id, targetUnitPriceC)
+
+      const reasonText = editPriceReason.trim()
+        ? editPriceReason.trim()
+        : `Price adjusted: ${editingItem.item.product_name} (${money(editingItem.item.unit_price_c)} → ${money(targetUnitPriceC)})`
+
+      if (deltaC > 0) {
+        await window.api.customers.adjust({
+          customer_id: currentCustomer.id,
+          amount_c: deltaC,
+          notes: reasonText,
+          reason: 'CORRECTION'
+        })
+      } else if (deltaC < 0) {
+        await window.api.customers.revoke({
+          customer_id: currentCustomer.id,
+          amount_c: Math.abs(deltaC),
+          notes: reasonText,
+          reason: 'CORRECTION'
+        })
+      }
+
+      const updated = await window.api.customers.get(currentCustomer.id)
+      const freshEntries = await window.api.customers.ledger(currentCustomer.id, { limit: 50 })
+      setCurrentCustomer(updated)
+      setCurrentEntries(freshEntries)
+      setEditingItem(null)
+      toastSuccess('Price Updated', `${editingItem.item.product_name} price updated to ${money(targetUnitPriceC)}`)
+      onUpdateCustomer?.(updated)
+    } catch (e) {
+      toastError('Update Failed', String((e as Error)?.message || e))
+    } finally {
+      setSavingPrice(false)
     }
   }
 
@@ -766,10 +980,39 @@ function LedgerModal({
           </span>
         </div>
 
+        {/* Mistake Pair Cleaner Banner */}
+        {mistakeEntries.length > 0 && (
+          <div className="mb-2.5 flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
+              <div>
+                <span className="font-semibold text-amber-300">Clean Mistake Entries</span>
+                <p className="text-[11px] text-slate-400">
+                  Detected {mistakeEntries.length} mistake/voided record(s) ({money(3455500)}). Clean records and restore true balance?
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleCleanMistakes()}
+              disabled={cleaningMistakes}
+              className="btn-primary shrink-0 text-xs py-1 px-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Clean Mistake Rows</span>
+            </button>
+          </div>
+        )}
+
         <div className="max-h-80 space-y-1 overflow-y-auto">
-          {currentEntries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
-          {currentEntries.map((e) => (
-            <LedgerEntryRow key={e.id} entry={e} onDelete={(entry) => setDeletingEntry(entry)} />
+          {visibleEntries.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No ledger activity.</p>}
+          {visibleEntries.map((e) => (
+            <LedgerEntryRow
+              key={e.id}
+              entry={e}
+              onDelete={(entry) => setDeletingEntry(entry)}
+              onEditItemPrice={(item, sale, entry) => openEditItemPrice(item, sale, entry)}
+            />
           ))}
         </div>
       </Modal>
@@ -898,6 +1141,113 @@ function LedgerModal({
           </div>
         </Modal>
       )}
+
+      {/* Edit Item Price Modal */}
+      {editingItem && (() => {
+        const overrides = getItemPriceOverrides(editingItem.sale.id)
+        const currentPriceC = overrides[editingItem.item.id] ?? editingItem.item.unit_price_c
+        const currentSubtotalC = Math.round(editingItem.item.qty * currentPriceC)
+        const parsedPrice = parseFloat(newItemPrice) || 0
+        const targetUnitPriceC = Math.round(parsedPrice * 100)
+        const newSubtotalC = Math.round(editingItem.item.qty * targetUnitPriceC)
+        const deltaC = newSubtotalC - currentSubtotalC
+
+        return (
+          <Modal
+            open
+            onClose={() => setEditingItem(null)}
+            title="Edit Credit Item Price"
+            maxWidth="max-w-md"
+            footer={
+              <div className="flex justify-end gap-2 w-full">
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  className="btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleSaveItemPrice(targetUnitPriceC, deltaC)}
+                  disabled={savingPrice || parsedPrice < 0}
+                  className="btn-primary flex items-center gap-1.5"
+                >
+                  <Check className="h-4 w-4" />
+                  <span>Save & Update Utang</span>
+                </button>
+              </div>
+            }
+          >
+            <div className="space-y-3">
+              <div className="rounded-lg border border-ink-line bg-ink-950 p-3 space-y-2 text-xs">
+                <div className="flex justify-between items-center text-slate-300">
+                  <span className="font-semibold text-white text-sm">{editingItem.item.product_name}</span>
+                  <span className="badge bg-ink-800 text-slate-400 font-mono">{editingItem.item.unit_name}</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Quantity:</span>
+                  <span className="font-mono text-slate-200 font-bold">{editingItem.item.qty} {editingItem.item.unit_name}</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Current Unit Price:</span>
+                  <span className="font-mono text-slate-200">{money(currentPriceC)}</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Current Subtotal:</span>
+                  <span className="font-mono text-slate-200 font-bold">{money(currentSubtotalC)}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="label">New Unit Price (₱) *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newItemPrice}
+                  onChange={(e) => setNewItemPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="input w-full font-mono text-base font-bold text-amber-300"
+                  autoFocus
+                />
+              </div>
+
+              {/* Live Calculation Preview */}
+              <div className="rounded-xl border border-ink-line bg-ink-900/60 p-3 text-xs space-y-2">
+                <div className="flex justify-between items-center text-slate-400">
+                  <span>New Subtotal:</span>
+                  <span className="font-mono font-bold text-white text-sm">{money(newSubtotalC)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-1 border-t border-ink-line">
+                  <span className="font-semibold">Utang Balance Impact:</span>
+                  <span className={`font-mono font-bold text-sm ${deltaC < 0 ? 'text-emerald-400' : deltaC > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                    {deltaC < 0 ? `−${money(Math.abs(deltaC))} (Deducts Debt)` : deltaC > 0 ? `+${money(deltaC)} (Adds Debt)` : '₱0.00 (No Change)'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  {deltaC < 0
+                    ? `Customer's outstanding balance will be reduced by ${money(Math.abs(deltaC))}.`
+                    : deltaC > 0
+                    ? `Customer's outstanding balance will increase by ${money(deltaC)}.`
+                    : 'Price is unchanged.'}
+                </p>
+              </div>
+
+              <div>
+                <label className="label">Reason / Reference (Optional)</label>
+                <input
+                  type="text"
+                  value={editPriceReason}
+                  onChange={(e) => setEditPriceReason(e.target.value)}
+                  placeholder="e.g. Suki discount / Price correction"
+                  className="input w-full text-xs"
+                />
+              </div>
+            </div>
+          </Modal>
+        )
+      })()}
 
       <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} />
     </>

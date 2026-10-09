@@ -24,6 +24,7 @@ import {
   recalculateCustomerBalance,
   deleteCreditLedgerEntry
 } from '../../repositories/customers'
+import { updateSaleItemPrice, getSale } from '../../repositories/sales'
 import { getDb, closeDb } from '../../database/connection'
 import type { ProductInput } from '../../../shared/types'
 
@@ -186,4 +187,34 @@ describe('Utang Ledger Void, Delete, and Recalculation Integrity', () => {
     // Customer balance should have increased only by the Utang portion (₱300.00)
     expect(getCustomer(db, customer.id).balance_c).toBe(30000)
   })
+
+  it('updates credit sale item price and adjusts sale and utang payment totals', () => {
+    const db = getDb()
+    const customer = createCustomer(db, { full_name: 'Price Edit Customer', credit_limit_c: 500000 })
+    const prod = createProduct(db, { ...testProductInput(), sku: 'RICE-PRICE-EDIT', barcode: '480007777777' }, 1)
+
+    // Sale of 2 sacks at ₱100.00 each = ₱200.00 on Utang
+    const res = checkout({
+      items: [{ product_id: prod.id, name: prod.name, unit_name: 'sack', qty: 2, qty_base: 2, unit_price_c: 10000, cost_base_c: 5000, stock_base: 50, subtotal_c: 20000 }],
+      discount_c: 0,
+      customer_id: customer.id,
+      payments: [{ method: 'UTANG', amount_c: 20000 }]
+    })
+
+    const saleItemId = res.sale.items[0]!.id
+
+    // Edit price from ₱100.00 (10000) to ₱90.00 (9000)
+    // New subtotal: 2 * 9000 = 18000. Delta = -2000 (-₱20.00)
+    const updateResult = updateSaleItemPrice(db, saleItemId, 9000)
+
+    expect(updateResult.ok).toBe(true)
+    expect(updateResult.deltaC).toBe(-2000)
+
+    const updatedSale = getSale(db, res.sale.id)
+    expect(updatedSale.items[0]!.unit_price_c).toBe(9000)
+    expect(updatedSale.items[0]!.subtotal_c).toBe(18000)
+    expect(updatedSale.total_c).toBe(18000)
+    expect(updatedSale.payments.find((p: any) => p.method === 'UTANG')!.amount_c).toBe(18000)
+  })
 })
+

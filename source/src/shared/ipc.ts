@@ -340,6 +340,7 @@ export interface TindaApi {
     refund: (payload: RefundPayload) => Promise<Refund>
     void: (payload: VoidPayload) => Promise<import('./types').Sale>
     delete: (saleId: number, options?: { restoreStock?: boolean }) => Promise<{ ok: boolean; transaction_no: string }>
+    updateItemPrice?: (saleItemId: number, newUnitPriceC: number) => Promise<{ ok: boolean; saleId: number; deltaC: number }>
     onChanged: (handler: (payload: unknown) => void) => () => void
   }
 

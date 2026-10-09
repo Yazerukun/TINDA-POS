@@ -27,7 +27,24 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)**
+- Current Version: **v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)**
+
+## Key Features in v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)
+1. **Line-Item Price Editing for Credit Sales (Items Taken on Credit)**:
+   - Added an interactive Cupertino **Edit Item Price** (`Pencil`) button beside every item in the expanded credit sale items list.
+   - Cashiers and store owners can directly adjust the unit price of items taken on credit (e.g. suki discounts, price corrections).
+   - Real-time Cupertino calculation HUD displays the new line subtotal and the exact customer utang balance impact (green deduction or red addition).
+   - Automatically synchronizes customer debt and updates sale line items with persistent local backup.
+2. **Permanent Client-Side Purge & Intelligent Mistake Cleaner**:
+   - Resolved the issue where deleting a mistake row resulted in an `ADJUSTMENT` row in the ledger.
+   - Deleting an entry now marks it in a persistent purge set (`localStorage`), immediately and permanently removing it from the customer's ledger view.
+   - Internal rebalance events (`[AUDIT_REBALANCE]`, `[SYSTEM_SYNC]`, and offset rows) are automatically filtered from the customer statement view, keeping records 100% clean and professional.
+   - Top-of-modal **Clean Mistake Rows** banner detects voided mistake pairs (e.g. ₱34,555.00) and purges them with 1 tap, automatically restoring the customer's true verified balance (₱325,065.00).
+3. **Accurate Color & Sign Standards in Utang Ledger**:
+   - Deductions from customer debt (Payments, Reversals, Refunds) strictly render with minus sign (`−`) in emerald green (`text-emerald-400`).
+   - Additions to customer debt (Credit Sales) strictly render with plus sign (`+`) in rose red (`text-rose-400`).
+4. **Resilient Dual-Track Operation Guarantee**:
+   - Works seamlessly across live in-app hot patches (`npm run publish:patch`) on existing client installs with zero database alterations and zero regressions.
 
 ## Key Features in v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)
 1. **Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee**:

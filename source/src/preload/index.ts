@@ -174,6 +174,8 @@ const api: TindaApi = {
     void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload),
     delete: (saleId: number, options?: { restoreStock?: boolean }) =>
       invoke<{ ok: boolean; transaction_no: string }>('transactions:delete', saleId, options),
+    updateItemPrice: (saleItemId: number, newUnitPriceC: number) =>
+      invoke<{ ok: boolean; saleId: number; deltaC: number }>('transactions:updateItemPrice', saleItemId, newUnitPriceC),
     onChanged: (handler: (payload: unknown) => void) => {
       const sub = (_e: Electron.IpcRendererEvent, data: unknown) => handler(data)
       ipcRenderer.on('transactions:changed', sub)

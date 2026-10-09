@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791511411.3641741,
-    "seen": 1791511602.7219539,
-    "ast_hash": "a2ba97bc028a7f35f32c5663dfded6d8",
+    "mtime": 1791514147.2006142,
+    "seen": 1791514510.5096593,
+    "ast_hash": "c5529bd0ca8da3dee01f2398de84aaf5",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/rollback-service.test.ts": {
-    "mtime": 1791506106.8642223,
-    "seen": 1791507416.979202,
-    "ast_hash": "1e55971a98b40d35cf59fa17279e3700",
+    "mtime": 1791514389.0128858,
+    "seen": 1791514510.5281208,
+    "ast_hash": "95a6aef1e859a6e0f41a0dfd38d4f9a9",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/simple-pos-import.test.ts": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "source/src/preload/index.ts": {
-    "mtime": 1791510853.8865306,
-    "seen": 1791511602.747837,
-    "ast_hash": "66d8e0a3d06227017b4458e914de62d8",
+    "mtime": 1791514061.4038453,
+    "seen": 1791514510.545288,
+    "ast_hash": "ac83b9afcab4879a8307285026505f02",
     "semantic_hash": ""
   },
   "source/src/renderer/src/App.tsx": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791511430.2484634,
-    "seen": 1791511602.7500575,
-    "ast_hash": "9645e1730df6529445c9a8d6b69d0c96",
+    "mtime": 1791514188.7737358,
+    "seen": 1791514510.5492594,
+    "ast_hash": "e2406aac1810455313fdcfc3d32abd92",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Settings.tsx": {
-    "mtime": 1791511442.8349197,
-    "seen": 1791511602.7612083,
-    "ast_hash": "876002fe17a60388372512d9d0cdd107",
+    "mtime": 1791514193.308384,
+    "seen": 1791514510.5692592,
+    "ast_hash": "ecf98efcca0243908166f9bb0dd61c37",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Suppliers.tsx": {
@@ -1086,9 +1086,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Utang.tsx": {
-    "mtime": 1791510994.036398,
-    "seen": 1791511602.7619529,
-    "ast_hash": "d13ef40a51a81a5396cc82fd189f3f4a",
+    "mtime": 1791514137.1385717,
+    "seen": 1791514510.5697901,
+    "ast_hash": "8a4fa839fe369ddb73a879a655f7247d",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/__tests__/dashboard-refunds.test.ts": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "source/src/shared/ipc.ts": {
-    "mtime": 1791510846.2135036,
-    "seen": 1791511602.769317,
-    "ast_hash": "a643ac5be05644ff4f99b81dd9fe6652",
+    "mtime": 1791514052.5787897,
+    "seen": 1791514510.5793886,
+    "ast_hash": "f2990cbcab7ffbb1b133ca6e91213c35",
     "semantic_hash": ""
   },
   "source/src/shared/pos.ts": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791511463.914788,
-    "seen": 1791511602.8418095,
-    "ast_hash": "f2cd6fea04ddd8d116599925a7767e41",
+    "mtime": 1791514205.109144,
+    "seen": 1791514510.709749,
+    "ast_hash": "a9d3266cc5cf5d1555e0c31b15aa0945",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791511482.133904,
-    "seen": 1791511602.842388,
-    "ast_hash": "f14cc1cd7d98320d91b0d09dc15c0b66",
+    "mtime": 1791514223.3964605,
+    "seen": 1791514510.7107341,
+    "ast_hash": "8c88d0c53c15802080e9332f52c4ec23",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791511493.6652107,
-    "seen": 1791511602.8463216,
-    "ast_hash": "a4975f6ccf67204367320bff10aadff0",
+    "mtime": 1791514236.975216,
+    "seen": 1791514510.7165751,
+    "ast_hash": "8d2e15f9c6a39f90796a42684923b288",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3972,15 +3972,15 @@
     "semantic_hash": ""
   },
   "tools/publish_patch.mjs": {
-    "mtime": 1791509637.408759,
-    "seen": 1791509849.306864,
-    "ast_hash": "a8dc5f1ef7e9d5262492f3bb70c20d30",
+    "mtime": 1791514433.9718113,
+    "seen": 1791514510.59149,
+    "ast_hash": "9851258ba59f0ee2e997b433f666910b",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/utang-ledger-delete-void.test.ts": {
-    "mtime": 1791511362.6684115,
-    "seen": 1791511602.7382767,
-    "ast_hash": "bc251c6a5e51d5e40626c945a754db2d",
+    "mtime": 1791514253.5312786,
+    "seen": 1791514510.5297663,
+    "ast_hash": "ac26a17104a476981e1c6935aeb5ff76",
     "semantic_hash": ""
   }
 }

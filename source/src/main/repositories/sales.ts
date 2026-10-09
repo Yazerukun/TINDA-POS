@@ -239,3 +239,32 @@ export function todaySalesC(db: Database.Database): number {
     .get() as { s: number }
   return row.s
 }
+
+export function updateSaleItemPrice(
+  db: Database.Database,
+  saleItemId: number,
+  newUnitPriceC: number
+): { ok: boolean; saleId: number; deltaC: number } {
+  const item = db.prepare('SELECT * FROM sale_items WHERE id = ?').get(saleItemId) as SaleItem | undefined
+  if (!item) throw new Error('Sale item not found.')
+  const oldSubtotalC = item.subtotal_c
+  const newSubtotalC = Math.round(item.qty * newUnitPriceC)
+  const deltaC = newSubtotalC - oldSubtotalC
+
+  db.prepare('UPDATE sale_items SET unit_price_c = ?, subtotal_c = ? WHERE id = ?').run(
+    newUnitPriceC,
+    newSubtotalC,
+    saleItemId
+  )
+  db.prepare('UPDATE sales SET subtotal_c = subtotal_c + ?, total_c = total_c + ? WHERE id = ?').run(
+    deltaC,
+    deltaC,
+    item.sale_id
+  )
+  db.prepare("UPDATE payments SET amount_c = amount_c + ? WHERE sale_id = ? AND method = 'UTANG'").run(
+    deltaC,
+    item.sale_id
+  )
+  return { ok: true, saleId: item.sale_id, deltaC }
+}
+

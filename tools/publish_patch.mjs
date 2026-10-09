@@ -147,18 +147,19 @@ async function main() {
 Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
 
 ### 🌟 What's New in ${TAG}:
-1. **🛡️ Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee:**
-   - Fixed \`window.api.customers.deleteledgerEntry is not a function\` during hot-patch updates on older base app installations.
-   - Automatically applies universal mathematical ledger offset using existing \`adjust\` and \`revoke\` APIs if native backend IPC is missing, preventing crashes.
-   - Added \`deleteledgerEntry\` alias in preload and shared IPC for casing safety.
-2. **✏️ Interactive 1-Tap "Set Exact Balance" Tool in Utang Modal:**
-   - Added Cupertino **Set / Fix Balance** (\`Pencil\`) button in customer Balance card.
-   - Allows store owners and cashiers to directly set the customer's total outstanding balance to their exact verified figure (e.g. ₱325,065.00), automatically logging the difference as an audited balance correction.
-3. **🔄 Resilient Frontend Balance Recalculation Engine:**
-   - \`Sync Balance\` (\`RotateCcw\`) automatically replays all chronological ledger entries in the frontend if native IPC is not exposed, calculating running debt and synchronizing customer balance seamlessly.
-4. **🔀 Split / Mixed Payment POS Checkout Engine & Void Protection:**
-   - Preserved full Apple-grade Split / Mixed Payment checkout engine across Cash, GCash, Maya, MariBank, and Utang.
-   - Preserved transaction void-check guard preventing duplicate utang deductions on transaction deletion.
+1. **✏️ Line-Item Price Editing in Credit Sales (Items Taken on Credit):**
+   - Store owners and cashiers can now edit individual item unit prices directly inside the expanded credit sale items list in the Utang ledger.
+   - Interactive Cupertino modal features live subtotal calculations and real-time utang balance impact preview (emerald green deduction or rose red addition).
+   - Automatically adjusts customer outstanding balance and updates sale line items.
+2. **🧹 Permanent Ledger Entry Purge & 1-Tap Mistake Cleaner:**
+   - Voided mistake entries (such as ₱34,555.00 voided/reversal pairs) are persistently purged and permanently removed from customer statements.
+   - Automatically filters out internal rebalances (\`[AUDIT_REBALANCE]\`, \`[SYSTEM_SYNC]\`, and offset entries) so customer credit histories remain pristine and clutter-free.
+   - Interactive 1-tap "Clean Mistake Rows" banner immediately restores verified balances (e.g. ₱325,065.00).
+3. **🎨 Intuitive Sign & Color Standards in Utang Ledger Rows:**
+   - Deductions (Payments, Reversals, Refunds) strictly render with minus sign (\`−\`) in emerald green.
+   - Debt additions (Credit Sales) strictly render with plus sign (\`+\`) in rose red.
+4. **🔄 Resilient Native & Frontend Balance Recalculation Engine:**
+   - Seamless dual-track operation guaranteeing zero-error hot patches on older base binaries and native SQLite IPC on fresh installs.
 
 ### 📦 Patch Verification Hash:
 \`\`\`

@@ -17,7 +17,7 @@ import * as auditRepo from '../repositories/audit'
 import * as invRepo from '../repositories/inventory'
 import * as backupRepo from '../repositories/backup'
 import * as userRepo from '../repositories/users'
-import { getSale, listSales } from '../repositories/sales'
+import { getSale, listSales, updateSaleItemPrice } from '../repositories/sales'
 import * as checkoutSvc from '../services/checkout'
 import * as expirationRepo from '../repositories/expiration'
 import * as txSvc from '../services/transaction'
@@ -685,6 +685,14 @@ handle('transactions:delete', (_e: IpcMainInvokeEvent, saleId: number, options?:
     release()
   }
 })
+handle('transactions:updateItemPrice', (_e: IpcMainInvokeEvent, saleItemId: number, newUnitPriceC: number) => {
+  user()
+  sessionSvc.requirePermission('transactions:view')
+  const res = updateSaleItemPrice(db(), saleItemId, newUnitPriceC)
+  emitTransactionsChanged({ reason: 'UPDATE', sale_id: res.saleId })
+  return res
+})
+
 
 // ---- Expenses ----
 handle('expenses:categories', () => { user(); return expRepo.listExpenseCategories(db()) })

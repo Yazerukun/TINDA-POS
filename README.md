@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.88-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v1.0.89-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-435_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-436_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,25 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.88](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Feature-Patch-1.0.88.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.88 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Setup-1.0.88.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.88/TindaPOS-Portable-1.0.88.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v1.0.89](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Feature-Patch-1.0.89.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.89 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Setup-1.0.89.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.89/TindaPOS-Portable-1.0.89.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)
+
+> **Line-Item Unit Price Editing for Credit Sales, Permanent Ledger Purge Engine, 1-Tap Mistake Cleaner, and Intuitive Sign/Color Standards.**
+
+- ✏️ **Line-Item Price Editing in Credit Sales (`Items Taken on Credit`)**:
+  - Cashiers and store owners can now edit individual item unit prices directly inside the expanded credit sale items list.
+  - Live Apple-grade Cupertino modal previews new subtotal and real-time customer utang impact (emerald green deduction or rose red addition).
+  - Automatically synchronizes customer debt and updates sale line items.
+- 🧹 **Permanent Client-Side Purge & 1-Tap Mistake Cleaner**:
+  - Mistake records (such as ₱34,555.00 voided/reversal pairs) are persistently purged and removed from customer views.
+  - Automatically filters out internal rebalances (`[AUDIT_REBALANCE]`, `[SYSTEM_SYNC]`, and offset rows) so customer statements remain completely pristine.
+  - Dedicated 1-tap "Clean Mistake Rows" banner immediately restores verified customer balances (₱325,065.00).
+- 🎨 **Intuitive Sign & Color Standards**:
+  - Deductions (Payments, Reversals, Refunds) strictly render with minus sign (`−`) in emerald green.
+  - Debt additions (Credit Sales) strictly render with plus sign (`+`) in rose red.
 
 ## ✨ What's New in v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)
 
