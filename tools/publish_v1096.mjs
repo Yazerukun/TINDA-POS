@@ -212,6 +212,10 @@ ${sumsContent.trim()}
     { file: setupFile, name: `TindaPOS-Setup-1.0.96.exe` }
   ]
 
+  const patchFile = path.join(BUILDS_DIR, `TindaPOS-Feature-Patch-${TAG.replace(/^v/, '')}.zip`)
+  if (fs.existsSync(patchFile)) {
+    assetsToUpload.push({ file: patchFile, name: `TindaPOS-Feature-Patch-${TAG.replace(/^v/, '')}.zip` })
+  }
   if (portableFile && fs.existsSync(portableFile)) {
     assetsToUpload.push({ file: portableFile, name: `TindaPOS-Portable-1.0.96.exe` })
   }

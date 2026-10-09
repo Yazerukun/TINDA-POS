@@ -173,30 +173,40 @@ export class UpdateService {
         this.set({ progress: { downloaded, total, percent } })
       }
       try {
+        let patchApplied = false
         if (!wantFull && available.hasPatch && this.deps.transport.downloadPatch && this.deps.transport.applyPatch) {
-          const { filePath } = await this.deps.transport.downloadPatch(available, onProgress)
-          await this.deps.transport.applyPatch(filePath, available.version)
-          this.set({
-            status: 'READY_TO_INSTALL',
-            message: `Feature patch v${available.version} downloaded. Zero system restart required.`,
-            progress: null,
-            updateType: 'PATCH'
-          })
-        } else if (this.deps.transport.isPortable()) {
-          const { filePath } = await this.deps.transport.downloadPortable(available, onProgress)
-          this.downloadedPath = filePath
-          this.set({
-            status: 'DOWNLOADED',
-            message:
-              process.platform === 'linux'
-                ? `Full Linux package downloaded: ${filePath}. Saved in Downloads.`
-                : `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
-            progress: null,
-            updateType: 'FULL'
-          })
-        } else {
-          await this.deps.transport.downloadSetup(available, onProgress)
-          this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null, updateType: 'FULL' })
+          try {
+            const { filePath } = await this.deps.transport.downloadPatch(available, onProgress)
+            await this.deps.transport.applyPatch(filePath, available.version)
+            this.set({
+              status: 'READY_TO_INSTALL',
+              message: `Feature patch v${available.version} downloaded. Zero system restart required.`,
+              progress: null,
+              updateType: 'PATCH'
+            })
+            patchApplied = true
+          } catch (patchErr) {
+            console.warn('[updater] patch download failed, falling back to full package download', patchErr)
+            // Fall back to full installer package below
+          }
+        }
+        if (!patchApplied) {
+          if (this.deps.transport.isPortable()) {
+            const { filePath } = await this.deps.transport.downloadPortable(available, onProgress)
+            this.downloadedPath = filePath
+            this.set({
+              status: 'DOWNLOADED',
+              message:
+                process.platform === 'linux'
+                  ? `Full Linux package downloaded: ${filePath}. Saved in Downloads.`
+                  : `Update downloaded: ${filePath}. Open the downloaded file and run it to finish the update.`,
+              progress: null,
+              updateType: 'FULL'
+            })
+          } else {
+            await this.deps.transport.downloadSetup(available, onProgress)
+            this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null, updateType: 'FULL' })
+          }
         }
       } catch (err) {
         console.error('[updater] download failed', err)
