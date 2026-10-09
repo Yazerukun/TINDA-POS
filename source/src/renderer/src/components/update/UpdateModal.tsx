@@ -405,16 +405,18 @@ export function UpdateModal(): React.JSX.Element | null {
 
           {s === 'UPDATE_AVAILABLE' && (
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => void handleDownload('FULL')}
-                disabled={busy}
-                className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-200 hover:text-white border-sky-500/30 hover:border-sky-500/60 hover:bg-sky-500/10 active:scale-[0.98] transition-all"
-                title="Download full standalone installer / AppImage package"
-              >
-                <FolderOpen className="h-4 w-4 text-sky-400" />
-                <span>Download Full Build</span>
-              </button>
+              {event?.available?.hasFull && (
+                <button
+                  type="button"
+                  onClick={() => void handleDownload('FULL')}
+                  disabled={busy}
+                  className="btn-secondary flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-200 hover:text-white border-sky-500/30 hover:border-sky-500/60 hover:bg-sky-500/10 active:scale-[0.98] transition-all"
+                  title="Download full standalone installer / AppImage package"
+                >
+                  <FolderOpen className="h-4 w-4 text-sky-400" />
+                  <span>Download Full Build</span>
+                </button>
+              )}
 
               {isPatch && (
                 <button
