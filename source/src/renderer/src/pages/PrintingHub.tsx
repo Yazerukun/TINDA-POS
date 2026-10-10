@@ -195,6 +195,36 @@ const PRESET_SERVICES: PresetService[] = [
 
   // ID Pictures & PVC
   {
+    id: 'rush_id_package',
+    name: 'Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)',
+    category: 'ID_PVC',
+    description: 'Rush 5-10 min studio print on 260gsm glossy photo paper with crop cut',
+    paperSize: 'PHOTO_4R',
+    inkCoverage: 'COLOR_PHOTO',
+    lamination: 'NONE',
+    defaultPages: 1,
+    defaultCopies: 1,
+    suggestedPricePerUnit: 75,
+    fixedExtraCost: 5,
+    fixedLaborFee: 25,
+    badge: 'Rush 🔥'
+  },
+  {
+    id: 'rush_id_combo_lam',
+    name: 'Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)',
+    category: 'ID_PVC',
+    description: 'Complete rush package with multiple ID photos plus ID thermal pouch lamination',
+    paperSize: 'PHOTO_4R',
+    inkCoverage: 'COLOR_PHOTO',
+    lamination: 'ID',
+    defaultPages: 1,
+    defaultCopies: 1,
+    suggestedPricePerUnit: 95,
+    fixedExtraCost: 7,
+    fixedLaborFee: 30,
+    badge: 'Popular'
+  },
+  {
     id: 'id_pic_package',
     name: 'ID Picture Studio Package (4x 1x1 + 2x 2x2)',
     category: 'ID_PVC',

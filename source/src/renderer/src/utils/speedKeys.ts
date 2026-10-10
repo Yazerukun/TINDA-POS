@@ -49,6 +49,15 @@ export const DEFAULT_SPEED_KEYS: SpeedKeyItem[] = [
     color: 'emerald',
     unit_name: 'pc',
     default_qty: 1
+  },
+  {
+    id: 'speedkey-rush-id',
+    name: 'Rush ID Package',
+    price_c: 7500,
+    icon: '📸',
+    color: 'indigo',
+    unit_name: 'set',
+    default_qty: 1
   }
 ]
 

@@ -1,5 +1,5 @@
 import { getDb } from '../database/connection'
-import type { CartItem, Sale } from '@shared/types'
+import type { CartItem, Sale, Product } from '@shared/types'
 import type { CheckoutPayload, PaymentInput } from '@shared/ipc'
 import * as prodRepo from '../repositories/products'
 import * as salesRepo from '../repositories/sales'
@@ -27,16 +27,29 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
     const it = raw as CartItem
     let costC = it.cost_base_c ?? 0
     let stockBase: number | null = it.stock_base ?? null
+    let p: Product | null = null
     if (it.product_id && it.product_id > 0) {
-      const p = prodRepo.getProduct(db, it.product_id)
+      try {
+        p = prodRepo.getProduct(db, it.product_id)
+      } catch (err) {
+        console.warn(`[checkout] Product ${it.product_id} not found in catalog, treating as non-inventory line item:`, err)
+        p = null
+      }
+    }
+    if (p) {
       if (p.item_type === 'COMPOSITE') {
         costC = prodRepo.calculateRollupCost(db, p.id)
         if (!settings.allow_negative_inventory) {
           const leaves = prodRepo.resolveLeafComponents(db, p.id, it.qty_base)
           for (const [leafId, leafData] of leaves) {
-            const leafProd = prodRepo.getProduct(db, leafId)
-            if (leafData.qty > leafProd.stock) {
-              throw new Error(`Insufficient component stock for "${p.name}". Missing ${leafData.name}: required ${leafData.qty} ${leafData.unit}, available ${leafProd.stock}.`)
+            try {
+              const leafProd = prodRepo.getProduct(db, leafId)
+              if (leafData.qty > leafProd.stock) {
+                throw new Error(`Insufficient component stock for "${p.name}". Missing ${leafData.name}: required ${leafData.qty} ${leafData.unit}, available ${leafProd.stock}.`)
+              }
+            } catch (err: any) {
+              if (err?.message?.includes('Insufficient component stock')) throw err
+              // Leaf component missing from catalog; skip stock check gracefully
             }
           }
         }
@@ -183,23 +196,38 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
         cost_base_c: it.cost_base_c ?? 0
       })
       if (it.product_id && it.product_id > 0) {
-        const prod = prodRepo.getProduct(db, it.product_id)
-        if (prod.item_type === 'COMPOSITE') {
-          const leaves = prodRepo.resolveLeafComponents(db, it.product_id, it.qty_base)
-          for (const [leafId, leafData] of leaves) {
-            prodRepo.adjustStock(
-              db,
-              leafId,
-              -leafData.qty,
-              'SALE',
-              `Component for ${it.name} (${leafData.qty} ${leafData.unit})`,
-              u.id,
-              txnNo,
-              { sale_item_id: saleItemId }
-            )
+        let prod: Product | null = null
+        try {
+          prod = prodRepo.getProduct(db, it.product_id)
+        } catch {
+          prod = null
+        }
+        if (prod) {
+          if (prod.item_type === 'COMPOSITE') {
+            const leaves = prodRepo.resolveLeafComponents(db, it.product_id, it.qty_base)
+            for (const [leafId, leafData] of leaves) {
+              try {
+                prodRepo.adjustStock(
+                  db,
+                  leafId,
+                  -leafData.qty,
+                  'SALE',
+                  `Component for ${it.name} (${leafData.qty} ${leafData.unit})`,
+                  u.id,
+                  txnNo,
+                  { sale_item_id: saleItemId }
+                )
+              } catch (err) {
+                console.warn(`[checkout] Could not adjust stock for composite leaf ${leafId}:`, err)
+              }
+            }
+          } else {
+            try {
+              prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
+            } catch (err) {
+              console.warn(`[checkout] Could not adjust stock for product ${it.product_id}:`, err)
+            }
           }
-        } else {
-          prodRepo.adjustStock(db, it.product_id, -it.qty_base, 'SALE', `${it.name} (${it.qty} ${it.unit_name})`, u.id, txnNo, { sale_item_id: saleItemId })
         }
       }
     }

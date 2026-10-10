@@ -123,7 +123,13 @@ export function validateCheckout(payload: unknown) {
   const cart = items.map((it) => {
     const x = it as Record<string, unknown>
     return {
-      product_id: x.product_id === null ? null : Number(x.product_id),
+      product_id:
+        x.product_id !== null &&
+        x.product_id !== undefined &&
+        !isNaN(Number(x.product_id)) &&
+        Number(x.product_id) > 0
+          ? Math.trunc(Number(x.product_id))
+          : null,
       name: isNonEmptyString(x.name, 'Item name'),
       unit_name: isNonEmptyString(x.unit_name, 'Unit'),
       qty: isPositiveNumber(x.qty, 'Quantity'),
