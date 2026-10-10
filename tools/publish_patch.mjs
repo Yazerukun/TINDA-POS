@@ -147,19 +147,18 @@ async function main() {
 Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
 
 ### 🌟 What's New in ${TAG}:
-1. **✏️ Line-Item Price Editing in Credit Sales (Items Taken on Credit):**
-   - Store owners and cashiers can now edit individual item unit prices directly inside the expanded credit sale items list in the Utang ledger.
-   - Interactive Cupertino modal features live subtotal calculations and real-time utang balance impact preview (emerald green deduction or rose red addition).
-   - Automatically adjusts customer outstanding balance and updates sale line items.
-2. **🧹 Permanent Ledger Entry Purge & 1-Tap Mistake Cleaner:**
-   - Voided mistake entries (such as ₱34,555.00 voided/reversal pairs) are persistently purged and permanently removed from customer statements.
-   - Automatically filters out internal rebalances (\`[AUDIT_REBALANCE]\`, \`[SYSTEM_SYNC]\`, and offset entries) so customer credit histories remain pristine and clutter-free.
-   - Interactive 1-tap "Clean Mistake Rows" banner immediately restores verified balances (e.g. ₱325,065.00).
-3. **🎨 Intuitive Sign & Color Standards in Utang Ledger Rows:**
-   - Deductions (Payments, Reversals, Refunds) strictly render with minus sign (\`−\`) in emerald green.
-   - Debt additions (Credit Sales) strictly render with plus sign (\`+\`) in rose red.
-4. **🔄 Resilient Native & Frontend Balance Recalculation Engine:**
-   - Seamless dual-track operation guaranteeing zero-error hot patches on older base binaries and native SQLite IPC on fresh installs.
+1. **🛡️ Bulletproof POS Checkout Immunity against "Product Not Found" Errors:**
+   - Eradicated cashier checkout crashes (\`Error invoking remote method 'pos:checkout': Product not found\`).
+   - If a line item or composite component is missing, deleted, or unsynced in the catalog, it is gracefully converted into a custom service line item without blocking the sale.
+   - Composite bundle recipe stock deductions are safely guarded against missing ingredient records.
+   - Sanitized input parameters so \`product_id\` is strictly positive integers or \`null\`.
+2. **📸 Dedicated Rush ID Studio Packages & Fast POS Speed Key:**
+   - Added official **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with 260gsm glossy photo cut specs and rush turnaround badge.
+   - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00 for all-in-one rush photo and badge jobs.
+   - Added 1-tap **Rush ID Package** (\`📸 ₱75.00\`) directly to the POS Quick Speed Keys grid for instantaneous ringing up.
+3. **🖨️ Printer & Receipt Customization Dual-Store Persistence & Parity:**
+   - Dual-store synchronization (\`localStorage\` + SQLite \`settings\`) ensuring all margins, coordinate offsets, and optical typography persist across restarts.
+   - 0ms cross-component live sync across \`PrinterStudioModal\`, \`PriceTagPrintModal\`, \`ReceiptPaper\`, and \`Settings\`.
 
 ### 📦 Patch Verification Hash:
 \`\`\`

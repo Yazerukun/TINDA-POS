@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791600809.2612948,
-    "seen": 1791600910.9212432,
-    "ast_hash": "458bba5e00071bf822707bbd87cedcd2",
+    "mtime": 1791601953.5586526,
+    "seen": 1791602394.434361,
+    "ast_hash": "d350414271ba625f84168d06428567ac",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/checkout.ts": {
-    "mtime": 1791600543.9097507,
-    "seen": 1791600910.9438264,
-    "ast_hash": "ad8fd93d9b58f32b64633c847cfcb408",
+    "mtime": 1791601765.803666,
+    "seen": 1791602394.4605155,
+    "ast_hash": "2a89310b86dfacfa411b08338193283e",
     "semantic_hash": ""
   },
   "source/src/main/services/cloudSync.ts": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "source/src/main/validation/schemas.ts": {
-    "mtime": 1791508856.3312216,
-    "seen": 1791509849.2786922,
-    "ast_hash": "79222760e94e0fdcd3dfa1ca89ac2947",
+    "mtime": 1791601661.5714056,
+    "seen": 1791602394.468666,
+    "ast_hash": "489335ac4c104271941c8995d40765a4",
     "semantic_hash": ""
   },
   "source/src/preload/index.d.ts": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791600827.0407844,
-    "seen": 1791600910.9621558,
-    "ast_hash": "1da7e0e69632e046b4672161fc0fe2a2",
+    "mtime": 1791601966.2538738,
+    "seen": 1791602394.4744947,
+    "ast_hash": "421ff15d761339c24026eabb7ffefb8e",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791600837.1232755,
-    "seen": 1791600911.0924828,
-    "ast_hash": "b1904cce3791e64a917c8066e0fca6f6",
+    "mtime": 1791601985.8035107,
+    "seen": 1791602394.6010873,
+    "ast_hash": "49c5b6ceff8dbe140bb9627e3e1f4f8e",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791600847.39672,
-    "seen": 1791600911.0931644,
-    "ast_hash": "13bc69fcf92ff660ee7b66c5d1a474b2",
+    "mtime": 1791601999.25456,
+    "seen": 1791602394.6018612,
+    "ast_hash": "f9a7c2cfd1eda9145ac9146d95a89fe8",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791600857.7407365,
-    "seen": 1791600911.0977323,
-    "ast_hash": "160b041e47682b8210f5959cf933bf27",
+    "mtime": 1791602015.3662574,
+    "seen": 1791602394.6078644,
+    "ast_hash": "cb4c42f7b344ecd774af5c281a472c10",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3972,9 +3972,9 @@
     "semantic_hash": ""
   },
   "tools/publish_patch.mjs": {
-    "mtime": 1791517815.8791714,
-    "seen": 1791517923.740495,
-    "ast_hash": "d23e33473617d34dcc33b8e63021aa22",
+    "mtime": 1791602329.8396754,
+    "seen": 1791602394.515777,
+    "ast_hash": "a469262cc501c58306fa292497f49ea0",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/utang-ledger-delete-void.test.ts": {
@@ -4032,9 +4032,9 @@
     "semantic_hash": ""
   },
   ".agents/memory/session.md": {
-    "mtime": 1791600096.2608764,
-    "seen": 1791600911.0139413,
-    "ast_hash": "d2acb71ae230625ba00c0cb88f253ff1",
+    "mtime": 1791601000.2613244,
+    "seen": 1791602394.5298996,
+    "ast_hash": "abf3a7f6a5e88b1f068bdbff5a63001a",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/composite-bom.test.ts": {
@@ -4104,9 +4104,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/PrintingHub.tsx": {
-    "mtime": 1791592761.1081738,
-    "seen": 1791593754.2344813,
-    "ast_hash": "9ee3a02ebc630f81557a1d1b575ae26e",
+    "mtime": 1791601720.901415,
+    "seen": 1791602394.492121,
+    "ast_hash": "89584db35195b14857f5f674c074e50e",
     "semantic_hash": ""
   },
   "source/src/renderer/src/utils/promoBundles.ts": {
@@ -4116,9 +4116,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/utils/speedKeys.ts": {
-    "mtime": 1791592761.114051,
-    "seen": 1791593754.2404764,
-    "ast_hash": "8814c89950a100c8f2e86f545d5bb599",
+    "mtime": 1791601732.7606,
+    "seen": 1791602394.499418,
+    "ast_hash": "2e4a2b8bad5f11b68489d11c723e5bab",
     "semantic_hash": ""
   },
   "tools/cloudflare-worker/tinda-sync-current.js": {

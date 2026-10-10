@@ -27,7 +27,18 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)**
+- Current Version: **v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)**
+
+## Key Features in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)
+1. **Bulletproof POS Checkout Immunity against "Product Not Found" Crashes**:
+   - Resolved the remote checkout error (`Error invoking remote method 'pos:checkout': Product not found.`) by adding safe product resolution fallbacks in `buildLines` and `checkout`.
+   - Items with missing, deleted, or un-synced inventory records are gracefully converted into custom line items so transactions are never blocked at the cashier counter.
+   - Component stock reduction loops for `COMPOSITE` bundles/recipes are guarded with try-catch blocks to prevent recipe desyncs from halting checkout.
+   - Input schema validation now sanitizes `product_id` to strictly positive integers or `null`, neutralizing invalid string/NaN parameters.
+2. **Dedicated Rush ID Studio Packages & Fast POS Speed Key**:
+   - Added official **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** (₱75.00) in `PrintingHub.tsx` with high-gloss photo cut specs and rush turnaround badge.
+   - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** (₱95.00) for all-in-one rush photo and badge jobs.
+   - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) to POS Quick Speed Keys for instantaneous cart addition.
 
 ## Key Features in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)
 1. **Printer & Receipt Customization Dual-Store Persistence (`localStorage` + SQLite Settings)**:

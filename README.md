@@ -287,6 +287,19 @@
 
 </div>
 
+## ✨ What's New in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)
+
+> **Complete eradication of "Product not found" checkout crash errors, resilient non-inventory line item fallbacks, official Rush ID studio packages, and 1-tap POS Fast Buttons integration.**
+
+- 🛡️ **Zero-Crash POS Checkout Immunity**:
+  - Immunized checkout transaction engine against missing or deleted inventory records; items missing catalog rows are gracefully handled as custom service line items.
+  - Guarded composite bundle stock deductions against missing leaf components, ensuring cashiers are never blocked from completing a customer transaction.
+  - Sanitized checkout schema parser to strictly require positive integers or null for `product_id`.
+- 📸 **Rush ID Package & Lamination Combo**:
+  - Integrated **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with photo cut specs and rush turnaround badge.
+  - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00.
+  - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) directly on POS Quick Speed Keys.
+
 ## ✨ What's New in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)
 
 > **Complete resolution for printer and receipt customization persistence using proven dual-store synchronization, dynamic SQLite settings preservation, instant 0ms cross-component layout updates, and receipt template customization parity.**
