@@ -1,9 +1,57 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IN PROGRESS: Fix Printer and Receipt Customization Persistence Dual-Store | agy | 2026-10-10 10:45
+IDLE | None | 2026-10-10 10:56
 
 ## Recent Handoff History
+
+### 2026-10-10 10:56 | agy (Printer Studio Dual-Store Persistence & v1.0.100 Release)
+- **Task**: Fix printer and receipt customization configuration not saving and reverting back to defaults.
+- **Root Cause Analysis**:
+  1. **SQLite Repository Key Stripping in `getSettings` (`settings.ts`)**:
+     - `getSettings` iterated only `Object.keys(defaultSettings)`. On client systems where Electron was hot-patched or running without full binary restart, newly introduced customization keys stored in SQLite were dropped and omitted from backend return values.
+  2. **Missing LocalStorage Hydration in `PrinterStudioModal.tsx`**:
+     - `PrinterStudioModal` saved to `localStorage`, but its `useEffect` on modal open only read `settings[key] ?? defaultVal`. If the backend returned undefined, it immediately defaulted back to 3.5 / defaults without checking localStorage.
+  3. **Zustand `useSettings` Store Missing Dual-Store Merging**:
+     - `useSettings.load()` and `update()` blindly replaced Zustand state with the stripped backend payload without reconciling with `localStorage`.
+  4. **Preview & Printing Inconsistency**:
+     - `ReceiptPaper.tsx` and `PriceTagPrintModal.tsx` were not reading reconciled customization values for previews and print execution.
+- **Done**:
+  - **Dual-Store Printer Customization Engine (`printerCustomization.ts`)**:
+    - Built type-safe `reconcilePrinterCustomization`, `getStoredPrinterCustomization`, `saveStoredPrinterCustomization`, and cross-component broadcast event `tinda-printer-config-changed`.
+    - 0ms cross-component reactivity between `PrinterStudioModal`, `PriceTagPrintModal`, `ReceiptPaper`, and `Settings.tsx`.
+  - **Zustand `useSettings` & SQLite Hardening**:
+    - `useSettings.load` and `update` now merge with local storage backup so settings never revert even on un-restarted Electron main processes.
+    - SQLite `getSettings` dynamically preserves and type-casts all database keys in `settings` table.
+  - **Receipt Builder & Thermal Print Engine Parity**:
+    - `buildReceiptLines` and `printSale` now respect `receipt_custom_header`, `receipt_custom_footer`, `receipt_show_cashier`, `receipt_show_customer`, and `receipt_show_change_breakdown`.
+  - **Quality Gates**:
+    - 7 new Vitest unit tests in `printerCustomization.test.ts` (all passed).
+    - 489/489 Vitest unit tests passed across 75 test suites (100% green).
+    - `npm run typecheck` passed with 0 errors across Node and Web targets.
+    - `node tools/check_master_invariants.mjs` passed.
+    - AST knowledge graph updated via `graphify update .`.
+  - **Auto-Version Bump & Release**:
+    - Bumped to `v1.0.100` across `package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, `RELEASE-STATE.md`.
+    - Bundled patch: `TindaPOS-Feature-Patch-1.0.100.zip` (0.90 MB, SHA-256 `d04c77dde318a9bcc269defe33a5d89a39baa9ef4c70d8e2975d7bd79250e1eb`).
+    - Published live feature patch to GitHub Releases: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.100`.
+    - Git commit `5d51cc8` pushed to `origin master`.
+- **Files Touched**:
+  - `source/src/renderer/src/utils/printerCustomization.ts`
+  - `source/src/renderer/src/utils/printerCustomization.test.ts`
+  - `source/src/main/repositories/settings.ts`
+  - `source/src/renderer/src/stores/settings.ts`
+  - `source/src/renderer/src/components/PrinterStudioModal.tsx`
+  - `source/src/renderer/src/components/ReceiptPaper.tsx`
+  - `source/src/renderer/src/components/PriceTagPrintModal.tsx`
+  - `source/src/main/services/checkout.ts`
+  - `source/src/main/services/printing.ts`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `source/package.json`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+  - `.agents/memory/session.md`
 
 ### 2026-10-10 10:04 | agy (F3 Quick Calculator Error Resolution & Math Engine Resilience)
 - **Task**: Fix error when using the Cashier Quick Calculator and F3 shortcut.
