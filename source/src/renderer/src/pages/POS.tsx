@@ -40,6 +40,7 @@ import {
   Package,
   Calculator,
   Sparkles,
+  Zap,
   Bell
 } from 'lucide-react'
 import { getMergedCustomerReminder, type CustomerReminder, type ReminderStatusInfo } from '@shared/customerReminders'
@@ -365,6 +366,17 @@ export function POS(): React.JSX.Element {
   const [posToolsOpen, setPosToolsOpen] = useState(false)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
   const [promoModalOpen, setPromoModalOpen] = useState(false)
+  const [quickKeysOpen, setQuickKeysOpen] = useState(() => {
+    return localStorage.getItem('tinda_pos_quick_keys_open') !== 'false'
+  })
+
+  const toggleQuickKeys = () => {
+    setQuickKeysOpen((prev) => {
+      const next = !prev
+      localStorage.setItem('tinda_pos_quick_keys_open', String(next))
+      return next
+    })
+  }
 
   const refreshCatCounts = async () => {
     try {
@@ -1112,40 +1124,88 @@ export function POS(): React.JSX.Element {
             <Sparkles className="h-4 w-4 text-amber-400" />
             <span className="hidden sm:inline">Promos</span>
           </button>
+
+          {/* Quick Keys Drawer Toggle */}
+          <button
+            type="button"
+            onClick={toggleQuickKeys}
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 ${
+              quickKeysOpen
+                ? 'border-indigo-500/50 bg-indigo-500/20 text-indigo-200'
+                : 'border-ink-line bg-ink-850 text-slate-300 hover:border-indigo-500/40 hover:text-white'
+            }`}
+            title="Toggle Quick Speed Keys & Pinned Categories (Save vertical screen space)"
+          >
+            <Zap className={`h-4 w-4 ${quickKeysOpen ? 'text-amber-400 fill-amber-400/20' : 'text-slate-400'}`} />
+            <span className="hidden sm:inline">Quick Keys</span>
+            <span className="text-[10px] text-slate-400 font-mono">
+              {quickKeysOpen ? '▲' : '▼'}
+            </span>
+          </button>
+
+          {/* Cashier Guide Walkthrough Button */}
+          <button
+            type="button"
+            onClick={() => useGuide.getState().openGuide('tour')}
+            className="flex items-center gap-1 rounded-lg border border-brand-500/30 bg-brand-500/10 px-2.5 py-2 text-xs font-bold text-brand-300 hover:bg-brand-500/20 hover:border-brand-400 active:scale-95 transition-all shadow-sm shrink-0"
+            title="Cashier Guide & 4-Step Walkthrough (v2.0.2)"
+          >
+            <HelpCircle className="h-4 w-4 text-brand-400" />
+            <span className="hidden md:inline">Guide</span>
+          </button>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
 
-        {/* Fast Buttons (Speed Keys) Strip: Yelo, Yosi, Candy, etc. */}
-        <FastButtonsBar
-          products={products}
-          onAddToCart={(p, qty) => {
-            if (saleStock(p) > 0) {
-              usePosCart.getState().add(p, qty)
-              warnIfNearExpiry(p)
-            } else {
-              toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
-            }
-          }}
-          onProductsChanged={async () => {
-            const res = await window.api.products.search('', { status: 'ACTIVE', limit: 2000 })
-            setProducts(res.rows)
-            void refreshCatCounts()
-          }}
-        />
+        {/* Collapsible Fast Buttons & Pinned Categories Drawer */}
+        {quickKeysOpen ? (
+          <div className="space-y-1.5 rounded-xl border border-ink-line/70 bg-ink-950/40 p-2 shadow-inner transition-all">
+            {/* Fast Buttons (Speed Keys) Strip: Yelo, Yosi, Candy, etc. */}
+            <FastButtonsBar
+              products={products}
+              onAddToCart={(p, qty) => {
+                if (saleStock(p) > 0) {
+                  usePosCart.getState().add(p, qty)
+                  warnIfNearExpiry(p)
+                } else {
+                  toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                }
+              }}
+              onProductsChanged={async () => {
+                const res = await window.api.products.search('', { status: 'ACTIVE', limit: 2000 })
+                setProducts(res.rows)
+                void refreshCatCounts()
+              }}
+            />
 
-        {/* Apple Cupertino Pinned Quick Categories & Bundles Bar */}
-        <PinnedCategoriesBar
-          categories={categories}
-          productsCountMap={catCounts}
-          totalActiveCount={catCounts.ALL || displayedProducts.length}
-          activeCategory={catFilter}
-          onSelectCategory={chooseCategory}
-          onCategoriesChanged={async () => {
-            const updated = await window.api.categories.list()
-            setCategories(updated)
-            void refreshCatCounts()
-          }}
-        />
+            {/* Apple Cupertino Pinned Quick Categories & Bundles Bar */}
+            <PinnedCategoriesBar
+              categories={categories}
+              productsCountMap={catCounts}
+              totalActiveCount={catCounts.ALL || displayedProducts.length}
+              activeCategory={catFilter}
+              onSelectCategory={chooseCategory}
+              onCategoriesChanged={async () => {
+                const updated = await window.api.categories.list()
+                setCategories(updated)
+                void refreshCatCounts()
+              }}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-ink-900/50 border border-ink-line/50 text-[11px] text-slate-400 transition-all">
+            <span className="flex items-center gap-1.5">
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              <span>Quick Keys & Pinned Categories collapsed for maximum catalog view</span>
+            </span>
+            <button
+              type="button"
+              onClick={toggleQuickKeys}
+              className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              Show Quick Keys ▾
+            </button>
+          </div>
+        )}
 
         {viewMode === 'list' ? (
           /* High-Density Enterprise Listing Table */

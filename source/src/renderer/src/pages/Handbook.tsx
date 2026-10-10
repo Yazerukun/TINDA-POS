@@ -47,13 +47,98 @@ interface Chapter {
 
 export function Handbook(): React.JSX.Element {
   const { setPage } = useNav()
-  const [selectedId, setSelectedId] = useState<string>('intro')
+  const [selectedId, setSelectedId] = useState<string>('walkthrough')
   const [searchQuery, setSearchQuery] = useState('')
 
   const chapters: Chapter[] = useMemo(() => [
     {
-      id: 'intro',
+      id: 'walkthrough',
       number: 1,
+      title: 'Cashier Tour & Quick SOPs',
+      subtitle: 'The 4-step daily cashier flow: scan, credit, checkout, and balancing',
+      icon: <Sparkles className="h-4 w-4 text-amber-400" />,
+      readTime: '2 min read',
+      relatedPage: 'pos',
+      relatedPageLabel: 'Open POS Register',
+      content: (
+        <div className="space-y-6 text-slate-300 leading-relaxed">
+          <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-ink-900 to-ink-900 p-5">
+            <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+              <Sparkles className="h-4 w-4" /> v2.0.2 Cashier Superpower Tour
+            </div>
+            <h2 className="mt-1 text-2xl font-black text-white">4-Step Daily Cashier Standard (SOP)</h2>
+            <p className="mt-2 text-slate-300 text-sm">
+              Gidisenyo ang TINDA POS aron paspas ug dili makalibog ang pagpamaligya. Bisan kinsang bag-ong cashier o tindera, sunda lang kining 4 ka yano nga pamaagi:
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-ink-line bg-ink-900 p-5 space-y-3 hover:border-brand-500/40 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/20 text-sm font-black text-brand-400">1</span>
+                <div>
+                  <h4 className="font-bold text-white text-base">Paspas Pag-Scan & Search</h4>
+                  <span className="text-[11px] text-brand-300 font-mono">Barcode Gun / F1 / Quick Keys</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                • I-tutok dayon ang barcode scanner gun sa produkto. Automatic kining mosulod sa Cart.<br />
+                • Walay barcode? Pindota ang <strong>⚡ Quick Keys</strong> para sa Yelo (₱5), Yosi (₱8), Candy (₱1), o Rush ID (₱75).<br />
+                • Gamita ang keyboard shortcut <strong>F1 o /</strong> para mangita gamit ang ngalan.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-ink-line bg-ink-900 p-5 space-y-3 hover:border-emerald-500/40 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-sm font-black text-emerald-400">2</span>
+                <div>
+                  <h4 className="font-bold text-white text-base">Suki & Utang Recording</h4>
+                  <span className="text-[11px] text-emerald-300 font-mono">1-Click Customer Select & Ledger</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                • Kung mangutang ang suki, i-click ang <strong>Customer</strong> sa ibabaw sa Cart.<br />
+                • Makit-an nimo dayon ang ilang balance history ug credit limit.<br />
+                • I-pili ang <strong>Charge to Utang</strong> inig checkout — automatic ma-update ang ilang record nga walay manual lista sa notebook!
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-ink-line bg-ink-900 p-5 space-y-3 hover:border-teal-500/40 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-500/20 text-sm font-black text-teal-400">3</span>
+                <div>
+                  <h4 className="font-bold text-white text-base">Multi-Payment Checkout</h4>
+                  <span className="text-[11px] text-teal-300 font-mono">Cash · GCash · Maya · Split Payment</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                • Pindota ang <strong>F12 / Checkout</strong>.<br />
+                • Dawata ang <strong>Cash</strong> (automatic ang kwenta sa sukli), <strong>GCash QR</strong>, o <strong>Split Payment</strong> (tunga Cash, tunga Utang).<br />
+                • <em>Bulletproof Checkout Immunity:</em> Walay crash bisan unsay mahitabo sa produkto.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-ink-line bg-ink-900 p-5 space-y-3 hover:border-purple-500/40 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/20 text-sm font-black text-purple-400">4</span>
+                <div>
+                  <h4 className="font-bold text-white text-base">Thermal Receipt & Shift Balancing</h4>
+                  <span className="text-[11px] text-purple-300 font-mono">Chiteng CT221B · 58/80mm · Z-Read</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                • 1-tap thermal receipt print gamit ang standard POS printer o Chiteng CT221B.<br />
+                • Inig sira sa tindahan, pindota ang <strong>Z-Reading (End Shift)</strong> aron ma-ihap ang physical drawer cash.<br />
+                • Sigurado ang ginansya ug walay alkanse!
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'intro',
+      number: 2,
       title: 'Welcome to TINDA POS',
       subtitle: 'System identity, offline philosophy, and basic concepts',
       icon: <BookOpen className="h-4 w-4" />,

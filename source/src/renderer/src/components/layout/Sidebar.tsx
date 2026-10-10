@@ -259,7 +259,7 @@ export function Sidebar(): React.JSX.Element {
 
           <button
             type="button"
-            onClick={() => useGuide.getState().openGuide('start')}
+            onClick={() => useGuide.getState().openGuide('tour')}
             className="flex items-center justify-center gap-1 rounded-lg border border-amber-500/25 bg-amber-500/10 px-1.5 py-1.5 text-[11px] font-semibold text-amber-300 hover:border-amber-500/40 hover:bg-amber-500/20 transition shadow-sm active:scale-95"
             title="Open User Guide & Cashier Instructions"
           >

@@ -1802,3 +1802,56 @@
 1. **Category Valuation Quick-Pills Bar:** Horizontal summary bar in `Inventory.tsx` displaying live product count and aggregate stock valuation (`₱XX.XX`) per category.
 2. **Classification Filters:** Quick toggle chips to isolate Standard Physical items, Composite BOM recipes, and Service items.
 
+---
+
+## 82. Zero-Crash Checkout Immunity, Cupertino Feature Carousel & Dual-Store Hardware Alignment (v2.0.1 Spec)
+
+### 82.1 Zero-Crash Checkout Immunity Contract
+1. **Root Problem Eradication:** Eradicated cashier checkout crashes (`Error invoking remote method 'pos:checkout': Product not found`) caused by deleted items, missing database records, or custom service jobs.
+2. **Graceful Service Synthesis:** If a line item or composite component is missing or unindexed in the catalog, the checkout engine gracefully converts it into a valid custom service line item (`item_type: SERVICE`) without blocking or aborting the transaction.
+3. **Composite Recipe Stock Defense:** Constituent ingredient deductions are safely guarded against missing leaf items, logging a warning rather than throwing an unhandled exception.
+4. **Input Sanitization:** Parameter validation enforces that `product_id` is strictly positive integers or `null`, completely preventing invalid SQL queries.
+
+### 82.2 Rush ID Studio Packages & Fast POS Speed Key
+1. **Official Studio Presets:**
+   - **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport):** Priced at ₱75.00 with 260gsm glossy photo cut specifications and rush turnaround badge.
+   - **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch):** Priced at ₱95.00 for all-in-one rush photo and badge jobs.
+2. **1-Tap POS Speed Key:** Dedicated `📸 Rush ID (₱75.00)` quick button directly integrated into the POS Quick Speed Keys grid for instantaneous ringing up.
+
+### 82.3 Dual-Store Hardware Alignment & Settings Parity
+1. **Dual-Store Synchronization:** Complete persistence parity between `localStorage` and SQLite `settings`, ensuring printer offsets, margins, and optical typography persist across app relaunches.
+2. **0ms Cross-Component Sync:** Real-time event propagation synchronizing `PrinterStudioModal`, `PriceTagPrintModal`, `ReceiptPaper`, and `Settings`.
+
+---
+
+## 83. Streamlined Cashier Workflow, Zero-Clutter POS Architecture & Interactive Store Academy (v2.0.2 Spec)
+
+### 83.1 Streamlined Zero-Clutter POS Architecture
+1. **1-Row Compact Action Bar:** Replaces the previous 4-tier visual sprawl with a unified, high-density toolbar incorporating:
+   - Primary search bar with autofocus and barcode scan gun listener (`F1` / `/`).
+   - Category selector with pinned category quick-customization.
+   - Inventory Safety HUD filter badges (`Low Stock`, `Near Expiry`).
+   - Density toggles (`List View` vs `Grid View`).
+   - Quick Cashier Calculator shortcut (`F3`).
+   - Promo Bundles browser modal.
+   - ⚡ Quick Keys Drawer Toggle with state persistence.
+   - ❓ Interactive Cashier Guide trigger.
+2. **Collapsible Quick Keys Drawer (`tinda_pos_quick_keys_open`):**
+   - Groups `FastButtonsBar` (Speed Keys) and `PinnedCategoriesBar` into an elegant, collapsible Cupertino container.
+   - When collapsed, saves ~120px of vertical screen real estate, maximizing catalog product rows and cart visibility on standard 1366x768 cashier displays.
+   - Retains full keyboard accessibility and instant 1-tap re-expansion.
+
+### 83.2 Unified Store Academy & Interactive Cashier Tour
+1. **Harmonized Help & Guide Hub:** Bridges `HelpGuideModal` and `Handbook.tsx` into a cohesive, zero-confusion knowledge center.
+2. **4-Step Cashier Standard Operating Procedure (SOP) Walkthrough:**
+   - **Step 1: Paspas Pag-Scan & Search:** Barcode gun auto-entry, F1 quick search, and 1-tap Speed Keys (Yelo ₱5, Yosi ₱8, Candy ₱1).
+   - **Step 2: Suki & Utang Recording:** Direct customer selection from cart, instant credit limit and balance review, and automated ledger posting.
+   - **Step 3: Multi-Payment Checkout:** Cash with automatic change calculation, GCash QR, Maya, and Split Payment (Cash + Utang).
+   - **Step 4: Thermal Receipt & Shift Balancing:** Chiteng CT221B / 58mm/80mm solid black printing, end-of-day Z-Reading physical drawer balancing.
+3. **Contextual Guide Triggers:** Unified `[ ❓ Guide ]` buttons embedded in the POS header and Sidebar footer ensuring any new cashier can access step-by-step instructions in 1 click.
+
+### 83.3 System Invariants & Safety Guarantees
+1. **Zero Database Disruption:** No destructive database migrations or schema alter commands. All existing sales, customer credit records, and inventory history remain 100% intact.
+2. **Offline Integrity:** All walkthrough and guide content resides locally in the bundle with zero cloud or internet dependencies.
+
+

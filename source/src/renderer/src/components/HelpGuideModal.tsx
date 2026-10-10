@@ -17,6 +17,7 @@ import {
   Search
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
+import { useNav } from '../stores/nav'
 import { useGuide, type GuideTab } from '../stores/guide'
 
 interface TabOption {
@@ -27,7 +28,8 @@ interface TabOption {
 }
 
 const TABS: TabOption[] = [
-  { key: 'start', label: 'Quick Start', icon: <Sparkles className="h-4 w-4" /> },
+  { key: 'tour', label: 'Cashier Tour', icon: <Sparkles className="h-4 w-4 text-amber-400" />, badge: 'v2.0.2' },
+  { key: 'start', label: 'Quick Start', icon: <Zap className="h-4 w-4" /> },
   { key: 'pos', label: 'POS & Cashier', icon: <ShoppingCart className="h-4 w-4" /> },
   { key: 'scanner', label: 'Barcode Scanner', icon: <Barcode className="h-4 w-4" /> },
   { key: 'inventory', label: 'Inventory & Stock', icon: <Boxes className="h-4 w-4" /> },
@@ -38,6 +40,7 @@ const TABS: TabOption[] = [
 
 export function HelpGuideModal(): React.JSX.Element | null {
   const { open, tab, closeGuide, setTab } = useGuide()
+  const { setPage } = useNav()
 
   if (!open) return null
 
@@ -48,11 +51,24 @@ export function HelpGuideModal(): React.JSX.Element | null {
       title="TINDA POS — User Guide & Cashier Instructions"
       maxWidth="max-w-3xl"
       footer={
-        <div className="flex w-full items-center justify-between text-xs text-slate-400">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <ShieldCheck className="h-4 w-4" />
-            100% Offline · Zero Internet Required
-          </span>
+        <div className="flex w-full flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <ShieldCheck className="h-4 w-4" />
+              100% Offline
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                closeGuide()
+                setPage('handbook')
+              }}
+              className="inline-flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 font-semibold underline underline-offset-2"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Open Full Store Handbook (13 Chapters) →
+            </button>
+          </div>
           <button
             type="button"
             onClick={closeGuide}
@@ -79,9 +95,100 @@ export function HelpGuideModal(): React.JSX.Element | null {
             >
               {t.icon}
               {t.label}
+              {t.badge && (
+                <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-bold text-amber-300 border border-amber-500/30">
+                  {t.badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
+
+        {/* Tab 0: Interactive Cashier Walkthrough */}
+        {tab === 'tour' && (
+          <div className="space-y-4 text-xs text-slate-300">
+            <div className="rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-ink-900 to-ink-900 p-4">
+              <div className="flex items-center justify-between">
+                <span className="badge border border-amber-400/40 bg-amber-500/10 text-amber-300 text-[10px] font-bold">
+                  ✨ Interactive Walkthrough
+                </span>
+                <span className="text-[10px] text-slate-400">Estimated read: 2 mins</span>
+              </div>
+              <h3 className="mt-2 text-base font-black text-white">
+                4-Step Cashier Superpower Guide (v2.0.2)
+              </h3>
+              <p className="mt-1 text-slate-300 leading-relaxed text-xs">
+                Kini ang pinaka-paspas nga pamaagi sa pag-operate sa TINDA POS. Sunda kining 4 ka steps para dili maglibog ang cashier o tindera:
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-brand-500/40 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-500/20 text-xs font-bold text-brand-400">1</span>
+                  <h4 className="font-bold text-white text-sm">Paspas Pag-Scan & Search</h4>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  • I-tutok ang barcode scanner sa item o pindota ang <strong>F1 / Search</strong>.<br />
+                  • Pindota ang <strong>⚡ Quick Keys</strong> para sa mga walay barcode (Yelo ₱5, Yosi ₱8, Candy ₱1).<br />
+                  • Automatic mo-sulod sa Cart ang mga produkto.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-emerald-500/40 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20 text-xs font-bold text-emerald-400">2</span>
+                  <h4 className="font-bold text-white text-sm">Suki & Utang Recording</h4>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  • Kung naay suki nga mangutang, i-click ang <strong>Customer</strong> sa Cart.<br />
+                  • Makit-an dayon ang ilang past balance ug credit limit.<br />
+                  • I-pili ang <strong>Charge to Utang</strong> at checkout — auto-post sa ledger!
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-teal-500/40 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-teal-500/20 text-xs font-bold text-teal-400">3</span>
+                  <h4 className="font-bold text-white text-sm">Multi-Payment Checkout</h4>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  • Pindota ang <strong>F12 / Checkout</strong>.<br />
+                  • Dawata ang <strong>Cash</strong> (auto-sukli), <strong>GCash / Maya</strong>, o <strong>Split Payment</strong> (tunga Cash, tunga Utang).<br />
+                  • Safe batok sa missing products — zero crash guarantee!
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-purple-500/40 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-500/20 text-xs font-bold text-purple-400">4</span>
+                  <h4 className="font-bold text-white text-sm">Receipt & Shift Balancing</h4>
+                </div>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  • 1-tap thermal receipt print gamit ang 58mm/80mm o Chiteng CT221B.<br />
+                  • Inig human sa adlaw, pindota ang <strong>Z-Reading</strong> para i-balanse ang physical cash sa drawer.<br />
+                  • Sakto sa sentimo, walay mawala nga kita!
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg bg-ink-850 p-3 border border-ink-line">
+              <span className="text-xs text-slate-300">
+                Gusto nimog mas lawom nga katin-awan sa matag button ug feature?
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  closeGuide()
+                  setPage('handbook')
+                }}
+                className="btn-secondary px-3 py-1.5 text-xs font-bold text-brand-300"
+              >
+                Tan-awa ang Store Handbook →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tab 1: Quick Start & Daily Workflow */}
         {tab === 'start' && (

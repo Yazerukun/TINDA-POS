@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 export type GuideTab =
+  | 'tour'
   | 'start'
   | 'pos'
   | 'scanner'

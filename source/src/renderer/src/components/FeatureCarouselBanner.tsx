@@ -31,6 +31,19 @@ interface FeatureSlide {
 
 const SLIDES: FeatureSlide[] = [
   {
+    id: 'v202-streamlined-workflow',
+    badge: '✨ V2.0.2 STREAMLINED WORKFLOW',
+    badgeColor: 'border-brand-500/40 bg-brand-500/10 text-brand-300',
+    title: 'Zero-Clutter POS & Interactive Cashier Tour',
+    description:
+      'Clean 1-row POS toolbar with collapsible Quick Keys drawer for maximum product space, paired with an interactive 4-step Store Academy walkthrough.',
+    ctaText: 'Start Cashier Tour',
+    gradient: 'from-brand-950/60 via-ink-900 to-indigo-950/50',
+    border: 'border-brand-500/30',
+    icon: <Sparkles className="h-6 w-6 text-brand-400" />,
+    targetPage: 'handbook'
+  },
+  {
     id: 'checkout-immunity',
     badge: '🛡️ ZERO-CRASH IMMUNITY',
     badgeColor: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
