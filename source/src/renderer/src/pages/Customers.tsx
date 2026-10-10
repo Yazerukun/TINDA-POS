@@ -7,7 +7,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 
-interface Form { id: number | null; full_name: string; nickname: string; phone: string; address: string; credit_limit_c: number }
+interface Form { id: number | null; full_name: string; nickname: string; phone: string; address: string; credit_limit_c: number; notes: string }
 
 export function Customers(): React.JSX.Element {
   const [rows, setRows] = useState<Customer[]>([])
@@ -37,10 +37,10 @@ export function Customers(): React.JSX.Element {
   const save = async (f: Form) => {
     try {
       if (f.id) {
-        await window.api.customers.update(f.id, { full_name: f.full_name, nickname: f.nickname || null, phone: f.phone || null, address: f.address || null, credit_limit_c: f.credit_limit_c })
+        await window.api.customers.update(f.id, { full_name: f.full_name, nickname: f.nickname || null, phone: f.phone || null, address: f.address || null, credit_limit_c: f.credit_limit_c, notes: f.notes || null })
         toastSuccess('Customer updated')
       } else {
-        await window.api.customers.create({ full_name: f.full_name, nickname: f.nickname || null, phone: f.phone || null, address: f.address || null, credit_limit_c: f.credit_limit_c })
+        await window.api.customers.create({ full_name: f.full_name, nickname: f.nickname || null, phone: f.phone || null, address: f.address || null, credit_limit_c: f.credit_limit_c, notes: f.notes || null })
         toastSuccess('Customer added')
       }
       setEditing(null)
@@ -53,7 +53,7 @@ export function Customers(): React.JSX.Element {
       <PageHeader
         title="Customers"
         subtitle={`${rows.length} active customers`}
-        actions={<button onClick={() => setEditing({ id: null, full_name: '', nickname: '', phone: '', address: '', credit_limit_c: 100000 })} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> New Customer</button>}
+        actions={<button onClick={() => setEditing({ id: null, full_name: '', nickname: '', phone: '', address: '', credit_limit_c: 100000, notes: '' })} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> New Customer</button>}
       />
       <div className="mb-4 relative max-w-md">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -63,7 +63,7 @@ export function Customers(): React.JSX.Element {
       {loading ? (
         <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="card h-14 animate-pulse" />)}</div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No customers" message="Add customers to sell on utang (credit)." icon={<Users className="h-7 w-7" />} action={<button onClick={() => setEditing({ id: null, full_name: '', nickname: '', phone: '', address: '', credit_limit_c: 100000 })} className="btn-primary">New Customer</button>} />
+        <EmptyState title="No customers" message="Add customers to sell on utang (credit)." icon={<Users className="h-7 w-7" />} action={<button onClick={() => setEditing({ id: null, full_name: '', nickname: '', phone: '', address: '', credit_limit_c: 100000, notes: '' })} className="btn-primary">New Customer</button>} />
       ) : (
         <div className="card overflow-hidden">
           <table className="table w-full">
@@ -92,7 +92,7 @@ export function Customers(): React.JSX.Element {
                   </td>
                   <td className="w-[12%] py-3 px-3 text-center align-middle">
                     <div className="flex items-center justify-center">
-                      <button onClick={() => setEditing({ id: c.id, full_name: c.full_name, nickname: c.nickname ?? '', phone: c.phone ?? '', address: c.address ?? '', credit_limit_c: c.credit_limit_c })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
+                      <button onClick={() => setEditing({ id: c.id, full_name: c.full_name, nickname: c.nickname ?? '', phone: c.phone ?? '', address: c.address ?? '', credit_limit_c: c.credit_limit_c, notes: c.notes ?? '' })} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                     </div>
                   </td>
                 </tr>
@@ -125,6 +125,7 @@ function CustomerModal({ form, onSave, onClose }: { form: Form; onSave: (f: Form
           <div><label className="label">Credit Limit (₱)</label><input type="number" min={0} value={f.credit_limit_c / 100} onChange={(e) => set({ credit_limit_c: Math.round(parseFloat(e.target.value || '0') * 100) })} className="input w-full" /></div>
         </div>
         <div><label className="label">Address</label><input value={f.address} onChange={(e) => set({ address: e.target.value })} className="input w-full" /></div>
+        <div><label className="label">Notes / Instructions</label><input value={f.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="e.g. Suki notes, payment promise, directions" className="input w-full" /></div>
       </form>
     </Modal>
   )

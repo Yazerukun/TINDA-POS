@@ -44,7 +44,33 @@ export const defaultSettings: StoreSettings = {
   cloud_sync_pending: false,
   pos_pinned_categories: [],
   label_printer: '',
-  label_paper_size: '40x30'
+  label_paper_size: '40x30',
+  // Printer Alignment & Studio Customization Defaults
+  receipt_offset_left_mm: 3.5,
+  receipt_offset_right_mm: 2.0,
+  receipt_feed_lines_end: 3,
+  receipt_font_scale: 100,
+  receipt_line_spacing: 'balanced',
+  receipt_ultra_black: true,
+  receipt_custom_header: '',
+  receipt_custom_footer: '',
+  receipt_show_cashier: true,
+  receipt_show_customer: true,
+  receipt_show_change_breakdown: true,
+  receipt_show_footer_qr: false,
+  label_custom_width_mm: 40,
+  label_custom_height_mm: 30,
+  label_offset_x_mm: 0.0,
+  label_offset_y_mm: 0.0,
+  label_safe_margin_mm: 1.2,
+  label_barcode_height_mm: 26,
+  label_barcode_bar_width: 1.3,
+  label_price_font_size: 'large',
+  label_name_wrap_lines: 1,
+  label_show_store_name: true,
+  label_show_barcode: true,
+  label_show_sku: true,
+  label_show_wholesale: false
 }
 
 export function parsePinnedCategoryIds(raw: unknown): number[] {

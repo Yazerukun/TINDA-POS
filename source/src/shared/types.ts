@@ -471,6 +471,32 @@ export interface StoreSettings {
   cloud_last_synced_at: string | null
   cloud_sync_pending: boolean
   pos_pinned_categories: number[]
+  // Printer Alignment & Studio Customization
+  receipt_offset_left_mm?: number
+  receipt_offset_right_mm?: number
+  receipt_feed_lines_end?: number
+  receipt_font_scale?: number
+  receipt_line_spacing?: 'compact' | 'balanced' | 'spacious'
+  receipt_ultra_black?: boolean
+  receipt_custom_header?: string
+  receipt_custom_footer?: string
+  receipt_show_cashier?: boolean
+  receipt_show_customer?: boolean
+  receipt_show_change_breakdown?: boolean
+  receipt_show_footer_qr?: boolean
+  label_custom_width_mm?: number
+  label_custom_height_mm?: number
+  label_offset_x_mm?: number
+  label_offset_y_mm?: number
+  label_safe_margin_mm?: number
+  label_barcode_height_mm?: number
+  label_barcode_bar_width?: number
+  label_price_font_size?: 'medium' | 'large' | 'jumbo'
+  label_name_wrap_lines?: 1 | 2
+  label_show_store_name?: boolean
+  label_show_barcode?: boolean
+  label_show_sku?: boolean
+  label_show_wholesale?: boolean
 }
 
 export type LanRole = 'standalone' | 'master' | 'satellite'

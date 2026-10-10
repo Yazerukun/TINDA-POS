@@ -25,7 +25,8 @@ import {
   Tv,
   Layers,
   FileText,
-  Cloud
+  Cloud,
+  Calculator as CalcIcon
 } from 'lucide-react'
 import { useNav, type PageKey } from '../stores/nav'
 import { useUpdate } from '../stores/update'
@@ -237,11 +238,11 @@ export function Handbook(): React.JSX.Element {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-cyan-500/30 bg-ink-900 p-4">
               <h4 className="font-semibold text-white flex items-center gap-2">
-                <TerminalToolsIcon className="h-4 w-4 text-cyan-400" />
-                Terminal Tools &amp; Guide (<kbd className="font-mono text-cyan-300">F3</kbd>)
+                <CalcIcon className="h-4 w-4 text-emerald-400" />
+                Quick Calculator &amp; Sukli (<kbd className="font-mono text-emerald-300">F3</kbd>)
               </h4>
               <p className="mt-1 text-xs text-slate-400">
-                Press <kbd className="font-mono text-cyan-300">F3</kbd> to launch the Terminal Tools modal. Cashiers can test thermal printing, reprint the last customer receipt, verify scanner inputs, or view on-screen quick checklists.
+                Press <kbd className="font-mono text-emerald-300">F3</kbd> to launch the Cashier Quick Calculator &amp; Sukli Assistant. Cashiers can do quick arithmetic, apply percentages, compute exact customer change, or push custom service items straight to the cart.
               </p>
             </div>
 
@@ -488,9 +489,9 @@ export function Handbook(): React.JSX.Element {
                   <td className="px-4 py-2.5 text-slate-400">Focus quantity input for highlighted cart item</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-2.5 font-mono font-bold text-cyan-400">F3</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Terminal Tools &amp; Guide</td>
-                  <td className="px-4 py-2.5 text-slate-400">Open tools dialog (reprint receipt, printer test, scanner status)</td>
+                  <td className="px-4 py-2.5 font-mono font-bold text-emerald-400">F3</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Quick Calculator &amp; Sukli</td>
+                  <td className="px-4 py-2.5 text-slate-400">Open cashier calculator, percentage tool, and customer change assistant</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F4</td>
@@ -610,7 +611,7 @@ export function Handbook(): React.JSX.Element {
                 <li>Plug the USB cable into your PC or laptop, then turn on the printer power switch.</li>
                 <li>Install the official <strong>POS-58 Driver</strong> or <strong>Xprinter 58mm Driver</strong> in Windows.</li>
                 <li><strong>Zero-Click Auto-Detect:</strong> Once plugged in, TINDA POS automatically detects and binds your printer for receipts, shift audits, and Z-readings.</li>
-                <li><strong>Universal Manual Print Fallback:</strong> If your printer does not print automatically due to Windows spooler port locking, tap <strong>Manual Print</strong> in Checkout or Terminal Tools [F3] to send the receipt directly through the native Windows Print Dialog.</li>
+                <li><strong>Universal Manual Print Fallback:</strong> If your printer does not print automatically due to Windows spooler port locking, tap <strong>Manual Print</strong> in Checkout or Terminal Tools to send the receipt directly through the native Windows Print Dialog.</li>
               </ol>
             </div>
 

@@ -35,7 +35,8 @@ import {
   Zap,
   Wrench,
   FileText,
-  Tag
+  Tag,
+  Sliders
 } from 'lucide-react'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
@@ -43,6 +44,7 @@ import { printerPick, printerStatusLabel, autoDetectLabelPrinter } from '@shared
 import { Modal } from '../components/ui/Modal'
 import { AppLogo } from '../components/AppLogo'
 import { useSettings } from '../stores/settings'
+import { PrinterStudioModal } from '../components/PrinterStudioModal'
 
 import { toastSuccess, toastError } from '../stores/toast'
 import { ReceiptPaper } from '../components/ReceiptPaper'
@@ -1107,6 +1109,8 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
   const [saving, setSaving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [printers, setPrinters] = useState<PrinterChoice[]>([])
+  const [studioOpen, setStudioOpen] = useState(false)
+  const [studioTab, setStudioTab] = useState<'receipt' | 'label'>('receipt')
 
   useEffect(() => {
     if (settings) {
@@ -1321,6 +1325,17 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
           >
             <Printer className="h-4 w-4" /> Manual Test Print (Dialog)
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStudioTab('receipt')
+              setStudioOpen(true)
+            }}
+            className="btn-ghost flex items-center gap-2 text-brand-300 hover:text-white border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500/20"
+            title="Fine-tune receipt left/right margins, cutter feed lines, fonts, and custom branding"
+          >
+            <Sliders className="h-4 w-4" /> Customize Layout &amp; Alignment
+          </button>
         </div>
       </div>
     </div>
@@ -1455,18 +1470,25 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
           </button>
           <button
             type="button"
-            onClick={async () => {
-              const res = await window.api.printer.openDriverTutorial()
-              if (!res.ok) alert(res.message || 'Failed to open tutorial PDF')
+            onClick={() => {
+              setStudioTab('label')
+              setStudioOpen(true)
             }}
-            className="btn-ghost flex items-center gap-2 text-emerald-300 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20"
-            title="Open CT221B Windows Driver Setup Guide (PDF)"
+            className="btn-ghost flex items-center gap-2 text-indigo-300 border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20"
+            title="Fine-tune CT221B X/Y offsets, margins, barcode height, and sticker dimensions"
           >
-            <FileText className="h-4 w-4" /> Driver Guide (PDF)
+            <Sliders className="h-4 w-4" /> Calibrate CT221B Alignment
           </button>
         </div>
       </div>
     </div>
+
+    {/* Universal Printer Alignment & Customization Studio */}
+    <PrinterStudioModal
+      open={studioOpen}
+      onClose={() => setStudioOpen(false)}
+      initialTab={studioTab}
+    />
   </div>
   )
 }

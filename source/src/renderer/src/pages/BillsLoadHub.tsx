@@ -84,6 +84,49 @@ export function BillsLoadHub(): React.JSX.Element {
     } catch {}
   }, [])
 
+  // ─── Live CFD Sync for Bills & E-Load Hub ────────────────────────
+  useEffect(() => {
+    return () => {
+      void window.api.phoneScanner?.updateCfd({
+        status: 'IDLE',
+        mode: 'RETAIL',
+        billsPayload: undefined
+      }).catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    const billerName = selectedBiller === 'Other' ? customBiller.trim() : selectedBiller
+    const amt = parseFloat(amountStr) || 0
+    const fee = parseFloat(serviceFeeStr) || 0
+    if (amt > 0) {
+      const total = amt + fee
+      void window.api.phoneScanner?.updateCfd({
+        status: 'ACTIVE',
+        mode: 'BILLS_PAYMENT',
+        billsPayload: {
+          biller: billerName || 'Bills Payment',
+          accountNo: accountNo.trim(),
+          customerName: customerName.trim() || undefined,
+          customerPhone: customerPhone.trim() || undefined,
+          amount_c: Math.round(amt * 100),
+          fee_c: Math.round(fee * 100),
+          total_c: Math.round(total * 100),
+          sourceWallet,
+          referenceNo: referenceNo.trim() || undefined,
+          status: 'PENDING'
+        },
+        total_c: Math.round(total * 100)
+      }).catch(() => {})
+    } else {
+      void window.api.phoneScanner?.updateCfd({
+        status: 'IDLE',
+        mode: 'RETAIL',
+        billsPayload: undefined
+      }).catch(() => {})
+    }
+  }, [selectedBiller, customBiller, accountNo, customerName, customerPhone, amountStr, serviceFeeStr, sourceWallet, referenceNo])
+
   const saveRecords = (newRecords: BillTransaction[]) => {
     setRecords(newRecords)
     try {
@@ -157,6 +200,23 @@ export function BillsLoadHub(): React.JSX.Element {
     const next = [newTx, ...records]
     saveRecords(next)
     toastSuccess('Transaction Recorded', `${billerName} payment of ₱${amt.toFixed(2)} logged!`)
+
+    void window.api.phoneScanner?.updateCfd({
+      status: 'COMPLETED',
+      mode: 'BILLS_PAYMENT',
+      billsPayload: {
+        biller: billerName,
+        accountNo: accountNo.trim(),
+        customerName: customerName.trim() || undefined,
+        customerPhone: customerPhone.trim() || undefined,
+        amount_c: Math.round(amt * 100),
+        fee_c: Math.round(fee * 100),
+        total_c: Math.round((amt + fee) * 100),
+        sourceWallet,
+        referenceNo: newTx.referenceNo,
+        status: 'COMPLETED'
+      }
+    }).catch(() => {})
 
     // Reset Form
     setAccountNo('')

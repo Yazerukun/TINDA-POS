@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle, Pencil, Sparkles } from 'lucide-react'
+import { Search, Wallet, HandCoins, Scale, Check, ChevronDown, ChevronUp, Package, Printer, HelpCircle, Star, Crown, MessageSquare, Copy, Trash2, RotateCcw, AlertTriangle, Pencil, Sparkles, Bell, Calendar, Clock } from 'lucide-react'
 import type { Customer, CreditLedgerEntry, Sale } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
+import {
+  CustomerReminder,
+  ReminderStatusInfo,
+  calculateReminderStatus,
+  getMergedCustomerReminder,
+  saveLocalCustomerReminder,
+  serializeCustomerNotes
+} from '@shared/customerReminders'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
@@ -9,7 +17,7 @@ import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 
-type UtangTab = 'WITH_BALANCE' | 'SETTLED' | 'ALL'
+type UtangTab = 'WITH_BALANCE' | 'OVERDUE' | 'SETTLED' | 'ALL'
 
 export function Utang(): React.JSX.Element {
   const [rows, setRows] = useState<Customer[]>([])
@@ -21,6 +29,7 @@ export function Utang(): React.JSX.Element {
   const [action, setAction] = useState<null | { type: 'PAY' | 'ADJUST' | 'OVERLIMIT'; customer: Customer }>(null)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
+  const [remindersNonce, setRemindersNonce] = useState(0)
 
   const load = async () => {
     setLoading(true)
@@ -39,14 +48,37 @@ export function Utang(): React.JSX.Element {
   }
   useEffect(() => { void load() }, [])
 
+  // Listen for real-time reminder updates from other modals
+  useEffect(() => {
+    const handler = () => setRemindersNonce((v) => v + 1)
+    window.addEventListener('tinda-utang-reminder-updated', handler)
+    return () => window.removeEventListener('tinda-utang-reminder-updated', handler)
+  }, [])
+
   const withBalanceCount = useMemo(() => rows.filter((c) => c.balance_c > 0).length, [rows])
   const settledCount = useMemo(() => rows.filter((c) => c.balance_c === 0).length, [rows])
   const totalOutstanding = useMemo(() => rows.reduce((s, c) => s + c.balance_c, 0), [rows])
+
+  const overdueCustomers = useMemo(() => {
+    return rows.filter((c) => {
+      if (c.balance_c <= 0) return false
+      const { statusInfo } = getMergedCustomerReminder(c)
+      return statusInfo.isAttentionRequired
+    })
+  }, [rows, remindersNonce])
+
+  const overdueCount = overdueCustomers.length
 
   const filtered = useMemo(() => {
     let list = rows
     if (tab === 'WITH_BALANCE') {
       list = list.filter((c) => c.balance_c > 0)
+    } else if (tab === 'OVERDUE') {
+      list = list.filter((c) => {
+        if (c.balance_c <= 0) return false
+        const { statusInfo } = getMergedCustomerReminder(c)
+        return statusInfo.isAttentionRequired
+      })
     } else if (tab === 'SETTLED') {
       list = list.filter((c) => c.balance_c === 0)
     }
@@ -57,7 +89,7 @@ export function Utang(): React.JSX.Element {
       )
     }
     return list
-  }, [rows, tab, q])
+  }, [rows, tab, q, remindersNonce])
 
   const openLedger = async (c: Customer) => {
     setSelected(c)
@@ -95,7 +127,7 @@ export function Utang(): React.JSX.Element {
       />
 
       {/* Quick Stats Summary */}
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
         <div className="card p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Total Outstanding Utang</p>
           <p className="mt-1 text-2xl font-black font-mono tabular-nums text-rose-400">{money(totalOutstanding)}</p>
@@ -107,11 +139,45 @@ export function Utang(): React.JSX.Element {
           <p className="mt-1 text-xs text-slate-500">Pending collections</p>
         </div>
         <div className="card p-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Overdue / Due Today</p>
+          <p className={`mt-1 text-2xl font-black font-mono tabular-nums ${overdueCount > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+            {overdueCount}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            {overdueCount > 0 ? 'Attention required' : 'All accounts on track'}
+          </p>
+        </div>
+        <div className="card p-4">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Settled</p>
           <p className="mt-1 text-2xl font-black font-mono tabular-nums text-emerald-400">{settledCount}</p>
           <p className="mt-1 text-xs text-slate-500">Fully paid (₱0.00 balance)</p>
         </div>
       </div>
+
+      {/* Proactive Collection Reminder Banner */}
+      {overdueCount > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-500/20 text-rose-400 shrink-0">
+              <Bell className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="font-bold text-rose-200">Collection Reminder Notification</span>
+              <p className="text-[11px] text-slate-300">
+                {overdueCount} suki customer(s) have payments past due or scheduled for collection today.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTab('OVERDUE')}
+            className="btn-primary text-xs py-1.5 px-3 bg-rose-500 hover:bg-rose-400 text-white font-bold flex items-center gap-1.5 shrink-0"
+          >
+            <Bell className="h-3.5 w-3.5" />
+            <span>Filter Overdue ({overdueCount})</span>
+          </button>
+        </div>
+      )}
 
       {!isVip && (
         <div className="mb-4 rounded-xl border border-ink-line bg-ink-850/80 p-3.5 shadow-sm backdrop-blur">
@@ -171,6 +237,28 @@ export function Utang(): React.JSX.Element {
             </span>
           </button>
           <button
+            onClick={() => setTab('OVERDUE')}
+            className={`btn-ghost flex items-center gap-2 text-sm rounded-lg px-3 py-2 transition-all ${
+              tab === 'OVERDUE'
+                ? '!border-rose-500 !text-rose-300 font-semibold bg-rose-500/10'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Bell className="h-4 w-4 text-rose-400" />
+            <span>Overdue &amp; Due Today</span>
+            <span
+              className={`badge text-xs ${
+                tab === 'OVERDUE'
+                  ? 'bg-rose-500/20 text-rose-300'
+                  : overdueCount > 0
+                    ? 'bg-rose-500/20 text-rose-400 font-bold'
+                    : 'bg-ink-800 text-slate-400'
+              }`}
+            >
+              {overdueCount}
+            </span>
+          </button>
+          <button
             onClick={() => setTab('SETTLED')}
             className={`btn-ghost flex items-center gap-2 text-sm rounded-lg px-3 py-2 transition-all ${
               tab === 'SETTLED'
@@ -225,6 +313,12 @@ export function Utang(): React.JSX.Element {
             message="Great! No customers currently have an unpaid credit balance."
             icon={<Check className="h-7 w-7 text-emerald-400" />}
           />
+        ) : tab === 'OVERDUE' ? (
+          <EmptyState
+            title="No Overdue Accounts"
+            message="No suki customers currently have an overdue collection due date."
+            icon={<Check className="h-7 w-7 text-emerald-400" />}
+          />
         ) : tab === 'SETTLED' ? (
           <EmptyState
             title="No Settled Accounts"
@@ -255,6 +349,7 @@ export function Utang(): React.JSX.Element {
                 {filtered.map((c) => {
                   const isOverLimit = c.balance_c > c.credit_limit_c
                   const isSettled = c.balance_c === 0
+                  const { reminder, statusInfo } = getMergedCustomerReminder(c)
                   return (
                     <tr key={c.id} className="hover:bg-ink-800/50 transition-colors">
                       <td className="w-[32%] py-3 px-3 text-center align-middle">
@@ -270,6 +365,20 @@ export function Utang(): React.JSX.Element {
                           {c.nickname && c.phone && <span>·</span>}
                           {c.phone && <span>{c.phone}</span>}
                         </div>
+                        {/* Reminder & Promise Note Pill */}
+                        {statusInfo.status !== 'NONE' && statusInfo.status !== 'SETTLED' && (
+                          <div className="flex items-center justify-center gap-1.5 mt-1 flex-wrap">
+                            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] border ${statusInfo.badgeBg} ${statusInfo.colorClass}`}>
+                              <Bell className="h-2.5 w-2.5" />
+                              <span>{statusInfo.badgeText}</span>
+                            </span>
+                            {reminder.notes && (
+                              <span className="text-[10px] text-slate-400 italic truncate max-w-[170px]" title={reminder.notes}>
+                                "{reminder.notes}"
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="w-[17%] py-3 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
                         {money(c.credit_limit_c)}
@@ -585,9 +694,71 @@ function LedgerModal({
   const [editPriceReason, setEditPriceReason] = useState('')
   const [savingPrice, setSavingPrice] = useState(false)
 
+  const [reminderData, setReminderData] = useState<CustomerReminder>(() => {
+    return getMergedCustomerReminder(customer).reminder
+  })
+  const [reminderDueDate, setReminderDueDate] = useState(reminderData.due_date || '')
+  const [reminderNotes, setReminderNotes] = useState(reminderData.notes || '')
+  const [generalNotes, setGeneralNotes] = useState(reminderData.general_notes || '')
+  const [savingReminder, setSavingReminder] = useState(false)
+
   useEffect(() => {
     setCurrentCustomer(customer)
+    const merged = getMergedCustomerReminder(customer).reminder
+    setReminderData(merged)
+    setReminderDueDate(merged.due_date || '')
+    setReminderNotes(merged.notes || '')
+    setGeneralNotes(merged.general_notes || '')
   }, [customer])
+
+  const reminderStatus = useMemo(() => {
+    return calculateReminderStatus(reminderDueDate || null, currentCustomer.balance_c)
+  }, [reminderDueDate, currentCustomer.balance_c])
+
+  const setPresetDate = (daysFromNow: number | 'MONTH_END' | 'CLEAR') => {
+    if (daysFromNow === 'CLEAR') {
+      setReminderDueDate('')
+      return
+    }
+    const d = new Date()
+    if (daysFromNow === 'MONTH_END') {
+      const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0)
+      const yyyy = lastDay.getFullYear()
+      const mm = String(lastDay.getMonth() + 1).padStart(2, '0')
+      const dd = String(lastDay.getDate()).padStart(2, '0')
+      setReminderDueDate(`${yyyy}-${mm}-${dd}`)
+      return
+    }
+    d.setDate(d.getDate() + daysFromNow)
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    setReminderDueDate(`${yyyy}-${mm}-${dd}`)
+  }
+
+  const handleSaveReminder = async () => {
+    setSavingReminder(true)
+    try {
+      const updatedReminder: CustomerReminder = {
+        due_date: reminderDueDate.trim() || null,
+        notes: reminderNotes.trim() || null,
+        general_notes: generalNotes.trim() || null,
+        updated_at: new Date().toISOString()
+      }
+      saveLocalCustomerReminder(currentCustomer.id, updatedReminder)
+      setReminderData(updatedReminder)
+
+      const serialized = serializeCustomerNotes(updatedReminder)
+      const updated = await window.api.customers.update(currentCustomer.id, { notes: serialized })
+      setCurrentCustomer(updated)
+      onUpdateCustomer?.(updated)
+      toastSuccess('Reminder Saved', 'Customer due date and collection notes updated.')
+    } catch (e) {
+      toastError('Save Failed', String((e as Error)?.message || e))
+    } finally {
+      setSavingReminder(false)
+    }
+  }
 
   useEffect(() => {
     setCurrentEntries(entries)
@@ -978,6 +1149,142 @@ function LedgerModal({
           <span className="text-[10px] uppercase font-bold text-amber-400/80 tracking-wider">
             Suki Score
           </span>
+        </div>
+
+        {/* Utang Collection Reminder & Notes Card */}
+        <div className="mb-3 rounded-xl border border-ink-line bg-ink-950 p-3 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-amber-400" />
+              <span className="text-xs font-bold text-slate-200">Collection Reminder &amp; Notes</span>
+            </div>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${reminderStatus.badgeBg} ${reminderStatus.colorClass}`}>
+              <Clock className="h-2.5 w-2.5" />
+              {reminderStatus.badgeText}
+            </span>
+          </div>
+
+          {/* Overdue / Due Today Alert Banner */}
+          {reminderStatus.isAttentionRequired && (
+            <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-xs text-rose-300 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-rose-200">
+                  {reminderStatus.status === 'OVERDUE'
+                    ? `Payment Overdue (${Math.abs(reminderStatus.daysDiff)} days past due date ${reminderDueDate})`
+                    : 'Payment Due Today! Please collect or follow up with customer.'}
+                </p>
+                {reminderNotes && (
+                  <p className="text-[11px] text-rose-300/90 mt-0.5 italic">
+                    Promise: "{reminderNotes}"
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Due Date & Presets */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <label className="font-semibold flex items-center gap-1">
+                <Calendar className="h-3 w-3 text-slate-500" />
+                <span>Promise / Due Date</span>
+              </label>
+              <div className="flex items-center gap-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPresetDate(0)}
+                  className="px-1.5 py-0.5 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 text-[10px] transition"
+                >
+                  Today
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetDate(3)}
+                  className="px-1.5 py-0.5 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 text-[10px] transition"
+                >
+                  +3d
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetDate(7)}
+                  className="px-1.5 py-0.5 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 text-[10px] transition"
+                >
+                  +7d (1wk)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetDate(15)}
+                  className="px-1.5 py-0.5 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 text-[10px] transition"
+                >
+                  +15d (Payday)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetDate('MONTH_END')}
+                  className="px-1.5 py-0.5 rounded bg-ink-800 hover:bg-ink-700 text-slate-300 text-[10px] transition"
+                >
+                  Month End
+                </button>
+                {reminderDueDate && (
+                  <button
+                    type="button"
+                    onClick={() => setPresetDate('CLEAR')}
+                    className="px-1.5 py-0.5 rounded text-rose-400 hover:bg-rose-500/10 text-[10px] transition"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+            <input
+              type="date"
+              value={reminderDueDate}
+              onChange={(e) => setReminderDueDate(e.target.value)}
+              className="input w-full text-xs py-1.5 font-mono"
+            />
+          </div>
+
+          {/* Reminder / Promise Note */}
+          <div>
+            <label className="text-[11px] font-semibold text-slate-400 mb-1 block">
+              Payment Promise / Reminder Note (for Cashier &amp; Alerts)
+            </label>
+            <input
+              type="text"
+              value={reminderNotes}
+              onChange={(e) => setReminderNotes(e.target.value)}
+              placeholder="e.g. Will pay 50% on 15th payday, balance on month end"
+              className="input w-full text-xs py-1.5"
+            />
+          </div>
+
+          {/* General Notes */}
+          <div>
+            <label className="text-[11px] font-semibold text-slate-400 mb-1 block">
+              General Customer Notes
+            </label>
+            <input
+              type="text"
+              value={generalNotes}
+              onChange={(e) => setGeneralNotes(e.target.value)}
+              placeholder="e.g. Suki neighbor near chapel, contact via Ate Inday"
+              className="input w-full text-xs py-1.5"
+            />
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end pt-1">
+            <button
+              type="button"
+              onClick={() => void handleSaveReminder()}
+              disabled={savingReminder}
+              className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
+            >
+              <Check className="h-3.5 w-3.5" />
+              <span>{savingReminder ? 'Saving…' : 'Save Reminder & Notes'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Mistake Pair Cleaner Banner */}

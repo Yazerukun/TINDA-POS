@@ -1,21 +1,21 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.94 (CHITENG CT221B THERMAL SPOOLER & RESILIENT AUTO-UPDATE EDITION)
+- v1.0.99 (CHITENG & RECEIPT STUDIO, DUAL CFD HUB, UTANG REMINDERS & RESILIENT CALCULATOR EDITION)
 
 TARGET:
-- v1.0.95 (NEXT RELEASE CYCLE)
+- v1.1.00 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Publishing Live Patch v1.0.94
+- Production Release & Live Feature Patch Publishing
 
 COMPLETED:
-- Stage 01: Chiteng CT221B Direct Thermal Monochrome Spooler (color: false, 203 DPI, 2.5s buffer) in printing.ts.
-- Stage 02: Label printer auto-target resolution and smart manual fallback in PriceTagPrintModal.tsx.
-- Stage 03: Driver guidance notice with www.claiot.com official PC driver links.
-- Stage 04: Resilient Auto-Update Engine with 3-strike retryOperation, 30s/60s timeouts, and Azure Blob CDN allowlist.
-- Stage 05: Windows file-lock retry shield (safeRmDirWithRetry, safeRenameWithRetry) in patchService.ts.
-- Stage 06: Quality Gates passed: Vitest (449/449 tests), Typecheck (0 errors), check_master_invariants.
+- Stage 01: TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer (optical typography, left offset indentation, cutter feed lines, ultraBlack mode, and manual Windows print fallback).
+- Stage 02: Real-time Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs (biller breakdown, dynamic QR code SVG, GCash/Maya/MariBank branded badges).
+- Stage 03: Utang Notes, Collection Due Date Reminders & Proactive Notifications (dual-store persistence, overdue statistics, promise note calendar presets, checkout & picker alert banners).
+- Stage 04: Resilient Cashier Quick Calculator & Universal F3 Shortcut Harmony (zero-eval Shunting-Yard arithmetic engine, JS octal syntax immunity, background POS keydown shielding, input field isolation, and % calculation).
+- Stage 05: Quality Gates passed: Vitest (482/482 tests in 74 suites), Typecheck (0 errors across Node & Web), check_master_invariants verified.
+- Stage 06: AST Knowledge Graph updated via graphify.
 
 PENDING APPROVAL:
 - None (Approved by Owner).

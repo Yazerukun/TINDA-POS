@@ -158,9 +158,41 @@ export interface CfdCartItem {
   subtotal_c: number
 }
 
+export interface CfdBillsPayload {
+  category?: string
+  biller: string
+  accountNo: string
+  customerName?: string
+  customerPhone?: string
+  amount_c: number
+  fee_c: number
+  total_c: number
+  cashReceived_c?: number
+  change_c?: number
+  sourceWallet?: string
+  referenceNo?: string
+  status?: 'PENDING' | 'COMPLETED'
+}
+
+export interface CfdEwalletPayload {
+  channel: 'GCASH' | 'MAYA' | 'MARIBANK' | string
+  type: 'CASH_IN' | 'CASH_OUT' | string
+  accountNo?: string
+  customerName?: string
+  customerPhone?: string
+  amount_c: number
+  fee_c: number
+  total_c: number
+  feeCollectedVia?: 'CASH' | 'WALLET'
+  referenceNo?: string
+  notes?: string
+  status?: 'PENDING' | 'COMPLETED'
+}
+
 export interface CfdState {
   storeName: string
   status: 'IDLE' | 'ACTIVE' | 'PAYMENT' | 'COMPLETED'
+  mode?: 'RETAIL' | 'BILLS_PAYMENT' | 'EWALLET'
   items: CfdCartItem[]
   subtotal_c: number
   discount_c: number
@@ -171,12 +203,15 @@ export interface CfdState {
   qrCodeUrl?: string
   qrSvg?: string
   customerName?: string
+  billsPayload?: CfdBillsPayload
+  ewalletPayload?: CfdEwalletPayload
   updatedAt: number
 }
 
 let cfdState: CfdState = {
   storeName: 'TINDA POS',
   status: 'IDLE',
+  mode: 'RETAIL',
   items: [],
   subtotal_c: 0,
   discount_c: 0,
@@ -216,10 +251,34 @@ export function updateCfdState(partial: Partial<CfdState>): CfdState {
   if (partial.qrCodeUrl && !partial.qrSvg) {
     qrSvg = generateQrSvg(partial.qrCodeUrl, 240)
   }
+  const nextMode =
+    partial.mode !== undefined
+      ? partial.mode
+      : partial.billsPayload
+        ? 'BILLS_PAYMENT'
+        : partial.ewalletPayload
+          ? 'EWALLET'
+          : partial.status === 'IDLE'
+            ? 'RETAIL'
+            : cfdState.mode || 'RETAIL'
+
   cfdState = {
     ...cfdState,
     ...partial,
+    mode: nextMode,
     qrSvg: qrSvg !== undefined ? qrSvg : partial.qrCodeUrl ? cfdState.qrSvg : undefined,
+    billsPayload:
+      partial.billsPayload !== undefined
+        ? partial.billsPayload
+        : partial.status === 'IDLE' && partial.mode !== 'BILLS_PAYMENT'
+          ? undefined
+          : cfdState.billsPayload,
+    ewalletPayload:
+      partial.ewalletPayload !== undefined
+        ? partial.ewalletPayload
+        : partial.status === 'IDLE' && partial.mode !== 'EWALLET'
+          ? undefined
+          : cfdState.ewalletPayload,
     updatedAt: Date.now()
   }
   return cfdState
@@ -1372,6 +1431,68 @@ export function generateCfdHtml(): string {
     .badge-maya { background: #000000; color: #22c55e; border: 1px solid #22c55e; }
     .badge-maribank { background: linear-gradient(135deg, #FF6A00, #EE4D2D); color: #ffffff; }
     .badge-cash { background: #10b981; color: #042f2e; }
+    .badge-bills { background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; }
+    .badge-deposit { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-withdraw { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* SPECIAL HUB CARDS FOR BILLS & EWALLET */
+    .view-hub {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .hub-card {
+      background: #101827;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+      animation: fadeIn 0.25s ease-out;
+    }
+    .hub-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .hub-title { font-size: 22px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; }
+    .hub-account-box {
+      background: #172033;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+    }
+    .hub-account-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; }
+    .hub-account-val { font-size: 19px; font-weight: 800; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #38bdf8; margin-top: 4px; word-break: break-all; }
+    .hub-customer-name { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-top: 6px; }
+    .hub-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .hub-total-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hub-total-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #a7f3d0; letter-spacing: 0.05em; }
+    .hub-total-val { font-size: 32px; font-weight: 900; color: #10b981; }
 
     /* COMPLETED VIEW */
     .view-completed {
@@ -1451,6 +1572,228 @@ export function generateCfdHtml(): string {
 
     function render(data) {
       if (data.storeName && storeNameEl) storeNameEl.textContent = data.storeName;
+
+      // ─── BILLS PAYMENT VIEW ──────────────────────────────────────
+      if (data.mode === 'BILLS_PAYMENT' && data.billsPayload) {
+        const bp = data.billsPayload;
+        if (data.status === 'COMPLETED' || bp.status === 'COMPLETED') {
+          mainEl.innerHTML = \`
+            <div class="view-completed">
+              <div class="welcome-card" style="max-width: 480px; width: 100%;">
+                <div class="check-icon">
+                  <svg width="44" height="44" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span class="payment-badge badge-bills">BILLS PAYMENT COMPLETED</span>
+                <h2 class="welcome-title" style="color: #34d399; margin-top: 8px;">Bayad sa Bill Nadawat!</h2>
+                <p class="welcome-sub" style="margin-bottom: 20px;">Thank you! Your bill payment has been successfully processed.</p>
+                <div style="background: #172033; padding: 18px 22px; border-radius: 14px; text-align: left;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #cbd5e1;">
+                    <span>Biller / Provider:</span>
+                    <strong style="color: #ffffff;">\${bp.biller}</strong>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 13px; color: #94a3b8;">
+                    <span>Account / Mobile:</span>
+                    <strong style="color: #38bdf8; font-family: monospace;">\${bp.accountNo}</strong>
+                  </div>
+                  \${bp.customerName ? \`
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 13px; color: #94a3b8;">
+                      <span>Customer:</span>
+                      <span style="color: #f1f5f9;">\${bp.customerName}</span>
+                    </div>
+                  \` : ''}
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                    <span>Bill Amount:</span>
+                    <span>\${fmtMoney(bp.amount_c)}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #94a3b8;">
+                    <span>Convenience Fee:</span>
+                    <span>\${fmtMoney(bp.fee_c)}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size: 19px; color: #34d399; font-weight: 800; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                    <span>Total Paid:</span>
+                    <span>\${fmtMoney(bp.total_c)}</span>
+                  </div>
+                  \${bp.change_c !== undefined && bp.change_c >= 0 ? \`
+                    <div style="display:flex; justify-content:space-between; font-size: 14px; color: #38bdf8; margin-top: 6px;">
+                      <span>Sukli / Change:</span>
+                      <strong>\${fmtMoney(bp.change_c)}</strong>
+                    </div>
+                  \` : ''}
+                  \${bp.referenceNo ? \`
+                    <div style="margin-top: 12px; font-size: 11px; color: #64748b; text-align: center;">
+                      Reference No: \${bp.referenceNo}
+                    </div>
+                  \` : ''}
+                </div>
+              </div>
+            </div>
+          \`;
+          return;
+        }
+
+        // Active / Pending Bills Payment View
+        mainEl.innerHTML = \`
+          <div class="view-hub">
+            <div class="hub-card">
+              <div class="hub-card-header">
+                <div class="hub-title">
+                  <span>⚡</span>
+                  <span>\${bp.biller}</span>
+                </div>
+                <span class="payment-badge badge-bills">BILLS PAYMENT</span>
+              </div>
+              <div class="hub-account-box">
+                <div class="hub-account-label">Account / Mobile Number</div>
+                <div class="hub-account-val">\${bp.accountNo || '—'}</div>
+                \${bp.customerName ? \`
+                  <div class="hub-customer-name">👤 \${bp.customerName}</div>
+                \` : ''}
+              </div>
+              <div>
+                <div class="hub-breakdown-row">
+                  <span>Bill Amount</span>
+                  <strong style="color: #ffffff; font-size: 16px;">\${fmtMoney(bp.amount_c)}</strong>
+                </div>
+                <div class="hub-breakdown-row">
+                  <span>Convenience Fee</span>
+                  <strong style="color: #cbd5e1;">\${fmtMoney(bp.fee_c)}</strong>
+                </div>
+                \${bp.cashReceived_c ? \`
+                  <div class="hub-breakdown-row" style="color: #38bdf8;">
+                    <span>Cash Tendered</span>
+                    <strong>\${fmtMoney(bp.cashReceived_c)}</strong>
+                  </div>
+                \` : ''}
+                \${bp.change_c !== undefined && bp.change_c >= 0 ? \`
+                  <div class="hub-breakdown-row" style="color: #34d399; font-weight: 700;">
+                    <span>Change (Sukli)</span>
+                    <strong>\${fmtMoney(bp.change_c)}</strong>
+                  </div>
+                \` : ''}
+              </div>
+              <div class="hub-total-box">
+                <div class="hub-total-label">Total to Pay</div>
+                <div class="hub-total-val">\${fmtMoney(bp.total_c)}</div>
+              </div>
+              <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 14px;">
+                Please verify the biller name and account number before paying at the counter.
+              </p>
+            </div>
+          </div>
+        \`;
+        return;
+      }
+
+      // ─── EWALLET VIEW ─────────────────────────────────────────────
+      if (data.mode === 'EWALLET' && data.ewalletPayload) {
+        const ep = data.ewalletPayload;
+        const isGcash = (ep.channel || '').toUpperCase() === 'GCASH';
+        const isMaya = (ep.channel || '').toUpperCase() === 'MAYA';
+        const isMaribank = (ep.channel || '').toUpperCase() === 'MARIBANK';
+        const badgeClass = isGcash ? 'badge-gcash' : isMaya ? 'badge-maya' : isMaribank ? 'badge-maribank' : 'badge-cash';
+        const isCashIn = (ep.type || '').toUpperCase() === 'CASH_IN';
+
+        if (data.status === 'COMPLETED' || ep.status === 'COMPLETED') {
+          mainEl.innerHTML = \`
+            <div class="view-completed">
+              <div class="welcome-card" style="max-width: 480px; width: 100%;">
+                <div class="check-icon">
+                  <svg width="44" height="44" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div style="display:flex; justify-content:center; gap:6px; margin-bottom: 8px;">
+                  <span class="payment-badge \${badgeClass}">\${ep.channel}</span>
+                  <span class="payment-badge \${isCashIn ? 'badge-deposit' : 'badge-withdraw'}">\${isCashIn ? 'CASH IN' : 'CASH OUT'}</span>
+                </div>
+                <h2 class="welcome-title" style="color: #34d399;">Transaksyon Nahuman!</h2>
+                <p class="welcome-sub" style="margin-bottom: 20px;">Thank you! Your e-wallet transaction is complete.</p>
+                <div style="background: #172033; padding: 18px 22px; border-radius: 14px; text-align: left;">
+                  \${ep.accountNo ? \`
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #94a3b8;">
+                      <span>Account / Mobile:</span>
+                      <strong style="color: #38bdf8; font-family: monospace;">\${ep.accountNo}</strong>
+                    </div>
+                  \` : ''}
+                  \${ep.customerName ? \`
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 13px; color: #94a3b8;">
+                      <span>Customer:</span>
+                      <span style="color: #f1f5f9;">\${ep.customerName}</span>
+                    </div>
+                  \` : ''}
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                    <span>Amount:</span>
+                    <span>\${fmtMoney(ep.amount_c)}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom: 8px; font-size: 14px; color: #94a3b8;">
+                    <span>Service Fee:</span>
+                    <span>\${fmtMoney(ep.fee_c)}</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size: 19px; color: #34d399; font-weight: 800; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                    <span>\${isCashIn ? 'Total to Pay:' : 'Total Payout:'}</span>
+                    <span>\${fmtMoney(ep.total_c)}</span>
+                  </div>
+                  \${ep.referenceNo ? \`
+                    <div style="margin-top: 12px; font-size: 11px; color: #64748b; text-align: center;">
+                      Reference No: \${ep.referenceNo}
+                    </div>
+                  \` : ''}
+                </div>
+              </div>
+            </div>
+          \`;
+          return;
+        }
+
+        // Active / Pending E-Wallet View
+        mainEl.innerHTML = \`
+          <div class="view-hub">
+            <div class="hub-card">
+              <div class="hub-card-header">
+                <div class="hub-title">
+                  <span class="payment-badge \${badgeClass}" style="margin: 0;">\${ep.channel}</span>
+                  <span class="payment-badge \${isCashIn ? 'badge-deposit' : 'badge-withdraw'}" style="margin: 0;">\${isCashIn ? 'CASH IN / DEPOSIT' : 'CASH OUT / WITHDRAWAL'}</span>
+                </div>
+              </div>
+              <div class="hub-account-box">
+                <div class="hub-account-label">Target Mobile / Account Number</div>
+                <div class="hub-account-val">\${ep.accountNo || '—'}</div>
+                \${ep.customerName ? \`
+                  <div class="hub-customer-name">👤 \${ep.customerName}</div>
+                \` : ''}
+              </div>
+              <div>
+                <div class="hub-breakdown-row">
+                  <span>Transaction Amount</span>
+                  <strong style="color: #ffffff; font-size: 16px;">\${fmtMoney(ep.amount_c)}</strong>
+                </div>
+                <div class="hub-breakdown-row">
+                  <span>Convenience / Service Fee</span>
+                  <strong style="color: #cbd5e1;">\${fmtMoney(ep.fee_c)}</strong>
+                </div>
+              </div>
+              <div class="hub-total-box">
+                <div class="hub-total-label">\${isCashIn ? 'Total to Pay' : 'Total Cash Payout'}</div>
+                <div class="hub-total-val">\${fmtMoney(ep.total_c)}</div>
+              </div>
+              \${data.qrSvg ? \`
+                <div style="text-align: center; margin-top: 16px;">
+                  <div class="qr-wrapper">
+                    \${data.qrSvg}
+                  </div>
+                  <p style="font-size: 13px; color: #cbd5e1; font-weight: 600;">Scan with \${ep.channel} App</p>
+                </div>
+              \` : ''}
+              <p style="font-size: 11px; color: #64748b; text-align: center; margin-top: 14px;">
+                Please double check the mobile number and name before completing transaction.
+              </p>
+            </div>
+          </div>
+        \`;
+        return;
+      }
 
       if (data.status === 'COMPLETED') {
         mainEl.innerHTML = \`

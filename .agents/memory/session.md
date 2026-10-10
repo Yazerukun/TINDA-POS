@@ -1,9 +1,116 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IDLE | None | 2026-10-09 16:03
+IDLE | None | 2026-10-10 10:04
 
 ## Recent Handoff History
+
+### 2026-10-10 10:04 | agy (F3 Quick Calculator Error Resolution & Math Engine Resilience)
+- **Task**: Fix error when using the Cashier Quick Calculator and F3 shortcut.
+- **Root Cause Analysis**:
+  1. **Strict Mode Octal Literal SyntaxErrors**:
+     - `Function("'use strict'; return (" + sanitized + ")")()` threw `SyntaxError: Octal literals are not allowed in strict mode` whenever numbers with leading zeros were entered (e.g. `05 + 10`, `0100`, or `0` before typing digits), setting display immediately to `'Error'`.
+  2. **Background Key Collision in `POS.tsx`**:
+     - `POS.tsx` listened globally for `Enter` to add highlighted products to cart. When the calculator modal was open and cashier pressed `Enter` to calculate, `POS.tsx` intercepted `Enter` and either added an unwanted product to cart or fired a `toastError('Out of stock')` toast alert!
+     - Pressing `/` to divide intercepted and focused the background product search bar.
+  3. **Input Focus Interference**:
+     - Typing inside the "Custom Item Name", "Due Total", or "Cash Tendered" input boxes triggered the calculator's window keydown listener (e.g. typing 'c' wiped the calculator to 0, digits modified display, backspace deleted calculation numbers).
+  4. **Shortcut Discrepancy & Trailing Operator Crash**:
+     - Trailing operators (e.g. `50 + `) threw syntax errors upon evaluation.
+     - Sidebar Terminal Tools button had an `F3` badge conflicting with the POS Calculator F3 shortcut.
+     - Pressing `F3` or `Escape` inside the calculator modal was missing dedicated keydown handling.
+- **Done**:
+  - **Zero-Eval Deterministic Math Engine (`source/src/renderer/src/utils/calculator.ts`)**:
+    - Engineered pure Shunting-Yard arithmetic parser and RPN evaluator with zero `eval()` / `Function()`.
+    - 100% immune to JS octal syntax errors (converts numbers via `Number(token)` safely).
+    - Trailing and consecutive operator normalization (last operator wins).
+    - Safe division by zero guard returning clean `'Cannot divide by 0'` message.
+    - IEEE 754 precision correction (`0.1 + 0.2 -> 0.3`).
+    - Dedicated `%` percent operator conversion (`N% -> N * 0.01`).
+  - **Calculator Modal Upgrades (`CashierCalculatorModal.tsx`)**:
+    - Connected `safeEvalArithmetic`.
+    - Added `resetOnNext` state: typing a digit after calculating replaces the display with the new number instead of appending to the previous result.
+    - Added `%` (Percent) action button on the keypad grid.
+    - Full input field isolation (`isInput` guard prevents typing in inputs from triggering calculator keys).
+    - Dedicated `F3` / `Escape` keydown handler to close the modal cleanly.
+    - Polished Sukli / Change mode: prompts "Waiting for Cash Tendered..." when blank, computes vibrant green change with exact breakdown or rose remaining due.
+  - **Hotkey Isolation & Universal F3 Support (`POS.tsx`, `Sidebar.tsx`, `Shell.tsx`)**:
+    - In `POS.tsx`: `handlePosHotkeys` blocks background `Enter`, `/`, and arrow keys when `calculatorOpen` is true, eliminating all "Out of stock" toasts and search focus stealing.
+    - In `Shell.tsx`: Added global `F3` handler that calls `e.preventDefault()` (preventing Chromium's default "Find" bar) and dispatches `tinda-open-calculator` to switch to POS and toggle the calculator.
+    - In `Sidebar.tsx`: Updated Terminal Tools pill badge from `F3` to `Tools`, ensuring `F3` is 100% uniquely dedicated to the Quick Calculator.
+    - In `Handbook.tsx`: Updated F3 documentation to "Quick Calculator & Sukli Assistant".
+  - **Quality Gates**:
+    - 8 new Vitest unit tests in `calculator.test.ts` (all passed).
+    - 482/482 Vitest tests passed across 74 test suites (100% green).
+    - `npm run typecheck` passed with 0 errors across Node and Web targets.
+    - `node tools/check_master_invariants.mjs` passed.
+    - Offline AST knowledge graph updated (`graphify update .`).
+- **Files Touched**:
+  - `source/src/renderer/src/utils/calculator.ts`
+  - `source/src/renderer/src/utils/calculator.test.ts`
+  - `source/src/renderer/src/components/CashierCalculatorModal.tsx`
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/renderer/src/components/layout/Sidebar.tsx`
+  - `source/src/renderer/src/layouts/Shell.tsx`
+  - `source/src/renderer/src/pages/Handbook.tsx`
+  - `source/src/renderer/src/services/tindaAiKnowledge.ts`
+  - `.agents/memory/session.md`
+
+
+### 2026-10-10 09:39 | agy (CFD Bills & E-Wallet Mirroring + Utang Notes, Reminders & Notifications)
+- **Task**: Real-time Customer Facing Display (CFD) mirroring for Bills Payment & E-Wallet hubs, plus Utang notes, collection due date reminders, and proactive cashier notifications.
+- **Done**:
+  - **CFD for Bills Payment & E-Wallet (`phoneScannerService.ts`)**:
+    - Extended `CfdState` with `mode: 'RETAIL' | 'BILLS_PAYMENT' | 'EWALLET'`, `billsPayload` (`CfdBillsPayload`), and `ewalletPayload` (`CfdEwalletPayload`).
+    - Engineered Apple Cupertino CFD cards for Bills Payment (biller icon/name, account/mobile number, customer name, bill amount, fee breakdown, total to pay, cash tendered/change, reference no).
+    - Engineered Apple Cupertino CFD cards for E-Wallet Cash In / Out (GCash/Maya/MariBank branded badges, deposit/withdrawal pills, target account number, dynamic amount breakdown, dynamic scannable QR code SVG, and completed confirmation).
+    - Connected live real-time CFD syncing in `EwalletAudit.tsx` and `BillsLoadHub.tsx` on active form entry and transaction completion.
+  - **Utang Notes, Reminders & Notifications (`customerReminders.ts`, `Utang.tsx`, `POS.tsx`, `Customers.tsx`)**:
+    - Built `@shared/customerReminders.ts` utility with dual-store persistence (`localStorage` + SQLite `notes` column metadata with backward-compatible plain text fallback).
+    - Real-time reminder status engine calculating `OVERDUE` (with days), `DUE_TODAY`, `UPCOMING`, `SETTLED`, and `NONE`.
+    - In `Utang.tsx`: Added 4th stat card ("Overdue / Due Today"), a prominent Collection Reminder Alert banner, an `Overdue & Due Today` filter tab, and per-customer reminder pill badges & promise notes.
+    - In `LedgerModal.tsx`: Integrated an Apple-grade Cupertino Collection Reminder & Notes Hub with real-time status badge, overdue warning alert, due date calendar picker, quick presets (`Today`, `+3d`, `+7d`, `+15d`, `Month End`, `Clear`), promise note input, and general notes input with 1-tap save.
+    - In `POS.tsx`: Checkout modal automatically detects when an Utang customer is selected and surfaces an inline Cupertino alert banner if their payment is overdue or due today with their promised note; added reminder badges in `CustomerPicker`.
+    - In `Customers.tsx`: Added notes and instructions field to customer creation and editing modal.
+  - Passed 474/474 Vitest tests (73/73 test suites green), 0 TypeScript errors across Node and Web targets, and all master invariants verified.
+  - Updated offline AST knowledge graph (`graphify update .`).
+- **Files Touched**:
+  - `source/src/shared/customerReminders.ts`
+  - `source/src/renderer/src/lib/customerReminders.test.ts`
+  - `source/src/main/services/phoneScannerService.ts`
+  - `source/src/main/services/__tests__/cfd-dynamic-qr.test.ts`
+  - `source/src/renderer/src/pages/EwalletAudit.tsx`
+  - `source/src/renderer/src/pages/BillsLoadHub.tsx`
+  - `source/src/renderer/src/pages/Utang.tsx`
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/renderer/src/pages/Customers.tsx`
+  - `.agents/memory/session.md`
+- **Next Steps**:
+  - Ready for Boss to test on live store / CFD secondary display and cashier utang workflows.
+
+### 2026-10-10 08:55 | agy (TINDA Print Master Studio: Universal Receipt & Barcode Alignment Customizer)
+- **Task**: Design & implement universal manual alignment and customization studio for thermal receipts and Chiteng CT221B label printers.
+- **Done**:
+  - Pulled and fast-forwarded local workspace to `origin/master` (v1.0.98 base).
+  - Extended `StoreSettings` and `defaultSettings` with physical margin, X/Y coordinate offset, and optical typography properties.
+  - In `receiptHtml.ts`: Added `ReceiptLayoutOptions` supporting customizable left indent (`receipt_offset_left_mm`, fixes first-letter clipping), right margin, bottom cutter feed spacer (`receipt_feed_lines_end`, prevents cutting totals), font scaling, line spacing, and ultraBlack burn mode.
+  - In `printing.ts`: Connected store settings to `receiptHtml` generator.
+  - In `PrinterStudioModal.tsx`: Built Apple-grade Cupertino customization studio with dual tabs (Receipts 58/80mm vs Labels CT221B), live 1:1 WYSIWYG canvas previews, tactile stepper sliders, and 1-tap test prints.
+  - In `PriceTagPrintModal.tsx`: Applied 2D physical offsets (`transform: translate(Xmm, Ymm)`) and safe margins, and linked the "Align & Calibrate" button.
+  - In `Settings.tsx`: Linked the "Customize Layout & Alignment" button in the Receipt section and "Calibrate CT221B Alignment" in the CT221B section.
+  - Passed 463/463 Vitest tests (72/72 test suites green), 0 TypeScript errors, and all master invariants.
+- **Files Touched**:
+  - `source/src/shared/types.ts`
+  - `source/src/main/repositories/settings.ts`
+  - `source/src/shared/receiptHtml.ts`
+  - `source/src/main/services/printing.ts`
+  - `source/src/renderer/src/components/PrinterStudioModal.tsx`
+  - `source/src/renderer/src/components/PriceTagPrintModal.tsx`
+  - `source/src/renderer/src/pages/Settings.tsx`
+  - `source/src/renderer/src/lib/printerStudio.test.ts`
+  - `.agents/memory/session.md`
+- **Next Steps**:
+  - Ready for Boss to review, test in UI, or trigger release pipeline if desired.
 
 ### 2026-10-09 16:38 | agy (v1.0.94 Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
 - **Task**: Fix Chiteng CT221B printer execution & architect resilient auto-update engine with auto-retry and Windows file-lock shielding.

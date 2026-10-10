@@ -27,7 +27,24 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)**
+- Current Version: **v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)**
+
+## Key Features in v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)
+1. **TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer**:
+   - Universal dual-tab calibration studio for Receipts (58mm/80mm) and Barcode Labels (Chiteng CT221B).
+   - Real-time 1:1 canvas previews, tactile stepper sliders, left offset indentation (`receipt_offset_left_mm`, fixes first-letter clipping), cutter feed spacer (`receipt_feed_lines_end`), line spacing, and ultraBlack burn mode.
+   - 1-tap manual Windows print dialog fallback bypassing stuck spooler ports.
+2. **Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs**:
+   - Real-time secondary display for Bills Payment (biller icon/name, customer details, payment breakdown).
+   - Real-time secondary display for E-Wallet Cash In / Out (GCash, Maya, MariBank badges, dynamic amount, dynamic scannable QR code SVG, and live transaction completion state).
+3. **Utang Notes, Collection Due Date Reminders & Proactive Cashier Notifications**:
+   - Dual-store persistent reminder notes engine (`localStorage` + SQLite `notes` metadata).
+   - Overdue and Due Today statistics, banner alerts, filter tab in Utang ledger, calendar picker presets (`Today`, `+3d`, `+7d`, `+15d`, `Month End`), promise note recording, and automatic alert in POS Checkout and Customer Picker.
+4. **Resilient Cashier Quick Calculator & F3 Shortcut Harmony**:
+   - Zero-eval Shunting-Yard arithmetic engine (100% immune to JS octal syntax errors, trailing operator crashes, and division by zero).
+   - Input focus isolation, `resetOnNext` clean number entry, `%` (Percent) calculation button, polished change / sukli calculation.
+   - Hotkey shield in `POS.tsx` blocking background `Enter` ("Out of stock" error toast eliminated!), `/`, and arrow keys while calculator is open.
+   - Global `F3` shortcut handler across all app screens with Chromium Find bar prevention.
 
 ## Key Features in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
 1. **Chiteng CT221B Thermal Hardware Spooler & Direct Monochrome Standard**:

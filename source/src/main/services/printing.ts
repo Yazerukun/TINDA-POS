@@ -158,7 +158,14 @@ export async function printLines(
     const target = autoDetectThermalPrinter(printers, options?.deviceName || settings.receipt_printer)
     const effectiveWidth = settings.receipt_paper_width || (target ? target.paperWidth : '58mm')
 
-    const htmlPayload = receiptHtml(lines, effectiveWidth, settings.currency)
+    const htmlPayload = receiptHtml(lines, effectiveWidth, settings.currency, {
+      offsetLeftMm: settings.receipt_offset_left_mm,
+      offsetRightMm: settings.receipt_offset_right_mm,
+      feedLinesEnd: settings.receipt_feed_lines_end,
+      fontScale: settings.receipt_font_scale,
+      lineSpacing: settings.receipt_line_spacing,
+      ultraBlack: settings.receipt_ultra_black
+    })
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlPayload)}`)
 
     // Wait 350ms buffer to guarantee the Chromium layout and fonts are 100% rasterized before spooling

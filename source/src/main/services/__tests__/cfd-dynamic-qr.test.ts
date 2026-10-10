@@ -150,4 +150,60 @@ describe('Wireless Customer Facing Display (CFD) & Dynamic QR', () => {
     expect(svg).toContain('<svg')
     expect(svg).toContain('<path d=')
   })
+
+  it('renders Bills Payment and E-Wallet states and payloads in CFD', async () => {
+    // 1. Update CFD to Bills Payment mode
+    const billsState = updateCfdState({
+      status: 'ACTIVE',
+      mode: 'BILLS_PAYMENT',
+      billsPayload: {
+        biller: 'Meralco',
+        accountNo: '1234567890',
+        customerName: 'Juan Dela Cruz',
+        amount_c: 250000,
+        fee_c: 1500,
+        total_c: 251500,
+        status: 'PENDING'
+      }
+    })
+
+    expect(billsState.mode).toBe('BILLS_PAYMENT')
+    expect(billsState.billsPayload?.biller).toBe('Meralco')
+    expect(billsState.billsPayload?.total_c).toBe(251500)
+
+    // 2. Fetch /cfd HTML and verify Bills Payment rendering logic is included
+    const html = await new Promise<string>((resolve, reject) => {
+      http.get(`http://127.0.0.1:${port}/cfd`, (res) => {
+        let data = ''
+        res.on('data', (c) => (data += c))
+        res.on('end', () => resolve(data))
+      }).on('error', reject)
+    })
+
+    expect(html).toContain('BILLS PAYMENT')
+    expect(html).toContain('badge-bills')
+    expect(html).toContain('EWALLET')
+    expect(html).toContain('badge-deposit')
+    expect(html).toContain('badge-withdraw')
+
+    // 3. Update CFD to E-Wallet mode
+    const ewalletState = updateCfdState({
+      status: 'ACTIVE',
+      mode: 'EWALLET',
+      ewalletPayload: {
+        channel: 'GCASH',
+        type: 'CASH_IN',
+        accountNo: '09171234567',
+        customerName: 'Maria Clara',
+        amount_c: 100000,
+        fee_c: 1000,
+        total_c: 101000,
+        status: 'PENDING'
+      }
+    })
+
+    expect(ewalletState.mode).toBe('EWALLET')
+    expect(ewalletState.ewalletPayload?.channel).toBe('GCASH')
+    expect(ewalletState.ewalletPayload?.amount_c).toBe(100000)
+  })
 })

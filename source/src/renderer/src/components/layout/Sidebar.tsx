@@ -234,14 +234,14 @@ export function Sidebar(): React.JSX.Element {
             window.dispatchEvent(new CustomEvent('tinda-open-pos-tools'))
           }}
           className="group flex w-full items-center justify-between rounded-xl border border-brand-500/35 bg-gradient-to-r from-brand-600/20 via-brand-500/15 to-brand-600/10 px-3 py-2 text-xs font-bold text-brand-300 hover:border-brand-500/60 hover:bg-brand-500/25 transition-all shadow-sm active:scale-[0.98]"
-          title="Open POS Terminal Tools (Scanner, Camera, Thermal Printer, CFD, Audio, Cash) — [F3]"
+          title="Open POS Terminal Tools (Scanner, Camera, Thermal Printer, CFD, Audio, Cash)"
         >
           <span className="flex items-center gap-2">
             <Wrench className="h-4 w-4 text-brand-400 group-hover:rotate-45 transition-transform shrink-0" />
             <span>Terminal Tools</span>
           </span>
           <span className="rounded bg-brand-500/25 px-1.5 py-0.5 text-[10px] font-mono text-brand-200 border border-brand-500/35 font-bold">
-            F3
+            Tools
           </span>
         </button>
 

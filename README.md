@@ -287,6 +287,26 @@
 
 </div>
 
+## ✨ What's New in v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)
+
+> **TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer, Dual-Screen Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs, Utang Customer Due Date Reminders with Proactive Cashier Alerts, and Zero-Eval Resilient Quick Calculator & Universal F3 Shortcut Harmony.**
+
+- 🖨️ **TINDA Print Master Studio & Chiteng CT221B Alignment Customizer**:
+  - Live 1:1 WYSIWYG dual-tab calibration studio for Receipts (58mm/80mm) and Barcode Labels (Chiteng CT221B).
+  - Tactile alignment steppers for left margin offset (`receipt_offset_left_mm`, fixes first-letter clipping), cutter feed spacer lines (`receipt_feed_lines_end`), line spacing, and ultraBlack burn mode.
+  - 1-tap manual Windows print fallback bypassing stuck spooler ports.
+- 📱 **Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs**:
+  - Real-time customer display for Bills Payment (biller name/icon, account details, breakdown, amount due).
+  - Real-time customer display for E-Wallet Cash In / Out (GCash/Maya/MariBank branded badges, dynamic amount breakdown, dynamic scannable QR code SVG, and live completed confirmation).
+- 👛 **Utang Notes, Collection Due Date Reminders & Proactive Notifications**:
+  - Dual-store persistent reminder notes engine (`localStorage` + SQLite `notes` metadata).
+  - Overdue and Due Today statistics, banner alerts, filter tab in Utang ledger, calendar picker presets (`Today`, `+3d`, `+7d`, `+15d`, `Month End`), promise note recording, and automatic alert in POS Checkout and Customer Picker.
+- 🧮 **Resilient Cashier Quick Calculator & F3 Shortcut Harmony**:
+  - Zero-eval Shunting-Yard arithmetic engine (100% immune to JS octal syntax errors, trailing operator crashes, and division by zero).
+  - Input focus isolation, `resetOnNext` clean number entry, `%` (Percent) calculation button, polished change / sukli calculation.
+  - Hotkey shield in `POS.tsx` blocking background `Enter` ("Out of stock" error toast eliminated!), `/`, and arrow keys while calculator is open.
+  - Global `F3` shortcut handler across all app screens with Chromium Find bar prevention.
+
 ## ✨ What's New in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
 
 > **Fixed Root-Cause GitHub Releases CDN 302 Redirect Handling in Electron Network Transport, Eliminating the "Update encountered an error, retry download" Warning During Fast Feature Hot-Patching.**

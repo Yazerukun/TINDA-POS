@@ -26,6 +26,7 @@ import {
   type PrinterChoiceLike
 } from '@shared/printer'
 import { generateBarcodeSvg } from '@shared/barcodeSvg'
+import { PrinterStudioModal } from './PrinterStudioModal'
 
 interface PriceTagPrintModalProps {
   open: boolean
@@ -52,14 +53,15 @@ export function PriceTagPrintModal({
 }: PriceTagPrintModalProps): React.JSX.Element | null {
   const { settings, update: updateSettings } = useSettings()
 
-  const [tagSize, setTagSize] = useState<TagSizePreset>('40x30')
-  const [customWidthMm, setCustomWidthMm] = useState('40')
-  const [customHeightMm, setCustomHeightMm] = useState('30')
+  const [tagSize, setTagSize] = useState<TagSizePreset>((settings?.label_paper_size as TagSizePreset) || '40x30')
+  const [customWidthMm, setCustomWidthMm] = useState(String(settings?.label_custom_width_mm || 40))
+  const [customHeightMm, setCustomHeightMm] = useState(String(settings?.label_custom_height_mm || 30))
   const [printCopies, setPrintCopies] = useState('1')
-  const [showBarcode, setShowBarcode] = useState(true)
-  const [showSku, setShowSku] = useState(true)
-  const [showStoreName, setShowStoreName] = useState(true)
-  const [showWholesale, setShowWholesale] = useState(true)
+  const [showBarcode, setShowBarcode] = useState(settings?.label_show_barcode ?? true)
+  const [showSku, setShowSku] = useState(settings?.label_show_sku ?? true)
+  const [showStoreName, setShowStoreName] = useState(settings?.label_show_store_name ?? true)
+  const [showWholesale, setShowWholesale] = useState(settings?.label_show_wholesale ?? true)
+  const [studioOpen, setStudioOpen] = useState(false)
 
   // Hardware printer detection state
   const [detectedPrinter, setDetectedPrinter] = useState<AutoDetectedLabelPrinter | null>(null)
@@ -154,25 +156,32 @@ export function PriceTagPrintModal({
     if (!activeProduct) return
     setIsPrinting(true)
 
+    const offsetX = settings?.label_offset_x_mm ?? 0
+    const offsetY = settings?.label_offset_y_mm ?? 0
+    const safeMargin = settings?.label_safe_margin_mm ?? (activeDims.height <= 20 ? 0.8 : 1.2)
+    const priceSize = settings?.label_price_font_size || 'large'
+
     // Build thermal label HTML
     const singleLabelHtml = `
       <div class="label-tag">
-        ${showStoreName ? `<div class="store-hdr">${settings?.store_name || 'TINDA STORE'}</div>` : ''}
-        <div class="p-name">${activeProduct.name}</div>
-        <div class="price-wrap">
-          <span class="currency">₱</span><span class="price">${(activeProduct.default_price_c / 100).toFixed(2)}</span>
+        <div class="label-inner" style="width: 100%; height: 100%; padding: ${safeMargin}mm; display: flex; flex-direction: column; justify-content: space-between; transform: translate(${offsetX}mm, ${offsetY}mm);">
+          ${showStoreName ? `<div class="store-hdr">${settings?.store_name || 'TINDA STORE'}</div>` : ''}
+          <div class="p-name">${activeProduct.name}</div>
+          <div class="price-wrap price-${priceSize}">
+            <span class="currency">₱</span><span class="price">${(activeProduct.default_price_c / 100).toFixed(2)}</span>
+          </div>
+          ${
+            showWholesale && activeProduct.wholesale_price_c
+              ? `<div class="ws-price">WS: ₱${(activeProduct.wholesale_price_c / 100).toFixed(2)} (≥${activeProduct.wholesale_min_qty || 2})</div>`
+              : ''
+          }
+          ${
+            showBarcode
+              ? `<div class="barcode-box">${barcodeSvgString}</div>`
+              : ''
+          }
+          ${showSku ? `<div class="sku-tag">SKU: ${activeProduct.sku}</div>` : ''}
         </div>
-        ${
-          showWholesale && activeProduct.wholesale_price_c
-            ? `<div class="ws-price">WS: ₱${(activeProduct.wholesale_price_c / 100).toFixed(2)} (≥${activeProduct.wholesale_min_qty || 2})</div>`
-            : ''
-        }
-        ${
-          showBarcode
-            ? `<div class="barcode-box">${barcodeSvgString}</div>`
-            : ''
-        }
-        ${showSku ? `<div class="sku-tag">SKU: ${activeProduct.sku}</div>` : ''}
       </div>
     `
 
@@ -205,18 +214,19 @@ export function PriceTagPrintModal({
           }
           .label-tag {
             width: ${widthMm};
+            height: ${heightMm};
             max-height: ${heightMm};
-            padding: ${activeDims.height <= 20 ? '0.8mm' : '1.2mm'};
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px dashed #ccc;
+            padding: 0;
             overflow: hidden;
             text-align: center;
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
+            position: relative;
           }
+          .price-wrap.price-medium .price { font-size: ${activeDims.height <= 20 ? '11px' : '14px'} !important; }
+          .price-wrap.price-large .price { font-size: ${activeDims.height <= 20 ? '13px' : '17px'} !important; }
+          .price-wrap.price-jumbo .price { font-size: ${activeDims.height <= 20 ? '15px' : '22px'} !important; }
           .label-tag:not(:last-child) {
             page-break-after: always;
             break-after: page;
@@ -418,6 +428,15 @@ export function PriceTagPrintModal({
             >
               <Sparkles className="h-3 w-3 text-indigo-400" />
               <span>Test Sticker</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStudioOpen(true)}
+              className="px-2.5 py-1.5 rounded-lg border border-brand-500/40 bg-brand-500/15 text-brand-300 hover:bg-brand-500/25 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95"
+              title="Open Universal Alignment & Customization Studio (Fine-tune X/Y coordinates, gaps, margins)"
+            >
+              <Sliders className="h-3 w-3 text-brand-400" />
+              <span>Align &amp; Calibrate</span>
             </button>
           </div>
         </div>
@@ -718,6 +737,13 @@ export function PriceTagPrintModal({
           </div>
         </div>
       </div>
+
+      {/* Dedicated Printer Alignment Studio */}
+      <PrinterStudioModal
+        open={studioOpen}
+        onClose={() => setStudioOpen(false)}
+        initialTab="label"
+      />
     </Modal>
   )
 }

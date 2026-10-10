@@ -166,6 +166,94 @@ export function EwalletAudit(): React.JSX.Element {
     void loadData()
   }, [loadData])
 
+  // ─── Live CFD Sync for E-Wallet & Bills Center ────────────────────
+  useEffect(() => {
+    return () => {
+      void window.api.phoneScanner?.updateCfd({
+        status: 'IDLE',
+        mode: 'RETAIL',
+        billsPayload: undefined,
+        ewalletPayload: undefined
+      }).catch(() => {})
+    }
+  }, [])
+
+  // E-Wallet Register CFD Sync
+  useEffect(() => {
+    if (activeTab === 'register') {
+      const amt = parseFloat(amountStr) || 0
+      const fee = parseFloat(feeStr) || 0
+      if (amt > 0) {
+        const total = type === 'CASH_IN' ? (feeCollectedVia === 'CASH' ? amt + fee : amt) : Math.max(0, amt - fee)
+        let qrPayload: string | undefined = undefined
+        if (channel === 'GCASH' || channel === 'MAYA' || channel === 'MARIBANK') {
+          qrPayload = `${channel.toLowerCase()}://pay?amount=${amt.toFixed(2)}&store=TINDA+POS&ref=${Date.now()}`
+        }
+        void window.api.phoneScanner?.updateCfd({
+          status: 'ACTIVE',
+          mode: 'EWALLET',
+          ewalletPayload: {
+            channel,
+            type,
+            accountNo: customerPhone.trim() || undefined,
+            customerName: customerName.trim() || undefined,
+            amount_c: Math.round(amt * 100),
+            fee_c: Math.round(fee * 100),
+            total_c: Math.round(total * 100),
+            feeCollectedVia,
+            referenceNo: referenceNo.trim() || undefined,
+            status: 'PENDING'
+          },
+          qrCodeUrl: qrPayload,
+          total_c: Math.round(total * 100)
+        }).catch(() => {})
+      } else {
+        void window.api.phoneScanner?.updateCfd({
+          status: 'IDLE',
+          mode: 'RETAIL',
+          ewalletPayload: undefined
+        }).catch(() => {})
+      }
+    }
+  }, [activeTab, channel, type, amountStr, feeStr, feeCollectedVia, referenceNo, customerName, customerPhone])
+
+  // Bills & E-Load CFD Sync
+  useEffect(() => {
+    if (activeTab === 'bills') {
+      const amt = parseFloat(billAmountStr) || 0
+      const fee = parseFloat(billFeeStr) || 0
+      if (amt > 0) {
+        const cashRec = parseFloat(billCashReceivedStr) || 0
+        const total = amt + fee
+        const changeVal = cashRec >= total ? cashRec - total : 0
+        void window.api.phoneScanner?.updateCfd({
+          status: 'ACTIVE',
+          mode: 'BILLS_PAYMENT',
+          billsPayload: {
+            biller: selectedBiller,
+            accountNo: billAccountNo.trim(),
+            customerName: billCustomerName.trim() || undefined,
+            customerPhone: billCustomerPhone.trim() || undefined,
+            amount_c: Math.round(amt * 100),
+            fee_c: Math.round(fee * 100),
+            total_c: Math.round(total * 100),
+            cashReceived_c: cashRec > 0 ? Math.round(cashRec * 100) : undefined,
+            change_c: cashRec > 0 ? Math.round(changeVal * 100) : undefined,
+            sourceWallet: billSourceWallet,
+            status: 'PENDING'
+          },
+          total_c: Math.round(total * 100)
+        }).catch(() => {})
+      } else {
+        void window.api.phoneScanner?.updateCfd({
+          status: 'IDLE',
+          mode: 'RETAIL',
+          billsPayload: undefined
+        }).catch(() => {})
+      }
+    }
+  }, [activeTab, selectedBiller, billAccountNo, billCustomerName, billCustomerPhone, billAmountStr, billFeeStr, billCashReceivedStr, billSourceWallet])
+
   // Denomination calculations
   const actualCashC = useMemo(() => {
     try {
@@ -268,6 +356,22 @@ export function EwalletAudit(): React.JSX.Element {
         }
       }
 
+      void window.api.phoneScanner?.updateCfd({
+        status: 'COMPLETED',
+        mode: 'EWALLET',
+        ewalletPayload: {
+          channel,
+          type,
+          accountNo: customerPhone.trim() || undefined,
+          customerName: customerName.trim() || undefined,
+          amount_c,
+          fee_c,
+          total_c: type === 'CASH_IN' ? (feeCollectedVia === 'CASH' ? amount_c + fee_c : amount_c) : Math.max(0, amount_c - fee_c),
+          referenceNo: tx.reference_no || referenceNo || undefined,
+          status: 'COMPLETED'
+        }
+      }).catch(() => {})
+
       // Reset form fields
       setAmountStr('')
       setReferenceNo('')
@@ -346,6 +450,24 @@ export function EwalletAudit(): React.JSX.Element {
     const next = [newTx, ...billRecords]
     saveBillRecords(next)
     toast.success('Transaction Recorded', `${selectedBiller} payment of ₱${amt.toFixed(2)} logged!`)
+
+    void window.api.phoneScanner?.updateCfd({
+      status: 'COMPLETED',
+      mode: 'BILLS_PAYMENT',
+      billsPayload: {
+        biller: selectedBiller,
+        accountNo: billAccountNo.trim(),
+        customerName: billCustomerName.trim() || undefined,
+        customerPhone: billCustomerPhone.trim() || undefined,
+        amount_c: Math.round(amt * 100),
+        fee_c: Math.round(fee * 100),
+        total_c: Math.round(totalDue * 100),
+        cashReceived_c: cashRec !== undefined ? Math.round(cashRec * 100) : undefined,
+        change_c: changeAmt !== undefined ? Math.round(changeAmt * 100) : undefined,
+        referenceNo: newTx.referenceNo,
+        status: 'COMPLETED'
+      }
+    }).catch(() => {})
 
     // Reset Form
     setBillAccountNo('')

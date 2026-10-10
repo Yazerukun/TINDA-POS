@@ -39,8 +39,10 @@ import {
   SlidersHorizontal,
   Package,
   Calculator,
-  Sparkles
+  Sparkles,
+  Bell
 } from 'lucide-react'
+import { getMergedCustomerReminder, type CustomerReminder, type ReminderStatusInfo } from '@shared/customerReminders'
 import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
@@ -384,11 +386,16 @@ export function POS(): React.JSX.Element {
     const handleOpenTools = () => {
       setPosToolsOpen(true)
     }
+    const handleToggleCalculator = () => {
+      setCalculatorOpen((prev) => !prev)
+    }
     window.addEventListener('tinda-counter-camera-toggle', handleToggleEvent)
     window.addEventListener('tinda-open-pos-tools', handleOpenTools)
+    window.addEventListener('tinda-open-calculator', handleToggleCalculator)
     return () => {
       window.removeEventListener('tinda-counter-camera-toggle', handleToggleEvent)
       window.removeEventListener('tinda-open-pos-tools', handleOpenTools)
+      window.removeEventListener('tinda-open-calculator', handleToggleCalculator)
     }
   }, [])
 
@@ -774,6 +781,20 @@ export function POS(): React.JSX.Element {
 
   useEffect(() => {
     const handlePosHotkeys = (e: KeyboardEvent) => {
+      // If Cashier Calculator is open, ONLY intercept F3 or Escape to toggle/close
+      if (calculatorOpen) {
+        if (e.key === 'F3' || e.key === 'Escape') {
+          e.preventDefault()
+          setCalculatorOpen(false)
+        }
+        return
+      }
+
+      // If other primary overlay modals are open, do not trigger background table navigation or actions
+      if (posToolsOpen || expenseModalOpen || promoModalOpen || customizeModalOpen) {
+        return
+      }
+
       if (e.key === 'F1') {
         e.preventDefault()
         searchInputRef.current?.focus()
@@ -782,7 +803,7 @@ export function POS(): React.JSX.Element {
       }
       if (e.key === 'F3') {
         e.preventDefault()
-        setCalculatorOpen((prev) => !prev)
+        setCalculatorOpen(true)
         return
       }
       if (e.key === 'F7') {
@@ -849,7 +870,7 @@ export function POS(): React.JSX.Element {
     }
     window.addEventListener('keydown', handlePosHotkeys)
     return () => window.removeEventListener('keydown', handlePosHotkeys)
-  }, [categoryMenuOpen, q, catFilter, displayedProducts, selectedRowIndex])
+  }, [categoryMenuOpen, q, catFilter, displayedProducts, selectedRowIndex, calculatorOpen, posToolsOpen, expenseModalOpen, promoModalOpen, customizeModalOpen])
 
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
@@ -2639,6 +2660,29 @@ function CheckoutModal({
   const [printing, setPrinting] = useState(false)
   const setPage = useNav((state) => state.setPage)
 
+  const [selectedCustReminder, setSelectedCustReminder] = useState<{
+    reminder: CustomerReminder
+    statusInfo: ReminderStatusInfo
+  } | null>(null)
+
+  useEffect(() => {
+    if (!customer_id) {
+      setSelectedCustReminder(null)
+      return
+    }
+    let alive = true
+    void window.api.customers.get(customer_id).then((c) => {
+      if (alive && c) {
+        setSelectedCustReminder(getMergedCustomerReminder(c))
+      }
+    }).catch(() => {
+      if (alive) {
+        setSelectedCustReminder(getMergedCustomerReminder({ id: customer_id, balance_c: 0 }))
+      }
+    })
+    return () => { alive = false }
+  }, [customer_id])
+
   // Split payment state
   const [splitState, setSplitState] = useState({
     cashAmount: '',
@@ -3144,12 +3188,34 @@ function CheckoutModal({
                     </button>
                   </>
                 ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="break-words text-sm text-emerald-300">
-                      <Check aria-label="Selected" className="mr-1 inline h-4 w-4" />
-                      Selected: {customer_name ?? `Customer #${customer_id}`}
-                    </p>
-                    <button onClick={() => setPickerOpen(true)} className="shrink-0 text-xs text-brand-400 hover:text-brand-300">Change</button>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="break-words text-sm text-emerald-300 font-medium">
+                        <Check aria-label="Selected" className="mr-1 inline h-4 w-4" />
+                        Selected: {customer_name ?? `Customer #${customer_id}`}
+                      </p>
+                      <button onClick={() => setPickerOpen(true)} className="shrink-0 text-xs text-brand-400 hover:text-brand-300">Change</button>
+                    </div>
+
+                    {/* Utang Reminder & Notification Alert in Checkout */}
+                    {selectedCustReminder && selectedCustReminder.statusInfo.status !== 'NONE' && selectedCustReminder.statusInfo.status !== 'SETTLED' && (
+                      <div className={`mt-2 p-2.5 rounded-lg border text-xs ${selectedCustReminder.statusInfo.badgeBg} ${selectedCustReminder.statusInfo.colorClass}`}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                          <Bell className="h-3.5 w-3.5 shrink-0" />
+                          <span>{selectedCustReminder.statusInfo.badgeText}</span>
+                          {selectedCustReminder.reminder.due_date && (
+                            <span className="text-[11px] font-mono opacity-80 font-normal">
+                              · Due {selectedCustReminder.reminder.due_date}
+                            </span>
+                          )}
+                        </div>
+                        {selectedCustReminder.reminder.notes && (
+                          <p className="mt-1 text-[11px] text-slate-200 italic pl-5">
+                            Promise: "{selectedCustReminder.reminder.notes}"
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -3453,21 +3519,39 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
       />
       <div className="max-h-72 space-y-1 overflow-y-auto">
         {loading && <p className="py-4 text-center text-sm text-slate-500">Loading…</p>}
-        {!loading && rows.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => { usePosCart.getState().setCustomer(c.id, c.full_name); onClose() }}
-            aria-pressed={selectedId === c.id}
-            className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left hover:border-brand-500/50 ${selectedId === c.id ? 'border-brand-500 bg-brand-500/10' : 'border-ink-line'}`}
-          >
-            <div>
-              <p className="break-words text-sm font-medium text-slate-200">{c.full_name}</p>
-              <p className="text-xs text-slate-500">Limit {money(c.credit_limit_c)}</p>
-            </div>
-            {selectedId === c.id && <Check aria-label="Selected" className="h-4 w-4 shrink-0 text-brand-400" />}
-            <span className={`text-xs font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</span>
-          </button>
-        ))}
+        {!loading && rows.map((c) => {
+          const { reminder, statusInfo } = getMergedCustomerReminder(c)
+          return (
+            <button
+              key={c.id}
+              onClick={() => { usePosCart.getState().setCustomer(c.id, c.full_name); onClose() }}
+              aria-pressed={selectedId === c.id}
+              className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left hover:border-brand-500/50 ${selectedId === c.id ? 'border-brand-500 bg-brand-500/10' : 'border-ink-line'}`}
+            >
+              <div className="min-w-0 flex-1 mr-2">
+                <p className="break-words text-sm font-medium text-slate-200">{c.full_name}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span className="text-xs text-slate-500">Limit {money(c.credit_limit_c)}</span>
+                  {statusInfo.status !== 'NONE' && statusInfo.status !== 'SETTLED' && (
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] border ${statusInfo.badgeBg} ${statusInfo.colorClass}`}>
+                      <Bell className="h-2.5 w-2.5" />
+                      <span>{statusInfo.badgeText}</span>
+                    </span>
+                  )}
+                  {reminder.notes && (
+                    <span className="text-[10px] text-slate-400 italic truncate max-w-[140px]" title={reminder.notes}>
+                      "{reminder.notes}"
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                {selectedId === c.id && <Check aria-label="Selected" className="h-4 w-4 shrink-0 text-brand-400 mb-0.5 ml-auto" />}
+                <span className={`text-xs font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</span>
+              </div>
+            </button>
+          )
+        })}
         {!loading && rows.length === 0 && <p className="py-4 text-center text-sm text-slate-500">No customers found.</p>}
       </div>
     </Modal>

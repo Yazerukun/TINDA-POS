@@ -59,14 +59,29 @@ export function Shell(): React.JSX.Element {
       void useUpdate.getState().check(false)
     }
 
+    // Global F3 shortcut listener:
+    // Prevents Chromium "Find next" and toggles Quick Calculator across the app
+    const onGlobalF3 = (e: KeyboardEvent) => {
+      if (e.key === 'F3') {
+        e.preventDefault()
+        const curPage = useNav.getState().page
+        if (curPage !== 'pos') {
+          useNav.getState().setPage('pos')
+        }
+        window.dispatchEvent(new CustomEvent('tinda-open-calculator'))
+      }
+    }
+
     window.addEventListener('focus', onFocus)
     window.addEventListener('online', onOnline)
+    window.addEventListener('keydown', onGlobalF3)
 
     return () => {
       clearTimeout(initTimer)
       clearInterval(interval)
       window.removeEventListener('focus', onFocus)
       window.removeEventListener('online', onOnline)
+      window.removeEventListener('keydown', onGlobalF3)
     }
   }, [load])
 

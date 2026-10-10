@@ -235,14 +235,40 @@ const baseCss = `
   .tp-status-over { color: #000; }
   .tp-status-short { color: #000; }
 `
-export function receiptCss(width: ReceiptWidth): string {
+export interface ReceiptLayoutOptions {
+  offsetLeftMm?: number
+  offsetRightMm?: number
+  feedLinesEnd?: number
+  fontScale?: number
+  lineSpacing?: 'compact' | 'balanced' | 'spacious'
+  ultraBlack?: boolean
+}
+
+export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions): string {
   const is58 = width !== '80mm'
   const paperWidth = is58 ? '58mm' : '80mm'
   const contentWidth = is58 ? '48mm' : '72mm'
   const printWidth = is58 ? '48mm' : '72mm'
-  const paddingLeft = is58 ? '4.5mm' : '5mm'
-  const paddingRight = is58 ? '3.5mm' : '4mm'
-  const fontSize = is58 ? '11px' : '12px'
+  
+  const padLeft = typeof options?.offsetLeftMm === 'number' && !isNaN(options.offsetLeftMm)
+    ? `${Math.max(0, options.offsetLeftMm)}mm`
+    : (is58 ? '4.5mm' : '5mm')
+  const padRight = typeof options?.offsetRightMm === 'number' && !isNaN(options.offsetRightMm)
+    ? `${Math.max(0, options.offsetRightMm)}mm`
+    : (is58 ? '3.5mm' : '4mm')
+  
+  const scale = typeof options?.fontScale === 'number' && options.fontScale > 0
+    ? options.fontScale / 100
+    : 1
+  const baseSizeNum = is58 ? 11 : 12
+  const scaledSize = scale === 1 ? `${baseSizeNum}px` : `${(baseSizeNum * scale).toFixed(1)}px`
+  const headingSize = scale === 1 ? '13px' : `${(13 * scale).toFixed(1)}px`
+  const totalSize = scale === 1 ? '12px' : `${(12 * scale).toFixed(1)}px`
+  const totalAmtSize = scale === 1 ? '12.5px' : `${(12.5 * scale).toFixed(1)}px`
+  
+  const lineHt = options?.lineSpacing === 'compact' ? '1.08' : options?.lineSpacing === 'spacious' ? '1.25' : '1.15'
+  const strokeW = options?.ultraBlack === false ? '0.05px' : '0.18px'
+
   return `
     ${baseCss}
     @page { size: ${paperWidth} auto; margin: 0; }
@@ -264,31 +290,31 @@ export function receiptCss(width: ReceiptWidth): string {
         text-rendering: geometricPrecision !important;
         text-shadow: none !important;
         box-shadow: none !important;
-        -webkit-text-stroke: 0.15px #000000 !important;
+        -webkit-text-stroke: ${strokeW} #000000 !important;
       }
       .tp-sheet {
         width: 100% !important;
         max-width: ${printWidth} !important;
         margin: 0 auto !important;
-        padding: 2mm ${paddingRight} 2mm ${paddingLeft} !important;
+        padding: 2mm ${padRight} 2mm ${padLeft} !important;
         font-weight: 800 !important;
         letter-spacing: -0.01em !important;
-        line-height: 1.15 !important;
+        line-height: ${lineHt} !important;
         box-sizing: border-box !important;
       }
       .tp-heading {
-        font-size: 13px !important;
+        font-size: ${headingSize} !important;
         font-weight: 900 !important;
-        line-height: 1.15 !important;
+        line-height: ${lineHt} !important;
       }
       .tp-total {
-        font-size: 12px !important;
+        font-size: ${totalSize} !important;
         font-weight: 900 !important;
         margin: 2px 0 !important;
         line-height: 1.2 !important;
       }
       .tp-total .tp-amt {
-        font-size: 12.5px !important;
+        font-size: ${totalAmtSize} !important;
         font-weight: 900 !important;
         padding-right: 2px !important;
       }
@@ -303,24 +329,28 @@ export function receiptCss(width: ReceiptWidth): string {
         height: 0 !important;
       }
       .tp-row, .tp-item, .tp-sum, .tp-sukli {
-        line-height: 1.15 !important;
+        line-height: ${lineHt} !important;
         margin: 0 !important;
       }
       .tp-amt {
         padding-right: 3px !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm ${paddingRight} 2mm ${paddingLeft}; font-size: ${fontSize}; }
+    .tp-sheet { width: ${contentWidth}; padding: 2mm ${padRight} 2mm ${padLeft}; font-size: ${scaledSize}; line-height: ${lineHt}; }
   `
 }
 
-export function receiptBodyHtml(lines: string[], width: ReceiptWidth, currency = ''): string {
-  return `<div class="tp-sheet">${rowsToHtml(lines, currency)}</div>`
+export function receiptBodyHtml(lines: string[], width: ReceiptWidth, currency = '', options?: ReceiptLayoutOptions): string {
+  const feedLines = typeof options?.feedLinesEnd === 'number' && options.feedLinesEnd > 0
+    ? options.feedLinesEnd
+    : 2
+  const feedSpacer = `<div style="height: ${feedLines * 3.8}mm;" class="tp-feed-spacer"></div>`
+  return `<div class="tp-sheet">${rowsToHtml(lines, currency)}${feedSpacer}</div>`
 }
 
-export function receiptHtml(lines: string[], width: ReceiptWidth, currency = ''): string {
+export function receiptHtml(lines: string[], width: ReceiptWidth, currency = '', options?: ReceiptLayoutOptions): string {
   const docReset = 'html, body { margin: 0; padding: 0; background: white; color: black; }'
-  return `<!doctype html><html><head><meta charset="utf-8"><style>${docReset}${receiptCss(width)}</style></head><body>${receiptBodyHtml(lines, width, currency)}</body></html>`
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${docReset}${receiptCss(width, options)}</style></head><body>${receiptBodyHtml(lines, width, currency, options)}</body></html>`
 }
 
 export function formatReceiptDate(d: string | Date | undefined | null): string {

@@ -150,9 +150,9 @@ export const BUILTIN_KNOWLEDGE_BASE: AssistantTopic[] = [
       'nganong dili mo print ang printer',
       'how to setup thermal receipt printer'
     ],
-    tagalogReply: 'Pumunta sa Settings > Receipt tab o pindutin ang F3 (Terminal Tools). Siguraduhing napili ang tamang printer sa dropdown list, nakasindi ang USB connection, at tama ang sukat ng papel (58mm o 80mm). I-click ang "Test Print" upang masubukan kung lumalabas ang papel.',
-    bisayaReply: 'Adto sa Settings > Receipt tab o pindota ang F3 (Terminal Tools). Siguroha nga napili ang saktong printer sa dropdown, nakasaksak ang USB, ug sakto ang sukod sa papel (58mm o 80mm). I-click ang "Test Print" para masulayan.',
-    englishReply: 'Navigate to Settings > Receipt tab or hit F3 for Terminal Tools. Select your thermal printer from the dropdown, verify paper size (58mm or 80mm), and perform a Test Print.',
+    tagalogReply: 'Pumunta sa Settings > Receipt tab o i-click ang "Terminal Tools" sa sidebar. Siguraduhing napili ang tamang printer sa dropdown list, nakasindi ang USB connection, at tama ang sukat ng papel (58mm o 80mm). I-click ang "Test Print" upang masubukan kung lumalabas ang papel.',
+    bisayaReply: 'Adto sa Settings > Receipt tab o i-click ang "Terminal Tools" sa sidebar. Siguroha nga napili ang saktong printer sa dropdown, nakasaksak ang USB, ug sakto ang sukod sa papel (58mm o 80mm). I-click ang "Test Print" para masulayan.',
+    englishReply: 'Navigate to Settings > Receipt tab or click "Terminal Tools" in the sidebar. Select your thermal printer from the dropdown, verify paper size (58mm or 80mm), and perform a Test Print.',
     action: {
       label: 'Pumunta sa Receipt Settings ↗',
       page: 'settings',

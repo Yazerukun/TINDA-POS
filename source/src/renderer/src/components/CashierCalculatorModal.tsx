@@ -13,9 +13,9 @@ import {
   Sparkles,
   Check
 } from 'lucide-react'
-import { money, moneyWholePesos } from '@shared/format'
 import { Modal } from './ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { safeEvalArithmetic } from '../utils/calculator'
 
 interface CashierCalculatorModalProps {
   open: boolean
@@ -34,6 +34,7 @@ export function CashierCalculatorModal({
 }: CashierCalculatorModalProps): React.JSX.Element | null {
   const [display, setDisplay] = useState('0')
   const [expression, setExpression] = useState('')
+  const [resetOnNext, setResetOnNext] = useState(false)
   const [customItemName, setCustomItemName] = useState('Custom Service / Item')
 
   // Sukli / Change Mode Tab
@@ -51,52 +52,97 @@ export function CashierCalculatorModal({
 
   const billNum = parseFloat(billAmount) || 0
   const cashNum = parseFloat(cashTendered) || 0
+  const hasCashInput = cashTendered.trim().length > 0
   const changePesos = Math.max(0, cashNum - billNum)
-  const isShort = cashNum > 0 && cashNum < billNum
-  const shortPesos = billNum - cashNum
+  const isShort = hasCashInput && cashNum < billNum
+  const shortPesos = Math.max(0, billNum - cashNum)
 
   // Calculator logic
   const handleDigit = (digit: string) => {
-    setDisplay((prev) => {
-      if (prev === '0' && digit !== '.') return digit
-      if (digit === '.' && prev.includes('.')) return prev
-      return prev + digit
-    })
+    if (resetOnNext || display === '0' || display === 'Error' || display.startsWith('Cannot')) {
+      if (digit === '.') {
+        setDisplay('0.')
+      } else {
+        setDisplay(digit)
+      }
+      setResetOnNext(false)
+      return
+    }
+    if (digit === '.' && display.includes('.')) return
+    setDisplay((prev) => prev + digit)
   }
 
   const handleOperator = (op: string) => {
-    setExpression((prev) => `${prev} ${display} ${op}`)
+    const normOp = op === '÷' ? '/' : op === '×' ? '*' : op === '−' ? '-' : op
+    if (display === 'Error' || display.startsWith('Cannot')) {
+      setDisplay('0')
+      setExpression('')
+      setResetOnNext(false)
+      return
+    }
+
+    // If user just got a calculated result, use that result as first operand
+    if (resetOnNext) {
+      setExpression(`${display} ${normOp}`)
+      setDisplay('0')
+      setResetOnNext(false)
+      return
+    }
+
+    // If display is '0' and expression already ends with an operator, replace operator
+    if (display === '0' && expression.length > 0) {
+      const trimmed = expression.trimEnd()
+      const lastSpace = trimmed.lastIndexOf(' ')
+      if (lastSpace >= 0) {
+        setExpression(`${trimmed.substring(0, lastSpace)} ${normOp}`)
+        return
+      }
+    }
+
+    setExpression((prev) => `${prev ? prev + ' ' : ''}${display} ${normOp}`)
     setDisplay('0')
+    setResetOnNext(false)
   }
 
   const handleClear = () => {
     setDisplay('0')
     setExpression('')
+    setResetOnNext(false)
   }
 
   const handleBackspace = () => {
+    if (resetOnNext || display === 'Error' || display.startsWith('Cannot')) {
+      setDisplay('0')
+      setResetOnNext(false)
+      return
+    }
     setDisplay((prev) => {
       if (prev.length <= 1) return '0'
       return prev.slice(0, -1)
     })
   }
 
+  const handlePercent = () => {
+    const val = parseFloat(display)
+    if (!isNaN(val) && val !== 0) {
+      const pct = Math.round(val * 100) / 10000
+      setDisplay(String(pct))
+      setResetOnNext(true)
+    }
+  }
+
   const handleEquals = useCallback(() => {
-    try {
-      const fullExp = `${expression} ${display}`.trim()
-      // Safe math evaluator for standard arithmetic
-      // Sanitized: only allow numbers, +, -, *, /, %, and dots
-      const sanitized = fullExp.replace(/[^0-9+\-*/. ]/g, '')
-      if (!sanitized) return
-      // eslint-disable-next-line no-new-func
-      const result = Function(`'use strict'; return (${sanitized})`)()
-      if (typeof result === 'number' && Number.isFinite(result)) {
-        const rounded = Math.round(result * 100) / 100
-        setDisplay(String(rounded))
-        setExpression('')
-      }
-    } catch {
-      setDisplay('Error')
+    const fullExp = `${expression} ${display}`.trim()
+    if (!fullExp) return
+
+    const result = safeEvalArithmetic(fullExp)
+    if (result.error) {
+      setDisplay(result.error)
+      setResetOnNext(true)
+    } else if (result.value !== null) {
+      setDisplay(String(result.value))
+      setExpression('')
+      setResetOnNext(true)
     }
   }, [display, expression])
 
@@ -105,21 +151,45 @@ export function CashierCalculatorModal({
     if (!open) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      // Isolate input fields (e.g. custom item name, bill amount, cash tendered)
+      const isInput =
+        e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+
+      if (isInput) {
+        if (e.key === 'Escape' || e.key === 'F3') {
+          e.preventDefault()
+          onClose()
+        }
+        return
+      }
+
+      if (e.key === 'Escape' || e.key === 'F3') {
+        e.preventDefault()
         onClose()
-      } else if (tab === 'calc') {
+        return
+      }
+
+      if (tab === 'calc') {
         if (/^[0-9]$/.test(e.key)) {
+          e.preventDefault()
           handleDigit(e.key)
-        } else if (e.key === '.') {
+        } else if (e.key === '.' || e.key === ',') {
+          e.preventDefault()
           handleDigit('.')
         } else if (['+', '-', '*', '/'].includes(e.key)) {
+          e.preventDefault()
           handleOperator(e.key)
+        } else if (e.key === '%') {
+          e.preventDefault()
+          handlePercent()
         } else if (e.key === 'Enter' || e.key === '=') {
           e.preventDefault()
           handleEquals()
         } else if (e.key === 'Backspace') {
+          e.preventDefault()
           handleBackspace()
-        } else if (e.key.toLowerCase() === 'c') {
+        } else if (e.key.toLowerCase() === 'c' || e.key === 'Delete') {
+          e.preventDefault()
           handleClear()
         }
       }
@@ -127,7 +197,7 @@ export function CashierCalculatorModal({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, tab, handleEquals, onClose])
+  }, [open, tab, handleEquals, onClose, resetOnNext, display, expression])
 
   const handlePushToCart = () => {
     const val = parseFloat(display)
@@ -137,22 +207,18 @@ export function CashierCalculatorModal({
     }
 
     if (onAddCustomItemToCart) {
+      const cleanName = customItemName.trim() || 'Custom Item'
       onAddCustomItemToCart({
-        name: customItemName.trim() || 'Custom Item',
+        name: cleanName,
         price_c: Math.round(val * 100)
       })
-      toastSuccess('Added to cart', `${customItemName}: ₱${val.toFixed(2)} added.`)
+      toastSuccess('Added to cart', `${cleanName}: ₱${val.toFixed(2)} added.`)
       onClose()
     }
   }
 
   const handleQuickCash = (denom: number) => {
     setCashTendered(String(denom))
-  }
-
-  const handleAddCash = (denom: number) => {
-    const cur = parseFloat(cashTendered) || 0
-    setCashTendered(String(cur + denom))
   }
 
   if (!open) return null
@@ -196,7 +262,7 @@ export function CashierCalculatorModal({
               <div className="min-h-5 text-xs font-medium text-slate-500 truncate">
                 {expression || ' '}
               </div>
-              <div className="text-3xl font-bold tracking-tight text-white select-all">
+              <div className="text-3xl font-bold tracking-tight text-white select-all overflow-x-auto">
                 {display}
               </div>
             </div>
@@ -208,6 +274,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={handleClear}
                 className="rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 p-3 hover:bg-rose-500/30 active:scale-95"
+                title="Clear all (C)"
               >
                 C
               </button>
@@ -215,6 +282,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={handleBackspace}
                 className="rounded-lg bg-ink-800 text-slate-300 border border-ink-line p-3 hover:bg-ink-750 active:scale-95 flex items-center justify-center"
+                title="Backspace"
               >
                 <Delete className="h-4 w-4" />
               </button>
@@ -222,6 +290,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={() => handleOperator('/')}
                 className="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 p-3 hover:bg-indigo-500/30 active:scale-95"
+                title="Divide (/)"
               >
                 ÷
               </button>
@@ -229,6 +298,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={() => handleOperator('*')}
                 className="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 p-3 hover:bg-indigo-500/30 active:scale-95"
+                title="Multiply (*)"
               >
                 ×
               </button>
@@ -259,6 +329,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={() => handleOperator('-')}
                 className="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 p-3 hover:bg-indigo-500/30 active:scale-95"
+                title="Subtract (-)"
               >
                 −
               </button>
@@ -289,6 +360,7 @@ export function CashierCalculatorModal({
                 type="button"
                 onClick={() => handleOperator('+')}
                 className="rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 p-3 hover:bg-indigo-500/30 active:scale-95"
+                title="Add (+)"
               >
                 +
               </button>
@@ -318,7 +390,8 @@ export function CashierCalculatorModal({
               <button
                 type="button"
                 onClick={handleEquals}
-                className="row-span-2 rounded-lg bg-brand-600 text-white shadow-md p-3 hover:bg-brand-500 active:scale-95 flex items-center justify-center font-bold text-lg"
+                className="row-span-2 rounded-lg bg-brand-600 text-white shadow-md p-3 hover:bg-brand-500 active:scale-95 flex items-center justify-center font-bold text-lg border border-brand-400/40"
+                title="Calculate Result (= or Enter)"
               >
                 =
               </button>
@@ -327,7 +400,7 @@ export function CashierCalculatorModal({
               <button
                 type="button"
                 onClick={() => handleDigit('0')}
-                className="col-span-2 rounded-lg bg-ink-800 text-white border border-ink-line p-3 hover:bg-ink-750 active:scale-95"
+                className="rounded-lg bg-ink-800 text-white border border-ink-line p-3 hover:bg-ink-750 active:scale-95"
               >
                 0
               </button>
@@ -337,6 +410,14 @@ export function CashierCalculatorModal({
                 className="rounded-lg bg-ink-800 text-white border border-ink-line p-3 hover:bg-ink-750 active:scale-95"
               >
                 .
+              </button>
+              <button
+                type="button"
+                onClick={handlePercent}
+                className="rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 p-3 hover:bg-amber-500/30 active:scale-95 flex items-center justify-center"
+                title="Percent (%)"
+              >
+                <Percent className="h-4 w-4" />
               </button>
             </div>
 
@@ -436,22 +517,32 @@ export function CashierCalculatorModal({
             {/* Change Display Card */}
             <div
               className={`rounded-2xl border p-4 text-center transition-all ${
-                isShort
+                !hasCashInput
+                  ? 'border-ink-line bg-ink-900/60'
+                  : isShort
                   ? 'border-rose-500/40 bg-rose-500/10'
                   : 'border-emerald-500/40 bg-emerald-500/10'
               }`}
             >
               <p className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
-                {isShort ? 'Kulang Pa (Remaining Due):' : 'Sukli (Customer Change):'}
+                {!hasCashInput
+                  ? 'Waiting for Cash Tendered...'
+                  : isShort
+                  ? 'Kulang Pa (Remaining Due):'
+                  : 'Sukli (Customer Change):'}
               </p>
               <p
                 className={`text-4xl font-extrabold font-mono mt-1 ${
-                  isShort ? 'text-rose-400' : 'text-emerald-400'
+                  !hasCashInput
+                    ? 'text-slate-500'
+                    : isShort
+                    ? 'text-rose-400'
+                    : 'text-emerald-400'
                 }`}
               >
-                ₱{(isShort ? shortPesos : changePesos).toFixed(2)}
+                {!hasCashInput ? '₱0.00' : `₱${(isShort ? shortPesos : changePesos).toFixed(2)}`}
               </p>
-              {!isShort && cashNum >= billNum && billNum > 0 && (
+              {hasCashInput && !isShort && cashNum >= billNum && billNum > 0 && (
                 <p className="text-xs text-slate-400 mt-1">
                   Cash: ₱{cashNum.toFixed(2)} − Total: ₱{billNum.toFixed(2)}
                 </p>
