@@ -22,6 +22,11 @@ import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 import { generateBarcodeSvg } from '@shared/barcodeSvg'
 import { receiptHtml } from '@shared/receiptHtml'
+import {
+  reconcilePrinterCustomization,
+  saveStoredPrinterCustomization,
+  type PrinterCustomizationSettings
+} from '../utils/printerCustomization'
 
 interface PrinterStudioModalProps {
   open: boolean
@@ -81,35 +86,34 @@ export function PrinterStudioModal({
   useEffect(() => {
     if (open) {
       setActiveTab(initialTab)
-      if (settings) {
-        setReceiptWidth(settings.receipt_paper_width || '58mm')
-        setReceiptLeftMargin(settings.receipt_offset_left_mm ?? 3.5)
-        setReceiptRightMargin(settings.receipt_offset_right_mm ?? 2.0)
-        setReceiptFeedLines(settings.receipt_feed_lines_end ?? 3)
-        setReceiptFontScale(settings.receipt_font_scale ?? 100)
-        setReceiptLineSpacing(settings.receipt_line_spacing ?? 'balanced')
-        setReceiptUltraBlack(settings.receipt_ultra_black ?? true)
-        setReceiptCustomHeader(settings.receipt_custom_header ?? '')
-        setReceiptCustomFooter(settings.receipt_custom_footer ?? '')
-        setReceiptShowCashier(settings.receipt_show_cashier ?? true)
-        setReceiptShowCustomer(settings.receipt_show_customer ?? true)
-        setReceiptShowChange(settings.receipt_show_change_breakdown ?? true)
-        setReceiptShowFooterQr(settings.receipt_show_footer_qr ?? false)
+      const reconciled = reconcilePrinterCustomization(settings)
+      setReceiptWidth(reconciled.receipt_paper_width || '58mm')
+      setReceiptLeftMargin(reconciled.receipt_offset_left_mm)
+      setReceiptRightMargin(reconciled.receipt_offset_right_mm)
+      setReceiptFeedLines(reconciled.receipt_feed_lines_end)
+      setReceiptFontScale(reconciled.receipt_font_scale)
+      setReceiptLineSpacing(reconciled.receipt_line_spacing)
+      setReceiptUltraBlack(reconciled.receipt_ultra_black)
+      setReceiptCustomHeader(reconciled.receipt_custom_header)
+      setReceiptCustomFooter(reconciled.receipt_custom_footer)
+      setReceiptShowCashier(reconciled.receipt_show_cashier)
+      setReceiptShowCustomer(reconciled.receipt_show_customer)
+      setReceiptShowChange(reconciled.receipt_show_change_breakdown)
+      setReceiptShowFooterQr(reconciled.receipt_show_footer_qr)
 
-        setLabelPaperSize(settings.label_paper_size || '40x30')
-        setLabelWidthMm(settings.label_custom_width_mm ?? 40)
-        setLabelHeightMm(settings.label_custom_height_mm ?? 30)
-        setLabelOffsetX(settings.label_offset_x_mm ?? 0.0)
-        setLabelOffsetY(settings.label_offset_y_mm ?? 0.0)
-        setLabelSafeMargin(settings.label_safe_margin_mm ?? 1.2)
-        setLabelBarcodeHeight(settings.label_barcode_height_mm ?? 26)
-        setLabelBarcodeBarWidth(settings.label_barcode_bar_width ?? 1.3)
-        setLabelPriceSize(settings.label_price_font_size ?? 'large')
-        setLabelShowStoreName(settings.label_show_store_name ?? true)
-        setLabelShowBarcode(settings.label_show_barcode ?? true)
-        setLabelShowSku(settings.label_show_sku ?? true)
-        setLabelShowWholesale(settings.label_show_wholesale ?? false)
-      }
+      setLabelPaperSize(reconciled.label_paper_size || '40x30')
+      setLabelWidthMm(reconciled.label_custom_width_mm)
+      setLabelHeightMm(reconciled.label_custom_height_mm)
+      setLabelOffsetX(reconciled.label_offset_x_mm)
+      setLabelOffsetY(reconciled.label_offset_y_mm)
+      setLabelSafeMargin(reconciled.label_safe_margin_mm)
+      setLabelBarcodeHeight(reconciled.label_barcode_height_mm)
+      setLabelBarcodeBarWidth(reconciled.label_barcode_bar_width)
+      setLabelPriceSize(reconciled.label_price_font_size)
+      setLabelShowStoreName(reconciled.label_show_store_name)
+      setLabelShowBarcode(reconciled.label_show_barcode)
+      setLabelShowSku(reconciled.label_show_sku)
+      setLabelShowWholesale(reconciled.label_show_wholesale)
     }
   }, [open, initialTab, settings])
 
@@ -182,7 +186,7 @@ export function PrinterStudioModal({
   const handleSave = async () => {
     setSaving(true)
     try {
-      const payload = {
+      const payload: PrinterCustomizationSettings = {
         receipt_paper_width: receiptWidth,
         receipt_offset_left_mm: receiptLeftMargin,
         receipt_offset_right_mm: receiptRightMargin,
@@ -212,13 +216,11 @@ export function PrinterStudioModal({
         label_show_wholesale: labelShowWholesale
       }
 
-      await updateSettings(payload)
+      // Synchronously write to localStorage and dispatch event first
+      saveStoredPrinterCustomization(payload)
 
-      // Dual-store local backup for instant reactivity
-      try {
-        localStorage.setItem('tinda_printer_customization_v1', JSON.stringify(payload))
-        window.dispatchEvent(new CustomEvent('tinda-printer-config-changed', { detail: payload }))
-      } catch {}
+      // Persist to backend settings
+      await updateSettings(payload)
 
       toastSuccess('Printer Studio Saved', 'Alignment and customization settings have been applied.')
       onSaved?.()
@@ -233,7 +235,8 @@ export function PrinterStudioModal({
   // Reset to factory defaults
   const handleResetDefaults = () => {
     if (activeTab === 'receipt') {
-      setReceiptLeftMargin(receiptWidth === '58mm' ? 3.5 : 4.5)
+      const defaultLeft = receiptWidth === '58mm' ? 3.5 : 4.5
+      setReceiptLeftMargin(defaultLeft)
       setReceiptRightMargin(2.0)
       setReceiptFeedLines(3)
       setReceiptFontScale(100)
@@ -245,6 +248,21 @@ export function PrinterStudioModal({
       setReceiptShowCustomer(true)
       setReceiptShowChange(true)
       setReceiptShowFooterQr(false)
+      saveStoredPrinterCustomization({
+        receipt_paper_width: receiptWidth,
+        receipt_offset_left_mm: defaultLeft,
+        receipt_offset_right_mm: 2.0,
+        receipt_feed_lines_end: 3,
+        receipt_font_scale: 100,
+        receipt_line_spacing: 'balanced',
+        receipt_ultra_black: true,
+        receipt_custom_header: '',
+        receipt_custom_footer: '',
+        receipt_show_cashier: true,
+        receipt_show_customer: true,
+        receipt_show_change_breakdown: true,
+        receipt_show_footer_qr: false
+      })
       toastSuccess('Defaults Restored', 'Receipt parameters reset to recommended thermal standards.')
     } else {
       setLabelOffsetX(0.0)
@@ -257,6 +275,19 @@ export function PrinterStudioModal({
       setLabelShowBarcode(true)
       setLabelShowSku(true)
       setLabelShowWholesale(false)
+      saveStoredPrinterCustomization({
+        label_paper_size: labelPaperSize,
+        label_offset_x_mm: 0.0,
+        label_offset_y_mm: 0.0,
+        label_safe_margin_mm: 1.2,
+        label_barcode_height_mm: 26,
+        label_barcode_bar_width: 1.3,
+        label_price_font_size: 'large',
+        label_show_store_name: true,
+        label_show_barcode: true,
+        label_show_sku: true,
+        label_show_wholesale: false
+      })
       toastSuccess('Defaults Restored', 'Label parameters reset to Chiteng CT221B defaults.')
     }
   }

@@ -27,7 +27,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)**
+- Current Version: **v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)**
+
+## Key Features in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)
+1. **Printer & Receipt Customization Dual-Store Persistence (`localStorage` + SQLite Settings)**:
+   - Fixed configuration reverting to defaults by implementing the proven dual-store engine (`tinda_printer_customization_v1`) across `useSettings` Zustand store and `PrinterStudioModal`.
+   - SQLite `getSettings` now preserves and dynamically type-casts all database keys, ensuring custom parameters (`receipt_offset_left_mm`, `receipt_feed_lines_end`, `label_offset_x_mm`, etc.) are never stripped even on un-restarted Electron main processes.
+2. **Instant Cross-Component Live Sync (`tinda-printer-config-changed`)**:
+   - 0ms reactive synchronization between `PrinterStudioModal`, `PriceTagPrintModal`, `ReceiptPaper`, and `Settings.tsx`.
+   - On-screen receipt previews in `ReceiptPaper.tsx` immediately reflect customized margins, typography scale, line spacing, and cutter spacers.
+3. **Receipt Builder & Thermal Print Engine Parity**:
+   - `buildReceiptLines` and `printSale` now fully honor `receipt_custom_header`, `receipt_custom_footer`, `receipt_show_cashier`, `receipt_show_customer`, and `receipt_show_change_breakdown`.
+4. **Self-Healing State & Robust Factory Reset**:
+   - `reconcilePrinterCustomization` seamlessly prioritizes explicit settings, recovers missing fields from local storage, self-heals local cache, and provides safe factory reset presets.
 
 ## Key Features in v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)
 1. **TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer**:

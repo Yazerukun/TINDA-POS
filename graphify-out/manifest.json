@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791592760.9840608,
-    "seen": 1791593754.176985,
-    "ast_hash": "afd9887285173e2d7c64e1ebf31a29d6",
+    "mtime": 1791600809.2612948,
+    "seen": 1791600910.9212432,
+    "ast_hash": "458bba5e00071bf822707bbd87cedcd2",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "source/src/main/repositories/settings.ts": {
-    "mtime": 1791592932.7341127,
-    "seen": 1791593754.1883614,
-    "ast_hash": "bf359a4af3382a196ba47d22c2204cc9",
+    "mtime": 1791600378.15023,
+    "seen": 1791600910.9293096,
+    "ast_hash": "e27cf4ac601e6dd75d8080a0cd54e4d7",
     "semantic_hash": ""
   },
   "source/src/main/repositories/shifts.ts": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/checkout.ts": {
-    "mtime": 1791592761.0382705,
-    "seen": 1791593754.2070615,
-    "ast_hash": "92c4e127080c52a647c82beadbe4f532",
+    "mtime": 1791600543.9097507,
+    "seen": 1791600910.9438264,
+    "ast_hash": "ad8fd93d9b58f32b64633c847cfcb408",
     "semantic_hash": ""
   },
   "source/src/main/services/cloudSync.ts": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/printing.ts": {
-    "mtime": 1791592977.2410874,
-    "seen": 1791593754.211458,
-    "ast_hash": "5b9f858d51a46c6597e29088fe41dfe6",
+    "mtime": 1791600551.1419642,
+    "seen": 1791600910.946943,
+    "ast_hash": "bbb4424993dcdfb892aca8f80f3cbe5a",
     "semantic_hash": ""
   },
   "source/src/main/services/productImport.ts": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791592761.0474222,
-    "seen": 1791593754.22124,
-    "ast_hash": "c5229b4d5582aba39a915109a27d9bb9",
+    "mtime": 1791600827.0407844,
+    "seen": 1791600910.9621558,
+    "ast_hash": "1da7e0e69632e046b4672161fc0fe2a2",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceTagPrintModal.tsx": {
-    "mtime": 1791593311.4553814,
-    "seen": 1791593754.2217422,
-    "ast_hash": "2aa3c2e59939c9d51be9c9f684047a84",
+    "mtime": 1791600522.4171546,
+    "seen": 1791600910.962401,
+    "ast_hash": "9f932bf3be4a88bb40f35b2f0375ec3b",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/QuickExpenseModal.tsx": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/ReceiptPaper.tsx": {
-    "mtime": 1791163706.734243,
-    "seen": 1791428449.1203651,
-    "ast_hash": "5f0ca3b0b343d623f65dc4deb12ecd7c",
+    "mtime": 1791600485.2617106,
+    "seen": 1791600910.96285,
+    "ast_hash": "1f543b242d3b72decb6a18d773e626be",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/SalesChart.tsx": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/stores/settings.ts": {
-    "mtime": 1791163706.8239229,
-    "seen": 1791428449.1204789,
-    "ast_hash": "f2f80bfb1105e269dd42edb1730cf534",
+    "mtime": 1791600397.4092813,
+    "seen": 1791600910.982112,
+    "ast_hash": "21fdbe65175b09f053841b383940a9c0",
     "semantic_hash": ""
   },
   "source/src/renderer/src/stores/theme.ts": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791534962.0505695,
-    "seen": 1791535165.5462804,
-    "ast_hash": "38c12efc660d3a75a64eda999672dfb1",
+    "mtime": 1791600837.1232755,
+    "seen": 1791600911.0924828,
+    "ast_hash": "b1904cce3791e64a917c8066e0fca6f6",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791534982.8471298,
-    "seen": 1791535165.5489457,
-    "ast_hash": "3a1fb4d610780c2272277508d8870f52",
+    "mtime": 1791600847.39672,
+    "seen": 1791600911.0931644,
+    "ast_hash": "13bc69fcf92ff660ee7b66c5d1a474b2",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791534998.7851672,
-    "seen": 1791535165.5589485,
-    "ast_hash": "956d20daec1efcfaaebd57aa478b5413",
+    "mtime": 1791600857.7407365,
+    "seen": 1791600911.0977323,
+    "ast_hash": "160b041e47682b8210f5959cf933bf27",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -4032,9 +4032,9 @@
     "semantic_hash": ""
   },
   ".agents/memory/session.md": {
-    "mtime": 1791597343.8375168,
-    "seen": 1791597804.940939,
-    "ast_hash": "9b003a4dbea0c1e4703906ffac61cff7",
+    "mtime": 1791600096.2608764,
+    "seen": 1791600911.0139413,
+    "ast_hash": "d2acb71ae230625ba00c0cb88f253ff1",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/composite-bom.test.ts": {
@@ -4062,9 +4062,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PrinterStudioModal.tsx": {
-    "mtime": 1791593339.250598,
-    "seen": 1791593754.2217472,
-    "ast_hash": "ff2f5261123b00882f07a8823aad4566",
+    "mtime": 1791600472.6794095,
+    "seen": 1791600910.9624045,
+    "ast_hash": "a35aa6c5e0cb1e87dc8c9f41470703b4",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PromoBundlesModal.tsx": {
@@ -4179,6 +4179,24 @@
     "mtime": 1791597650.1378489,
     "seen": 1791597804.911898,
     "ast_hash": "6d159e0f31574b54523eaf5fb88d49b0",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/utils/printerCustomization.test.ts": {
+    "mtime": 1791600600.2153232,
+    "seen": 1791600910.9835126,
+    "ast_hash": "3d3bdae5826393312e907bad7ad512fe",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/utils/printerCustomization.ts": {
+    "mtime": 1791600362.540481,
+    "seen": 1791600910.9835155,
+    "ast_hash": "fbed2c8a3fefcfcd19d635ed431ce19a",
+    "semantic_hash": ""
+  },
+  "tools/publish_v1099.mjs": {
+    "mtime": 1791598456.5624888,
+    "seen": 1791600911.0123727,
+    "ast_hash": "e91b39c159b0efe71b033320eca5a810",
     "semantic_hash": ""
   }
 }

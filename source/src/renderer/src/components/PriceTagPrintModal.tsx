@@ -27,6 +27,10 @@ import {
 } from '@shared/printer'
 import { generateBarcodeSvg } from '@shared/barcodeSvg'
 import { PrinterStudioModal } from './PrinterStudioModal'
+import {
+  reconcilePrinterCustomization,
+  PRINTER_CONFIG_CHANGED_EVENT
+} from '../utils/printerCustomization'
 
 interface PriceTagPrintModalProps {
   open: boolean
@@ -127,11 +131,35 @@ export function PriceTagPrintModal({
   useEffect(() => {
     if (open) {
       void scanPrinters()
+      const reconciled = reconcilePrinterCustomization(settings)
+      setTagSize((reconciled.label_paper_size as TagSizePreset) || '40x30')
+      setCustomWidthMm(String(reconciled.label_custom_width_mm || 40))
+      setCustomHeightMm(String(reconciled.label_custom_height_mm || 30))
+      setShowBarcode(reconciled.label_show_barcode)
+      setShowSku(reconciled.label_show_sku)
+      setShowStoreName(reconciled.label_show_store_name)
+      setShowWholesale(reconciled.label_show_wholesale)
       if (selectedProduct?.id) {
         setChosenProductId(selectedProduct.id)
       }
     }
-  }, [open, selectedProduct])
+  }, [open, selectedProduct, settings])
+
+  // React to live changes from Printer Studio Modal
+  useEffect(() => {
+    const onCustomChange = () => {
+      const reconciled = reconcilePrinterCustomization(settings)
+      setTagSize((reconciled.label_paper_size as TagSizePreset) || '40x30')
+      setCustomWidthMm(String(reconciled.label_custom_width_mm || 40))
+      setCustomHeightMm(String(reconciled.label_custom_height_mm || 30))
+      setShowBarcode(reconciled.label_show_barcode)
+      setShowSku(reconciled.label_show_sku)
+      setShowStoreName(reconciled.label_show_store_name)
+      setShowWholesale(reconciled.label_show_wholesale)
+    }
+    window.addEventListener(PRINTER_CONFIG_CHANGED_EVENT, onCustomChange)
+    return () => window.removeEventListener(PRINTER_CONFIG_CHANGED_EVENT, onCustomChange)
+  }, [settings])
 
   if (!open || !activeProduct) return null
 
@@ -156,10 +184,11 @@ export function PriceTagPrintModal({
     if (!activeProduct) return
     setIsPrinting(true)
 
-    const offsetX = settings?.label_offset_x_mm ?? 0
-    const offsetY = settings?.label_offset_y_mm ?? 0
-    const safeMargin = settings?.label_safe_margin_mm ?? (activeDims.height <= 20 ? 0.8 : 1.2)
-    const priceSize = settings?.label_price_font_size || 'large'
+    const reconciled = reconcilePrinterCustomization(settings)
+    const offsetX = reconciled.label_offset_x_mm
+    const offsetY = reconciled.label_offset_y_mm
+    const safeMargin = reconciled.label_safe_margin_mm
+    const priceSize = reconciled.label_price_font_size || 'large'
 
     // Build thermal label HTML
     const singleLabelHtml = `

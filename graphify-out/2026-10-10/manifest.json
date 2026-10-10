@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/layout/Sidebar.tsx": {
-    "mtime": 1791592761.0572386,
-    "seen": 1791593754.2246256,
-    "ast_hash": "c59acc6f260b033eb30cbcaff66f2a17",
+    "mtime": 1791597545.8788557,
+    "seen": 1791597804.8941731,
+    "ast_hash": "c8f595dfc671c937ff4100f332aa8228",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/theme/ThemeSelector.tsx": {
@@ -912,9 +912,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/layouts/Shell.tsx": {
-    "mtime": 1791592761.0993576,
-    "seen": 1791593754.2274415,
-    "ast_hash": "99a325003a4aeb6c6c1fa13448ec114f",
+    "mtime": 1791597558.1510644,
+    "seen": 1791597804.8980618,
+    "ast_hash": "6e1f790f6054af4596362c06cd2521cc",
     "semantic_hash": ""
   },
   "source/src/renderer/src/lib/barcodeScanner.test.ts": {
@@ -1032,9 +1032,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Handbook.tsx": {
-    "mtime": 1791509142.5827148,
-    "seen": 1791509849.2920241,
-    "ast_hash": "9962aad1c501661210d301fb1acc89b3",
+    "mtime": 1791597605.921418,
+    "seen": 1791597804.9051259,
+    "ast_hash": "169c24f7d9153f47631efcad280b0d18",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Inventory.tsx": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/POS.tsx": {
-    "mtime": 1791596022.8852606,
-    "seen": 1791596336.1247349,
-    "ast_hash": "62f86dfb0ae8c05632b15d14011407ad",
+    "mtime": 1791597537.041417,
+    "seen": 1791597804.9056716,
+    "ast_hash": "8b0e4f9f6961ab4d47015f055ecda4bc",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Reports.tsx": {
@@ -3930,9 +3930,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/services/tindaAiKnowledge.ts": {
-    "mtime": 1791506106.888456,
-    "seen": 1791507417.0227869,
-    "ast_hash": "0de7240f534989ab6e1fe2d43f36785a",
+    "mtime": 1791597617.5876925,
+    "seen": 1791597804.909281,
+    "ast_hash": "abdb40e10a555abba5d1915b68ae0e3c",
     "semantic_hash": ""
   },
   "source/src/renderer/src/stores/floatingWidgets.ts": {
@@ -4032,9 +4032,9 @@
     "semantic_hash": ""
   },
   ".agents/memory/session.md": {
-    "mtime": 1791595343.736076,
-    "seen": 1791596336.155544,
-    "ast_hash": "5eb69e726539d7c4e5a36a61cd727e7a",
+    "mtime": 1791597343.8375168,
+    "seen": 1791597804.940939,
+    "ast_hash": "9b003a4dbea0c1e4703906ffac61cff7",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/composite-bom.test.ts": {
@@ -4044,9 +4044,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/CashierCalculatorModal.tsx": {
-    "mtime": 1791592761.0444827,
-    "seen": 1791593754.2173576,
-    "ast_hash": "c0c077d0c94896ead8a727f6e115092c",
+    "mtime": 1791597493.6453831,
+    "seen": 1791597804.8856664,
+    "ast_hash": "5a172ce920d702f733881d30d59a06c5",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/CustomizeFastButtonsModal.tsx": {
@@ -4167,6 +4167,18 @@
     "mtime": 1791596158.887444,
     "seen": 1791596336.1343157,
     "ast_hash": "6f6e77d24e627285583653ca9b3c885d",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/utils/calculator.test.ts": {
+    "mtime": 1791597431.864746,
+    "seen": 1791597804.9118943,
+    "ast_hash": "91cf5c13b6da4b047f0e13c8e3b2addb",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/utils/calculator.ts": {
+    "mtime": 1791597650.1378489,
+    "seen": 1791597804.911898,
+    "ast_hash": "6d159e0f31574b54523eaf5fb88d49b0",
     "semantic_hash": ""
   }
 }

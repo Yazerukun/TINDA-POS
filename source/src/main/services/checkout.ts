@@ -57,7 +57,22 @@ export function buildLines(db: ReturnType<typeof getDb>, items: (CartItem | impo
   })
 }
 
-export function buildReceiptLines(store: { header: string; title?: string; show_app_name?: boolean; store_name: string; owner_name: string; address: string; phone: string; tin: string; currency: string; footer: string; is_vip?: boolean }, sale: Sale): string[] {
+export function buildReceiptLines(store: {
+  header: string
+  title?: string
+  show_app_name?: boolean
+  store_name: string
+  owner_name: string
+  address: string
+  phone: string
+  tin: string
+  currency: string
+  footer: string
+  is_vip?: boolean
+  show_cashier?: boolean
+  show_customer?: boolean
+  show_change_breakdown?: boolean
+}, sale: Sale): string[] {
   const isVip = store.is_vip ?? (process.env.NODE_ENV === 'test' ? true : LicenseService.getInstance().getStatus().isVip)
   const lines: string[] = []
   if (isVip && store.header.trim()) lines.push(...store.header.trim().split(/\r?\n/))
@@ -73,8 +88,8 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
   lines.push('--------------------------------')
   lines.push(sale.transaction_no)
   lines.push(formatReceiptDate(sale.created_at))
-  lines.push(`Cashier: ${sale.cashier_name}`)
-  if (sale.customer_name) lines.push(`Customer: ${sale.customer_name}`)
+  if (store.show_cashier !== false) lines.push(`Cashier: ${sale.cashier_name}`)
+  if (store.show_customer !== false && sale.customer_name) lines.push(`Customer: ${sale.customer_name}`)
   lines.push('--------------------------------')
   for (const it of sale.items) {
     lines.push(`${it.product_name}`)
@@ -95,7 +110,7 @@ export function buildReceiptLines(store: { header: string; title?: string; show_
     lines.push(`${p.method}          ${(p.amount_c / 100).toFixed(2)}`)
     if (p.reference) lines.push(`Reference: ${p.reference}`)
   }
-  if (cash) {
+  if (cash && store.show_change_breakdown !== false) {
     const paid = sale.payments.reduce((sum, payment) => sum + payment.amount_c, 0)
     lines.push(`SUKLI         ${(Math.max(0, paid - sale.total_c) / 100).toFixed(2)}`)
   }

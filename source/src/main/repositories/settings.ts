@@ -120,6 +120,20 @@ export function getSettings(db: Database.Database): StoreSettings {
       out[key] = parsePinnedCategoryIds(v)
     } else out[key] = v
   }
+  // Also preserve and type-cast any stored settings that might not be in defaultSettings
+  for (const [key, v] of Object.entries(map)) {
+    if (key in out && out[key] !== undefined) continue
+    if (v === '1' || v === 'true') out[key] = true
+    else if (v === '0' || v === 'false') out[key] = false
+    else if (!isNaN(Number(v)) && v.trim() !== '') out[key] = Number(v)
+    else {
+      try {
+        out[key] = JSON.parse(v)
+      } catch {
+        out[key] = v
+      }
+    }
+  }
   return out as unknown as StoreSettings
 }
 

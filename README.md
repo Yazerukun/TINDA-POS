@@ -287,6 +287,21 @@
 
 </div>
 
+## ✨ What's New in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)
+
+> **Complete resolution for printer and receipt customization persistence using proven dual-store synchronization, dynamic SQLite settings preservation, instant 0ms cross-component layout updates, and receipt template customization parity.**
+
+- 🖨️ **Dual-Store Persistence for Printer Studio Alignment & Layout**:
+  - Implemented the resilient dual-store engine (`tinda_printer_customization_v1`) across `useSettings` and `PrinterStudioModal`, guaranteeing user-configured printer margins and offsets never revert to defaults on reload.
+  - Dynamically retains and type-casts all database keys in SQLite `getSettings`, preventing parameter stripping on un-restarted Electron main processes.
+- ⚡ **Instant Cross-Component Live Sync & WYSIWYG Parity**:
+  - 0ms reactive synchronization between `PrinterStudioModal`, `PriceTagPrintModal`, `ReceiptPaper`, and `Settings.tsx`.
+  - On-screen receipt previews (`ReceiptPaper.tsx`) immediately render with customized margins, typography scale, line spacing, and cutter buffers.
+- 🧾 **Full Receipt Header/Footer & Thermal Engine Parity**:
+  - `buildReceiptLines` and `printSale` now fully honor `receipt_custom_header`, `receipt_custom_footer`, `receipt_show_cashier`, `receipt_show_customer`, and `receipt_show_change_breakdown`.
+- 🛡️ **Self-Healing State & Robust Factory Reset Presets**:
+  - `reconcilePrinterCustomization` seamlessly prioritizes explicit settings, recovers missing fields from local storage, self-heals local cache, and provides safe factory reset presets.
+
 ## ✨ What's New in v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)
 
 > **TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer, Dual-Screen Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs, Utang Customer Due Date Reminders with Proactive Cashier Alerts, and Zero-Eval Resilient Quick Calculator & Universal F3 Shortcut Harmony.**

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { ReceiptWidth } from '@shared/receiptHtml'
 import { receiptBodyHtml, receiptCss } from '@shared/receiptHtml'
 import { useSettings } from '../stores/settings'
+import { reconcilePrinterCustomization } from '../utils/printerCustomization'
 
 interface ReceiptPaperProps {
   lines: string[]
@@ -16,9 +17,29 @@ interface ReceiptPaperProps {
  */
 export function ReceiptPaper({ lines, width }: ReceiptPaperProps): React.JSX.Element {
   const { settings } = useSettings()
-  const paper: ReceiptWidth = width ?? settings?.receipt_paper_width ?? '80mm'
-  const css = useMemo(() => receiptCss(paper), [paper])
-  const body = useMemo(() => receiptBodyHtml(lines, paper, settings?.currency), [lines, paper, settings?.currency])
+  const custom = useMemo(() => reconcilePrinterCustomization(settings), [settings])
+  const paper: ReceiptWidth = width ?? custom.receipt_paper_width ?? '80mm'
+
+  const css = useMemo(
+    () =>
+      receiptCss(paper, {
+        offsetLeftMm: custom.receipt_offset_left_mm,
+        offsetRightMm: custom.receipt_offset_right_mm,
+        feedLinesEnd: custom.receipt_feed_lines_end,
+        fontScale: custom.receipt_font_scale,
+        lineSpacing: custom.receipt_line_spacing,
+        ultraBlack: custom.receipt_ultra_black
+      }),
+    [paper, custom]
+  )
+
+  const body = useMemo(
+    () =>
+      receiptBodyHtml(lines, paper, settings?.currency, {
+        feedLinesEnd: custom.receipt_feed_lines_end
+      }),
+    [lines, paper, settings?.currency, custom.receipt_feed_lines_end]
+  )
 
   return (
     <div className="overflow-x-auto rounded-lg border border-ink-line bg-white p-3">
@@ -28,3 +49,4 @@ export function ReceiptPaper({ lines, width }: ReceiptPaperProps): React.JSX.Ele
     </div>
   )
 }
+
