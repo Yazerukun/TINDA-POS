@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.101 (RESILIENT POS CHECKOUT IMMUNITY & RUSH ID PACKAGE EDITION)
+- v2.0.1 (MAJOR RELEASE: RESILIENT POS IMMUNITY, RUSH ID STUDIO & CUPERTINO SHOWCASE CAROUSEL EDITION)
 
 TARGET:
-- v2.0.1 (NEXT MAJOR RELEASE WITH CAROUSEL/FEATURE HIGHLIGHTS)
+- v2.0.2 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Production Release & Live Feature Patch Publishing
+- Full Windows Binary Compilation & Release Publishing
 
 COMPLETED:
 - Stage 01: TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer.
@@ -16,8 +16,9 @@ COMPLETED:
 - Stage 04: Resilient Cashier Quick Calculator & Universal F3 Shortcut Harmony.
 - Stage 05: Printer Studio Customization Dual-Store Persistence & Resilient Settings Repair.
 - Stage 06: Checkout Immunity against "Product not found" errors & Rush ID Packages added.
-- Stage 07: Quality Gates passed: Vitest (489/489 tests in 75 suites), Typecheck (0 errors across Node & Web).
-- Stage 08: AST Knowledge Graph updated via graphify.
+- Stage 07: Apple Cupertino Feature Showcase Carousel Banner (`FeatureCarouselBanner.tsx`).
+- Stage 08: Quality Gates passed: Vitest (489/489 tests in 75 suites), Typecheck (0 errors across Node & Web).
+- Stage 09: Full Desktop NSIS & Portable compilation + Feature Patch delivery.
 
 PENDING APPROVAL:
 - None (Approved by Owner).

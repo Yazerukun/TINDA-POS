@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791601953.5586526,
-    "seen": 1791602394.434361,
-    "ast_hash": "d350414271ba625f84168d06428567ac",
+    "mtime": 1791602676.56248,
+    "seen": 1791603617.9809318,
+    "ast_hash": "919347493f0194c042db09a987c143f1",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791601966.2538738,
-    "seen": 1791602394.4744947,
-    "ast_hash": "421ff15d761339c24026eabb7ffefb8e",
+    "mtime": 1791602694.793615,
+    "seen": 1791603618.0258398,
+    "ast_hash": "e97a37ed8025645fe19548264668f5a0",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Dashboard.tsx": {
-    "mtime": 1791531103.6590679,
-    "seen": 1791531394.790943,
-    "ast_hash": "7ef976dec3fbeb3083f86a7e87411d9f",
+    "mtime": 1791602662.1112628,
+    "seen": 1791603618.041745,
+    "ast_hash": "e051f8449c07399d642cd776597a5dec",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/EwalletAudit.tsx": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/POS.tsx": {
-    "mtime": 1791597537.041417,
-    "seen": 1791597804.9056716,
-    "ast_hash": "8b0e4f9f6961ab4d47015f055ecda4bc",
+    "mtime": 1791603036.0841691,
+    "seen": 1791603618.043305,
+    "ast_hash": "21fe64f221c10873f5aef723277b8879",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Reports.tsx": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791601985.8035107,
-    "seen": 1791602394.6010873,
-    "ast_hash": "49c5b6ceff8dbe140bb9627e3e1f4f8e",
+    "mtime": 1791602706.7379434,
+    "seen": 1791603618.1649213,
+    "ast_hash": "4cdfc63f0c7edcf28e15f932837278ce",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791601999.25456,
-    "seen": 1791602394.6018612,
-    "ast_hash": "f9a7c2cfd1eda9145ac9146d95a89fe8",
+    "mtime": 1791602719.6694677,
+    "seen": 1791603618.165529,
+    "ast_hash": "03c90e4424e6e035f46a18f63fa01b2e",
     "semantic_hash": ""
   },
   "RELEASE_NOTES_v1.0.50.md": {
@@ -3180,9 +3180,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791602015.3662574,
-    "seen": 1791602394.6078644,
-    "ast_hash": "cb4c42f7b344ecd774af5c281a472c10",
+    "mtime": 1791602729.7129834,
+    "seen": 1791603618.1743553,
+    "ast_hash": "3427289dd31013c92ba9e01b3f295cfb",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3972,9 +3972,9 @@
     "semantic_hash": ""
   },
   "tools/publish_patch.mjs": {
-    "mtime": 1791602329.8396754,
-    "seen": 1791602394.515777,
-    "ast_hash": "a469262cc501c58306fa292497f49ea0",
+    "mtime": 1791603514.1031115,
+    "seen": 1791603618.070024,
+    "ast_hash": "fbd0f552fe763d84238f659361e1be2c",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/utang-ledger-delete-void.test.ts": {
@@ -4032,9 +4032,9 @@
     "semantic_hash": ""
   },
   ".agents/memory/session.md": {
-    "mtime": 1791601000.2613244,
-    "seen": 1791602394.5298996,
-    "ast_hash": "abf3a7f6a5e88b1f068bdbff5a63001a",
+    "mtime": 1791602414.5032196,
+    "seen": 1791603618.0823514,
+    "ast_hash": "b20e1151fa41898d0b9e7700e10589f0",
     "semantic_hash": ""
   },
   "source/src/main/services/__tests__/composite-bom.test.ts": {
@@ -4197,6 +4197,18 @@
     "mtime": 1791598456.5624888,
     "seen": 1791600911.0123727,
     "ast_hash": "e91b39c159b0efe71b033320eca5a810",
+    "semantic_hash": ""
+  },
+  "source/src/main/services/__tests__/printing-hub-checkout.test.ts": {
+    "mtime": 1791603059.4566915,
+    "seen": 1791603618.0002441,
+    "ast_hash": "08296cfee4638edf35bf3d8bc6d869f4",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/components/FeatureCarouselBanner.tsx": {
+    "mtime": 1791603107.3544588,
+    "seen": 1791603618.0247257,
+    "ast_hash": "c88143fe3a47c99e4ddddd90095d71c6",
     "semantic_hash": ""
   }
 }

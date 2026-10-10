@@ -2019,7 +2019,7 @@ function CartPanel({
     try {
       const held = await window.api.pos.hold({
         items: items.map((item) => ({
-          product_id: item.product_id,
+          product_id: item.product_id && item.product_id > 0 ? item.product_id : null,
           name: item.name,
           unit_name: item.unit_name,
           qty: item.qty,
@@ -2126,7 +2126,9 @@ function CartPanel({
         const basePrice = prod?.default_price_c ?? item.unit_price_c
         const isCustom = item.unit_price_c !== basePrice
         return {
-          product_id: item.product_id as number,
+          product_id: (item.product_id != null && item.product_id > 0)
+            ? item.product_id
+            : -Math.floor(Date.now() % 100000000) - Math.floor(Math.random() * 1000),
           name: item.name,
           description: prod?.description ?? null,
           unit_name: item.unit_name,
@@ -2858,7 +2860,7 @@ function CheckoutModal({
 
       const payload = {
         items: items.map((i) => ({
-          product_id: i.product_id,
+          product_id: i.product_id && i.product_id > 0 ? i.product_id : null,
           name: i.name,
           unit_name: i.unit_name,
           qty: i.qty,

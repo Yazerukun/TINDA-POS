@@ -287,6 +287,23 @@
 
 </div>
 
+## ✨ What's New in v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)
+
+> **Major Desktop Release featuring Apple Cupertino interactive sliding feature carousel showcase, bulletproof checkout crash immunity, official Rush ID studio packages, and full installer builds.**
+
+- 🌟 **Apple Cupertino Feature Showcase Carousel**:
+  - Added fluid sliding announcement carousel on the Dashboard with auto-rotation (every 6s), tactile pagination indicators, left/right spring navigation, and pause-on-hover.
+  - Interactive 1-tap quick action CTAs directly navigating to POS, Rush ID Studio, Printer Settings, CFD Hub, Utang Reminders, and F3 Calculator.
+  - Discreet expand/collapse mode with `localStorage` persistence, keeping the active POS checkout distraction-free.
+- 🛡️ **Zero-Crash POS Checkout Immunity**:
+  - Immunized checkout transaction engine against missing or deleted inventory records; items missing catalog rows are gracefully handled as custom service line items.
+  - Guarded composite bundle stock deductions against missing leaf components, ensuring cashiers are never blocked from completing a customer transaction.
+  - Sanitized checkout schema parser to strictly require positive integers or null for `product_id`.
+- 📸 **Rush ID Package & Lamination Combo**:
+  - Integrated **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with photo cut specs and rush turnaround badge.
+  - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00.
+  - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) directly on POS Quick Speed Keys.
+
 ## ✨ What's New in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)
 
 > **Complete eradication of "Product not found" checkout crash errors, resilient non-inventory line item fallbacks, official Rush ID studio packages, and 1-tap POS Fast Buttons integration.**

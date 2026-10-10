@@ -22,6 +22,7 @@ import { useAuth } from '../stores/auth'
 import { useSettings } from '../stores/settings'
 import { useNav } from '../stores/nav'
 import { AppLogo } from '../components/AppLogo'
+import { FeatureCarouselBanner } from '../components/FeatureCarouselBanner'
 import {
   getCategoryVisuals,
   getCategoryCustomizations,
@@ -193,6 +194,9 @@ export function Dashboard(): React.JSX.Element | null {
           </span>
         </div>
       </div>
+
+      {/* v2.0.1 Release Showcase Carousel Banner */}
+      <FeatureCarouselBanner />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard

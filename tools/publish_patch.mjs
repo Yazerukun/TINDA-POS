@@ -147,16 +147,20 @@ async function main() {
 Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
 
 ### 🌟 What's New in ${TAG}:
-1. **🛡️ Bulletproof POS Checkout Immunity against "Product Not Found" Errors:**
+1. **🌟 Interactive Apple Cupertino Feature Showcase Carousel:**
+   - Smooth horizontal slide animations highlighting all core POS superpowers on the Dashboard.
+   - Auto-rotates smoothly every 6 seconds, pauses on mouse hover, with tactile pagination indicators and left/right controls.
+   - Discrete expand/collapse toggle with \`localStorage\` persistence ensuring cashiers are never distracted during rapid scanning.
+2. **🛡️ Bulletproof POS Checkout Immunity against "Product Not Found" Errors:**
    - Eradicated cashier checkout crashes (\`Error invoking remote method 'pos:checkout': Product not found\`).
    - If a line item or composite component is missing, deleted, or unsynced in the catalog, it is gracefully converted into a custom service line item without blocking the sale.
    - Composite bundle recipe stock deductions are safely guarded against missing ingredient records.
    - Sanitized input parameters so \`product_id\` is strictly positive integers or \`null\`.
-2. **📸 Dedicated Rush ID Studio Packages & Fast POS Speed Key:**
+3. **📸 Dedicated Rush ID Studio Packages & Fast POS Speed Key:**
    - Added official **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with 260gsm glossy photo cut specs and rush turnaround badge.
    - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00 for all-in-one rush photo and badge jobs.
    - Added 1-tap **Rush ID Package** (\`📸 ₱75.00\`) directly to the POS Quick Speed Keys grid for instantaneous ringing up.
-3. **🖨️ Printer & Receipt Customization Dual-Store Persistence & Parity:**
+4. **🖨️ Printer & Receipt Customization Dual-Store Persistence & Parity:**
    - Dual-store synchronization (\`localStorage\` + SQLite \`settings\`) ensuring all margins, coordinate offsets, and optical typography persist across restarts.
    - 0ms cross-component live sync across \`PrinterStudioModal\`, \`PriceTagPrintModal\`, \`ReceiptPaper\`, and \`Settings\`.
 
@@ -200,6 +204,18 @@ ${shaContent}
     { file: patchFile, path: patchPath, type: 'application/zip' },
     { file: shaFile, path: shaPath, type: 'text/plain' }
   ]
+
+  const setupFile = `TindaPOS-Setup-${version}.exe`
+  const setupPath = path.join(BUILDS_DIR, setupFile)
+  if (fs.existsSync(setupPath)) {
+    assetsToUpload.push({ file: setupFile, path: setupPath, type: 'application/vnd.microsoft.portable-executable' })
+  }
+
+  const portableFile = `TindaPOS-Portable-${version}.exe`
+  const portablePath = path.join(BUILDS_DIR, portableFile)
+  if (fs.existsSync(portablePath)) {
+    assetsToUpload.push({ file: portableFile, path: portablePath, type: 'application/vnd.microsoft.portable-executable' })
+  }
 
   for (const item of assetsToUpload) {
     const existing = (release.assets || []).find((a) => a.name === item.file)

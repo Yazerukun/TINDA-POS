@@ -27,7 +27,25 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)**
+- Current Version: **v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)**
+
+## Key Features in v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)
+1. **Interactive Apple Cupertino Feature Showcase Carousel Banner (`FeatureCarouselBanner.tsx`)**:
+   - Integrated a fluid sliding announcement banner on the Dashboard with Apple design standards (fluid horizontal slides, tactile pagination dots, left/right navigation controls, and subtle glow gradients).
+   - Auto-rotates smoothly every 6 seconds, automatically pauses on mouse hover, and features 1-tap direct action buttons (POS, Rush ID, Print Studio, Utang Ledger, CFD Hub, F3 Calculator).
+   - Discreet collapse/expand toggle storing preference in `localStorage` (`tinda_feature_banner_collapsed_v2`), ensuring cashiers are never distracted during rapid checkouts.
+2. **Bulletproof POS Checkout Immunity against "Product Not Found" Crashes**:
+   - Completely resolved remote checkout crashes (`Error invoking remote method 'pos:checkout': Product not found`).
+   - Items with missing, deleted, or un-synced inventory records are gracefully converted into custom line items so transactions are never blocked at the cashier counter.
+   - Guarded composite bundle stock reductions with try-catch blocks to prevent recipe desyncs from halting checkout.
+   - Sanitized input parameters so `product_id` is strictly positive integers or `null`.
+3. **Dedicated Rush ID Studio Packages & Fast POS Speed Key**:
+   - Added official **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** (₱75.00) in `PrintingHub.tsx` with high-gloss photo cut specs and rush turnaround badge.
+   - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** (₱95.00) for all-in-one rush photo and badge jobs.
+   - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) to POS Quick Speed Keys for instantaneous cart addition.
+4. **Complete Standalone Desktop Installer & Live Feature Patch Delivery**:
+   - Full production NSIS installer (`TindaPOS-Setup-2.0.1.exe`) and portable standalone executable (`TindaPOS-Portable-2.0.1.exe`).
+   - Instant in-app live hot patch (`TindaPOS-Feature-Patch-2.0.1.zip`).
 
 ## Key Features in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)
 1. **Bulletproof POS Checkout Immunity against "Product Not Found" Crashes**:

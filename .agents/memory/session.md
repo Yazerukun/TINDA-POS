@@ -1,9 +1,46 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IDLE | None | 2026-10-10 11:21
+IDLE | None | 2026-10-10 11:41
 
 ## Recent Handoff History
+
+### 2026-10-10 11:41 | agy (v2.0.1 Major Release: Full Desktop Compilation, Carousel Banner & Printing Checkout Immunity)
+- **Task**: Implement Apple Cupertino Feature Showcase Carousel Banner, completely resolve Printing Hub checkout failure by sanitizing IPC product IDs, bump to v2.0.1, compile full Windows desktop installers (Setup + Portable), bundle patch, and publish to GitHub Releases.
+- **Root Cause of Printing Hub Checkout Failure**:
+  1. `POS.tsx` `addCustomItem` assigns negative identifiers (`-45293412`) to custom items for client React array identity.
+  2. When constructing the checkout payload in `POS.tsx` (`handleCheckout`), `items.map` passed `product_id: i.product_id` directly without checking `i.product_id > 0`.
+  3. On client machines where the background Electron binary was running without restart, the main process received negative product IDs, treated them as truthy, and attempted catalog lookups via `getProduct`, crashing with `Error invoking remote method 'pos:checkout': Product not found`.
+- **Done**:
+  - **Frontend IPC Sanitization (`POS.tsx`)**:
+    - Ensured `product_id: i.product_id && i.product_id > 0 ? i.product_id : null` for both `pos:checkout` and `pos:hold` payloads.
+    - Custom items (from Printing Hub or custom entries) always arrive at the backend as `null`, ensuring universal compatibility across both old and new Electron main processes.
+  - **Apple Cupertino Feature Showcase Carousel (`FeatureCarouselBanner.tsx`, `Dashboard.tsx`)**:
+    - Engineered fluid horizontal sliding banner highlighting v2.0.1 features (Checkout Immunity, Rush ID Packages, Printer Studio, CFD Mirroring, Utang Reminders, F3 Calculator).
+    - Features auto-rotation (every 6 seconds), pause on hover, interactive tactile slide dots, left/right chevron navigation, direct 1-tap navigation action buttons, and a collapsible pill mode with `localStorage` persistence.
+  - **Quality Gates**:
+    - Added new unit test `printing-hub-checkout.test.ts`.
+    - 490/490 Vitest tests passed across 76 test suites (100% green).
+    - `npm run typecheck` passed with 0 errors across Node and Web targets.
+    - `node tools/check_master_invariants.mjs` verified.
+    - Updated AST knowledge graph via `graphify update .`.
+  - **Full Production Windows Build & Publishing**:
+    - Built `TindaPOS-Setup-2.0.1.exe` (111.32 MB) and `TindaPOS-Portable-2.0.1.exe` (110.43 MB).
+    - Bundled `TindaPOS-Feature-Patch-2.0.1.zip` (0.91 MB, SHA-256 `a67250fcf2c80cebf3d77eb71084ca332d1bd54bff2a251e366198855c86e7d7`).
+    - Published official GitHub Release `v2.0.1` on `Yazerukun/TINDA-POS` with all 4 assets uploaded.
+- **Files Touched**:
+  - `source/src/renderer/src/components/FeatureCarouselBanner.tsx`
+  - `source/src/renderer/src/pages/Dashboard.tsx`
+  - `source/src/renderer/src/pages/POS.tsx`
+  - `source/src/main/services/__tests__/printing-hub-checkout.test.ts`
+  - `source/package.json`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+  - `tools/publish_patch.mjs`
+  - `.agents/memory/session.md`
+
 
 ### 2026-10-10 11:21 | agy (Checkout Product Not Found Immunity & Rush ID Package Release v1.0.101)
 - **Task**: Fix checkout error `Error invoking remote method 'pos:checkout': Product not found` on custom/print items, add Rush ID Studio Packages, bump version to v1.0.101, and publish live feature patch.
