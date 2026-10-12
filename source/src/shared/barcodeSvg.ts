@@ -20,18 +20,39 @@ const CODE128_PATTERNS: string[] = [
 ]
 
 const START_CODE_B = 104
+const START_CODE_C = 105
+const CODE_B = 100
+const CODE_C = 99
 const STOP_PATTERN = '2331112' // Stop code has 7 elements
 
 export interface BarcodeSvgOptions {
   width?: number
   height?: number
+  barHeight?: number
   includeText?: boolean
   barWidth?: number
   fontSize?: number
+  quietZone?: number
+}
+
+function countConsecutiveDigits(str: string, startIdx: number): number {
+  let count = 0
+  while (
+    startIdx + count < str.length &&
+    str.charCodeAt(startIdx + count) >= 48 &&
+    str.charCodeAt(startIdx + count) <= 57
+  ) {
+    count++
+  }
+  return count
 }
 
 /**
- * Generates an SVG representation of a Code 128 barcode
+ * Generates an SVG representation of a Code 128 barcode using intelligent Auto mode
+ * (switches dynamically between Subset B for alphanumeric and Subset C for numeric digit pairs).
+ * Code C slashes symbol width by 30-40% for retail barcodes (EAN/UPC/SKU), allowing much wider,
+ * higher-contrast bars that direct thermal printers (Chiteng CT221B, POS-58) can burn cleanly
+ * without thermal-bleed blur.
  */
 export function generateBarcodeSvg(
   rawText: string,
@@ -41,21 +62,44 @@ export function generateBarcodeSvg(
   const text = (rawText || '').trim().replace(/[^\x20-\x7E]/g, '') || '000000'
   const height = options.height ?? 50
   const includeText = options.includeText ?? true
-  const barWidth = options.barWidth ?? 1.5
+  const barWidth = options.barWidth ?? 1.8
   const fontSize = options.fontSize ?? 10
+  const quietZoneModules = options.quietZone ?? 12
 
-  const codes: number[] = [START_CODE_B]
+  const codes: number[] = []
+  let i = 0
+  let currentMode: 'B' | 'C' = 'B'
+  const initialDigits = countConsecutiveDigits(text, 0)
+  if (initialDigits >= 4 || (initialDigits === text.length && initialDigits >= 2)) {
+    codes.push(START_CODE_C)
+    currentMode = 'C'
+  } else {
+    codes.push(START_CODE_B)
+    currentMode = 'B'
+  }
 
-  for (let i = 0; i < text.length; i++) {
-    const charCode = text.charCodeAt(i)
-    // Code 128B maps ASCII 32..127 to values 0..95
-    codes.push(charCode - 32)
+  while (i < text.length) {
+    if (currentMode === 'C') {
+      if (countConsecutiveDigits(text, i) >= 2) {
+        codes.push(parseInt(text.slice(i, i + 2), 10))
+        i += 2
+      } else {
+        codes.push(CODE_B)
+        currentMode = 'B'
+      }
+    } else if (countConsecutiveDigits(text, i) >= 4) {
+      codes.push(CODE_C)
+      currentMode = 'C'
+    } else {
+      codes.push(text.charCodeAt(i) - 32)
+      i++
+    }
   }
 
   // Calculate checksum
   let checksum = codes[0]!
-  for (let i = 1; i < codes.length; i++) {
-    checksum += codes[i]! * i
+  for (let idx = 1; idx < codes.length; idx++) {
+    checksum += codes[idx]! * idx
   }
   codes.push(checksum % 103)
 
@@ -67,32 +111,31 @@ export function generateBarcodeSvg(
   pattern += STOP_PATTERN
 
   // Draw bars into SVG rects
-  const quietZoneModules = 10
   let currentX = quietZoneModules * barWidth
   let isBar = true
   const rects: string[] = []
 
-  const barHeight = includeText ? Math.max(20, height - fontSize - 4) : height
+  const barHeight = options.barHeight ?? (includeText ? Math.max(20, height - fontSize - 5) : height)
+  const totalHeight = options.height ?? (includeText ? barHeight + fontSize + 5 : barHeight)
 
-  for (let i = 0; i < pattern.length; i++) {
-    const moduleCount = parseInt(pattern[i]!, 10)
+  for (let idx = 0; idx < pattern.length; idx++) {
+    const moduleCount = parseInt(pattern[idx]!, 10)
     const w = moduleCount * barWidth
     if (isBar) {
-      rects.push(`<rect x="${currentX.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${barHeight}" fill="#000000" />`)
+      rects.push(`<rect x="${currentX.toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${barHeight}" fill="#000000" shape-rendering="crispEdges" />`)
     }
     currentX += w
     isBar = !isBar
   }
 
   const totalWidth = currentX + quietZoneModules * barWidth
-  const totalHeight = height
 
   const textElement = includeText
-    ? `<text x="${(totalWidth / 2).toFixed(2)}" y="${totalHeight - 1}" font-family="Courier, monospace, sans-serif" font-size="${fontSize}" font-weight="bold" text-anchor="middle" fill="#000000">${escapeXml(text)}</text>`
+    ? `<text x="${(totalWidth / 2).toFixed(2)}" y="${totalHeight - 2}" font-family="Courier, monospace, sans-serif" font-size="${fontSize}" font-weight="bold" letter-spacing="0.5px" text-anchor="middle" fill="#000000">${escapeXml(text)}</text>`
     : ''
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth.toFixed(2)} ${totalHeight}" width="100%" height="${height}" preserveAspectRatio="xMidYMid meet" style="display:block;margin:0 auto;">
-  <rect width="100%" height="100%" fill="#ffffff" />
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth.toFixed(2)} ${totalHeight}" width="100%" height="${totalHeight}" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" style="display:block;margin:0 auto;background:#ffffff;shape-rendering:crispEdges;image-rendering:pixelated;">
+  <rect width="100%" height="100%" fill="#ffffff" shape-rendering="crispEdges" />
   ${rects.join('\n  ')}
   ${textElement}
 </svg>`

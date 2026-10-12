@@ -5,6 +5,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { listSales } from '../repositories/sales'
 import { listExpenses } from '../repositories/expenses'
+import { itemSalesReport } from './reporting'
 
 function toCsv(header: string[], records: (string | number)[][]): string {
   const esc = (v: string | number) => {
@@ -15,8 +16,8 @@ function toCsv(header: string[], records: (string | number)[][]): string {
 }
 
 export function exportCsv(
-  kind: 'SALES' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS',
-  opts: { from?: string; to?: string } = {}
+  kind: 'SALES' | 'ITEMS' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS',
+  opts: { from?: string; to?: string; category_id?: number; search?: string } = {}
 ): ExportResult {
   const db = getDb()
   const { exports } = appDirs()
@@ -47,6 +48,23 @@ export function exportCsv(
         s.total_c / 100,
         s.payments.map((p) => p.method).join('+'),
         s.status
+      ])
+    )
+  } else if (kind === 'ITEMS') {
+    const items = itemSalesReport(opts).rows
+    flush(
+      'item-sales',
+      ['Product Name', 'Category', 'Unit', 'Qty Sold', 'Refunded Qty', 'Total Sales (PHP)', 'Total Cost (PHP)', 'Gross Profit (PHP)', 'Margin %'],
+      items.map((r) => [
+        r.product_name,
+        r.category_name,
+        r.unit_name,
+        r.total_qty,
+        r.refunded_qty,
+        r.total_sales_c / 100,
+        r.total_cost_c / 100,
+        r.profit_c / 100,
+        r.margin_pct
       ])
     )
   } else if (kind === 'INVENTORY') {

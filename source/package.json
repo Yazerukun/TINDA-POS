@@ -1,7 +1,7 @@
 {
   "name": "tinda-pos",
   "productName": "TINDA POS",
-  "version": "2.0.2",
+  "version": "2.0.6",
   "description": "TINDA POS — Offline POS System for Sari-Sari Stores",
   "main": "out/main/index.js",
   "author": "TINDA POS",
@@ -29,6 +29,8 @@
     "build:win:all": "electron-vite build && electron-builder --win",
     "build:patch": "electron-vite build && node ../tools/bundle_patch.mjs",
     "publish:patch": "npm run build:patch && node ../tools/publish_patch.mjs",
+    "publish:release": "node ../tools/publish_release.mjs",
+    "publish": "npm run build:win && npm run build:patch && npm run publish:release",
     "dist": "electron-vite build && electron-builder --dir"
   },
   "dependencies": {

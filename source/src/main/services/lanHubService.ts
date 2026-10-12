@@ -144,12 +144,15 @@ const PROXIED_CHANNELS = new Set([
   'categories:create',
   'categories:remove',
 
-  // Suppliers
+  // Suppliers & Purchases
   'suppliers:list',
   'suppliers:create',
   'suppliers:update',
   'suppliers:products',
   'suppliers:purchases',
+  'purchases:list',
+  'purchases:get',
+  'purchases:create',
 
   // Customers
   'customers:list',
@@ -196,6 +199,7 @@ const PROXIED_CHANNELS = new Set([
 
   // Reports
   'reports:sales',
+  'reports:itemSales',
   'reports:inventory',
   'reports:utang',
   'reports:cashier',

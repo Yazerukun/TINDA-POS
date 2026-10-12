@@ -17,6 +17,7 @@ import { CameraScannerModal } from '../components/CameraScannerModal'
 import { PriceTagPrintModal } from '../components/PriceTagPrintModal'
 import { InventoryPrintModal } from '../components/InventoryPrintModal'
 import { RecipeModal } from '../components/RecipeModal'
+import { PurchaseInvoiceModal } from '../components/PurchaseInvoiceModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
   createProductInput,
@@ -51,6 +52,7 @@ export function Inventory(): React.JSX.Element {
   const [printInventoryOpen, setPrintInventoryOpen] = useState(false)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
+  const [purchaseInvoiceOpen, setPurchaseInvoiceOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
   const loadState = useRef({ sequence: 0 })
 
@@ -197,9 +199,17 @@ export function Inventory(): React.JSX.Element {
   // Instant Hardware & Phone Barcode Scanner Detection in Inventory View
   useEffect(() => {
     // Only intercept when no modal or dialog is open
-    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen) {
+    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen || purchaseInvoiceOpen) {
       return
     }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F2') {
+        e.preventDefault()
+        setPurchaseInvoiceOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
 
     const handleInventoryScan = (scannedBarcode: string) => {
       const code = scannedBarcode.trim()
@@ -236,10 +246,11 @@ export function Inventory(): React.JSX.Element {
     })
 
     return () => {
+      window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keydown', scannerListener)
       cleanupPhoneScan?.()
     }
-  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, products, defaultThreshold])
+  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, purchaseInvoiceOpen, products, defaultThreshold])
 
   return (
     <div className="p-6">
@@ -255,6 +266,9 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
+          <button onClick={() => setPurchaseInvoiceOpen(true)} className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-sm font-semibold">
+            <FileSpreadsheet className="h-4 w-4" /> Purchase Invoice (F2)
+          </button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
           <button onClick={() => setWithdrawing(true)} className="btn-primary flex items-center gap-2"><PackageMinus className="h-4 w-4" /> Withdraw</button>
           <button onClick={() => setEditing(newProductForm(defaultThreshold))} className="btn-primary flex items-center gap-2">
@@ -536,6 +550,13 @@ export function Inventory(): React.JSX.Element {
       {withdrawing && <WithdrawModal products={products} initial={withdrawing === true ? null : withdrawing} onDone={() => { setWithdrawing(null); void load() }} onClose={() => setWithdrawing(null)} />}
       {viewingMovements && <StockHistoryView products={products} onClose={() => setViewingMovements(false)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
+      {purchaseInvoiceOpen && (
+        <PurchaseInvoiceModal
+          open={purchaseInvoiceOpen}
+          onClose={() => setPurchaseInvoiceOpen(false)}
+          onSuccess={() => void load()}
+        />
+      )}
       <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => void load()} />
     </div>
   )

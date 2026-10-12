@@ -35,7 +35,7 @@ function isDoubleSeparator(raw: string): boolean {
 }
 
 function isMoneyLine(raw: string): { label: string; amount: string } | null {
-  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|Change|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|MariBank|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Starting GCash|Starting Maya|Starting MariBank|Expected GCash|Expected Maya|Expected MariBank|Actual GCash|Actual Maya|Actual MariBank|Cash In|Cash Out|Amount|Bill Amount|Service Fee|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED|TOTAL FEES EARNED)\s+([+-]?)\s*(?:[P₱]\s*)?(-?\d[\d,]*(?:\.\d+)?)$/i)
+  const m = raw.trim().match(/^(Subtotal|Discounts?|TOTAL|TOTAL PAYMENTS|Total Payments|Cash|Change|SUKLI|Gross Sales|Refunds|Cash Refunds|Voids|NET SALES|GCash|Maya|MariBank|Utang|Expenses|Expected Cash|Actual Cash|Difference|Starting Cash|Starting GCash|Starting Maya|Starting MariBank|Expected GCash|Expected Maya|Expected MariBank|Actual GCash|Actual Maya|Actual MariBank|Cash In|Cash Out|Amount|Bill Amount|Bill \/ Load Amount|Gross Amount|Net Amount|NET LOAD SENT|NET PROCESSED|Service Fee(?:\s*\([^)]*\))?|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED|TOTAL FEES EARNED)\s+([+-]?)\s*(?:[P₱]\s*)?(-?\d[\d,]*(?:\.\d+)?)$/i)
   if (!m) return null
   const prefixSign = m[2] || ''
   const amount = prefixSign ? `${prefixSign}${m[3]!}` : m[3]!
@@ -125,7 +125,7 @@ function rowsToHtml(lines: string[], currency: string): string {
 
     const money = isMoneyLine(raw)
     if (money) {
-      const isTotal = /^(TOTAL|TOTAL PAYMENTS|Total Payments|NET SALES|Actual Cash|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED)$/i.test(money.label)
+      const isTotal = /^(TOTAL|TOTAL PAYMENTS|Total Payments|NET SALES|Actual Cash|TOTAL PAID|TOTAL CASH RECEIVED|TOTAL CASH RELEASED|NET LOAD SENT|NET PROCESSED)$/i.test(money.label)
       const cls = /^(SUKLI|Change)$/i.test(money.label) ? 'tp-sukli' : isTotal ? 'tp-total' : 'tp-sum'
       const label = /^(SUKLI|Change)$/i.test(money.label) ? 'Change' : money.label === 'Cash' ? 'Cash' : money.label
 
@@ -387,12 +387,27 @@ export function formatEwalletSlipLines(
   if (tx.cashier_name) lines.push(`Cashier: ${tx.cashier_name}`)
   lines.push('--------------------------------')
   lines.push(`Amount         ${money(tx.amount_c)}`)
-  lines.push(`Service Fee    ${money(tx.fee_c)}`)
-  const totalReceivedOrGiven = isCashIn
-    ? tx.amount_c + (tx.fee_collected_via === 'CASH' ? tx.fee_c : 0)
-    : tx.amount_c - (tx.fee_collected_via === 'CASH' ? tx.fee_c : 0)
-  lines.push('================================')
-  lines.push(`TOTAL ${isCashIn ? 'CASH RECEIVED' : 'CASH RELEASED'}  ${money(totalReceivedOrGiven)}`)
+  if (isCashIn) {
+    if (tx.fee_collected_via === 'WALLET' && tx.fee_c > 0) {
+      lines.push(`Service Fee    -${money(tx.fee_c)}`)
+      lines.push('================================')
+      lines.push(`TOTAL CASH RECEIVED  ${money(tx.amount_c)}`)
+      lines.push(`NET LOAD SENT        ${money(Math.max(0, tx.amount_c - tx.fee_c))}`)
+    } else {
+      lines.push(`Service Fee    ${money(tx.fee_c)}`)
+      lines.push('================================')
+      lines.push(`TOTAL CASH RECEIVED  ${money(tx.amount_c + tx.fee_c)}`)
+    }
+  } else if (tx.fee_collected_via === 'CASH') {
+    lines.push(`Service Fee    ${money(tx.fee_c)}`)
+    lines.push('================================')
+    lines.push(`TOTAL CASH RELEASED  ${money(tx.amount_c)}`)
+  } else {
+    const netReleased = Math.max(0, tx.amount_c - tx.fee_c)
+    lines.push(`Service Fee    -${money(tx.fee_c)}`)
+    lines.push('================================')
+    lines.push(`TOTAL CASH RELEASED  ${money(netReleased)}`)
+  }
   lines.push('================================')
   lines.push('Thank you! Please come again.')
   return lines
@@ -456,6 +471,7 @@ export interface BillSlipPayload {
   customerPhone?: string
   amount: number
   serviceFee: number
+  feeMode?: 'ADD' | 'DEDUCT'
   sourceWallet: string
   createdAt: string
   cashReceived?: number
@@ -483,16 +499,30 @@ export function formatBillSlipLines(
   lines.push(`Processed:  ${b.sourceWallet} Business`)
   lines.push('--------------------------------')
   lines.push(`Bill Amount    P${moneyStr(b.amount)}`)
-  lines.push(`Service Fee    P${moneyStr(b.serviceFee)}`)
-  lines.push('================================')
-  lines.push(`TOTAL PAID     P${moneyStr(b.amount + b.serviceFee)}`)
-  lines.push('================================')
-  if (b.cashReceived !== undefined && b.cashReceived > 0) {
+  if (b.feeMode === 'DEDUCT') {
+    const totalPaid = Math.max(0, b.amount - b.serviceFee)
+    lines.push(`Service Fee    -P${moneyStr(b.serviceFee)}`)
+    lines.push('================================')
+    lines.push(`TOTAL PAID     P${moneyStr(totalPaid)}`)
+    lines.push('================================')
+    if (b.cashReceived !== undefined && b.cashReceived > 0) {
+      const sukli = b.change !== undefined ? b.change : Math.max(0, b.cashReceived - totalPaid)
+      lines.push(`CASH           P${moneyStr(b.cashReceived)}`)
+      lines.push(`CHANGE         P${moneyStr(sukli)}`)
+      lines.push('--------------------------------')
+    }
+  } else {
     const totalPaid = b.amount + b.serviceFee
-    const sukli = b.change !== undefined ? b.change : Math.max(0, b.cashReceived - totalPaid)
-    lines.push(`CASH           P${moneyStr(b.cashReceived)}`)
-    lines.push(`CHANGE         P${moneyStr(sukli)}`)
-    lines.push('--------------------------------')
+    lines.push(`Service Fee    P${moneyStr(b.serviceFee)}`)
+    lines.push('================================')
+    lines.push(`TOTAL PAID     P${moneyStr(totalPaid)}`)
+    lines.push('================================')
+    if (b.cashReceived !== undefined && b.cashReceived > 0) {
+      const sukli = b.change !== undefined ? b.change : Math.max(0, b.cashReceived - totalPaid)
+      lines.push(`CASH           P${moneyStr(b.cashReceived)}`)
+      lines.push(`CHANGE         P${moneyStr(sukli)}`)
+      lines.push('--------------------------------')
+    }
   }
   lines.push('Thank you! Please come again.')
   return lines

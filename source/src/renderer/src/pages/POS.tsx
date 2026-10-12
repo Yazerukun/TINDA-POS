@@ -41,10 +41,13 @@ import {
   Calculator,
   Sparkles,
   Zap,
-  Bell
+  Bell,
+  UserPlus,
+  X,
+  ArrowRight
 } from 'lucide-react'
 import { getMergedCustomerReminder, type CustomerReminder, type ReminderStatusInfo } from '@shared/customerReminders'
-import { playScanSuccess, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
+import { playScanSuccess, playDuplicateScanChime, playScanError, playCheckoutChime, isSoundMuted, setSoundMuted } from '../lib/sound'
 import { useAuth } from '../stores/auth'
 import { createScannerListener } from '../lib/barcodeScanner'
 import { CameraScannerModal } from '../components/CameraScannerModal'
@@ -686,8 +689,8 @@ export function POS(): React.JSX.Element {
       if (!code) return
 
       const now = Date.now()
-      // Enforce 1.2s debounce for identical barcode scans to prevent accidental duplicate cart additions
-      if (lastScanRef.current.code.toLowerCase() === code.toLowerCase() && now - lastScanRef.current.time < 1200) {
+      // Enforce 350ms debounce for identical barcode scans to prevent hardware bounce while allowing fast consecutive scanning
+      if (lastScanRef.current.code.toLowerCase() === code.toLowerCase() && now - lastScanRef.current.time < 350) {
         return
       }
       lastScanRef.current = { code, time: now }
@@ -733,9 +736,15 @@ export function POS(): React.JSX.Element {
           playScanError()
           toastError(`"${found.name}" is out of stock!`, 'Available for sale: 0 units')
         } else {
+          const existing = usePosCart.getState().items.find((i) => i.product_id === found.id)
           usePosCart.getState().add(found, qtyMultiplier)
-          playScanSuccess()
-          toastSuccess(`Added to cart: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
+          if (existing) {
+            playDuplicateScanChime()
+            toastSuccess(`Incremented: ${found.name} (Qty: ${existing.qty + qtyMultiplier})`)
+          } else {
+            playScanSuccess()
+            toastSuccess(`Added to cart: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
+          }
           // Proactive low-stock notification
           if (stockLeft <= found.low_stock_threshold) {
             toastError(`⚠️ Low Stock Alert`, `"${found.name}" has only ${stockLeft} ${found.base_unit} remaining!`)
@@ -807,6 +816,13 @@ export function POS(): React.JSX.Element {
         return
       }
 
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'm' || e.key === 'M')) {
+        e.preventDefault()
+        toggleSoundMute()
+        toastSuccess(!soundMuted ? 'POS Audio Muted' : 'POS Audio Unmuted')
+        return
+      }
+
       if (e.key === 'F1') {
         e.preventDefault()
         searchInputRef.current?.focus()
@@ -821,11 +837,6 @@ export function POS(): React.JSX.Element {
       if (e.key === 'F7') {
         e.preventDefault()
         setExpenseModalOpen(true)
-        return
-      }
-      if (e.key === 'F8') {
-        e.preventDefault()
-        setPage('ewallet')
         return
       }
       if (e.key === '/') {
@@ -882,7 +893,7 @@ export function POS(): React.JSX.Element {
     }
     window.addEventListener('keydown', handlePosHotkeys)
     return () => window.removeEventListener('keydown', handlePosHotkeys)
-  }, [categoryMenuOpen, q, catFilter, displayedProducts, selectedRowIndex, calculatorOpen, posToolsOpen, expenseModalOpen, promoModalOpen, customizeModalOpen])
+  }, [categoryMenuOpen, q, catFilter, displayedProducts, selectedRowIndex, calculatorOpen, posToolsOpen, expenseModalOpen, promoModalOpen, customizeModalOpen, soundMuted])
 
   const chooseCategory = (categoryId: number | 'ALL') => {
     setCatFilter(categoryId)
@@ -894,265 +905,264 @@ export function POS(): React.JSX.Element {
   return (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col p-4">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[160px] flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <input
-              ref={searchInputRef}
-              value={q}
-              onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const trimmed = q.trim()
-                  // Check if user entered a quantity multiplier with product name/code (e.g. "5*Coke" or "10*48000123")
-                  const multiMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
-                  if (multiMatch && multiMatch[1] && multiMatch[2]) {
-                    e.preventDefault()
-                    void handleScan(trimmed)
-                  } else if (trimmed) {
-                    e.preventDefault()
-                    void handleScan(trimmed)
-                  } else if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
-                    const p = displayedProducts[selectedRowIndex]
-                    if (p) {
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          {/* Primary Search & Category Filter Group */}
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="relative min-w-[180px] flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                ref={searchInputRef}
+                value={q}
+                onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const trimmed = q.trim()
+                    const multiMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
+                    if (multiMatch && multiMatch[1] && multiMatch[2]) {
                       e.preventDefault()
-                      if (saleStock(p) > 0) {
-                        usePosCart.getState().add(p)
-                        warnIfNearExpiry(p)
-                      } else {
-                        toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                      void handleScan(trimmed)
+                    } else if (trimmed) {
+                      e.preventDefault()
+                      void handleScan(trimmed)
+                    } else if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
+                      const p = displayedProducts[selectedRowIndex]
+                      if (p) {
+                        e.preventDefault()
+                        if (saleStock(p) > 0) {
+                          usePosCart.getState().add(p)
+                          warnIfNearExpiry(p)
+                        } else {
+                          toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                        }
                       }
                     }
+                  } else if (e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
                   }
-                } else if (e.key === 'ArrowDown') {
-                  e.preventDefault()
-                  setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
-                } else if (e.key === 'ArrowUp') {
-                  e.preventDefault()
-                  setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
-                }
-              }}
-              placeholder="Search product by name or barcode… (F1 or /)"
-              className="input h-11 w-full pl-9 !text-base"
-              autoFocus
-            />
-          </div>
-          <div ref={categoryMenuRef} className="relative w-44 shrink-0">
-            <button
-              type="button"
-              onClick={() => setCategoryMenuOpen((open) => !open)}
-              className="input flex min-h-11 w-full items-center justify-between gap-2 text-left !text-base"
-              aria-haspopup="listbox"
-              aria-expanded={categoryMenuOpen}
-            >
-              <span className="truncate">{selectedCategory}</span>
-              <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {categoryMenuOpen && (
-              <div className="absolute left-0 top-full z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-ink-line bg-ink-850 p-1 shadow-pop" role="listbox">
-                <button
-                  type="button"
-                  onClick={() => chooseCategory('ALL')}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-ink-700 ${catFilter === 'ALL' ? 'text-brand-300' : 'text-slate-200'}`}
-                  role="option"
-                  aria-selected={catFilter === 'ALL'}
-                >
-                  <span>All categories</span>
-                  {catFilter === 'ALL' && <Check className="h-4 w-4" />}
-                </button>
-                {categories.map((category) => {
-                  const isPinned = posPinnedIds.some((id) => Number(id) === Number(category.id))
-                  const customMap = getCategoryCustomizations()
-                  const visuals = getCategoryVisuals(category.name, customMap[category.id])
-                  return (
-                    <div
-                      key={category.id}
-                      className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-ink-700 transition-colors ${
-                        Number(catFilter) === Number(category.id) ? 'text-brand-300 bg-ink-800' : 'text-slate-200'
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => chooseCategory(category.id)}
-                        className="flex min-w-0 items-center gap-2 flex-1 text-left py-0.5"
-                        role="option"
-                        aria-selected={Number(catFilter) === Number(category.id)}
-                      >
-                        <span className="text-sm shrink-0">{visuals.icon}</span>
-                        <span className="truncate">{category.name}</span>
-                        {Number(catFilter) === Number(category.id) && <Check className="h-4 w-4 shrink-0 text-brand-400 ml-auto mr-1" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async (e) => {
-                          e.stopPropagation()
-                          const next = await togglePinnedCategoryId(category.id, posPinnedIds, updateSettings)
-                          setPosPinnedIds(next)
-                          toastSuccess(isPinned ? 'Category unpinned from POS' : 'Category pinned to POS bar')
-                        }}
-                        className={`p-1 rounded hover:bg-ink-600 transition-colors shrink-0 ml-1 ${
-                          isPinned ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'
-                        }`}
-                        title={isPinned ? 'Unpin from POS quick bar' : 'Pin to POS quick bar'}
-                      >
-                        <Pin className={`h-3.5 w-3.5 ${isPinned ? 'fill-indigo-400' : ''}`} />
-                      </button>
-                    </div>
-                  )
-                })}
-                {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
-                <div className="border-t border-ink-line mt-1 pt-1">
+                }}
+                placeholder="Scan barcode or search product… (or 5*code for bulk)"
+                className="input h-10 w-full pl-9 pr-14 !text-sm"
+                autoFocus
+              />
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-ink-line bg-ink-900 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-400">
+                F1
+              </span>
+            </div>
+
+            <div ref={categoryMenuRef} className="relative w-40 shrink-0">
+              <button
+                type="button"
+                onClick={() => setCategoryMenuOpen((open) => !open)}
+                className="input flex h-10 w-full items-center justify-between gap-1.5 text-left !text-xs font-medium"
+                aria-haspopup="listbox"
+                aria-expanded={categoryMenuOpen}
+              >
+                <span className="truncate">{selectedCategory}</span>
+                <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {categoryMenuOpen && (
+                <div className="absolute left-0 top-full z-30 mt-1 max-h-64 w-56 overflow-y-auto rounded-lg border border-ink-line bg-ink-850 p-1 shadow-pop" role="listbox">
                   <button
                     type="button"
-                    onClick={() => {
-                      setCategoryMenuOpen(false)
-                      setCustomizeModalOpen(true)
-                    }}
-                    className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold text-brand-300 hover:bg-brand-500/10 transition-colors"
+                    onClick={() => chooseCategory('ALL')}
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-xs hover:bg-ink-700 ${catFilter === 'ALL' ? 'text-brand-300 font-semibold' : 'text-slate-200'}`}
+                    role="option"
+                    aria-selected={catFilter === 'ALL'}
                   >
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                    <span>Customize Pinned & Bundles...</span>
+                    <span>All categories</span>
+                    {catFilter === 'ALL' && <Check className="h-3.5 w-3.5" />}
                   </button>
+                  {categories.map((category) => {
+                    const isPinned = posPinnedIds.some((id) => Number(id) === Number(category.id))
+                    const customMap = getCategoryCustomizations()
+                    const visuals = getCategoryVisuals(category.name, customMap[category.id])
+                    return (
+                      <div
+                        key={category.id}
+                        className={`flex w-full items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-ink-700 transition-colors ${
+                          Number(catFilter) === Number(category.id) ? 'text-brand-300 bg-ink-800 font-semibold' : 'text-slate-200'
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => chooseCategory(category.id)}
+                          className="flex min-w-0 items-center gap-2 flex-1 text-left py-0.5"
+                          role="option"
+                          aria-selected={Number(catFilter) === Number(category.id)}
+                        >
+                          <span className="text-sm shrink-0">{visuals.icon}</span>
+                          <span className="truncate">{category.name}</span>
+                          {Number(catFilter) === Number(category.id) && <Check className="h-3.5 w-3.5 shrink-0 text-brand-400 ml-auto mr-1" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            const next = await togglePinnedCategoryId(category.id, posPinnedIds, updateSettings)
+                            setPosPinnedIds(next)
+                            toastSuccess(isPinned ? 'Category unpinned from POS' : 'Category pinned to POS bar')
+                          }}
+                          className={`p-1 rounded hover:bg-ink-600 transition-colors shrink-0 ml-1 ${
+                            isPinned ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'
+                          }`}
+                          title={isPinned ? 'Unpin from POS quick bar' : 'Pin to POS quick bar'}
+                        >
+                          <Pin className={`h-3 w-3 ${isPinned ? 'fill-indigo-400' : ''}`} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                  {categories.length === 0 && <p className="px-3 py-2 text-xs text-slate-500">No categories yet.</p>}
+                  <div className="border-t border-ink-line mt-1 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategoryMenuOpen(false)
+                        setCustomizeModalOpen(true)
+                      }}
+                      className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold text-brand-300 hover:bg-brand-500/10 transition-colors"
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      <span>Customize Pinned & Bundles...</span>
+                    </button>
+                  </div>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Compact Secondary View & Alert Controls */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Inventory Safety HUD Filter Badges (Compact Pill) */}
+            {(lowStockCount > 0 || nearExpiryCount > 0) && (
+              <div className="flex items-center gap-1" role="group" aria-label="Inventory HUD Filters">
+                {lowStockCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveHudFilter((prev) => (prev === 'LOW' ? 'ALL' : 'LOW'))}
+                    className={`flex h-9 items-center gap-1 rounded-lg border px-2 text-[11px] font-semibold transition-all ${
+                      activeHudFilter === 'LOW'
+                        ? 'border-amber-400 bg-amber-500/30 text-amber-200 ring-1 ring-amber-400/40'
+                        : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
+                    }`}
+                    title="Filter products with low stock alert"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                    <span className="hidden lg:inline">Low</span>
+                    <span className="font-mono font-bold text-amber-200">{lowStockCount}</span>
+                  </button>
+                )}
+
+                {nearExpiryCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveHudFilter((prev) => (prev === 'EXPIRY' ? 'ALL' : 'EXPIRY'))}
+                    className={`flex h-9 items-center gap-1 rounded-lg border px-2 text-[11px] font-semibold transition-all ${
+                      activeHudFilter === 'EXPIRY'
+                        ? 'border-orange-400 bg-orange-500/30 text-orange-200 ring-1 ring-orange-400/40'
+                        : 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20'
+                    }`}
+                    title="Filter products nearing expiration"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
+                    <span className="hidden lg:inline">Expiry</span>
+                    <span className="font-mono font-bold text-orange-200">{nearExpiryCount}</span>
+                  </button>
+                )}
+
+                {activeHudFilter !== 'ALL' && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveHudFilter('ALL')}
+                    className="text-[11px] font-medium text-slate-400 hover:text-white underline underline-offset-2 px-1"
+                    title="Clear HUD filter"
+                  >
+                    Reset
+                  </button>
+                )}
               </div>
             )}
-          </div>
 
-          {/* Inventory Safety HUD Filter Badges */}
-          <div className="flex items-center gap-1.5 shrink-0" role="group" aria-label="Inventory HUD Filters">
-            {lowStockCount > 0 && (
+            {/* View Mode Toggle: List vs Grid */}
+            <div className="flex h-9 items-center rounded-lg border border-ink-line bg-ink-850 p-0.5 shrink-0" role="group" aria-label="Catalog view mode">
               <button
                 type="button"
-                onClick={() => setActiveHudFilter((prev) => (prev === 'LOW' ? 'ALL' : 'LOW'))}
-                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                  activeHudFilter === 'LOW'
-                    ? 'border-amber-400 bg-amber-500/30 text-amber-200 ring-2 ring-amber-400/40 shadow-sm'
-                    : 'border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
+                onClick={() => setAndSaveViewMode('list')}
+                className={`flex h-full items-center gap-1 rounded-md px-2 text-xs font-semibold transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-brand-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                 }`}
-                title="Filter products with low stock alert"
+                title="Listing Table View"
               >
-                <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                <span>Low Stock</span>
-                <span className="ml-0.5 rounded-full bg-amber-500/30 px-1.5 py-0.2 text-[10px] font-bold text-amber-200">
-                  {lowStockCount}
-                </span>
+                <LayoutList className="h-3.5 w-3.5" />
+                <span className="hidden xl:inline">List</span>
               </button>
-            )}
-
-            {nearExpiryCount > 0 && (
               <button
                 type="button"
-                onClick={() => setActiveHudFilter((prev) => (prev === 'EXPIRY' ? 'ALL' : 'EXPIRY'))}
-                className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                  activeHudFilter === 'EXPIRY'
-                    ? 'border-orange-400 bg-orange-500/30 text-orange-200 ring-2 ring-orange-400/40 shadow-sm'
-                    : 'border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20'
+                onClick={() => setAndSaveViewMode('grid')}
+                className={`flex h-full items-center gap-1 rounded-md px-2 text-xs font-semibold transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-brand-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
                 }`}
-                title="Filter products nearing expiration"
+                title="Card Grid View"
               >
-                <span className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
-                <span>Near Expiry</span>
-                <span className="ml-0.5 rounded-full bg-orange-500/30 px-1.5 py-0.2 text-[10px] font-bold text-orange-200">
-                  {nearExpiryCount}
-                </span>
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span className="hidden xl:inline">Grid</span>
               </button>
-            )}
+            </div>
 
-            {activeHudFilter !== 'ALL' && (
-              <button
-                type="button"
-                onClick={() => setActiveHudFilter('ALL')}
-                className="text-[11px] font-medium text-slate-400 hover:text-white underline underline-offset-2 px-1"
-                title="Clear HUD filter and show all products"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
-          {/* View Mode Toggle: List vs Grid */}
-          <div className="flex items-center rounded-lg border border-ink-line bg-ink-850 p-0.5 shrink-0" role="group" aria-label="Catalog view mode">
+            {/* Quick Keys Drawer Toggle */}
             <button
               type="button"
-              onClick={() => setAndSaveViewMode('list')}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-semibold transition-all ${
-                viewMode === 'list'
-                  ? 'bg-brand-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+              onClick={toggleQuickKeys}
+              className={`flex h-9 items-center gap-1 rounded-lg border px-2 text-xs font-semibold transition-all shrink-0 ${
+                quickKeysOpen
+                  ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-200'
+                  : 'border-ink-line bg-ink-850 text-slate-400 hover:text-white'
               }`}
-              title="Listing Table View (Dense Professional)"
+              title="Toggle Quick Speed Keys & Pinned Categories"
             >
-              <LayoutList className="h-4 w-4" />
-              <span className="hidden sm:inline">List</span>
+              <Zap className={`h-3.5 w-3.5 ${quickKeysOpen ? 'text-amber-400' : 'text-slate-500'}`} />
+              <span className="hidden lg:inline">Quick Keys</span>
+              <span className="text-[9px] text-slate-500 font-mono">
+                {quickKeysOpen ? '▲' : '▼'}
+              </span>
             </button>
+
+            {/* Quick Audio Beep Mute/Unmute Toggle */}
             <button
               type="button"
-              onClick={() => setAndSaveViewMode('grid')}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-semibold transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-brand-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => {
+                toggleSoundMute()
+                toastSuccess(!soundMuted ? 'POS Audio Muted' : 'POS Audio Unmuted')
+              }}
+              className={`flex h-9 items-center gap-1 rounded-lg border px-2 text-xs font-semibold transition-all shrink-0 ${
+                soundMuted
+                  ? 'border-rose-500/40 bg-rose-500/15 text-rose-300'
+                  : 'border-ink-line bg-ink-850 text-emerald-400 hover:text-emerald-300'
               }`}
-              title="Card Grid View (Visual Tiles)"
+              title={`${soundMuted ? 'Unmute' : 'Mute'} Scanner & Checkout Beeps (Ctrl+M)`}
             >
-              <LayoutGrid className="h-4 w-4" />
-              <span className="hidden sm:inline">Grid</span>
+              {soundMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              <span className="hidden xl:inline text-[10px] font-mono text-slate-400">^M</span>
+            </button>
+
+            {/* Cashier Guide Walkthrough Button */}
+            <button
+              type="button"
+              onClick={() => useGuide.getState().openGuide('tour')}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-line bg-ink-850 text-slate-400 hover:border-brand-500/40 hover:text-brand-300 transition-all shrink-0"
+              title="Cashier Guide & Hotkey Reference"
+            >
+              <HelpCircle className="h-4 w-4" />
             </button>
           </div>
-
-          {/* Quick Cashier Calculator Button */}
-          <button
-            type="button"
-            onClick={() => setCalculatorOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-400 active:scale-95 transition-all shadow-sm shrink-0"
-            title="Open Cashier Calculator & Sukli Calculator (F3)"
-          >
-            <Calculator className="h-4 w-4" />
-            <span className="hidden sm:inline">Calc</span>
-            <span className="rounded bg-emerald-500/20 px-1 py-0.2 text-[10px] text-emerald-200 border border-emerald-500/30 font-mono">
-              F3
-            </span>
-          </button>
-
-          {/* Promo Bundles & Combos Button */}
-          <button
-            type="button"
-            onClick={() => setPromoModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 active:scale-95 transition-all shadow-sm shrink-0"
-            title="Browse Promo Bundles & Meal Combos"
-          >
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="hidden sm:inline">Promos</span>
-          </button>
-
-          {/* Quick Keys Drawer Toggle */}
-          <button
-            type="button"
-            onClick={toggleQuickKeys}
-            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 ${
-              quickKeysOpen
-                ? 'border-indigo-500/50 bg-indigo-500/20 text-indigo-200'
-                : 'border-ink-line bg-ink-850 text-slate-300 hover:border-indigo-500/40 hover:text-white'
-            }`}
-            title="Toggle Quick Speed Keys & Pinned Categories (Save vertical screen space)"
-          >
-            <Zap className={`h-4 w-4 ${quickKeysOpen ? 'text-amber-400 fill-amber-400/20' : 'text-slate-400'}`} />
-            <span className="hidden sm:inline">Quick Keys</span>
-            <span className="text-[10px] text-slate-400 font-mono">
-              {quickKeysOpen ? '▲' : '▼'}
-            </span>
-          </button>
-
-          {/* Cashier Guide Walkthrough Button */}
-          <button
-            type="button"
-            onClick={() => useGuide.getState().openGuide('tour')}
-            className="flex items-center gap-1 rounded-lg border border-brand-500/30 bg-brand-500/10 px-2.5 py-2 text-xs font-bold text-brand-300 hover:bg-brand-500/20 hover:border-brand-400 active:scale-95 transition-all shadow-sm shrink-0"
-            title="Cashier Guide & 4-Step Walkthrough (v2.0.2)"
-          >
-            <HelpCircle className="h-4 w-4 text-brand-400" />
-            <span className="hidden md:inline">Guide</span>
-          </button>
         </div>
         {error && <p className="mb-3 text-sm text-danger-400">{error}</p>}
 
@@ -1579,6 +1589,11 @@ export function POS(): React.JSX.Element {
         onScan={(code) => void handleScan(code)}
         onOpenCalculator={() => setCalculatorOpen(true)}
         onOpenPromos={() => setPromoModalOpen(true)}
+        onOpenExpense={() => setExpenseModalOpen(true)}
+        onRefocusSearch={() => {
+          searchInputRef.current?.focus()
+          searchInputRef.current?.select()
+        }}
       />
 
       <CameraScannerModal
@@ -1650,10 +1665,12 @@ export function POS(): React.JSX.Element {
 
 function CartQtyInput({
   item,
-  inputRef
+  inputRef,
+  onCommit
 }: {
   item: CartItem
   inputRef?: React.RefObject<HTMLInputElement | null>
+  onCommit?: () => void
 }): React.JSX.Element {
   const weighable = isWeighableUnit(item.unit_name)
   const [val, setVal] = useState(String(item.qty))
@@ -1698,6 +1715,7 @@ function CartQtyInput({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.currentTarget.blur()
+      onCommit?.()
     }
   }
 
@@ -1711,8 +1729,8 @@ function CartQtyInput({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       aria-label={`Quantity for ${item.name}`}
-      className={`h-10 ${weighable ? 'w-20' : 'w-14'} rounded-lg border border-ink-line bg-ink-950 py-1 text-center text-base font-bold text-white focus:border-brand-500 focus:outline-none`}
-      title={weighable ? 'Enter weight/kilos (e.g. 2.5, 2.24). Press F2 to focus' : 'Press F2 to focus quantity'}
+      className={`h-8 ${weighable ? 'w-16' : 'w-12'} rounded-md border border-ink-line bg-ink-950 text-center text-sm font-bold text-white focus:border-brand-500 focus:outline-none`}
+      title={weighable ? 'Enter weight/kilos (e.g. 2.5). Press F2 to focus, Enter to confirm & return to search' : 'Press F2 to focus quantity, Enter to confirm & return to search'}
     />
   )
 }
@@ -1964,13 +1982,17 @@ function CartPanel({
   onToggleCounterCamera,
   onScan,
   onOpenCalculator,
-  onOpenPromos
+  onOpenPromos,
+  onOpenExpense,
+  onRefocusSearch
 }: {
   counterCameraEnabled: boolean
   onToggleCounterCamera: (enabled: boolean) => void
   onScan: (code: string) => void
   onOpenCalculator?: () => void
   onOpenPromos?: () => void
+  onOpenExpense?: () => void
+  onRefocusSearch?: () => void
 }): React.JSX.Element {
   const { items, discount_pesos, customer_name } = usePosCart()
   const [promoBundles, setPromoBundles] = useState<PromoBundle[]>(() => getStoredPromoBundles())
@@ -2105,7 +2127,7 @@ function CartPanel({
 
   useEffect(() => {
     const handleCartHotkeys = (e: KeyboardEvent) => {
-      if (checkoutOpen || customerOpen || heldOpen || priceEditItem || pinPromptItem) return
+      if (checkoutOpen || customerOpen || heldOpen || priceEditItem || pinPromptItem || seniorPwdOpen) return
 
       if (e.key === 'F2') {
         if (items.length > 0) {
@@ -2118,15 +2140,35 @@ function CartPanel({
 
       if (e.key === 'F4') {
         e.preventDefault()
-        discountInputRef.current?.focus()
-        discountInputRef.current?.select()
+        if (e.shiftKey || document.activeElement === discountInputRef.current) {
+          setSeniorPwdOpen(true)
+        } else {
+          discountInputRef.current?.focus()
+          discountInputRef.current?.select()
+        }
+        return
+      }
+
+      if (e.key === 'F6') {
+        e.preventDefault()
+        setCustomerOpen(true)
+        return
+      }
+
+      if (e.key === 'F7' && onOpenExpense) {
+        e.preventDefault()
+        onOpenExpense()
         return
       }
 
       if (e.key === 'F8') {
-        if (items.length > 0 && !holdBusy) {
-          e.preventDefault()
+        e.preventDefault()
+        if (e.shiftKey) {
+          setHeldOpen(true)
+        } else if (items.length > 0 && !holdBusy) {
           void holdCurrentSale()
+        } else {
+          setHeldOpen(true)
         }
         return
       }
@@ -2170,7 +2212,7 @@ function CartPanel({
 
     window.addEventListener('keydown', handleCartHotkeys)
     return () => window.removeEventListener('keydown', handleCartHotkeys)
-  }, [checkoutOpen, customerOpen, heldOpen, priceEditItem, pinPromptItem, items, holdBusy, stockConflict])
+  }, [checkoutOpen, customerOpen, heldOpen, priceEditItem, pinPromptItem, seniorPwdOpen, items, holdBusy, stockConflict, onOpenExpense])
 
   const resumeHeldSale = async (id: number) => {
     if (items.length && !confirm('Replace the current cart with this held sale?')) return
@@ -2231,11 +2273,11 @@ function CartPanel({
   return (
     <aside className="flex min-h-0 w-full shrink-0 flex-col border-t border-ink-line bg-ink-900 md:w-[23rem] md:border-l md:border-t-0 xl:w-[26rem]">
       <div className="flex items-center justify-between border-b border-ink-line px-4 py-3">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-slate-200">
-          <ShoppingCart className="h-4 w-4" /> Cart
+        <h2 className="flex items-center gap-2 text-base font-bold text-slate-200">
+          <ShoppingCart className="h-4 w-4 text-brand-400" /> Cart
           {items.length > 0 && <span className="badge bg-brand-600/20 text-brand-300">{items.length}</span>}
         </h2>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {onOpenPromos && (
             <button
               type="button"
@@ -2247,26 +2289,87 @@ function CartPanel({
               Promos
             </button>
           )}
-          {onOpenCalculator && (
+          <button
+            onClick={() => setHeldOpen(true)}
+            className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
+            title="Resume held sales"
+          >
+            <span>Held</span>
+            {heldSales.length > 0 && (
+              <span className="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[10px] font-bold text-amber-300">
+                {heldSales.length}
+              </span>
+            )}
+          </button>
+          {items.length > 0 && (
             <button
-              type="button"
-              onClick={onOpenCalculator}
-              className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-emerald-400 hover:text-emerald-300"
-              title="Open Cashier Calculator & Sukli Assistant (F3)"
+              onClick={() => usePosCart.getState().clear()}
+              className="rounded-lg p-1.5 text-slate-500 hover:bg-ink-800 hover:text-danger-400 transition"
+              title="Clear entire cart"
             >
-              <Calculator className="h-3.5 w-3.5" />
-              Calc
+              <Trash2 className="h-4 w-4" />
             </button>
           )}
-          <button onClick={() => setHeldOpen(true)} className="btn-ghost-2 rounded-lg px-2 py-1 text-xs" title="Resume held sales">
-            Held {heldSales.length > 0 && `(${heldSales.length})`}
-          </button>
-        {items.length > 0 && (
-          <button onClick={() => usePosCart.getState().clear()} className="rounded-lg p-1.5 text-slate-500 hover:bg-ink-800 hover:text-danger-400" title="Clear cart">
-            <Trash2 className="h-4 w-4" />
-          </button>
-        )}
         </div>
+      </div>
+
+      {/* Customer / Suki Context Bar */}
+      <div className="flex items-center justify-between border-b border-ink-line bg-ink-950/60 px-4 py-2 text-xs">
+        {customer_name ? (
+          <div role="status" className="flex items-center justify-between w-full gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <Check aria-label="Selected" className="h-3 w-3" />
+              </span>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Suki: </span>
+                <span className="font-bold text-emerald-300 truncate" title={customer_name}>
+                  {customer_name}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setCustomerOpen(true)}
+                className="flex items-center gap-1 text-[11px] font-semibold text-brand-400 hover:text-brand-300 px-1.5 py-0.5 rounded hover:bg-brand-500/10 transition"
+                title="Change Customer (F6)"
+              >
+                <span>Change</span>
+                <kbd className="font-mono text-[9px] px-1 py-0.2 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                  F6
+                </kbd>
+              </button>
+              <button
+                type="button"
+                onClick={() => usePosCart.getState().setCustomer(null)}
+                className="text-slate-500 hover:text-danger-400 p-0.5 rounded hover:bg-ink-800 transition"
+                title="Switch back to Walk-in"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2 text-slate-400">
+              <User className="h-3.5 w-3.5 text-slate-500" />
+              <span className="font-medium">Walk-in Customer</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCustomerOpen(true)}
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-400 hover:text-brand-300 px-2 py-0.5 rounded bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/20 transition"
+              title="Select Suki or Borrower (F6)"
+            >
+              <UserPlus className="h-3 w-3" />
+              <span>Select Customer</span>
+              <kbd className="font-mono text-[9px] px-1 py-0.2 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                F6
+              </kbd>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Hands-Free Counter Camera Scanner Widget */}
@@ -2281,89 +2384,128 @@ function CartPanel({
           <p className="py-10 text-center text-sm leading-6 text-slate-500">
             Cart is empty.
             <br />
-            Tap a product to add it.
+            Tap a product or scan a barcode to add it.
           </p>
         )}
-        {items.map((i, idx) => (
-          <div key={i.product_id} className="rounded-lg border border-ink-line bg-ink-800/50 p-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="min-w-0 break-words text-base font-semibold leading-6 text-slate-200">{i.name}</p>
-                {i.description && (
-                  <p className="text-xs text-slate-400 break-words mt-0.5 line-clamp-2" title={i.description}>
-                    {i.description}
-                  </p>
-                )}
-                <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                  {i.is_custom_price && (
-                    <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 border border-amber-500/30 text-[10px] font-bold text-amber-300">
-                      <Tag className="h-3 w-3" /> Custom Unit Price
-                    </span>
-                  )}
-                  {i.is_wholesale && !i.is_custom_price && (
-                    <span className="inline-flex items-center gap-1 mt-0.5 rounded bg-emerald-500/10 px-1.5 py-0.5 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400">
-                      🏷️ Wholesale Tier
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button onClick={() => usePosCart.getState().remove(i.product_id)} className="shrink-0 text-slate-600 hover:text-danger-400 p-1" title="Remove">
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => {
-                    const weighable = isWeighableUnit(i.unit_name)
-                    const step = weighable && i.qty <= 1 ? (i.qty > 0.25 ? 0.25 : i.qty) : 1
-                    usePosCart.getState().setQty(i.product_id, Math.max(0, Math.round((i.qty - step) * 1000) / 1000))
-                  }}
-                  className="btn-ghost-2 h-10 w-10 rounded-lg"
-                  title="Decrease quantity"
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                </button>
-                <CartQtyInput item={i} inputRef={idx === items.length - 1 ? lastQtyInputRef : undefined} />
-                <button
-                  disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name))}
-                  onClick={() => {
-                    const weighable = isWeighableUnit(i.unit_name)
-                    const step = weighable && i.qty < 1 ? 0.25 : 1
-                    usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000) / 1000)
-                  }}
-                  className="btn-ghost-2 h-10 w-10 rounded-lg disabled:opacity-30"
-                  title={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name)) ? `Only ${formatQuantity(maxQuantity(i.stock_base, i.conversion_to_base, isWeighableUnit(i.unit_name)))} remaining` : 'Increase quantity'}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-bold text-white">{money(Math.round(i.unit_price_c * i.qty))}</p>
-                <div className="flex items-center justify-end gap-1.5">
-                  <p className="text-sm text-slate-400">
-                    @{money(i.unit_price_c)} / {i.unit_name}
-                    {i.base_price_c && i.base_price_c !== i.unit_price_c && (
-                      <span className="line-through text-xs text-slate-500 ml-1">
-                        {money(i.base_price_c)}
+        {items.map((i, idx) => {
+          const isOverStock = reservedBase(i) > i.stock_base
+          const isLowStock = availableBase(i.stock_base, i) <= 5 && !isOverStock
+          const lineTotalC = Math.round(i.unit_price_c * i.qty)
+          const weighable = isWeighableUnit(i.unit_name)
+          return (
+            <div
+              key={i.product_id}
+              className={`group relative rounded-xl border p-2.5 transition-all ${
+                isOverStock
+                  ? 'border-danger-500/50 bg-danger-500/5'
+                  : 'border-ink-line/80 bg-ink-800/40 hover:bg-ink-800/70 hover:border-ink-line'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="truncate text-sm font-semibold text-slate-100" title={i.name}>
+                      {i.name}
+                    </p>
+                    {i.is_custom_price && (
+                      <span className="inline-flex items-center gap-0.5 rounded bg-amber-500/15 px-1 py-0.2 border border-amber-500/30 text-[9px] font-bold text-amber-300 shrink-0">
+                        <Tag className="h-2.5 w-2.5" /> Custom
                       </span>
                     )}
-                  </p>
+                    {i.is_wholesale && !i.is_custom_price && (
+                      <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/15 px-1 py-0.2 border border-emerald-500/30 text-[9px] font-bold text-emerald-400 shrink-0">
+                        Wholesale
+                      </span>
+                    )}
+                  </div>
+                  {i.description && (
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5" title={i.description}>
+                      {i.description}
+                    </p>
+                  )}
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="text-base font-bold text-emerald-400 tabular-nums">{money(lineTotalC)}</span>
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-lg border border-ink-line bg-ink-950 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const step = weighable && i.qty <= 1 ? (i.qty > 0.25 ? 0.25 : i.qty) : 1
+                        usePosCart.getState().setQty(i.product_id, Math.max(0, Math.round((i.qty - step) * 1000) / 1000))
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-ink-800 hover:text-white transition active:scale-95"
+                      title="Decrease quantity"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <CartQtyInput
+                      item={i}
+                      inputRef={idx === items.length - 1 ? lastQtyInputRef : undefined}
+                      onCommit={onRefocusSearch}
+                    />
+                    <button
+                      type="button"
+                      disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, weighable)}
+                      onClick={() => {
+                        const step = weighable && i.qty < 1 ? 0.25 : 1
+                        usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000) / 1000)
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-ink-800 hover:text-white transition active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent"
+                      title={
+                        i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, weighable)
+                          ? `Only ${formatQuantity(maxQuantity(i.stock_base, i.conversion_to_base, weighable))} remaining`
+                          : 'Increase quantity'
+                      }
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col text-[11px] leading-tight text-slate-400">
+                    <span className="font-mono">
+                      @{money(i.unit_price_c)} <span className="text-slate-500">/{i.unit_name}</span>
+                    </span>
+                    {i.base_price_c && i.base_price_c !== i.unit_price_c && (
+                      <span className="line-through text-[10px] text-slate-500">{money(i.base_price_c)}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => handleEditPriceClick(i)}
-                    className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-semibold text-brand-400 hover:bg-brand-500/10 hover:text-brand-300 transition"
+                    className="flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-slate-400 hover:bg-ink-800 hover:text-brand-300 transition"
                     title="Edit line item unit price"
                   >
                     <Edit3 className="h-3 w-3" />
-                    <span>Edit</span>
+                    <span>Price</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => usePosCart.getState().remove(i.product_id)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-danger-500/10 hover:text-danger-400 transition"
+                    title="Remove item"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
+              {isOverStock ? (
+                <p className="mt-1.5 text-[11px] font-semibold text-danger-400 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Over stock! Available: {formatQuantity(availableBase(i.stock_base, i))} {i.unit_name}
+                </p>
+              ) : isLowStock ? (
+                <p className="mt-1 text-[10px] text-amber-400/80">
+                  Low stock: {formatQuantity(availableBase(i.stock_base, i))} {i.unit_name} left
+                </p>
+              ) : null}
             </div>
-            <p className={`mt-1 text-xs ${reservedBase(i) > i.stock_base ? 'text-danger-400' : 'text-slate-500'}`}>Available: {formatQuantity(availableBase(i.stock_base, i))} {i.unit_name} / {formatQuantity(i.stock_base)} {i.unit_name}</p>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {stockConflict && <div className="mx-4 mb-2 rounded-lg border border-danger-500/30 bg-danger-500/10 p-2 text-xs text-danger-300">Current stock changed. Please adjust the cart to the available quantity before checkout.</div>}
@@ -2395,63 +2537,116 @@ function CartPanel({
         </div>
       )}
 
-      <div className="space-y-2 border-t border-ink-line px-4 py-3 text-base">
+      <div className="space-y-2 border-t border-ink-line bg-ink-950/40 px-4 py-3 text-sm">
         <div className="flex items-center justify-between text-slate-400">
-          <span className="min-w-0">Select the borrower</span>
-          <button onClick={() => setCustomerOpen(true)} className="flex shrink-0 items-center gap-1 text-brand-400 hover:text-brand-300">
-            <User className="h-3.5 w-3.5" /> Select Customer
-          </button>
-        </div>
-        {customer_name && <p role="status" className="flex items-center gap-2 break-words text-brand-400"><span>Selected: {customer_name}</span><Check aria-label="Selected" className="h-4 w-4 shrink-0" /></p>}
-        <div className="flex items-center justify-between text-slate-400">
-          <span>Subtotal</span><span className="text-slate-200">{money(subtotal)}</span>
+          <span>Subtotal</span>
+          <span className="font-semibold text-slate-200">{money(subtotal)}</span>
         </div>
         <div className="flex items-center justify-between text-slate-400">
           <div className="flex items-center gap-1.5">
             <span>Discount (₱)</span>
-            <span className="text-[10px] text-slate-500 font-mono">[F4]</span>
             <button
               type="button"
               onClick={() => setSeniorPwdOpen(true)}
-              className="rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-300 border border-brand-500/30 hover:bg-brand-500/20 transition-colors"
-              title="Apply Senior / PWD 20% or Custom Discount"
+              className="flex items-center gap-1 rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-300 border border-brand-500/30 hover:bg-brand-500/20 transition-colors"
+              title="Apply Senior / PWD 20% or Custom Discount (F4 or Shift+F4)"
             >
-              Discounts
+              <span>Discounts</span>
+              <kbd className="font-mono text-[9px] px-1 py-0.2 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                F4
+              </kbd>
             </button>
           </div>
-
-          <input
-            ref={discountInputRef}
-            type="number"
-            min={0}
-            value={discount_pesos ? discount_pesos / 100 : ''}
-            onChange={(e) => usePosCart.getState().setDiscountPesos(Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)))}
-            placeholder="0.00"
-            className="w-24 rounded-lg border border-ink-line bg-ink-950 px-2 py-1 text-right text-sm text-slate-200"
-          />
+          <div className="relative">
+            <input
+              ref={discountInputRef}
+              type="number"
+              min={0}
+              value={discount_pesos ? discount_pesos / 100 : ''}
+              onChange={(e) => usePosCart.getState().setDiscountPesos(Math.max(0, Math.round((parseFloat(e.target.value) || 0) * 100)))}
+              placeholder="0.00"
+              className="w-24 rounded-lg border border-ink-line bg-ink-950 px-2 py-1 pr-6 text-right text-sm font-semibold text-slate-200 focus:border-brand-500 focus:outline-none"
+              title="Quick Discount in Pesos (F4)"
+            />
+            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 font-mono text-[9px] text-slate-500 font-semibold">
+              F4
+            </span>
+          </div>
         </div>
-        <div className="flex justify-between border-t border-ink-line pt-1.5">
-          <span className="font-bold text-white">TOTAL</span>
-          <span className="text-2xl font-bold text-brand-400">{money(total)}</span>
+        <div className="mt-2 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/30 to-ink-900 p-3 shadow-inner">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
+              Total Amount to Pay
+            </span>
+            {discount_pesos > 0 && (
+              <span className="text-[10px] font-bold text-amber-300">Saved {money(discount_pesos)}</span>
+            )}
+          </div>
+          <div className="mt-0.5 flex items-baseline justify-between">
+            <span className="text-3xl font-black tracking-tight text-white">{money(total)}</span>
+            <span className="text-xs text-slate-400">
+              {items.length} {items.length === 1 ? 'item' : 'items'}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 px-4 pb-4 pt-1">
-        <button
-          disabled={items.length === 0}
-          onClick={() => void holdCurrentSale()}
-          className="btn-ghost flex flex-col items-center gap-0.5 py-2 text-xs disabled:opacity-40"
-          title="Hold Current Sale (F8)"
-        >
-          {holdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pause className="h-4 w-4" />} Hold (F8)
-        </button>
-        <button
-          disabled={items.length === 0}
-          onClick={() => usePosCart.getState().clear()}
-          className="btn-secondary col-span-1 py-2 text-xs disabled:opacity-40"
-        >
-          Clear
-        </button>
+      <div className="space-y-2 border-t border-ink-line bg-ink-900 px-4 pb-4 pt-3">
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            disabled={items.length === 0 || holdBusy}
+            onClick={() => void holdCurrentSale()}
+            className="btn-ghost flex items-center justify-center gap-1 py-1.5 text-xs text-slate-300 disabled:opacity-40"
+            title="Hold Current Sale (F8, or Shift+F8 to view held orders)"
+          >
+            {holdBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pause className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline">Hold</span>
+            <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-400/10 px-1 py-0.2 rounded border border-amber-400/20">
+              F8
+            </span>
+          </button>
+          {onOpenCalculator ? (
+            <button
+              type="button"
+              onClick={onOpenCalculator}
+              className="btn-ghost flex items-center justify-center gap-1 py-1.5 text-xs text-slate-300 hover:text-emerald-400"
+              title="Open Cashier Calculator & Change Assistant (F3)"
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Calc</span>
+              <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-400/10 px-1 py-0.2 rounded border border-emerald-400/20">
+                F3
+              </span>
+            </button>
+          ) : (
+            <div />
+          )}
+          {onOpenExpense ? (
+            <button
+              type="button"
+              onClick={onOpenExpense}
+              className="btn-ghost flex items-center justify-center gap-1 py-1.5 text-xs text-slate-300 hover:text-rose-400"
+              title="Record Store Petty Cash Out (F7)"
+            >
+              <Receipt className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Expense</span>
+              <span className="text-[10px] font-mono font-bold text-rose-300 bg-rose-400/10 px-1 py-0.2 rounded border border-rose-400/20">
+                F7
+              </span>
+            </button>
+          ) : (
+            <div />
+          )}
+          <button
+            disabled={items.length === 0}
+            onClick={() => usePosCart.getState().clear()}
+            className="btn-ghost flex items-center justify-center gap-1 py-1.5 text-xs text-slate-400 hover:text-danger-400 disabled:opacity-40"
+            title="Clear all cart items"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Clear</span>
+          </button>
+        </div>
         <button
           disabled={items.length === 0 || stockConflict}
           onClick={() => {
@@ -2459,10 +2654,15 @@ function CartPanel({
             setCheckoutMethod('CASH')
             setCheckoutOpen(true)
           }}
-          className="btn-primary col-span-2 min-h-12 py-3 !text-base disabled:opacity-40 flex items-center justify-center gap-2"
+          className="group relative flex w-full flex-col items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-brand-600 via-brand-500 to-emerald-600 py-3 text-white shadow-lg shadow-brand-950/40 transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-40 disabled:hover:brightness-100"
         >
-          <span>CHECKOUT</span>
-          <span className="text-xs font-normal opacity-80">(F9 Cash · F10 GCash · F12 MariBank)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base font-black tracking-wide">CHECKOUT & PAY</span>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <span className="mt-0.5 text-[11px] font-normal text-emerald-100/80">
+            F9 Cash · F10 GCash · F11 Maya · F12 MariBank
+          </span>
         </button>
       </div>
 
@@ -2958,7 +3158,14 @@ function CheckoutModal({
 
   useEffect(() => {
     const handleCheckoutHotkeys = (e: KeyboardEvent) => {
-      if (done || pickerOpen) return
+      if (pickerOpen) return
+      if (done) {
+        if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') {
+          e.preventDefault()
+          onClose()
+        }
+        return
+      }
 
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -3013,35 +3220,44 @@ function CheckoutModal({
       } catch (e) { toastError('Receipt printing failed', String((e as Error)?.message || e)) } finally { setPrinting(false) }
     }
     return (
-      <Modal open onClose={onClose} title="Sale Complete" footer={
+      <Modal open onClose={onClose} title="Sale Completed" footer={
         <>
           <button
             type="button"
             onClick={() => void retryPrint(true)}
             disabled={printing}
-            className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20"
+            className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 hover:text-white border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 active:scale-95 transition-all"
             title="Open Windows System Print Dialog to manually select printer, adjust darkness/density, or paper size"
           >
             <Printer className="h-3.5 w-3.5" />
             <span>Manual Print</span>
           </button>
           {!done.print.ok && done.print.code !== 'DISABLED' && (
-            <button type="button" onClick={() => void retryPrint(false)} disabled={printing} className="btn-ghost">
+            <button type="button" onClick={() => void retryPrint(false)} disabled={printing} className="btn-ghost active:scale-95 transition-all">
               Auto Retry
             </button>
           )}
           {(done.print.code === 'NO_PRINTER' || done.print.code === 'UNAVAILABLE') && (
-            <button type="button" onClick={() => { onClose(); setPage('settings') }} className="btn-ghost">
+            <button type="button" onClick={() => { onClose(); setPage('settings') }} className="btn-ghost active:scale-95 transition-all">
               Configure Printer
             </button>
           )}
-          <button type="button" onClick={onClose} className="btn-primary">Done</button>
+          <button type="button" onClick={onClose} className="btn-primary active:scale-95 transition-all">Done (Enter)</button>
         </>
       }>
-        <div className="mb-3 text-center">
-          <Check className="mx-auto mb-2 h-12 w-12 text-emerald-400" />
-          <p className="text-lg font-bold text-white">{money(done.sale.total_c)}</p>
-          <p className="text-sm text-slate-400">{done.sale.transaction_no}</p>
+        <div className="mb-4 text-center">
+          <div className="mx-auto mb-2.5 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.25)] animate-in zoom-in-75 duration-200">
+            <Check className="h-9 w-9 stroke-[3]" />
+          </div>
+          <h3 className="text-xl font-black text-white tracking-tight">Payment Successful</h3>
+          <p className="mt-1 text-2xl font-black text-emerald-400 tabular-nums">{money(done.sale.total_c)}</p>
+          <p className="mt-0.5 text-xs text-slate-400 font-mono">{done.sale.transaction_no}</p>
+          <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+            <kbd className="rounded bg-emerald-950/80 px-1.5 py-0.5 font-mono text-[10px] text-emerald-200 border border-emerald-500/40">Enter</kbd>
+            <span>or</span>
+            <kbd className="rounded bg-emerald-950/80 px-1.5 py-0.5 font-mono text-[10px] text-emerald-200 border border-emerald-500/40">Esc</kbd>
+            <span>to start next transaction</span>
+          </div>
         </div>
         <p className={`mb-3 rounded-lg border p-2 text-xs ${done.print.ok ? 'border-emerald-500/30 text-emerald-300' : 'border-amber-500/30 text-amber-300'}`}>{done.print.message}</p>
         <ReceiptPaper lines={done.receipt} />
@@ -3154,62 +3370,128 @@ function CheckoutModal({
             </div>
 
             {method === 'CASH' && (
-              <div>
-                <label className="mb-1 block text-xs text-slate-400">Cash Received</label>
-                <input
-                  ref={cashInputRef}
-                  type="number"
-                  value={cash}
-                  onChange={(e) => setCash(e.target.value)}
-                  className="input w-full text-lg font-bold"
-                  autoFocus
-                />
+              <div className="space-y-2.5">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-300">Cash Received / Tendered</label>
+                    <span className="text-[11px] text-slate-500 font-mono">Press F9 to re-focus</span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">₱</span>
+                    <input
+                      ref={cashInputRef}
+                      type="number"
+                      step="any"
+                      value={cash}
+                      onChange={(e) => setCash(e.target.value)}
+                      className="input w-full pl-8 text-xl font-black tracking-tight text-white focus:border-emerald-500"
+                      placeholder="0.00"
+                      autoFocus
+                    />
+                  </div>
+                </div>
 
-                {/* Quick Cash Denomination & Increment Chips */}
-                <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick cash denomination buttons">
-                  <button
-                    type="button"
-                    onClick={() => setCash(cashInputFromCents(total))}
-                    className="rounded-md border border-brand-500/40 bg-brand-500/10 px-2 py-1 text-xs font-bold text-brand-300 hover:bg-brand-500/20 transition-colors"
-                    title="Exact total payment"
-                  >
-                    Exact ({money(total)})
-                  </button>
-                  {[20, 50, 100, 200, 500, 1000].map((bill) => {
-                    const billCents = bill * 100
-                    if (billCents < total && billCents !== 1000 && billCents !== 500) return null
-                    return (
+                <div>
+                  <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Fast Tender Banknotes
+                  </p>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5" role="group" aria-label="Fast cash tender buttons">
+                    <button
+                      type="button"
+                      onClick={() => setCash(cashInputFromCents(total))}
+                      className="col-span-2 sm:col-span-1 rounded-lg border border-brand-500/40 bg-brand-500/10 py-1.5 px-2 text-xs font-black text-brand-300 hover:bg-brand-500/20 active:scale-95 active:translate-y-0.5 transition-all shadow-sm"
+                      title="Exact amount"
+                    >
+                      Exact
+                    </button>
+                    {[20, 50, 100, 200, 500, 1000].map((bill) => (
                       <button
-                        key={`exact-${bill}`}
+                        key={`bill-${bill}`}
                         type="button"
                         onClick={() => setCash(String(bill))}
-                        className="rounded-md border border-ink-line bg-ink-900 px-2 py-1 text-xs font-semibold text-slate-200 hover:border-brand-500/50 hover:bg-ink-800 transition-colors"
+                        className={`rounded-lg border py-1.5 px-1 text-xs font-bold transition-all active:scale-95 active:translate-y-0.5 shadow-sm ${
+                          parseFloat(cash) === bill
+                            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 font-black'
+                            : 'border-ink-line bg-ink-900 text-slate-200 hover:border-slate-600 hover:bg-ink-800'
+                        }`}
                       >
                         ₱{bill}
                       </button>
-                    )
-                  })}
-                  {[20, 50, 100].map((addAmount) => (
-                    <button
-                      key={`add-${addAmount}`}
-                      type="button"
-                      onClick={() => {
-                        const currentVal = parseFloat(cash) || (total / 100)
-                        setCash(String(Math.round((currentVal + addAmount) * 100) / 100))
-                      }}
-                      className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 transition-colors"
-                      title={`Add ₱${addAmount} to cash`}
-                    >
-                      +₱{addAmount}
-                    </button>
-                  ))}
+                    ))}
+                  </div>
+
+                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] text-slate-500 font-medium mr-0.5">Quick Add:</span>
+                    {[20, 50, 100, 500].map((addAmount) => (
+                      <button
+                        key={`add-${addAmount}`}
+                        type="button"
+                        onClick={() => {
+                          const currentVal = parseFloat(cash) || (total / 100)
+                          setCash(String(Math.round((currentVal + addAmount) * 100) / 100))
+                        }}
+                        className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 active:scale-95 active:translate-y-0.5 transition-all"
+                        title={`Add ₱${addAmount} to cash tendered`}
+                      >
+                        +₱{addAmount}
+                      </button>
+                    ))}
+                    {total > 0 && (() => {
+                      const totalPesos = total / 100
+                      const next50 = Math.ceil(totalPesos / 50) * 50
+                      const next100 = Math.ceil(totalPesos / 100) * 100
+                      return Array.from(new Set([next50, next100]))
+                        .filter((t) => t > totalPesos && t !== 1000 && t !== 500)
+                        .map((t) => (
+                          <button
+                            key={`next-round-${t}`}
+                            type="button"
+                            onClick={() => setCash(String(t))}
+                            className="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/20 active:scale-95 active:translate-y-0.5 transition-all"
+                            title={`Round up to ₱${t}`}
+                          >
+                            Round ₱{t}
+                          </button>
+                        ))
+                    })()}
+                  </div>
                 </div>
 
-                <div className="mt-2 flex justify-between text-xs">
-                  <span className="text-slate-500">Change (sukli)</span>
-                  <span className={change >= 0 ? 'font-bold text-emerald-400' : 'font-bold text-danger-400'}>
-                    {money(Math.max(0, change))}
-                  </span>
+                <div
+                  className={`rounded-xl border p-3 transition-all duration-150 ${
+                    change >= 0
+                      ? 'border-emerald-500/40 bg-gradient-to-br from-emerald-950/30 to-ink-950 shadow-inner'
+                      : 'border-danger-500/40 bg-danger-950/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-[11px] font-black uppercase tracking-wider ${
+                        change >= 0 ? 'text-emerald-400' : 'text-danger-400'
+                      }`}
+                    >
+                      {change >= 0 ? 'Change Due' : 'Insufficient Cash'}
+                    </span>
+                    {change >= 0 && (
+                      <span className="text-[11px] font-medium text-emerald-300/80">
+                        Press Enter to Complete Sale
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-baseline justify-between">
+                    <span
+                      className={`text-3xl font-black tracking-tight tabular-nums transition-all ${
+                        change >= 0
+                          ? 'text-emerald-300 drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                          : 'text-danger-400'
+                      }`}
+                    >
+                      {change >= 0 ? money(change) : `Short of ${money(Math.abs(change))}`}
+                    </span>
+                    {cashC > 0 && change >= 0 && (
+                      <span className="text-xs text-slate-400 font-medium">Tendered: {money(cashC)}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -3312,7 +3594,7 @@ function CheckoutModal({
               <div className="flex items-center justify-between text-[11px] pt-1">
                 {splitCashAllocatedC > 0 && splitCashChangeC > 0 ? (
                   <span className="text-emerald-400 font-semibold">
-                    Cash Sukli (Change): <span className="font-mono">{money(splitCashChangeC)}</span>
+                    Cash Change Due: <span className="font-mono">{money(splitCashChangeC)}</span>
                   </span>
                 ) : (
                   <span className="text-slate-500">Allocate amounts across multiple methods</span>
@@ -3552,12 +3834,15 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
   const [q, setQ] = useState('')
   const [rows, setRows] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const activeItemRef = useRef<HTMLButtonElement | null>(null)
 
   const load = async (term: string) => {
     setLoading(true)
     try {
       const res = await window.api.customers.list({ search: term || undefined, status: 'ACTIVE', limit: 30 })
       setRows(res.rows)
+      setSelectedIndex(0)
     } catch (e) {
       toastError('Failed to load customers', String((e as Error)?.message || e))
     } finally {
@@ -3567,31 +3852,90 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
 
   useEffect(() => { void load('') }, [])
 
+  useEffect(() => {
+    if (activeItemRef.current) {
+      activeItemRef.current.scrollIntoView({ block: 'nearest' })
+    }
+  }, [selectedIndex])
+
+  const handleSelectCustomer = (c: Customer) => {
+    usePosCart.getState().setCustomer(c.id, c.full_name)
+    onClose()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedIndex((prev) => (rows.length > 0 ? Math.min(prev + 1, rows.length - 1) : 0))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedIndex((prev) => (rows.length > 0 ? Math.max(prev - 1, 0) : 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (rows.length > 0 && selectedIndex >= 0 && selectedIndex < rows.length) {
+        const c = rows[selectedIndex]
+        if (c) handleSelectCustomer(c)
+      } else {
+        usePosCart.getState().setCustomer(null)
+        onClose()
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      onClose()
+    }
+  }
+
   return (
-    <Modal open onClose={onClose} title="Select the Borrower" maxWidth="max-w-md" footer={
-      <button onClick={() => { usePosCart.getState().setCustomer(null); onClose() }} className="btn-ghost">Walk-in (no utang)</button>
+    <Modal open onClose={onClose} title="Select Customer or Suki" maxWidth="max-w-md" footer={
+      <div className="flex w-full items-center justify-between">
+        <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+          ↑ / ↓ Navigate · Enter Select · Esc Cancel
+        </span>
+        <button
+          onClick={() => { usePosCart.getState().setCustomer(null); onClose() }}
+          className="btn-ghost text-xs ml-auto"
+          title="Reset to Walk-in customer"
+        >
+          Walk-in (No Credit)
+        </button>
+      </div>
     }>
-      <p className="mb-3 text-sm text-slate-400">Click a customer in the list to select them.</p>
-      <input
-        value={q}
-        onChange={(e) => { setQ(e.target.value); void load(e.target.value) }}
-        placeholder="Search customer name or phone..."
-        className="input mb-3 w-full"
-        autoFocus
-      />
-      <div className="max-h-72 space-y-1 overflow-y-auto">
+      <div className="relative mb-3">
+        <input
+          value={q}
+          onChange={(e) => { setQ(e.target.value); void load(e.target.value) }}
+          onKeyDown={handleKeyDown}
+          placeholder="Search customer name or phone..."
+          className="input w-full pr-10"
+          autoFocus
+        />
+        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[10px] text-slate-500 font-semibold border border-ink-line rounded px-1.5 py-0.5">
+          F6
+        </span>
+      </div>
+      <div className="max-h-72 space-y-1 overflow-y-auto" onKeyDown={handleKeyDown}>
         {loading && <p className="py-4 text-center text-sm text-slate-500">Loading…</p>}
-        {!loading && rows.map((c) => {
+        {!loading && rows.map((c, idx) => {
           const { reminder, statusInfo } = getMergedCustomerReminder(c)
+          const isSelected = selectedId === c.id
+          const isHighlighted = idx === selectedIndex
           return (
             <button
               key={c.id}
-              onClick={() => { usePosCart.getState().setCustomer(c.id, c.full_name); onClose() }}
-              aria-pressed={selectedId === c.id}
-              className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left hover:border-brand-500/50 ${selectedId === c.id ? 'border-brand-500 bg-brand-500/10' : 'border-ink-line'}`}
+              ref={isHighlighted ? activeItemRef : null}
+              onClick={() => handleSelectCustomer(c)}
+              onMouseEnter={() => setSelectedIndex(idx)}
+              aria-pressed={isSelected}
+              className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition-all ${
+                isHighlighted
+                  ? 'border-brand-500 bg-brand-500/20 ring-1 ring-brand-500'
+                  : isSelected
+                    ? 'border-brand-500/50 bg-brand-500/10'
+                    : 'border-ink-line hover:border-slate-700 hover:bg-ink-800/50'
+              }`}
             >
               <div className="min-w-0 flex-1 mr-2">
-                <p className="break-words text-sm font-medium text-slate-200">{c.full_name}</p>
+                <p className="break-words text-sm font-semibold text-slate-200">{c.full_name}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs text-slate-500">Limit {money(c.credit_limit_c)}</span>
                   {statusInfo.status !== 'NONE' && statusInfo.status !== 'SETTLED' && (
@@ -3608,7 +3952,7 @@ function CustomerPicker({ onClose }: { onClose: () => void }): React.JSX.Element
                 </div>
               </div>
               <div className="text-right shrink-0">
-                {selectedId === c.id && <Check aria-label="Selected" className="h-4 w-4 shrink-0 text-brand-400 mb-0.5 ml-auto" />}
+                {isSelected && <Check aria-label="Selected" className="h-4 w-4 shrink-0 text-brand-400 mb-0.5 ml-auto" />}
                 <span className={`text-xs font-bold ${c.balance_c > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>{money(c.balance_c)}</span>
               </div>
             </button>

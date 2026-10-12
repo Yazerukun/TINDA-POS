@@ -319,9 +319,16 @@ export function PrinterStudioModal({
           toastError('Printer Notice', res.message)
         }
       } else {
-        // Label test print with crosshairs and calibration rectangle
+        // Label test print with scannable barcode and calibration rectangle
         const widthMm = `${activeLabelDims.width}mm`
         const heightMm = `${activeLabelDims.height}mm`
+        const calibBarcodeSvg = generateBarcodeSvg('TINDA-TEST-128', {
+          height: activeLabelDims.height <= 20 ? 22 : 30,
+          barHeight: activeLabelDims.height <= 20 ? 14 : 20,
+          includeText: true,
+          barWidth: labelBarcodeBarWidth || 1.8,
+          fontSize: 7
+        })
         const testHtml = `
           <!DOCTYPE html>
           <html>
@@ -344,21 +351,19 @@ export function PrinterStudioModal({
                 box-sizing: border-box;
                 transform: translate(${labelOffsetX}mm, ${labelOffsetY}mm);
               }
-              .center-cross {
-                font-size: 14px;
-                font-weight: 900;
-                line-height: 1;
-              }
-              .hdr { font-size: 7px; font-weight: 900; border-bottom: 1px solid #000; width: 100%; }
-              .dim { font-size: 6.5px; font-weight: bold; font-family: monospace; }
+              .hdr { font-size: 7px; font-weight: 900; border-bottom: 1px solid #000; width: 100%; padding-bottom: 0.2mm; }
+              .dim { font-size: 6px; font-weight: bold; font-family: monospace; }
+              .calib-barcode { width: 100%; max-width: 96%; margin: 0.3mm auto; }
+              .calib-barcode svg { display: block; width: 100%; height: auto; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: pixelated !important; }
+              .calib-barcode svg rect { shape-rendering: crispEdges !important; }
             </style>
           </head>
           <body>
             <div class="calib-box">
-              <div class="hdr">CT221B CALIBRATION TEST</div>
+              <div class="hdr">CT221B CALIBRATION &amp; BARCODE TEST</div>
               <div class="dim">${activeLabelDims.width}×${activeLabelDims.height}mm | X:${labelOffsetX}mm Y:${labelOffsetY}mm</div>
-              <div class="center-cross">+</div>
-              <div class="dim">SAFE MARGIN: ${labelSafeMargin}mm</div>
+              <div class="calib-barcode">${calibBarcodeSvg}</div>
+              <div class="dim">SCAN WITH PHONE CAMERA · MARGIN: ${labelSafeMargin}mm</div>
             </div>
           </body>
           </html>

@@ -92,6 +92,38 @@ export function playScanError(): void {
 }
 
 /**
+ * Melodic rising dual-tone chime when a barcode is re-scanned and cart quantity increments +1 (880Hz -> 1320Hz)
+ */
+export function playDuplicateScanChime(): void {
+  if (isSoundMuted()) return
+  const ctx = getAudioContext()
+  if (!ctx) return
+
+  try {
+    const now = ctx.currentTime
+    ;[880, 1320].forEach((freq, idx) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const start = now + idx * 0.05
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, start)
+
+      gain.gain.setValueAtTime(0.18, start)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.1)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(start)
+      osc.stop(start + 0.1)
+    })
+  } catch {
+    // Ignore audio error
+  }
+}
+
+/**
  * Satisfying crisp cash register chime for checkout completion
  */
 export function playCheckoutChime(): void {

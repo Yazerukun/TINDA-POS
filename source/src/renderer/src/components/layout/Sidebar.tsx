@@ -23,7 +23,8 @@ import {
   RefreshCw,
   Loader2,
   Bot,
-  Printer
+  Printer,
+  Tag
 } from 'lucide-react'
 import { useGuide } from '../../stores/guide'
 import { useNav, type PageKey } from '../../stores/nav'
@@ -34,9 +35,10 @@ import { useUpdate } from '../../stores/update'
 import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 import { AppLogo } from '../AppLogo'
+import { PrinterStudioModal } from '../PrinterStudioModal'
 
 interface NavItem {
-  key: PageKey | 'updates'
+  key: PageKey | 'updates' | 'printerStudio'
   label: string
   icon: React.ReactNode
   permission?: Permission
@@ -51,43 +53,44 @@ interface NavSection {
 
 const SECTIONS: NavSection[] = [
   {
-    title: 'Cashier & Register',
+    title: 'Storefront & Register',
     items: [
       { key: 'pos', label: 'POS Cashier', icon: <ShoppingCart className="h-4 w-4" />, permission: 'pos:use', isHot: true },
-      { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, permission: 'dashboard:view' },
-      { key: 'printing', label: 'Printing Hub', icon: <Printer className="h-4 w-4 text-sky-400" />, permission: 'pos:use' },
-      { key: 'ewallet', label: 'E-Wallet & Bills', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use' }
+      { key: 'ewallet', label: 'E-Wallet & Bills', icon: <Landmark className="h-4 w-4 text-emerald-400" />, permission: 'pos:use' },
+      { key: 'printing', label: 'Customer Print Services', icon: <Printer className="h-4 w-4 text-sky-400" />, permission: 'pos:use' }
     ]
   },
   {
-    title: 'Stock & Operations',
+    title: 'Inventory & Operations',
     items: [
-      { key: 'inventory', label: 'Inventory', icon: <Boxes className="h-4 w-4" />, permission: 'products:manage' },
+      { key: 'inventory', label: 'Inventory & Stock', icon: <Boxes className="h-4 w-4" />, permission: 'products:manage' },
       { key: 'suppliers', label: 'Suppliers', icon: <Truck className="h-4 w-4" />, permission: 'suppliers:manage' },
-      { key: 'expenses', label: 'Store Expenses', icon: <Receipt className="h-4 w-4" />, permission: 'expenses:manage' }
+      { key: 'expenses', label: 'Operating Expenses', icon: <Receipt className="h-4 w-4" />, permission: 'expenses:manage' }
     ]
   },
   {
     title: 'Customers & Suki',
     items: [
-      { key: 'customers', label: 'Customers', icon: <Users className="h-4 w-4" />, permission: 'customers:manage' },
-      { key: 'utang', label: 'Utang Ledger', icon: <Wallet className="h-4 w-4" />, permission: 'pos:utang' }
+      { key: 'customers', label: 'Customer Directory', icon: <Users className="h-4 w-4" />, permission: 'customers:manage' },
+      { key: 'utang', label: 'Utang Ledger', icon: <Wallet className="h-4 w-4 text-rose-400" />, permission: 'pos:utang' }
     ]
   },
   {
-    title: 'Records & Reports',
+    title: 'Sales & Analytics',
     items: [
-      { key: 'transactions', label: 'Transactions', icon: <ListOrdered className="h-4 w-4" />, permission: 'transactions:view' },
-      { key: 'reports', label: 'Reports & Z-Read', icon: <BarChart3 className="h-4 w-4" />, permission: 'reports:view' }
+      { key: 'dashboard', label: 'Dashboard & KPIs', icon: <LayoutDashboard className="h-4 w-4 text-brand-400" />, permission: 'dashboard:view' },
+      { key: 'transactions', label: 'Transactions & Receipts', icon: <ListOrdered className="h-4 w-4" />, permission: 'transactions:view' },
+      { key: 'reports', label: 'Reports & Z-Reading', icon: <BarChart3 className="h-4 w-4" />, permission: 'reports:view' }
     ]
   },
   {
-    title: 'System & Guide',
+    title: 'Hardware & System',
     items: [
-      { key: 'updates', label: 'Check for Updates', icon: <RefreshCw className="h-4 w-4 text-emerald-400" /> },
-      { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
+      { key: 'printerStudio', label: 'Thermal & Label Studio', icon: <Tag className="h-4 w-4 text-indigo-400" />, permission: 'settings:manage' },
+      { key: 'settings', label: 'Store Settings', icon: <Settings className="h-4 w-4" />, permission: 'settings:manage' },
       { key: 'backup', label: 'Data & Backup', icon: <HardDriveDownload className="h-4 w-4" />, permission: 'backup:manage' },
-      { key: 'handbook', label: 'Store Handbook', icon: <BookOpen className="h-4 w-4 text-amber-400" /> }
+      { key: 'handbook', label: 'Store Handbook & SOPs', icon: <BookOpen className="h-4 w-4 text-amber-400" /> },
+      { key: 'updates', label: 'Check for Updates', icon: <RefreshCw className="h-4 w-4 text-emerald-400" /> }
     ]
   }
 ]
@@ -98,6 +101,7 @@ export function Sidebar(): React.JSX.Element {
   const { settings } = useSettings()
   const { isVip } = useLicense()
   const { event, checking, check, download, install, showModal, openHub } = useUpdate()
+  const [printerStudioOpen, setPrinterStudioOpen] = useState(false)
 
   // Filter sections by user permissions, keeping only sections that have at least one visible item
   const filteredSections = SECTIONS.map((sec) => ({
@@ -151,6 +155,10 @@ export function Sidebar(): React.JSX.Element {
                       if (n.key === 'updates') {
                         openHub()
                         void check(true)
+                        return
+                      }
+                      if (n.key === 'printerStudio') {
+                        setPrinterStudioOpen(true)
                         return
                       }
                       setPage(n.key)
@@ -330,6 +338,13 @@ export function Sidebar(): React.JSX.Element {
           by Dev Francis
         </p>
       </div>
+      {printerStudioOpen && (
+        <PrinterStudioModal
+          open={printerStudioOpen}
+          onClose={() => setPrinterStudioOpen(false)}
+          initialTab="label"
+        />
+      )}
     </aside>
   )
 }

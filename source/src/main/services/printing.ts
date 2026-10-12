@@ -351,7 +351,7 @@ export async function printLabelTest(
   options?: { manual?: boolean; deviceName?: string }
 ): Promise<PrintResult> {
   const targetDevice = options?.deviceName || settings.label_printer || ''
-  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 32, includeText: true, barWidth: 1.3, fontSize: 8 })
+  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 38, barHeight: 28, includeText: true, barWidth: 1.8, fontSize: 8.5 })
   const testHtml = `
     <!DOCTYPE html>
     <html>
@@ -363,6 +363,9 @@ export async function printLabelTest(
         body { margin: 0; padding: 1.2mm; background: #ffffff !important; color: #000000 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; }
         .hdr { font-size: 7.5px; font-weight: 900; text-transform: uppercase; border-bottom: 1.5px solid #000000; padding-bottom: 0.4mm; color: #000000; }
         .sub { font-size: 8.5px; font-weight: 800; margin: 0.8mm 0 0.3mm 0; color: #000000; }
+        .barcode-box { display: flex; justify-content: center; align-items: center; margin: 0.6mm auto; width: 100%; background: #ffffff !important; }
+        .barcode-box svg { display: block; max-width: 98%; height: auto; shape-rendering: crispEdges !important; image-rendering: -webkit-optimize-contrast !important; image-rendering: pixelated !important; }
+        .barcode-box svg rect { shape-rendering: crispEdges !important; }
         .badge { display: inline-block; font-size: 6.5px; font-weight: bold; background: #000000; color: #ffffff; padding: 0.4mm 1.5mm; border-radius: 1mm; }
         .footer { font-size: 6px; color: #000000; margin-top: 0.4mm; font-family: monospace; font-weight: bold; }
         @media print {
@@ -374,7 +377,7 @@ export async function printLabelTest(
     <body>
       <div class="hdr">${settings.store_name || 'TINDA POS'}</div>
       <div class="sub">CHITENG CT221B READY</div>
-      <div style="margin: 0.4mm 0;">${testSvg}</div>
+      <div class="barcode-box">${testSvg}</div>
       <div><span class="badge">HARDWARE OK</span></div>
       <div class="footer">${new Date().toLocaleTimeString()}</div>
     </body>

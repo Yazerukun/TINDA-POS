@@ -31,6 +31,19 @@ interface FeatureSlide {
 
 const SLIDES: FeatureSlide[] = [
   {
+    id: 'v203-chiteng-barcodes',
+    badge: '🏷️ V2.0.3 HD BARCODES & 5-CLUSTER WORKFLOW',
+    badgeColor: 'border-indigo-500/40 bg-indigo-500/10 text-indigo-300',
+    title: 'Instant Phone-Scannable Barcodes & Reorganized Navigation',
+    description:
+      'True Code 128 Auto vector barcodes with crisp edge dot alignment for Chiteng CT221B (100% real-time phone scan verified), plus streamlined 5-cluster operational navigation.',
+    ctaText: 'Open Thermal Studio',
+    gradient: 'from-indigo-950/60 via-ink-900 to-brand-950/50',
+    border: 'border-indigo-500/30',
+    icon: <Sparkles className="h-6 w-6 text-indigo-400" />,
+    targetPage: 'settings'
+  },
+  {
     id: 'v202-streamlined-workflow',
     badge: '✨ V2.0.2 STREAMLINED WORKFLOW',
     badgeColor: 'border-brand-500/40 bg-brand-500/10 text-brand-300',

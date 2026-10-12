@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw, Crown } from 'lucide-react'
-import type { SalesReportRow, ReportSummary, ReadReport, ZRead, CashCountRecord } from '@shared/types'
+import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw, Crown, Package, Search } from 'lucide-react'
+import type { SalesReportRow, ReportSummary, ReadReport, ZRead, CashCountRecord, ItemSalesReport, Category } from '@shared/types'
 import { cashCountLines, CASH_COUNT_DENOMINATION_CENTS } from '@shared/cashCount'
 import { readReportLines } from '@shared/readReport'
 import { money, shortDate } from '@shared/format'
@@ -11,6 +11,7 @@ import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useAuth } from '../stores/auth'
 import { useSettings } from '../stores/settings'
+import { useNav } from '../stores/nav'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 
 interface CompState {
@@ -20,11 +21,17 @@ interface CompState {
 }
 
 export function Reports(): React.JSX.Element {
+  const { reportsTab, setReportsTab } = useNav()
   const [from, setFrom] = useState(() => new Date().toISOString().slice(0, 10))
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
   const [groupBy, setGroupBy] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY')
   const [data, setData] = useState<CompState | null>(null)
-  const [tab, setTab] = useState<'SALES' | 'INVENTORY' | 'UTANG' | 'X' | 'Z' | 'ZHISTORY' | 'CASHCOUNT'>('SALES')
+  const [tab, setTab] = useState<'SALES' | 'ITEMS' | 'INVENTORY' | 'UTANG' | 'X' | 'Z' | 'ZHISTORY' | 'CASHCOUNT'>('SALES')
+  const [itemData, setItemData] = useState<ItemSalesReport | null>(null)
+  const [itemSearch, setItemSearch] = useState('')
+  const [itemCategoryFilter, setItemCategoryFilter] = useState<number | 'ALL'>('ALL')
+  const [categories, setCategories] = useState<Category[]>([])
+  const [itemSortBy, setItemSortBy] = useState<'SALES' | 'QTY' | 'PROFIT' | 'NAME'>('SALES')
   const [inv, setInv] = useState<{ rows: { name: string; stock: number; base_unit: string; inventory_value_c: number }[]; summary: { total_units: number; inventory_value_c: number; low_stock: number; out_of_stock: number } } | null>(null)
   const [utang, setUtang] = useState<{ rows: { full_name: string; balance_c: number; credit_limit_c: number }[]; total_outstanding_c: number } | null>(null)
   const [loading, setLoading] = useState(false)
@@ -34,6 +41,17 @@ export function Reports(): React.JSX.Element {
   const [readRevision, setReadRevision] = useState(0)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (reportsTab) {
+      setTab(reportsTab)
+      setReportsTab(null)
+    }
+  }, [reportsTab, setReportsTab])
+
+  useEffect(() => {
+    window.api.categories?.list?.().then(setCategories).catch(() => {})
+  }, [])
 
   useEffect(() => {
     window.api.license?.getStatus?.().then((s) => setIsVip(s.isVip)).catch(() => {})
@@ -93,11 +111,55 @@ export function Reports(): React.JSX.Element {
     setLoading(true)
     try { setUtang(await window.api.reports.utang()) } catch (e) { toastError('Failed to load', String((e as Error)?.message || e)) } finally { setLoading(false) }
   }
+  const loadItemSales = async () => {
+    setLoading(true)
+    try {
+      let fromDate = from
+      if (!isVip) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+        if (fromDate < sevenDaysAgo) {
+          fromDate = sevenDaysAgo
+          setFrom(sevenDaysAgo)
+        }
+      }
+      const res = await window.api.reports.itemSales({
+        from: fromDate,
+        to,
+        search: itemSearch.trim() || undefined,
+        category_id: itemCategoryFilter === 'ALL' ? undefined : itemCategoryFilter
+      })
+      setItemData(res)
+    } catch (e) {
+      toastError('Failed to load item sales', String((e as Error)?.message || e))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const setQuickRange = (range: 'today' | 'yesterday' | '7days' | 'month') => {
+    const todayIso = new Date().toISOString().slice(0, 10)
+    if (range === 'today') {
+      setFrom(todayIso)
+      setTo(todayIso)
+    } else if (range === 'yesterday') {
+      const y = new Date(Date.now() - 86400 * 1000).toISOString().slice(0, 10)
+      setFrom(y)
+      setTo(y)
+    } else if (range === '7days') {
+      const past = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+      setFrom(past)
+      setTo(todayIso)
+    } else if (range === 'month') {
+      const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+      setFrom(firstOfMonth)
+      setTo(todayIso)
+    }
+  }
 
   // Loaders are redefined per render; this effect intentionally keys on tab and
   // (re)loads only when the active report changes, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>{setRead(null);toastError('No open shift',String((e as Error).message||e))}); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
+  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'ITEMS') void loadItemSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>{setRead(null);toastError('No open shift',String((e as Error).message||e))}); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
 
   const exportCsv = async () => {
     try {
@@ -107,7 +169,7 @@ export function Reports(): React.JSX.Element {
         toastError('VIP Pro Feature', 'CSV Tax & Audit Export is a VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) for lifetime reports.')
         return
       }
-      const kind = tab === 'SALES' ? 'SALES' : tab === 'INVENTORY' ? 'INVENTORY' : 'UTANG'
+      const kind = tab === 'SALES' ? 'SALES' : tab === 'ITEMS' ? 'ITEMS' : tab === 'INVENTORY' ? 'INVENTORY' : 'UTANG'
       const res = await window.api.reports.exportCsv(kind, { from, to })
       toastSuccess('Export saved', res.path)
     } catch (e) { toastError('Export failed', String((e as Error)?.message || e)) }
@@ -128,7 +190,7 @@ export function Reports(): React.JSX.Element {
                 Upgrade to VIP Pro
               </button>
             )}
-            {(['SALES','INVENTORY','UTANG'] as const).includes(tab as 'SALES'|'INVENTORY'|'UTANG') ? (
+            {(['SALES', 'ITEMS', 'INVENTORY', 'UTANG'] as const).includes(tab as 'SALES' | 'ITEMS' | 'INVENTORY' | 'UTANG') ? (
               <button onClick={() => void exportCsv()} className="btn-primary flex items-center gap-2">
                 <FileDown className="h-4 w-4" /> Export CSV {!isVip && <Crown className="h-3.5 w-3.5 text-amber-400" />}
               </button>
@@ -139,6 +201,7 @@ export function Reports(): React.JSX.Element {
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button onClick={() => setTab('SALES')} className={`btn-ghost ${tab === 'SALES' ? '!border-brand-500 !text-brand-400' : ''}`}>Sales</button>
+        <button onClick={() => setTab('ITEMS')} className={`btn-ghost flex items-center gap-1.5 ${tab === 'ITEMS' ? '!border-brand-500 !text-brand-400' : ''}`}><Package className="h-4 w-4" />Sales by Item</button>
         <button onClick={() => setTab('INVENTORY')} className={`btn-ghost ${tab === 'INVENTORY' ? '!border-brand-500 !text-brand-400' : ''}`}>Inventory</button>
         <button onClick={() => setTab('UTANG')} className={`btn-ghost ${tab === 'UTANG' ? '!border-brand-500 !text-brand-400' : ''}`}>Utang</button>
         <button onClick={() => setTab('X')} className={`btn-ghost ${tab === 'X' ? '!border-brand-500 !text-brand-400' : ''}`}>X-Read</button>
@@ -214,6 +277,192 @@ export function Reports(): React.JSX.Element {
                 </table>
               </div>
               <SalesChart data={data.chart} />
+            </>
+          ) : null}
+        </>
+      )}
+
+      {tab === 'ITEMS' && (
+        <>
+          {!isVip && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink-line bg-ink-850/80 p-3.5 text-xs backdrop-blur">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white">Free Community Edition: 7-Day Operational Sales Window</span>
+                <span className="text-slate-400">· Lifetime item sales history and product breakdown are available on VIP Pro.</span>
+              </div>
+              <button
+                onClick={() => setVipModalOpen(true)}
+                className="btn-ghost flex items-center gap-1.5 text-xs font-semibold text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <Crown className="h-3.5 w-3.5 text-amber-400" />
+                Unlock Lifetime History (₱500)
+              </button>
+            </div>
+          )}
+
+          <div className="mb-4 rounded-xl border border-ink-line bg-ink-900/60 p-3.5 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Quick Filters:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" onClick={() => setQuickRange('today')} className="btn-ghost text-xs px-2.5 py-1">Today</button>
+                  <button type="button" onClick={() => setQuickRange('yesterday')} className="btn-ghost text-xs px-2.5 py-1">Yesterday</button>
+                  <button type="button" onClick={() => setQuickRange('7days')} className="btn-ghost text-xs px-2.5 py-1">Last 7 Days</button>
+                  <button type="button" onClick={() => setQuickRange('month')} className="btn-ghost text-xs px-2.5 py-1">This Month</button>
+                </div>
+              </div>
+              <span className="text-xs text-slate-500">
+                {itemData ? `${itemData.rows.length} unique products found` : ''}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-end gap-3 pt-1 border-t border-ink-line/60">
+              <div>
+                <label className="label">From</label>
+                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input w-36" />
+              </div>
+              <div>
+                <label className="label">To</label>
+                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input w-36" />
+              </div>
+              <div>
+                <label className="label">Category</label>
+                <select
+                  value={itemCategoryFilter}
+                  onChange={(e) => setItemCategoryFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                  className="input w-40"
+                >
+                  <option value="ALL">All Categories</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">Search Product</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search e.g. gulaman, siomai..."
+                    value={itemSearch}
+                    onChange={(e) => setItemSearch(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') void loadItemSales() }}
+                    className="input pl-9 w-60"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label">Sort By</label>
+                <select
+                  value={itemSortBy}
+                  onChange={(e) => setItemSortBy(e.target.value as 'SALES' | 'QTY' | 'PROFIT' | 'NAME')}
+                  className="input w-44"
+                >
+                  <option value="SALES">Highest Total Sales (₱)</option>
+                  <option value="QTY">Most Quantity Sold</option>
+                  <option value="PROFIT">Highest Gross Profit</option>
+                  <option value="NAME">Product Name (A-Z)</option>
+                </select>
+              </div>
+              <button onClick={() => void loadItemSales()} className="btn-primary flex items-center gap-1.5 h-9">
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Filter / Run</span>
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="h-40 animate-pulse card" />
+          ) : itemData ? (
+            <>
+              <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-5">
+                <Stat label="Total Items Sold" v={`${itemData.summary.total_items_sold.toLocaleString()} units`} />
+                <Stat label="Total Item Revenue" v={money(itemData.summary.total_sales_c)} />
+                <Stat label="Total Cost (COGS)" v={money(itemData.summary.total_cost_c)} />
+                <Stat label="Gross Profit" v={money(itemData.summary.total_profit_c)} />
+                <Stat label="Unique Products" v={String(itemData.summary.unique_products_count)} />
+              </div>
+              {(() => {
+                const sortedRows = [...itemData.rows].sort((a, b) => {
+                  if (itemSortBy === 'SALES') return b.total_sales_c - a.total_sales_c
+                  if (itemSortBy === 'QTY') return b.total_qty - a.total_qty
+                  if (itemSortBy === 'PROFIT') return b.profit_c - a.profit_c
+                  if (itemSortBy === 'NAME') return a.product_name.localeCompare(b.product_name)
+                  return 0
+                })
+                return (
+                  <div className="card mb-4 table-container">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th className="w-[30%]">Product Name</th>
+                          <th className="w-[14%]">Category</th>
+                          <th className="w-[14%] text-right">Quantity Sold</th>
+                          <th className="w-[12%] text-right">Avg Price</th>
+                          <th className="w-[15%] text-right">Total Sales</th>
+                          <th className="w-[15%] text-right">Profit &amp; Margin</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedRows.map((r, idx) => {
+                          const avgPriceC = r.total_qty > 0 ? Math.round(r.total_sales_c / r.total_qty) : 0
+                          return (
+                            <tr key={`${r.product_id ?? 'custom'}-${r.product_name}-${idx}`}>
+                              <td className="w-[30%]">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-500/10 text-brand-400 font-bold text-xs">
+                                    #{idx + 1}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-white truncate">{r.product_name}</p>
+                                    {(r.barcode || r.sku) && (
+                                      <p className="text-[10px] text-slate-500 font-mono truncate">
+                                        {r.barcode ? `BAR: ${r.barcode}` : `SKU: ${r.sku}`}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="w-[14%]">
+                                <span className="badge bg-ink-700 text-slate-300 text-xs">{r.category_name}</span>
+                              </td>
+                              <td className="w-[14%] text-right font-mono">
+                                <span className="font-bold text-white text-sm">{r.total_qty.toLocaleString()}</span>
+                                <span className="text-slate-400 text-xs ml-1">{r.unit_name}</span>
+                                {r.refunded_qty > 0 && (
+                                  <span className="block text-[10px] text-amber-400">({r.refunded_qty} refunded)</span>
+                                )}
+                              </td>
+                              <td className="w-[12%] text-right text-slate-300 font-mono text-xs">{money(avgPriceC)}</td>
+                              <td className="w-[15%] text-right font-mono">
+                                <span className="font-black text-emerald-400 text-sm">{money(r.total_sales_c)}</span>
+                              </td>
+                              <td className="w-[15%] text-right font-mono">
+                                <div className="flex flex-col items-end">
+                                  <span className="font-bold text-brand-300 text-xs">{money(r.profit_c)}</span>
+                                  <span className="text-[10px] text-slate-400">{r.margin_pct}% margin</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                        {sortedRows.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="py-12 text-center text-slate-500">
+                              <Package className="mx-auto h-8 w-8 text-slate-600 mb-2 opacity-50" />
+                              <p className="text-sm font-semibold text-slate-400">No item sales recorded in this period.</p>
+                              <p className="text-xs text-slate-600 mt-1">
+                                Try widening your date range or clearing search keywords like &quot;{itemSearch}&quot;.
+                              </p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              })()}
             </>
           ) : null}
         </>

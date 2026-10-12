@@ -173,11 +173,14 @@ export function PriceTagPrintModal({
 
   // Generate true scannable Code 128 barcode SVG for preview & printing
   const barcodeValue = activeProduct.barcode?.trim() || activeProduct.sku?.trim() || `TINDA-${activeProduct.id}`
+  const isCompactTag = activeDims.height <= 20
   const barcodeSvgString = generateBarcodeSvg(barcodeValue, {
-    height: activeDims.height <= 20 ? 22 : 30,
+    height: isCompactTag ? 28 : 38,
+    barHeight: isCompactTag ? 19 : 28,
     includeText: true,
-    barWidth: activeDims.width <= 30 ? 1.1 : 1.4,
-    fontSize: activeDims.height <= 20 ? 7 : 8.5
+    barWidth: activeDims.width <= 30 ? 1.5 : 1.8,
+    fontSize: isCompactTag ? 7 : 8.5,
+    quietZone: activeDims.width <= 30 ? 10 : 12
   })
 
   const handlePrint = async (manual = false) => {
@@ -315,12 +318,21 @@ export function PriceTagPrintModal({
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0.5px 0;
+            margin: 0.5px auto;
+            width: 100%;
+            background: #ffffff !important;
           }
           .barcode-box svg {
-            max-width: 95%;
+            display: block;
+            max-width: 98%;
             height: auto;
             color: #000000;
+            shape-rendering: crispEdges !important;
+            image-rendering: -webkit-optimize-contrast !important;
+            image-rendering: pixelated !important;
+          }
+          .barcode-box svg rect {
+            shape-rendering: crispEdges !important;
           }
           .sku-tag {
             font-size: 6px;

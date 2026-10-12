@@ -60,6 +60,7 @@ export interface BillRecord {
   customerPhone?: string
   amount: number
   serviceFee: number
+  feeMode?: 'ADD' | 'DEDUCT'
   paidVia: 'CASH'
   sourceWallet: 'GCASH' | 'MAYA' | 'MARIBANK'
   status: 'COMPLETED'
@@ -87,6 +88,7 @@ export function EwalletAudit(): React.JSX.Element {
   const [billCustomerPhone, setBillCustomerPhone] = useState('')
   const [billAmountStr, setBillAmountStr] = useState('')
   const [billFeeStr, setBillFeeStr] = useState(String(BILLER_PRESETS[0]?.defaultFee || 15))
+  const [billFeeMode, setBillFeeMode] = useState<'ADD' | 'DEDUCT'>('ADD')
   const [billCashReceivedStr, setBillCashReceivedStr] = useState('')
   const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA' | 'MARIBANK'>('GCASH')
   const [billReferenceNo, setBillReferenceNo] = useState('')
@@ -224,7 +226,7 @@ export function EwalletAudit(): React.JSX.Element {
       const fee = parseFloat(billFeeStr) || 0
       if (amt > 0) {
         const cashRec = parseFloat(billCashReceivedStr) || 0
-        const total = amt + fee
+        const total = billFeeMode === 'DEDUCT' ? Math.max(0, amt - fee) : amt + fee
         const changeVal = cashRec >= total ? cashRec - total : 0
         void window.api.phoneScanner?.updateCfd({
           status: 'ACTIVE',
@@ -252,7 +254,7 @@ export function EwalletAudit(): React.JSX.Element {
         }).catch(() => {})
       }
     }
-  }, [activeTab, selectedBiller, billAccountNo, billCustomerName, billCustomerPhone, billAmountStr, billFeeStr, billCashReceivedStr, billSourceWallet])
+  }, [activeTab, selectedBiller, billAccountNo, billCustomerName, billCustomerPhone, billAmountStr, billFeeStr, billFeeMode, billCashReceivedStr, billSourceWallet])
 
   // Denomination calculations
   const actualCashC = useMemo(() => {
@@ -407,7 +409,7 @@ export function EwalletAudit(): React.JSX.Element {
     }
     const fee = parseFloat(billFeeStr) || 0
     const cashRec = parseFloat(billCashReceivedStr) || undefined
-    const totalDue = amt + fee
+    const totalDue = billFeeMode === 'DEDUCT' ? Math.max(0, amt - fee) : amt + fee
     const changeAmt = cashRec !== undefined && cashRec >= totalDue ? cashRec - totalDue : undefined
 
     const newTx: BillRecord = {
@@ -419,6 +421,7 @@ export function EwalletAudit(): React.JSX.Element {
       customerPhone: billCustomerPhone.trim(),
       amount: amt,
       serviceFee: fee,
+      feeMode: billFeeMode,
       paidVia: 'CASH',
       sourceWallet: billSourceWallet,
       status: 'COMPLETED',
@@ -490,6 +493,7 @@ export function EwalletAudit(): React.JSX.Element {
           customerPhone: tx.customerPhone,
           amount: tx.amount,
           serviceFee: tx.serviceFee,
+          feeMode: tx.feeMode,
           sourceWallet: tx.sourceWallet,
           createdAt: tx.createdAt,
           cashReceived: tx.cashReceived,
@@ -774,7 +778,10 @@ export function EwalletAudit(): React.JSX.Element {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setType('CASH_IN')}
+                  onClick={() => {
+                    setType('CASH_IN')
+                    setFeeCollectedVia('CASH')
+                  }}
                   className={`flex flex-col items-center justify-center py-2.5 rounded-xl border font-bold text-xs transition ${
                     type === 'CASH_IN'
                       ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-md'
@@ -788,7 +795,10 @@ export function EwalletAudit(): React.JSX.Element {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setType('CASH_OUT')}
+                  onClick={() => {
+                    setType('CASH_OUT')
+                    setFeeCollectedVia('WALLET')
+                  }}
                   className={`flex flex-col items-center justify-center py-2.5 rounded-xl border font-bold text-xs transition ${
                     type === 'CASH_OUT'
                       ? 'border-amber-500 bg-amber-500/20 text-amber-300 shadow-md'
@@ -869,31 +879,67 @@ export function EwalletAudit(): React.JSX.Element {
 
               {/* Fee Collection Method */}
               <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-slate-400 font-medium">Service Fee Paid In:</span>
+                <span className="text-slate-400 font-medium">Service Fee Handling:</span>
                 <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line">
-                  <button
-                    type="button"
-                    onClick={() => setFeeCollectedVia('CASH')}
-                    className={`px-3 py-1 rounded text-xs font-semibold transition ${
-                      feeCollectedVia === 'CASH'
-                        ? 'bg-emerald-500/20 text-emerald-300'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Cash (In Drawer)
-                  </button>
                   <button
                     type="button"
                     onClick={() => setFeeCollectedVia('WALLET')}
                     className={`px-3 py-1 rounded text-xs font-semibold transition ${
                       feeCollectedVia === 'WALLET'
-                        ? 'bg-sky-500/20 text-sky-300'
+                        ? 'bg-sky-500/20 text-sky-300 ring-1 ring-sky-500/40'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    Deducted / In Wallet
+                    {type === 'CASH_OUT' ? '− Deduct from Amount (Default)' : '− Deduct from Load'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeeCollectedVia('CASH')}
+                    className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                      feeCollectedVia === 'CASH'
+                        ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {type === 'CASH_OUT' ? '+ Extra Cash Outside' : '+ Collect Extra Cash (Default)'}
                   </button>
                 </div>
+              </div>
+
+              {/* Live Cash / Load Calculation Banner */}
+              <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-brand-300">
+                    {type === 'CASH_OUT'
+                      ? feeCollectedVia === 'WALLET'
+                        ? 'Net Cash to Release to Customer (Deducted)'
+                        : 'Total Cash to Release'
+                      : feeCollectedVia === 'WALLET'
+                      ? 'Total Cash Collected (Net Load Sent)'
+                      : 'Total Cash to Collect (With Fee)'}
+                  </p>
+                  <p className="text-lg font-black text-white">
+                    ₱
+                    {(type === 'CASH_OUT'
+                      ? feeCollectedVia === 'WALLET'
+                        ? Math.max(0, (parseFloat(amountStr) || 0) - (parseFloat(feeStr) || 0))
+                        : parseFloat(amountStr) || 0
+                      : feeCollectedVia === 'WALLET'
+                      ? parseFloat(amountStr) || 0
+                      : (parseFloat(amountStr) || 0) + (parseFloat(feeStr) || 0)
+                    ).toFixed(2)}
+                  </p>
+                </div>
+                <span
+                  className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
+                    feeCollectedVia === 'WALLET'
+                      ? 'text-sky-300 bg-sky-500/15 border-sky-500/30'
+                      : 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30'
+                  }`}
+                >
+                  {feeCollectedVia === 'WALLET' ? 'Fee Deducted: -₱' : 'Fee Added: +₱'}
+                  {(parseFloat(feeStr) || 0).toFixed(2)}
+                </span>
               </div>
 
               {/* Customer & Reference Details (Optional) */}
@@ -983,6 +1029,22 @@ export function EwalletAudit(): React.JSX.Element {
                     ₱{((summary?.maya_out_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                   <p className="text-[10px] text-slate-400">{summary?.maya_out_count || 0} txn · Fee: ₱{((summary?.maya_out_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+
+                <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-orange-400">MariBank Cash In</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.maribank_in_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.maribank_in_count || 0} txn · Fee: ₱{((summary?.maribank_in_fees_c || 0) / 100).toFixed(2)}</p>
+                </div>
+
+                <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3">
+                  <p className="text-[11px] font-semibold text-orange-400">MariBank Cash Out</p>
+                  <p className="text-base font-bold text-white mt-0.5">
+                    ₱{((summary?.maribank_out_amount_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-400">{summary?.maribank_out_count || 0} txn · Fee: ₱{((summary?.maribank_out_fees_c || 0) / 100).toFixed(2)}</p>
                 </div>
               </div>
 
@@ -1246,16 +1308,58 @@ export function EwalletAudit(): React.JSX.Element {
                     </div>
                   </div>
 
+                  {/* Service Fee Handling Mode */}
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="text-slate-400 font-medium">Service Fee Handling:</span>
+                    <div className="flex rounded-lg bg-ink-950 p-1 border border-ink-line">
+                      <button
+                        type="button"
+                        onClick={() => setBillFeeMode('ADD')}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                          billFeeMode === 'ADD'
+                            ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        + Add to Bill (Default)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillFeeMode('DEDUCT')}
+                        className={`px-3 py-1 rounded text-xs font-semibold transition ${
+                          billFeeMode === 'DEDUCT'
+                            ? 'bg-sky-500/20 text-sky-300 ring-1 ring-sky-500/40'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        − Deduct from Amount
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Total to Collect */}
                   <div className="rounded-xl border border-brand-500/30 bg-brand-500/10 p-3 flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] uppercase font-bold text-brand-300">Total Customer Cash to Collect</p>
+                      <p className="text-[10px] uppercase font-bold text-brand-300">
+                        {billFeeMode === 'DEDUCT' ? 'Total Customer Cash (Fee Deducted)' : 'Total Customer Cash to Collect'}
+                      </p>
                       <p className="text-lg font-black text-white">
-                        ₱{((parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)).toFixed(2)}
+                        ₱
+                        {(billFeeMode === 'DEDUCT'
+                          ? Math.max(0, (parseFloat(billAmountStr) || 0) - (parseFloat(billFeeStr) || 0))
+                          : (parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)
+                        ).toFixed(2)}
                       </p>
                     </div>
-                    <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
-                      Fee: ₱{(parseFloat(billFeeStr) || 0).toFixed(2)}
+                    <span
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
+                        billFeeMode === 'DEDUCT'
+                          ? 'text-sky-300 bg-sky-500/15 border-sky-500/30'
+                          : 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30'
+                      }`}
+                    >
+                      {billFeeMode === 'DEDUCT' ? 'Fee Deducted: -₱' : 'Fee Added: +₱'}
+                      {(parseFloat(billFeeStr) || 0).toFixed(2)}
                     </span>
                   </div>
 
@@ -1279,7 +1383,14 @@ export function EwalletAudit(): React.JSX.Element {
                         Change (₱)
                       </label>
                       <div className="w-full rounded-xl border border-ink-line bg-ink-900/60 px-3 py-2 text-sm font-bold text-emerald-400 flex items-center h-[38px]">
-                        ₱{Math.max(0, (parseFloat(billCashReceivedStr) || 0) - ((parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0))).toFixed(2)}
+                        ₱
+                        {Math.max(
+                          0,
+                          (parseFloat(billCashReceivedStr) || 0) -
+                            (billFeeMode === 'DEDUCT'
+                              ? Math.max(0, (parseFloat(billAmountStr) || 0) - (parseFloat(billFeeStr) || 0))
+                              : (parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0))
+                        ).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -1303,7 +1414,12 @@ export function EwalletAudit(): React.JSX.Element {
                     className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 py-3 text-xs font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95 transition"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    Record &amp; Log Payment
+                    Record &amp; Log Payment (₱
+                    {(billFeeMode === 'DEDUCT'
+                      ? Math.max(0, (parseFloat(billAmountStr) || 0) - (parseFloat(billFeeStr) || 0))
+                      : (parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)
+                    ).toFixed(2)}
+                    )
                   </button>
                 </form>
               </div>

@@ -11,11 +11,13 @@ import {
   Sparkles,
   Package,
   Pin,
-  ArrowRight
+  ArrowRight,
+  Boxes,
+  BarChart3
 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SectionCard, StatusBadge, EmptyState } from '../components/ui/EmptyState'
-import type { Product, Sale, ReportSummary, Category } from '@shared/types'
+import type { Product, Sale, ReportSummary, Category, ItemSalesRow } from '@shared/types'
 import { money, moneyShort, shortDateTime } from '@shared/format'
 import { productExpirationStatus } from '@shared/expiration'
 import { useAuth } from '../stores/auth'
@@ -65,7 +67,7 @@ function StatCard({
 export function Dashboard(): React.JSX.Element | null {
   const { user, shiftOpen } = useAuth()
   const { settings } = useSettings()
-  const { setPage, setActiveCategoryFilter } = useNav()
+  const { setPage, setActiveCategoryFilter, setReportsTab } = useNav()
   const [summary, setSummary] = useState<ReportSummary | null>(null)
   const [recent, setRecent] = useState<Sale[]>([])
   const [alertProducts, setAlertProducts] = useState<Product[]>([])
@@ -75,6 +77,7 @@ export function Dashboard(): React.JSX.Element | null {
   const [expiryAlerts, setExpiryAlerts] = useState<{ expired: Product[]; soon: Product[] }>({ expired: [], soon: [] })
   const [categories, setCategories] = useState<Category[]>([])
   const [catProductCounts, setCatProductCounts] = useState<Record<number, number>>({})
+  const [topSelling, setTopSelling] = useState<ItemSalesRow[]>([])
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
@@ -88,16 +91,38 @@ export function Dashboard(): React.JSX.Element | null {
       try {
         const now = new Date()
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-        const [sales, prods, u, tx, cats] = await Promise.all([
+        const [sales, prods, u, tx, cats, itemSales] = await Promise.all([
           window.api.reports.sales({ from: today, to: today }),
           window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
           window.api.reports.utang(),
           window.api.transactions.list({ from: `${today} 00:00:00`, to: `${today} 23:59:59`, limit: 8 }),
-          window.api?.categories?.list ? window.api.categories.list().catch(() => []) : Promise.resolve([])
+          window.api?.categories?.list ? window.api.categories.list().catch(() => []) : Promise.resolve([]),
+          window.api?.reports?.itemSales
+            ? window.api.reports.itemSales({ from: today, to: today }).catch(() => ({
+                rows: [],
+                summary: {
+                  total_items_sold: 0,
+                  total_sales_c: 0,
+                  total_cost_c: 0,
+                  total_profit_c: 0,
+                  unique_products_count: 0
+                }
+              }))
+            : Promise.resolve({
+                rows: [],
+                summary: {
+                  total_items_sold: 0,
+                  total_sales_c: 0,
+                  total_cost_c: 0,
+                  total_profit_c: 0,
+                  unique_products_count: 0
+                }
+              })
         ])
         if (!alive || request !== generation) return
         setError(null)
         setSummary(sales.summary)
+        setTopSelling((itemSales?.rows || []).slice(0, 6))
         setRecent(tx.rows)
         setCategories(cats || [])
         const catMap: Record<number, number> = {}
@@ -235,6 +260,76 @@ export function Dashboard(): React.JSX.Element | null {
           iconClass="bg-amber-500/10 text-amber-400"
           className="animate-fadeInUp stagger-4"
         />
+      </div>
+
+      {/* Quick Launch Actions Bar */}
+      <div className="animate-fadeInUp rounded-2xl border border-ink-line bg-gradient-to-r from-ink-900 via-ink-850 to-ink-900 p-3.5 shadow-card">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              Quick Launch Actions
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button
+              type="button"
+              onClick={() => setPage('pos')}
+              className="group flex items-center justify-between rounded-xl border border-brand-500/40 bg-brand-500/10 px-3 py-2 text-xs font-bold text-brand-300 hover:bg-brand-500 hover:text-slate-950 transition-all active:scale-95 shadow-sm"
+              title="Open POS Cashier terminal for active ringing up"
+            >
+              <span className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4 shrink-0" />
+                <span>POS Cashier</span>
+              </span>
+              <span className="rounded bg-brand-500/20 group-hover:bg-slate-950/20 px-1 py-0.2 text-[10px] font-mono">
+                F1
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage('utang')}
+              className="group flex items-center justify-between rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-500 hover:text-white transition-all active:scale-95 shadow-sm"
+              title="View customer credit ledger and record collections"
+            >
+              <span className="flex items-center gap-2">
+                <Wallet className="h-4 w-4 shrink-0" />
+                <span>Utang Ledger</span>
+              </span>
+              <span className="rounded bg-rose-500/20 group-hover:bg-black/20 px-1 py-0.2 text-[10px] font-mono">
+                Credit
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage('inventory')}
+              className="group flex items-center justify-between rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs font-bold text-sky-300 hover:bg-sky-500 hover:text-slate-950 transition-all active:scale-95 shadow-sm"
+              title="Inspect product inventory, stock levels, and barcodes"
+            >
+              <span className="flex items-center gap-2">
+                <Boxes className="h-4 w-4 shrink-0" />
+                <span>Inventory</span>
+              </span>
+              <span className="rounded bg-sky-500/20 group-hover:bg-slate-950/20 px-1 py-0.2 text-[10px] font-mono">
+                Stock
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage('reports')}
+              className="group flex items-center justify-between rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 transition-all active:scale-95 shadow-sm"
+              title="View daily sales summary and print Z-Reading"
+            >
+              <span className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 shrink-0" />
+                <span>Reports &amp; Z-Read</span>
+              </span>
+              <span className="rounded bg-emerald-500/20 group-hover:bg-slate-950/20 px-1 py-0.2 text-[10px] font-mono">
+                Z-Read
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Pinned Bundles & Quick Categories Hub */}
@@ -393,68 +488,114 @@ export function Dashboard(): React.JSX.Element | null {
           )}
         </div>
 
-        <SectionCard title="RECENT TRANSACTIONS" action={<span className="text-xs text-slate-500">{recent.length} shown</span>}>
-          {recent.length === 0 ? (
-            <EmptyState title="No transactions yet" message="Sales you make today will appear here." icon={<ShoppingCart className="h-7 w-7" />} />
-          ) : (
-            <div className="space-y-1">
-              {recent.map((s) => {
-                const isOpen = expandedId === s.id
-                const toggle = () => setExpandedId(isOpen ? null : s.id)
-                const itemSummary = s.items.map((i) => `${i.product_name} ×${i.qty}`).join(', ')
-                return (
-                  <div key={s.id} className="rounded-lg border border-ink-line overflow-hidden">
-                    {/* Header row — clickable */}
-                    <button
-                      onClick={toggle}
-                      className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-ink-700 transition-colors"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-200">{s.transaction_no}</p>
-                        <p className="truncate text-xs text-slate-500">
-                          {s.cashier_name} · {shortDateTime(s.created_at)}
-                          {!isOpen && <span className="text-slate-600"> — {itemSummary}</span>}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-sm font-bold text-white">{moneyShort(s.total_c)}</span>
-                        <StatusBadge status={s.status} />
-                        {isOpen
-                          ? <ChevronUp className="h-4 w-4 text-slate-500" />
-                          : <ChevronDown className="h-4 w-4 text-slate-500" />}
-                      </div>
-                    </button>
-                    {/* Expanded item list */}
-                    {isOpen && (
-                      <div className="border-t border-ink-line bg-ink-800 px-3 py-2 space-y-1">
-                        {s.items.map((i) => (
-                          <div key={i.id} className="flex justify-between text-xs">
-                            <span className="text-slate-300">
-                              {i.product_name}{' '}
-                              <span className="text-slate-500">×{i.qty} {i.unit_name}</span>
-                              {i.refunded_qty_base > 0 && (
-                                <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>
-                              )}
-                            </span>
-                            <span className="font-medium text-slate-200">{money(i.subtotal_c)}</span>
-                          </div>
-                        ))}
-                        <div className="mt-1 pt-1 border-t border-ink-line flex justify-between text-xs">
-                          {s.discount_c > 0 && (
-                            <span className="text-slate-500">Discount: -{money(s.discount_c)}</span>
-                          )}
-                          <span className="ml-auto text-slate-400">
-                            {s.payments.map((p) => p.method).join(' + ')}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+        <div className="space-y-4">
+          <SectionCard
+            title="TODAY'S TOP SELLING ITEMS"
+            action={
+              <button
+                type="button"
+                onClick={() => {
+                  setReportsTab('ITEMS')
+                  setPage('reports')
+                }}
+                className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1 transition-colors"
+                title="Open comprehensive Sales by Item report"
+              >
+                <span>View All Item Sales</span>
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            }
+          >
+            {(topSelling || []).length === 0 ? (
+              <p className="text-sm text-slate-400">No items sold yet today.</p>
+            ) : (
+              <div className="space-y-2">
+                {(topSelling || []).map((it, idx) => (
+                  <div
+                    key={`${it.product_id ?? 'custom'}-${it.product_name}-${idx}`}
+                    className="flex items-center justify-between gap-3 p-1.5 rounded-lg hover:bg-ink-800 transition-colors"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-brand-500/10 text-brand-400 text-[11px] font-bold">
+                        #{idx + 1}
+                      </span>
+                      <span className="truncate text-sm font-medium text-slate-200">{it.product_name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
+                      <span className="text-slate-300 font-bold">
+                        {it.total_qty.toLocaleString()} <span className="text-slate-500 font-normal">{it.unit_name}</span>
+                      </span>
+                      <span className="text-emerald-400 font-bold">{money(it.total_sales_c)}</span>
+                    </div>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </SectionCard>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+
+          <SectionCard title="RECENT TRANSACTIONS" action={<span className="text-xs text-slate-500">{recent.length} shown</span>}>
+            {recent.length === 0 ? (
+              <EmptyState title="No transactions yet" message="Sales you make today will appear here." icon={<ShoppingCart className="h-7 w-7" />} />
+            ) : (
+              <div className="space-y-1">
+                {recent.map((s) => {
+                  const isOpen = expandedId === s.id
+                  const toggle = () => setExpandedId(isOpen ? null : s.id)
+                  const itemSummary = s.items.map((i) => `${i.product_name} ×${i.qty}`).join(', ')
+                  return (
+                    <div key={s.id} className="rounded-lg border border-ink-line overflow-hidden">
+                      {/* Header row — clickable */}
+                      <button
+                        onClick={toggle}
+                        className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-ink-700 transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-slate-200">{s.transaction_no}</p>
+                          <p className="truncate text-xs text-slate-500">
+                            {s.cashier_name} · {shortDateTime(s.created_at)}
+                            {!isOpen && <span className="text-slate-600"> — {itemSummary}</span>}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-sm font-bold text-white">{moneyShort(s.total_c)}</span>
+                          <StatusBadge status={s.status} />
+                          {isOpen
+                            ? <ChevronUp className="h-4 w-4 text-slate-500" />
+                            : <ChevronDown className="h-4 w-4 text-slate-500" />}
+                        </div>
+                      </button>
+                      {/* Expanded item list */}
+                      {isOpen && (
+                        <div className="border-t border-ink-line bg-ink-800 px-3 py-2 space-y-1">
+                          {s.items.map((i) => (
+                            <div key={i.id} className="flex justify-between text-xs">
+                              <span className="text-slate-300">
+                                {i.product_name}{' '}
+                                <span className="text-slate-500">×{i.qty} {i.unit_name}</span>
+                                {i.refunded_qty_base > 0 && (
+                                  <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>
+                                )}
+                              </span>
+                              <span className="font-medium text-slate-200">{money(i.subtotal_c)}</span>
+                            </div>
+                          ))}
+                          <div className="mt-1 pt-1 border-t border-ink-line flex justify-between text-xs">
+                            {s.discount_c > 0 && (
+                              <span className="text-slate-500">Discount: -{money(s.discount_c)}</span>
+                            )}
+                            <span className="ml-auto text-slate-400">
+                              {s.payments.map((p) => p.method).join(' + ')}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </SectionCard>
+        </div>
       </div>
     </div>
   )

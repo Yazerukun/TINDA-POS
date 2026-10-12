@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v1.0.94-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.0.6-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-449_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-492_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,24 @@
 
 <br />
 
-[⚡ Fast Feature Patch v1.0.94](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Feature-Patch-1.0.94.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v1.0.94 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Setup-1.0.94.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.94/TindaPOS-Portable-1.0.94.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.0.6](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Feature-Patch-2.0.6.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.6 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Setup-2.0.6.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Portable-2.0.6.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item Sales Analytics & Attendance/Payroll Edition)
+
+> **Wholesale/Retail Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`F1` Search · `F2` Qty Commit · `F3` Remove · `Ctrl+S` Post), Item-by-Item Sales Breakdown & Margin Analytics, Cashier Attendance & Payroll Hub, Credit Limits, Expiry Date Tracking, and Physical Stock Take.**
+
+- 🚚 **Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`PurchaseInvoiceModal.tsx`)**:
+  - Dedicated wholesale/retail **Purchase Invoice** module in Inventory & Catalog (`Receipt No.`, `Invoice No. / Trans #`, `Supplier` & `Address`, `Invoice Date`, `Paid` checkbox, `Terms (Days)`, and `Memo / Delivery Notes`).
+  - Ergonomic **Fast Item Entry Bar**: press `F1` to search/scan barcode, pick unit (`Box`/`Case`/`Pcs` with automatic base-unit multiplier), adjust supplier unit cost, and press `F2` or `Enter` in the Quantity box to immediately add to the invoice table.
+  - Full financial summary (`Gross Total`, `Discount (₱)`, `Net Payable`) and 1-tap `Post & Update Stocks (Ctrl+S)` that atomically increments product stock, updates catalog purchase costs, and logs full receiving history.
+- 📊 **Item-by-Item Sales Breakdown & Profit Margin Analytics (`Reports.tsx`)**:
+  - New **Item Sales** tab in Reports showing per-item quantity sold, gross revenue, cost of goods sold (COGS), net profit, and margin % with search/category filtering and 1-tap CSV export.
+- ⏱️ **Cashier Attendance & Automated Payroll Hub (`Shifts.tsx`)**:
+  - Time-In / Time-Out shift attendance tracking, hourly wage & overtime calculation, and printable payroll summaries.
+- 🛡️ **Credit Limits, Expiry Alerts & Physical Stock Take (`StockTakeModal.tsx`)**:
+  - Per-customer credit limit (`credit_limit_c`) warnings and guards, product expiry date (`expiry_date`) tracking, and batch Physical Stock Take reconciliation.
 
 ## ✨ What's New in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
 

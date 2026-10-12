@@ -575,18 +575,28 @@ export function Handbook(): React.JSX.Element {
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-emerald-400">F3</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Quick Calculator &amp; Sukli</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Quick Calculator &amp; Change Assistant</td>
                   <td className="px-4 py-2.5 text-slate-400">Open cashier calculator, percentage tool, and customer change assistant</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F4</td>
-                  <td className="px-4 py-2.5 font-semibold text-white">Custom Discount</td>
-                  <td className="px-4 py-2.5 text-slate-400">Apply custom peso discount to current cart</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Cart Discounts</td>
+                  <td className="px-4 py-2.5 text-slate-400">Focus custom discount (press again or Shift+F4 for Senior/PWD 20% dialog)</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-brand-300">F6</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Select Customer / Suki</td>
+                  <td className="px-4 py-2.5 text-slate-400">Assign customer or credit borrower with keyboard arrow navigation</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2.5 font-mono font-bold text-rose-400">F7</td>
+                  <td className="px-4 py-2.5 font-semibold text-white">Store Petty Cash Expense</td>
+                  <td className="px-4 py-2.5 text-slate-400">Record cash-out store operating expense directly from counter</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-amber-300">F8</td>
                   <td className="px-4 py-2.5 font-semibold text-white">Hold / Resume Order</td>
-                  <td className="px-4 py-2.5 text-slate-400">Suspend order to serve next customer in queue</td>
+                  <td className="px-4 py-2.5 text-slate-400">Suspend order to serve next customer in queue (or Shift+F8 to resume)</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-bold text-emerald-400">F9</td>

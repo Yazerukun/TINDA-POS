@@ -19,6 +19,7 @@ import type {
   Product,
   ProductInput,
   Purchase,
+  CreatePurchaseInput,
   Refund,
   ReportSummary,
   SalesReportRow,
@@ -295,6 +296,12 @@ export interface TindaApi {
     purchases: (id: number) => Promise<Purchase[]>
   }
 
+  purchases: {
+    list: (opts?: { supplier_id?: number; from?: string; to?: string; limit?: number; offset?: number }) => Promise<{ rows: Purchase[]; total: number }>
+    get: (id: number) => Promise<Purchase>
+    create: (input: CreatePurchaseInput) => Promise<Purchase>
+  }
+
   customers: {
     list: (opts?: { search?: string; status?: string; limit?: number; offset?: number }) => Promise<{ rows: Customer[]; total: number }>
     get: (id: number) => Promise<Customer>
@@ -393,6 +400,7 @@ export interface TindaApi {
       summary: ReportSummary
       chart: { label: string; total_c: number; profit_c: number }[]
     }>
+    itemSales: (opts?: { from?: string; to?: string; category_id?: number; search?: string }) => Promise<import('./types').ItemSalesReport>
     inventory: () => Promise<{
       rows: (Product & { inventory_value_c: number; total_cost_c: number })[]
       summary: { total_units: number; inventory_value_c: number; low_stock: number; out_of_stock: number }
@@ -403,7 +411,7 @@ export interface TindaApi {
       summary: ReportSummary
     }>
     shifts: (opts?: { from?: string; to?: string }) => Promise<{ rows: Shift[]; summary: ReportSummary }>
-    exportCsv: (kind: 'SALES' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS', opts?: { from?: string; to?: string }) => Promise<ExportResult>
+    exportCsv: (kind: 'SALES' | 'ITEMS' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS', opts?: { from?: string; to?: string; category_id?: number; search?: string }) => Promise<ExportResult>
     xRead: () => Promise<import('./types').ReadReport>
     printXRead: () => Promise<PrintResult & { report: import('./types').ReadReport }>
     finalizeZ: (input: { actual_cash_c: number; note?: string }) => Promise<import('./types').ZRead>

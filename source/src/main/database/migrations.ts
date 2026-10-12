@@ -84,6 +84,32 @@ export function ensureSchemaColumns(db: Database.Database): void {
       CREATE INDEX IF NOT EXISTS idx_product_recipes_parent ON product_recipes(parent_product_id);
       CREATE INDEX IF NOT EXISTS idx_product_recipes_component ON product_recipes(component_product_id);
     `)
+
+    const purchCols = new Set(
+      (db.prepare("PRAGMA table_info('purchases')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (purchCols.size > 0) {
+      if (!purchCols.has('invoice_no')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN invoice_no TEXT')
+      }
+      if (!purchCols.has('receipt_no')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN receipt_no TEXT')
+      }
+      if (!purchCols.has('is_paid')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN is_paid INTEGER NOT NULL DEFAULT 1')
+      }
+      if (!purchCols.has('terms_days')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN terms_days INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!purchCols.has('discount_c')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
+      }
+      if (!purchCols.has('net_total_c')) {
+        db.exec('ALTER TABLE purchases ADD COLUMN net_total_c INTEGER NOT NULL DEFAULT 0')
+      }
+      db.exec('CREATE INDEX IF NOT EXISTS idx_purchases_invoice_no ON purchases(invoice_no)')
+      db.exec('CREATE INDEX IF NOT EXISTS idx_purchases_receipt_no ON purchases(receipt_no)')
+    }
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }

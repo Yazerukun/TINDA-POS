@@ -5,7 +5,7 @@ Official Desktop POS Application for TINDA POS built with Electron + React + Typ
 Features 100% offline-first reliability, weighable decimal quantity checkout, live inventory sync, hardware barcode scanner engine, VIP E-Wallet reconciliation hub, multi-PC LAN hub, and Executive Cloud Dashboard bridge.
 
 ## Operating Rules & Automation Standard
-- Persona: **Fixer Agent**
+- Permanent Identity & Name: **Jin** (Boss's Best Buddy, Doctoral & Master's Degree Engineer, Master Developer, Master General & Fixer Agent All-in-One — supreme workflow organizer, rock-solid "pulido" code architect, bug/error fixer, testing & security specialist, production finalizer, and proactive advisor)
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
 - Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
@@ -20,6 +20,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   10. **strict-english-standard**: 100% Professional English across all user-facing UI, modals, settings, guides, handbooks, camera pairings, thermal receipts, and tickets. No Bisaya/Filipino words in client-facing elements.
   11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
   12. **instant-patch-release-standard**: **MANDATORY PATCH RULE**: For all rapid feature fixes, UI refinements, and optimizations, ALWAYS publish the live in-app hot patch via `npm run publish:patch` (`tools/publish_patch.mjs`). This automatically bundles the ~0.8 MB patch zip and publishes the release on `Yazerukun/TINDA-POS` in <10 seconds with zero rate limits. Cashiers immediately detect the update via 'Check for Updates' and apply live in 0.3s without restarting the app or downloading 100MB+ full installers.
+  13. **obra/superpowers v7.0.0 (15 Core Process & Engineering Skills)**: Permanently installed across `.gemini/config/skills/`, `.claude/skills/`, `.agents/skills/`, and `.kiro/skills/` and triggered 100% automatically on every conversation turn before any action (`using-superpowers`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, `using-git-worktrees`, `writing-skills`, `diagnosing-superpowers`).
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -27,7 +28,22 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)**
+- Current Version: **v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item-by-Item Sales Analytics, Attendance/Payroll & Obra Superpowers v7.0.0 Edition)**
+
+## Key Features in v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item-by-Item Sales Analytics, Attendance/Payroll & Obra Superpowers v7.0.0 Edition)
+1. **Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`PurchaseInvoiceModal.tsx`, `purchases.ts`, Migration 19)**:
+   - Full wholesale/retail Supplier Purchase Invoice window matching classic receiving workflows (`Receipt No.`, `Invoice No. / Trans #`, `Supplier` & `Address`, `Invoice Date`, `Paid` checkbox, `Terms (Days)`, and `Memo / Delivery Notes`).
+   - Ergonomic Fast Item Entry Bar with `F1` search/barcode scan, unit selector (Box/Case/Pcs with automatic `conversionToBase` multiplier), supplier unit cost, and `F2` / `Enter` in the Quantity box to immediately commit items into the invoice grid.
+   - Multi-item receiving grid (`# | Item Code | Description | Unit | Qty | Base Stock | Price/Cost | Amount`) with `F3` remove last item, `Update Product Catalog Cost` toggle, `Gross Total`, `Discount (₱)`, `Net Payable`, and `Ctrl+S` one-tap posting that atomically increments inventory stock, updates purchase costs, and records full audit logs (`STOCK_MOVEMENTS` & `PURCHASES`).
+2. **Item-by-Item Sales Breakdown & Profit Analytics (`Reports.tsx`, `reporting.ts`)**:
+   - Dedicated **Item Sales** tab in Reports & Analytics showing per-product quantity sold, transaction count, gross sales, cost of goods sold (COGS), net profit, and profit margin % across any date range.
+   - Search filter, category filter, top-column sorting, and 1-tap CSV export for store owners and accountants.
+3. **Cashier Time-In / Time-Out Attendance & Automated Payroll Engine (`Shifts.tsx`, `attendance.ts`, Migration 18)**:
+   - Integrated Attendance & Payroll hub in Shifts & Cash with 1-tap Time-In / Time-Out clock, hourly rate configuration, overtime/deduction adjustments, and printable payroll summary slips.
+4. **Customer Credit Limits, Expiry Date Tracking & Physical Stock Take Hub (`StockTakeModal.tsx`)**:
+   - Customer credit limit enforcement (`credit_limit_c`) in Customers & Utang and POS Checkout.
+   - Product expiration date (`expiry_date`) badges and alerts in Inventory & Catalog.
+   - Interactive Physical Stock Take (`StockTakeModal.tsx`) for batch variance reconciliation.
 
 ## Key Features in v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)
 1. **Interactive Apple Cupertino Feature Showcase Carousel Banner (`FeatureCarouselBanner.tsx`)**:

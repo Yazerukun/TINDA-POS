@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { Purchase, PurchaseItem } from '@shared/types'
+import { adjustStock } from './products'
 
 export function getPurchase(db: Database.Database, id: number): Purchase {
   const row = db
@@ -12,7 +13,15 @@ export function getPurchase(db: Database.Database, id: number): Purchase {
     )
     .get(id) as Record<string, unknown> | undefined
   if (!row) throw new Error('Purchase not found.')
-  const items = db.prepare('SELECT * FROM purchase_items WHERE purchase_id = ? ORDER BY id').all(id) as PurchaseItem[]
+  const items = db
+    .prepare(
+      `SELECT pi.*, COALESCE(pr.name, 'Unknown') AS product_name, COALESCE(pr.barcode, '') AS product_barcode, COALESCE(pr.sku, '') AS product_sku
+       FROM purchase_items pi
+       LEFT JOIN products pr ON pr.id = pi.product_id
+       WHERE pi.purchase_id = ?
+       ORDER BY pi.id`
+    )
+    .all(id) as PurchaseItem[]
   return {
     id: row.id as number,
     purchase_no: row.purchase_no as string,
@@ -20,6 +29,12 @@ export function getPurchase(db: Database.Database, id: number): Purchase {
     supplier_name: (row.supplier_name as string) || '—',
     purchase_date: row.purchase_date as string,
     reference: (row.reference as string | null) ?? null,
+    invoice_no: (row.invoice_no as string | null) ?? null,
+    receipt_no: (row.receipt_no as string | null) ?? null,
+    is_paid: row.is_paid !== undefined ? Boolean(row.is_paid) : true,
+    terms_days: (row.terms_days as number) ?? 0,
+    discount_c: (row.discount_c as number) ?? 0,
+    net_total_c: (row.net_total_c as number) ?? (row.total_c as number),
     total_c: row.total_c as number,
     notes: (row.notes as string | null) ?? null,
     user_id: row.user_id as number,
@@ -47,22 +62,52 @@ export function createPurchase(
     supplier_id: number
     purchase_date: string
     reference?: string | null
+    invoice_no?: string | null
+    receipt_no?: string | null
+    is_paid?: boolean
+    terms_days?: number
+    discount_c?: number
     notes?: string | null
     user_id: number
+    update_product_costs?: boolean
     items: { product_id: number; unit_name: string; qty: number; qty_base: number; unit_cost_c: number; subtotal_c: number }[]
   }
 ): Purchase {
   if (!input.supplier_id) throw new Error('Supplier is required.')
-  if (input.items.length === 0) throw new Error('Purchase must have at least one item.')
-  const total = input.items.reduce((s, i) => s + i.subtotal_c, 0)
+  if (!input.items || input.items.length === 0) throw new Error('Purchase must have at least one item.')
+  for (const it of input.items) {
+    if (it.qty <= 0) throw new Error('Quantity must be greater than zero.')
+    if (it.unit_cost_c < 0) throw new Error('Unit cost cannot be negative.')
+  }
+  const grossTotal = input.items.reduce((s, i) => s + i.subtotal_c, 0)
+  const discount = Math.max(0, input.discount_c || 0)
+  const netTotal = Math.max(0, grossTotal - discount)
   const no = nextPurchaseNo(db)
+  const ref = input.invoice_no || input.receipt_no || input.reference || null
+
   const txn = db.transaction(() => {
     const info = db
       .prepare(
-        `INSERT INTO purchases (purchase_no, supplier_id, purchase_date, reference, total_c, notes, user_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO purchases (
+           purchase_no, supplier_id, purchase_date, reference, invoice_no, receipt_no,
+           is_paid, terms_days, discount_c, total_c, net_total_c, notes, user_id
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(no, input.supplier_id, input.purchase_date, input.reference ?? null, total, input.notes ?? null, input.user_id)
+      .run(
+        no,
+        input.supplier_id,
+        input.purchase_date,
+        ref,
+        input.invoice_no ?? null,
+        input.receipt_no ?? null,
+        input.is_paid !== false ? 1 : 0,
+        input.terms_days ?? 0,
+        discount,
+        grossTotal,
+        netTotal,
+        input.notes ?? null,
+        input.user_id
+      )
     const purchaseId = Number(info.lastInsertRowid)
     const stmt = db.prepare(
       `INSERT INTO purchase_items (purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, subtotal_c)
@@ -70,6 +115,35 @@ export function createPurchase(
     )
     for (const it of input.items) {
       stmt.run(purchaseId, it.product_id, it.unit_name, it.qty, it.qty_base, it.unit_cost_c, it.subtotal_c)
+
+      // Atomic stock increment and receiving movement record
+      adjustStock(
+        db,
+        it.product_id,
+        it.qty_base,
+        'PURCHASE',
+        `Purchase Invoice ${input.invoice_no || input.receipt_no || no}`.trim(),
+        input.user_id,
+        input.invoice_no || input.receipt_no || no,
+        {
+          source: 'PURCHASE',
+          supplier_id: input.supplier_id,
+          received_unit: it.unit_name,
+          received_quantity: it.qty,
+          unit_cost_c: it.unit_cost_c,
+          notes: input.notes ?? null
+        }
+      )
+
+      // Optionally update catalog product purchase cost
+      if (input.update_product_costs) {
+        const baseMultiplier = it.qty > 0 ? it.qty_base / it.qty : 1
+        const baseCostC = Math.round(it.unit_cost_c / baseMultiplier)
+        db.prepare(`UPDATE products SET purchase_cost_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
+          baseCostC,
+          it.product_id
+        )
+      }
     }
     return purchaseId
   })
@@ -116,12 +190,26 @@ export function listPurchases(
       supplier_name: (r.supplier_name as string) || '—',
       purchase_date: r.purchase_date as string,
       reference: (r.reference as string | null) ?? null,
+      invoice_no: (r.invoice_no as string | null) ?? null,
+      receipt_no: (r.receipt_no as string | null) ?? null,
+      is_paid: r.is_paid !== undefined ? Boolean(r.is_paid) : true,
+      terms_days: (r.terms_days as number) ?? 0,
+      discount_c: (r.discount_c as number) ?? 0,
+      net_total_c: (r.net_total_c as number) ?? (r.total_c as number),
       total_c: r.total_c as number,
       notes: (r.notes as string | null) ?? null,
       user_id: r.user_id as number,
       user_name: r.user_name as string,
       created_at: r.created_at as string,
-      items: db.prepare('SELECT * FROM purchase_items WHERE purchase_id = ? ORDER BY id').all(r.id as number) as PurchaseItem[]
+      items: db
+        .prepare(
+          `SELECT pi.*, COALESCE(pr.name, 'Unknown') AS product_name, COALESCE(pr.barcode, '') AS product_barcode, COALESCE(pr.sku, '') AS product_sku
+           FROM purchase_items pi
+           LEFT JOIN products pr ON pr.id = pi.product_id
+           WHERE pi.purchase_id = ?
+           ORDER BY pi.id`
+        )
+        .all(r.id as number) as PurchaseItem[]
     })),
     total
   }

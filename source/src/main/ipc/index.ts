@@ -505,6 +505,24 @@ handle('suppliers:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) 
 handle('suppliers:products', (_e: IpcMainInvokeEvent, id: number) => prodRepo.listProductsBySupplier(db(), id))
 handle('suppliers:purchases', (_e: IpcMainInvokeEvent, id: number) => purchRepo.listPurchases(db(), { supplier_id: id }).rows)
 
+// ---- Purchases / Purchase Invoices ----
+handle('purchases:list', (_e: IpcMainInvokeEvent, opts?: unknown) => purchRepo.listPurchases(db(), (opts ?? {}) as object))
+handle('purchases:get', (_e: IpcMainInvokeEvent, id: number) => purchRepo.getPurchase(db(), id))
+handle('purchases:create', (_e: IpcMainInvokeEvent, input: unknown) => {
+  const u = user()
+  const payload = input as Parameters<typeof purchRepo.createPurchase>[1]
+  const p = purchRepo.createPurchase(db(), { ...payload, user_id: u.id })
+  auditRepo.audit(db(), {
+    action: 'PURCHASE_CREATE',
+    user_id: u.id,
+    entity_type: 'PURCHASE',
+    entity_id: p.id,
+    new_value: `${p.purchase_no} (Supplier: ${p.supplier_name}, Total: ${p.total_c})`
+  })
+  emitInventoryChanged({ reason: 'PURCHASE', product_ids: p.items.map((i) => i.product_id) })
+  return p
+})
+
 // ---- Customers ----
 handle('customers:list', (_e: IpcMainInvokeEvent, opts?: unknown) => custRepo.listCustomers(db(), (opts ?? {}) as object))
 handle('customers:get', (_e: IpcMainInvokeEvent, id: number) => custRepo.getCustomer(db(), id))
@@ -794,6 +812,18 @@ handle('reports:sales', (_e: IpcMainInvokeEvent, opts: unknown) => {
     }
   }
   return reportSvc.salesReport(o)
+})
+handle('reports:itemSales', (_e: IpcMainInvokeEvent, opts: unknown) => {
+  sessionSvc.requirePermission('reports:view')
+  const isVip = licenseService.getStatus().isVip
+  const o = { ...((opts ?? {}) as { from?: string; to?: string; category_id?: number; search?: string }) }
+  if (!isVip && process.env.NODE_ENV !== 'test') {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString().slice(0, 10)
+    if (o.from && o.from < sevenDaysAgo) {
+      o.from = sevenDaysAgo
+    }
+  }
+  return reportSvc.itemSalesReport(o)
 })
 handle('reports:inventory', () => {
   sessionSvc.requirePermission('reports:view')

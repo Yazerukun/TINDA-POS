@@ -1,27 +1,25 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.0.1 (MAJOR RELEASE: RESILIENT POS IMMUNITY, RUSH ID STUDIO & CUPERTINO SHOWCASE CAROUSEL EDITION)
+- v2.0.6 (SUPPLIER PURCHASE INVOICE RECEIVING HUB, ITEM-BY-ITEM SALES ANALYTICS, ATTENDANCE/PAYROLL & OBRA SUPERPOWERS v7.0.0 EDITION)
 
 TARGET:
-- v2.0.2 (NEXT RELEASE CYCLE)
+- v2.0.7 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Full Windows Binary Compilation & Release Publishing
+- Live Feature Patch & Source Release Publishing
 
 COMPLETED:
-- Stage 01: TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer.
-- Stage 02: Real-time Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs.
-- Stage 03: Utang Notes, Collection Due Date Reminders & Proactive Notifications.
-- Stage 04: Resilient Cashier Quick Calculator & Universal F3 Shortcut Harmony.
-- Stage 05: Printer Studio Customization Dual-Store Persistence & Resilient Settings Repair.
-- Stage 06: Checkout Immunity against "Product not found" errors & Rush ID Packages added.
-- Stage 07: Apple Cupertino Feature Showcase Carousel Banner (`FeatureCarouselBanner.tsx`).
-- Stage 08: Quality Gates passed: Vitest (489/489 tests in 75 suites), Typecheck (0 errors across Node & Web).
-- Stage 09: Full Desktop NSIS & Portable compilation + Feature Patch delivery.
+- Stage 01: Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`PurchaseInvoiceModal.tsx`, `purchases.ts`, Migration 19).
+- Stage 02: Item-by-Item Sales Breakdown, Net Profit & Margin % Analytics + CSV Export (`Reports.tsx`, `reporting.ts`).
+- Stage 03: Cashier Time-In/Time-Out Attendance & Automated Payroll Engine (`Shifts.tsx`, `attendance.ts`, Migration 18).
+- Stage 04: Customer Credit Limits (`credit_limit_c`), Product Expiry Date Tracking (`expiry_date`), and Physical Stock Take Hub (`StockTakeModal.tsx`).
+- Stage 05: Quality Gates passed: Vitest (492/492 tests in 77 suites), Typecheck (0 errors across Node & Web).
+- Stage 06: Obra Superpowers v7.0.0 (15 skills) permanently integrated into Jin's 100% Automatic Powerhouse Stack.
 
 PENDING APPROVAL:
 - None (Approved by Owner).
 
 BLOCKERS:
 - None.
+

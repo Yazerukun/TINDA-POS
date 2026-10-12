@@ -140,3 +140,82 @@ export function utangReport() {
   const payments = db.prepare(`SELECT COALESCE(SUM(amount_c),0) AS s FROM credit_ledger WHERE entry_type = 'PAYMENT'`).get() as { s: number }
   return { rows, total_outstanding_c: total, payments_c: payments.s }
 }
+
+export function itemSalesReport(opts: { from?: string; to?: string; category_id?: number; search?: string } = {}) {
+  const db = getDb()
+  const from = opts.from ? `${opts.from} 00:00:00` : '1970-01-01 00:00:00'
+  const to = opts.to ? `${opts.to} 23:59:59` : '2099-12-31 23:59:59'
+  const whereClauses: string[] = [
+    "s.status != 'VOIDED'",
+    's.created_at >= ?',
+    's.created_at <= ?'
+  ]
+  const params: (string | number)[] = [from, to]
+
+  if (opts.category_id && opts.category_id > 0) {
+    whereClauses.push('p.category_id = ?')
+    params.push(opts.category_id)
+  }
+  if (opts.search && opts.search.trim()) {
+    const q = `%${opts.search.trim()}%`
+    whereClauses.push('(si.product_name LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ?)')
+    params.push(q, q, q)
+  }
+
+  const query = `
+    SELECT
+      si.product_id,
+      si.product_name,
+      si.unit_name,
+      COALESCE(c.name, 'General') AS category_name,
+      p.sku,
+      p.barcode,
+      COUNT(DISTINCT s.id) AS transaction_count,
+      SUM(si.qty) AS total_qty,
+      SUM(si.qty_base) AS total_qty_base,
+      SUM(si.subtotal_c) AS total_sales_c,
+      SUM(si.cost_base_c * si.qty_base) AS total_cost_c,
+      SUM(si.refunded_qty_base) AS refunded_qty
+    FROM sale_items si
+    JOIN sales s ON s.id = si.sale_id
+    LEFT JOIN products p ON p.id = si.product_id
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE ${whereClauses.join(' AND ')}
+    GROUP BY si.product_name, si.unit_name
+    ORDER BY total_sales_c DESC
+  `
+  const rawRows = db.prepare(query).all(...params) as Record<string, unknown>[]
+  const rows = rawRows.map((r) => {
+    const total_sales_c = Number(r.total_sales_c || 0)
+    const total_cost_c = Number(r.total_cost_c || 0)
+    const profit_c = total_sales_c - total_cost_c
+    const margin_pct = total_sales_c > 0 ? Math.round((profit_c / total_sales_c) * 1000) / 10 : 0
+    return {
+      product_id: r.product_id != null ? Number(r.product_id) : null,
+      product_name: String(r.product_name),
+      unit_name: String(r.unit_name || 'pc'),
+      category_name: String(r.category_name || 'General'),
+      sku: r.sku ? String(r.sku) : null,
+      barcode: r.barcode ? String(r.barcode) : null,
+      transaction_count: Number(r.transaction_count || 0),
+      total_qty: Number(r.total_qty || 0),
+      total_qty_base: Number(r.total_qty_base || 0),
+      total_sales_c,
+      total_cost_c,
+      profit_c,
+      margin_pct,
+      refunded_qty: Number(r.refunded_qty || 0)
+    }
+  })
+
+  return {
+    rows,
+    summary: {
+      total_items_sold: rows.reduce((acc, r) => acc + r.total_qty, 0),
+      total_sales_c: rows.reduce((acc, r) => acc + r.total_sales_c, 0),
+      total_cost_c: rows.reduce((acc, r) => acc + r.total_cost_c, 0),
+      total_profit_c: rows.reduce((acc, r) => acc + r.profit_c, 0),
+      unique_products_count: rows.length
+    }
+  }
+}

@@ -334,6 +334,12 @@ export interface Purchase {
   supplier_name: string
   purchase_date: string
   reference: string | null
+  invoice_no?: string | null
+  receipt_no?: string | null
+  is_paid?: boolean
+  terms_days?: number
+  discount_c?: number
+  net_total_c?: number
   total_c: number
   notes: string | null
   user_id: number
@@ -347,11 +353,34 @@ export interface PurchaseItem {
   purchase_id: number
   product_id: number
   product_name: string
+  product_sku?: string | null
+  product_barcode?: string | null
   unit_name: string
   qty: number
   qty_base: number
   unit_cost_c: number
   subtotal_c: number
+}
+
+export interface CreatePurchaseInput {
+  supplier_id: number
+  purchase_date: string
+  reference?: string | null
+  invoice_no?: string | null
+  receipt_no?: string | null
+  is_paid?: boolean
+  terms_days?: number
+  discount_c?: number
+  notes?: string | null
+  update_product_costs?: boolean
+  items: {
+    product_id: number
+    unit_name: string
+    qty: number
+    qty_base: number
+    unit_cost_c: number
+    subtotal_c: number
+  }[]
 }
 
 export type ShiftStatus = 'OPENED' | 'CLOSED'
@@ -640,6 +669,34 @@ export interface ReportSummary {
   net_profit_c?: number
   utang_sales_c?: number
   gross_sales_total_c?: number
+}
+
+export interface ItemSalesRow {
+  product_id: number | null
+  product_name: string
+  unit_name: string
+  category_name: string
+  sku: string | null
+  barcode: string | null
+  transaction_count: number
+  total_qty: number
+  total_qty_base: number
+  total_sales_c: number
+  total_cost_c: number
+  profit_c: number
+  margin_pct: number
+  refunded_qty: number
+}
+
+export interface ItemSalesReport {
+  rows: ItemSalesRow[]
+  summary: {
+    total_items_sold: number
+    total_sales_c: number
+    total_cost_c: number
+    total_profit_c: number
+    unique_products_count: number
+  }
 }
 
 export interface ExportResult {
