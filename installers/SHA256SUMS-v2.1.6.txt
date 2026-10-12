@@ -1,0 +1,5 @@
+57dbff16e868cdee1b6f57f8ec50fd67b52ad8a3f79e65cbb929d290703e5ce1  TindaPOS-Setup-2.1.6.exe
+f75de6b267641b71e366beaafc25658de4e4555d1f7de37974950cf195a11197  TindaPOS-Portable-2.1.6.exe
+7bca6859535957ade25605993efc8c48ec1437d29ddf88ed85e1da56b79e6085  TindaPOS-Setup-2.1.6.exe.blockmap
+bbf3c93d07621d6b1ed059e51c62c3db8098a98163d80477596c3f0913b7dda8  TindaPOS-Feature-Patch-2.1.6.zip
+28f1768bfefd2cc1c8bd9d11d43e6c42d5702e50866ec2a63f07450bb2200ced  latest.yml
