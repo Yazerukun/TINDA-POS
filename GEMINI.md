@@ -28,7 +28,20 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)**
+- Current Version: **v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)**
+
+## Key Features in v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)
+1. **1-Tap Mobile Phone Pairing & Auto-Connect Modal (`Settings.tsx`)**:
+   - Integrated a dedicated high-contrast QR Code pairing modal rendered with `@zxing/library` (`BrowserQRCodeSvgWriter`).
+   - Store owners and cashiers scan the QR code using any iPhone Camera or Android QR Scanner; it automatically opens `https://tinda-owner-dashboard.pages.dev/?sid=...&key=...&name=...` and pairs the store terminal with zero manual typing or credential entry.
+   - Added 1-click **"📋 Copy Setup Link for Messenger / SMS"** button to send direct pairing links to store owners.
+   - Added **"🌐 Open Pre-Paired on this PC"** button for instant one-click dashboard launch.
+2. **Autonomous Background Auto-Sync Engine (`cloudSync.ts`, `main/index.ts`)**:
+   - Added startup backfill timer (pushes recent sales after 4s grace period on app launch).
+   - Added continuous 3-minute recurring background sync loop so sales and shifts stream live to Cloudflare D1 without requiring cashier intervention or manual "Sync Now" button clicks.
+3. **Multi-Owner D1 Branch Resolution (`store_owners` table & `tinda-sync` worker)**:
+   - Added `store_owners` linking table supporting multi-account access per branch (e.g. `mary grace flor` and `adamgrace123` for Adamgrace Minimart).
+   - Fully resolved zero-branch and zero-sales visibility for Ma'am Grace.
 
 ## Key Features in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
 1. **CT221B Instant-Scan Barcode Geometry Upgrade (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:

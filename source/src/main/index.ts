@@ -118,6 +118,9 @@ app.whenReady().then(() => {
       const { createBackupSync, needsDailyBackup } = require('./repositories/backup') as typeof import('./repositories/backup')
       if (needsDailyBackup(database)) createBackupSync(database, 'AUTO')
     }
+    // Launch continuous background cloud sync loop (startup backfill + 3-min heartbeat)
+    const { startCloudSyncLoop } = require('./services/cloudSync') as typeof import('./services/cloudSync')
+    startCloudSyncLoop(database)
   } catch (e) {
     // Surface fatal DB errors; dialog box handled by renderer via integrity check.
     console.error('Database init failed:', e)

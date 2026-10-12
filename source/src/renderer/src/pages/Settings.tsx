@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Save,
   Store,
@@ -36,8 +36,12 @@ import {
   Wrench,
   FileText,
   Tag,
-  Sliders
+  Sliders,
+  QrCode,
+  Smartphone,
+  Share2
 } from 'lucide-react'
+import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
 import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel, autoDetectLabelPrinter } from '@shared/printer'
@@ -1876,6 +1880,7 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
   const [settings, setSettings] = useState<import('@shared/types').StoreSettings | null>(null)
   const [showKey, setShowKey] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
+  const [showPairingModal, setShowPairingModal] = useState(false)
 
   const loadStatus = async (): Promise<void> => {
     try {
@@ -1928,8 +1933,16 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
     toastSuccess('Copied to Clipboard', `${label} copied`)
   }
 
+  const getMagicPairingUrl = (): string => {
+    if (!settings?.cloud_store_id || !settings?.cloud_sync_key) return 'https://tinda-owner-dashboard.pages.dev/'
+    const sid = settings.cloud_store_id.trim().toLowerCase()
+    const key = settings.cloud_sync_key.trim()
+    const name = encodeURIComponent((settings.store_name || 'My Store').trim())
+    return `https://tinda-owner-dashboard.pages.dev/?sid=${sid}&key=${key}&name=${name}`
+  }
+
   const openOwnerWebsite = (): void => {
-    void window.api.app.openExternal('https://tinda-owner-dashboard.pages.dev/')
+    void window.api.app.openExternal(getMagicPairingUrl())
   }
 
   if (loading) {
@@ -2000,6 +2013,50 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
             </label>
           </div>
 
+          {/* 1-Tap Mobile Pairing Banner */}
+          <div className="bg-gradient-to-r from-sky-500/15 via-sky-600/10 to-indigo-500/15 border border-sky-500/30 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center text-xl">
+                📱
+              </div>
+              <div>
+                <div className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                  1-Tap Mobile Pairing & Auto-Connect
+                  <span className="badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px]">
+                    Frictionless Sync
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Scan the pairing QR code with your phone camera to instantly connect this terminal. Zero typing required!
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const url = getMagicPairingUrl()
+                  if (url) {
+                    navigator.clipboard.writeText(url)
+                    toastSuccess('Link Copied', 'Magic Setup Link copied! Send this to the store owner via Messenger or SMS.')
+                  }
+                }}
+                className="btn-ghost flex items-center gap-1.5 text-xs text-sky-300 border border-sky-500/30 hover:border-sky-500/60"
+                title="Copy Magic Setup Link"
+              >
+                <Copy className="w-3.5 h-3.5" /> Copy Setup Link
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPairingModal(true)}
+                className="btn-primary flex items-center gap-2 text-xs bg-sky-600 hover:bg-sky-500 border-0 text-white font-bold shadow-md shadow-sky-600/20"
+              >
+                <QrCode className="w-4 h-4" /> Pair Phone (QR Code)
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Store ID (Branch UUID)</label>
@@ -2022,7 +2079,7 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
                 )}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Enter this Store ID on your Owner Dashboard to pair this terminal.
+                Enter this Store ID on your Owner Dashboard to pair this terminal manually.
               </p>
             </div>
 
@@ -2098,8 +2155,16 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
 
               <button
                 type="button"
+                onClick={() => setShowPairingModal(true)}
+                className="btn-primary flex items-center gap-1.5 text-xs bg-sky-600 hover:bg-sky-500 border-0 text-white font-bold shadow-md shadow-sky-600/20"
+              >
+                <QrCode className="w-3.5 h-3.5" /> Pair Phone
+              </button>
+
+              <button
+                type="button"
                 onClick={openOwnerWebsite}
-                className="btn-primary flex items-center gap-2 text-xs bg-sky-600 hover:bg-sky-500 border-0 text-white"
+                className="btn-secondary flex items-center gap-2 text-xs text-slate-200 hover:text-white"
               >
                 <Globe className="w-3.5 h-3.5" /> Open Web Dashboard
               </button>
@@ -2109,6 +2174,13 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
       )}
 
       {showGuide && <CloudGuideModal onClose={() => setShowGuide(false)} />}
+      {showPairingModal && settings && (
+        <CloudPairingModal
+          settings={settings}
+          onClose={() => setShowPairingModal(false)}
+          onSyncNow={handleSyncNow}
+        />
+      )}
     </div>
   )
 }
@@ -2171,6 +2243,138 @@ function CloudGuideModal({ onClose }: { onClose: () => void }): React.JSX.Elemen
             <li>Paste the <strong>Store ID</strong> and <strong>Sync Key</strong> from this POS terminal.</li>
             <li>Enter your store branch name (e.g., Main Branch).</li>
             <li>Click <strong>Connect Branch</strong>. All completed sales, stock movements, and shift Z-reads will automatically stream live to your phone dashboard!</li>
+          </ol>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function CloudPairingModal({
+  settings,
+  onClose,
+  onSyncNow
+}: {
+  settings: import('@shared/types').StoreSettings
+  onClose: () => void
+  onSyncNow: () => Promise<void>
+}): React.JSX.Element {
+  const qrContainerRef = useRef<HTMLDivElement>(null)
+  const [copied, setCopied] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+
+  const sid = (settings.cloud_store_id || '').trim().toLowerCase()
+  const key = (settings.cloud_sync_key || '').trim()
+  const name = (settings.store_name || 'My Store').trim()
+  const magicUrl = `https://tinda-owner-dashboard.pages.dev/?sid=${encodeURIComponent(sid)}&key=${encodeURIComponent(key)}&name=${encodeURIComponent(name)}`
+
+  useEffect(() => {
+    if (qrContainerRef.current && magicUrl) {
+      try {
+        const writer = new BrowserQRCodeSvgWriter()
+        const svg = writer.write(magicUrl, 230, 230)
+        svg.setAttribute('style', 'display:block;border-radius:12px;background:#ffffff;padding:12px;')
+        qrContainerRef.current.replaceChildren(svg)
+      } catch (err) {
+        console.error('Failed to generate pairing QR code:', err)
+      }
+    }
+  }, [magicUrl])
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(magicUrl)
+    setCopied(true)
+    toastSuccess('Link Copied', 'Magic Setup Link copied! Send this to the owner via Messenger, Viber, or SMS.')
+    setTimeout(() => setCopied(false), 2500)
+  }
+
+  const handleOpenBrowser = () => {
+    void window.api.app.openExternal(magicUrl)
+  }
+
+  const handleTestSync = async () => {
+    setSyncing(true)
+    try {
+      await onSyncNow()
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="📱 1-Tap Mobile Pairing (QR Code)"
+      maxWidth="max-w-xl"
+      footer={
+        <div className="flex justify-between items-center w-full">
+          <button
+            type="button"
+            onClick={handleTestSync}
+            disabled={syncing}
+            className="btn-ghost text-xs flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Testing...' : 'Test Sync'}
+          </button>
+          <button type="button" onClick={onClose} className="btn-secondary text-xs">
+            Done
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        {/* Branch Info Strip */}
+        <div className="flex items-center justify-between p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl">
+          <div>
+            <div className="text-[11px] text-sky-400 font-semibold uppercase tracking-wider">Active Terminal Branch</div>
+            <div className="text-sm font-bold text-white mt-0.5">{name}</div>
+          </div>
+          <span className="badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs">
+            ✓ Ready to Pair
+          </span>
+        </div>
+
+        {/* QR Code Container */}
+        <div className="flex flex-col items-center justify-center p-4 bg-ink-950/80 rounded-2xl border border-ink-line">
+          <div ref={qrContainerRef} className="shadow-2xl rounded-xl overflow-hidden" />
+          <p className="text-xs text-slate-300 font-medium mt-3 text-center">
+            Point your iPhone camera or Android QR scanner at this code
+          </p>
+          <p className="text-[11px] text-slate-500 text-center mt-0.5 max-w-sm">
+            Automatically opens the owner dashboard and pairs this terminal with zero manual typing!
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="btn-secondary flex items-center justify-center gap-2 text-xs py-2.5"
+          >
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-sky-400" />}
+            {copied ? 'Link Copied to Clipboard!' : 'Copy Link for Messenger / SMS'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenBrowser}
+            className="btn-primary flex items-center justify-center gap-2 text-xs py-2.5 bg-sky-600 hover:bg-sky-500 border-0 text-white"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open Pre-Paired on this PC
+          </button>
+        </div>
+
+        {/* 3 Simple Steps */}
+        <div className="bg-ink-950/40 border border-ink-line/60 rounded-xl p-3.5 space-y-2">
+          <div className="text-xs font-bold text-slate-200">How 1-Tap Pairing Works:</div>
+          <ol className="list-decimal pl-4 space-y-1 text-[11px] text-slate-400">
+            <li>Open the built-in Camera app on your iPhone or Android phone.</li>
+            <li>Tap the banner link that pops up on your screen.</li>
+            <li>Sign in or create an owner account — your store connects instantly!</li>
           </ol>
         </div>
       </div>

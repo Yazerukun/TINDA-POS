@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.1.3 (CT221B BARCODE INSTANT-SCAN & HIGH-CONTRAST FONT EDITION — barHeight +120%, Consolas 900 weight, SVG stroke shield, ISO 15416 quietZone 10)
+- v2.1.4 (1-TAP QR CODE AUTO-PAIR & BACKGROUND AUTO-SYNC LOOP EDITION)
 
 TARGET:
-- v2.1.4 (NEXT RELEASE CYCLE)
+- v2.1.5 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Production Release — v2.1.3 Live Feature Patch
+- Production Release — v2.1.4 Live Feature Patch
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

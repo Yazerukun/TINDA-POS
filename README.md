@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,25 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.1.3](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Feature-Patch-2.1.3.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.3 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Setup-2.1.3.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Portable-2.1.3.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.1.4](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.4 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
+## ✨ What's New in v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)
+
+> **Frictionless Cloud Sync: 1-Tap Mobile QR Code Pairing, background startup auto-sync loop, multi-owner account support on Cloudflare D1, and 1-click magic setup links.**
+
+- 📱 **1-Tap Mobile QR Code Pairing (`Settings.tsx`, `App.tsx`, `LoginPage.tsx`)**:
+  - **Instant Phone Camera Auto-Pair**: Scan the high-contrast QR code on the POS screen using iPhone Camera or Android QR scanner to automatically launch and connect the owner dashboard without typing Store ID or Sync Key.
+  - **Magic Setup Link Generation**: 1-click "Copy Setup Link" copies a direct magic URL for sharing via Messenger, SMS, or Viber.
+  - **Pre-Paired PC Launch**: Instant "Open Pre-Paired on this PC" opens the dashboard in the default browser pre-configured.
+- 🔄 **Autonomous Background Auto-Sync Loop (`cloudSync.ts`, `main/index.ts`)**:
+  - **Startup Backfill (4s Grace)**: Automatically pushes up to 50 recent transactions right when the POS launches.
+  - **3-Minute Continuous Cycle**: Keeps owner dashboards updated live in real time without manual button clicks.
+- 👥 **Multi-Owner D1 Branch Resolution (`store_owners` Table & `tinda-sync` Worker)**:
+  - Enabled multi-account branch associations so owners logging in with alternate accounts (e.g., `mary grace flor` and `adamgrace123`) both seamlessly view and manage their branch.
+
+## ✨ Previous: What's New in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
 
 > **Thermal Print Head Calibration: +120% taller vertical barcode height for instant 1st-pass omnidirectional scanning, 900-weight bold tabular monospace font, and anti-hairline SVG stroke shield for deep black burns.**
 

@@ -294,3 +294,45 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
     return { ok: false, message: 'Connection failed: ' + ((err as Error)?.message || 'Network error') }
   }
 }
+
+let syncIntervalTimer: NodeJS.Timeout | null = null
+
+/**
+ * Starts continuous background auto-sync loop (every 3 minutes)
+ * and performs an automatic startup backfill after 4 seconds.
+ */
+export function startCloudSyncLoop(db: Database.Database): () => void {
+  if (syncIntervalTimer) {
+    clearInterval(syncIntervalTimer)
+    syncIntervalTimer = null
+  }
+
+  // Initial startup backfill after 4s grace period
+  const startupTimeout = setTimeout(() => {
+    try {
+      const creds = getSyncCredentials(db)
+      if (creds?.enabled) {
+        void syncNow(db).catch(() => {})
+      }
+    } catch {}
+  }, 4000)
+
+  // Continuous auto-sync every 3 minutes (180,000ms)
+  syncIntervalTimer = setInterval(() => {
+    try {
+      const creds = getSyncCredentials(db)
+      if (creds?.enabled) {
+        void syncNow(db).catch(() => {})
+      }
+    } catch {}
+  }, 180000)
+
+  return () => {
+    clearTimeout(startupTimeout)
+    if (syncIntervalTimer) {
+      clearInterval(syncIntervalTimer)
+      syncIntervalTimer = null
+    }
+  }
+}
+
