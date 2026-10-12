@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,23 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.1.2](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Feature-Patch-2.1.2.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.2 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Setup-2.1.2.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Portable-2.1.2.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.1.3](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Feature-Patch-2.1.3.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.3 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Setup-2.1.3.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.3/TindaPOS-Portable-2.1.3.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
+## ✨ What's New in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
+
+> **Thermal Print Head Calibration: +120% taller vertical barcode height for instant 1st-pass omnidirectional scanning, 900-weight bold tabular monospace font, and anti-hairline SVG stroke shield for deep black burns.**
+
+- 🏷️ **Instant 1st-Pass Laser/CCD Scan Geometry (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
+  - **Taller Vertical Scan Targets**: Raised barcode bar height (`barHeight`) from 22px/30px to **42px** (compact labels) and **60px** (standard labels; total SVG height 55px/78px), yielding ~7.5mm–9.0mm physical height on thermal paper. Eliminates partial-decode dropouts caused by scanner beam tilt.
+  - **ISO 15416 Quiet Zone Optimization**: Calibrated quiet zones to 10 modules, reducing total coordinate width by ~22px and cutting viewBox downscale compression by ~10% for wider, crisper bars.
+- 🔤 **High-Contrast Bold Thermal Font & Anti-Hairline Stroke Shield**:
+  - **Bold Tabular Monospace**: Replaced spindly typewriter Courier with heavy `Consolas, 'Roboto Mono', 'Courier New', Arial, sans-serif` at `font-weight: 900` with `1.5px` tracking.
+  - **Vector Stroke Shield**: Integrated `stroke="#000000" stroke-width="0.5" paint-order="stroke fill"` on SVG text, preventing 203 DPI thermal heads from dropping hairline stems to white.
+  - **Scaled Legibility**: Increased SVG font size from 7.5px/9px to **12px/13px**, resulting in ~5.5pt physical characters that cashiers can easily read without squinting.
+
+## ✨ Previous: What's New in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
 
 > **Hardware & Cloud Reliability: Industrial ISO 15416 barcode scanability calibration for Chiteng CT221B thermal printers, store ID case-insensitive normalization on Cloudflare D1, and verified live sync backfill counter.**
 

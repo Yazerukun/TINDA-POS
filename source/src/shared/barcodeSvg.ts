@@ -63,8 +63,8 @@ export function generateBarcodeSvg(
   const height = options.height ?? 50
   const includeText = options.includeText ?? true
   const barWidth = options.barWidth ?? 2.5   // CT221B minimum: 2.5px/module — thermal heads need ≥2.5px to burn distinct bars (default was 1.8 → bars merged)
-  const fontSize = options.fontSize ?? 10
-  const quietZoneModules = options.quietZone ?? 14  // ISO 15416: 10× narrowest bar; 14×2.5=35px minimum quiet zone (was 12)
+  const fontSize = options.fontSize ?? 13    // v2.1.3 fix: 13px in SVG space → ~5.5px physical after scale — was 10px → only 4.2px (too small for 203 DPI)
+  const quietZoneModules = options.quietZone ?? 10  // v2.1.3 fix: 10 modules (ISO 15416 minimum) — was 14, reducing to 10 cuts total SVG width by ~22px, reducing scale-down compression
 
   const codes: number[] = []
   let i = 0
@@ -115,8 +115,8 @@ export function generateBarcodeSvg(
   let isBar = true
   const rects: string[] = []
 
-  const barHeight = options.barHeight ?? (includeText ? Math.max(20, height - fontSize - 5) : height)
-  const totalHeight = options.height ?? (includeText ? barHeight + fontSize + 5 : barHeight)
+  const barHeight = options.barHeight ?? (includeText ? Math.max(42, height - fontSize - 8) : height)
+  const totalHeight = options.height ?? (includeText ? barHeight + fontSize + 8 : barHeight)
 
   for (let idx = 0; idx < pattern.length; idx++) {
     const moduleCount = parseInt(pattern[idx]!, 10)
@@ -130,8 +130,9 @@ export function generateBarcodeSvg(
 
   const totalWidth = currentX + quietZoneModules * barWidth
 
+  // v2.1.3 font fix: bold sans-serif + stroke for crisp 203 DPI thermal burns (was Courier — thin serifs drop out on thermal heads)
   const textElement = includeText
-    ? `<text x="${(totalWidth / 2).toFixed(2)}" y="${totalHeight - 2}" font-family="Courier, monospace, sans-serif" font-size="${fontSize}" font-weight="bold" letter-spacing="0.5px" text-anchor="middle" fill="#000000">${escapeXml(text)}</text>`
+    ? `<text x="${(totalWidth / 2).toFixed(2)}" y="${totalHeight - 2}" font-family="Consolas, 'Roboto Mono', 'Courier New', Arial, sans-serif" font-size="${fontSize}" font-weight="900" letter-spacing="1.5px" text-anchor="middle" fill="#000000" stroke="#000000" stroke-width="0.5" paint-order="stroke fill">${escapeXml(text)}</text>`
     : ''
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth.toFixed(2)} ${totalHeight}" width="100%" height="${totalHeight}" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" style="display:block;margin:0 auto;background:#ffffff;shape-rendering:crispEdges;image-rendering:pixelated;">

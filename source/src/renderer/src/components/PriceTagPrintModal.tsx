@@ -175,12 +175,12 @@ export function PriceTagPrintModal({
   const barcodeValue = activeProduct.barcode?.trim() || activeProduct.sku?.trim() || `TINDA-${activeProduct.id}`
   const isCompactTag = activeDims.height <= 20
   const barcodeSvgString = generateBarcodeSvg(barcodeValue, {
-    height: isCompactTag ? 32 : 42,
-    barHeight: isCompactTag ? 22 : 30,
+    height: isCompactTag ? 55 : 78,          // v2.1.3 fix: was 32/42 — increased ~2× so physical bar height reaches 7–9mm after SVG scale-down (was 3.4mm — scanner hesitated!)
+    barHeight: isCompactTag ? 42 : 60,       // v2.1.3 fix: was 22/30 — tall bars = wide scan beam acceptance angle → instant 1st-pass detection
     includeText: true,
-    barWidth: activeDims.width <= 30 ? 2.5 : 2.8,  // CT221B fix: min 2.5px/module for thermal scanability (was 1.5/1.8 — too thin, bars merged)
-    fontSize: isCompactTag ? 7.5 : 9,
-    quietZone: 14  // ISO 15416: quiet zone ≥ 10× narrowest bar; 14 modules @ 2.8px = 39.2px (was 10-12 → too cramped)
+    barWidth: activeDims.width <= 30 ? 2.4 : 2.6,  // v2.1.3 fix: slightly reduced (was 2.5/2.8) — pairs with quietZone:10 to reduce total SVG width → less scale-down compression
+    fontSize: isCompactTag ? 12 : 13,        // v2.1.3 fix: was 7.5/9 — scaled physical text now ~5–6pt (was ~2.8pt — microscopic on thermal!)
+    quietZone: 10                            // v2.1.3 fix: was 14 → ISO 15416 minimum is 10. Saves ~22px SVG width, reduces scale compression by ~10%
   })
 
   const handlePrint = async (manual = false) => {

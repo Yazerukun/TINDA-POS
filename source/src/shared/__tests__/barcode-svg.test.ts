@@ -8,7 +8,8 @@ describe('generateBarcodeSvg', () => {
     expect(svg).toContain('</svg>')
     expect(svg).toContain('<rect')
     expect(svg).toContain('4800016644812')
-    expect(svg).toContain('font-family="Courier, monospace, sans-serif"')
+    expect(svg).toContain('font-family="Consolas, \'Roboto Mono\', \'Courier New\', Arial, sans-serif"')
+    expect(svg).toContain('font-weight="900"')
   })
 
   it('handles empty or special string gracefully with fallback', () => {

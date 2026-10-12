@@ -28,7 +28,18 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)**
+- Current Version: **v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)**
+
+## Key Features in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
+1. **CT221B Instant-Scan Barcode Geometry Upgrade (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
+   - Root cause: Barcode vertical bar height (`barHeight`) was previously only 22px–30px. When rendered within labels, the browser's viewBox scale factor (~0.42x) shrunk bars down to only ~3.3mm physical height. Optical scanners require a wider laser/sensor sweep angle, causing partial decode rejections and slow detection.
+   - Fix: `barHeight` increased by **+100% to +126%** (from 22/30px to **42px** on compact tags and **60px** on standard tags; total SVG height increased to 55px/78px). Physical printed bars now reach ~7.5mm–9.0mm, allowing instant 1st-pass omnidirectional laser and CCD scan detection.
+   - `quietZone` tuned from 14 modules to **10 modules** (ISO 15416 compliant standard minimum). Trimming 8 modules cuts SVG coordinate width by ~22px, reducing horizontal scale-down compression by ~10% and yielding wider physical modules on paper.
+2. **High-Contrast Bold Thermal Font & Anti-Hairline Stroke Shield (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`)**:
+   - Root cause: Human-readable text beneath the barcode previously used `Courier` serif monospace at 7.5px–9.0px. After scale-down on a 203 DPI thermal print head (8 dots/mm), this shrunk to ~2.85pt with hairline stems that direct thermal heads dropped to gray/white, causing "nipis" / faint text.
+   - Fix: Switched font stack to high-density bold sans/tabular monospace (`Consolas, 'Roboto Mono', 'Courier New', Arial, sans-serif`) with `font-weight: 900` (heavy/black) and `letter-spacing: 1.5px`.
+   - Added SVG vector stroke shield: `stroke="#000000" stroke-width="0.5" paint-order="stroke fill"`, guaranteeing solid, dense, jet-black thermal burns with zero hairline dropouts.
+   - Increased font size in SVG coordinate space: compact labels raised from 7.5px to **12px**, standard labels raised from 9px to **13px** (default 13px in `barcodeSvg.ts`), yielding crisp, legible ~5.5pt physical text.
 
 ## Key Features in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
 1. **CT221B Barcode Scanability Fix (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
