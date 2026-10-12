@@ -65,18 +65,20 @@
 
 ### 4. Ironclad Artificer — `tinda-pos-hardware-desktop`
 - **Class:** Desktop Runtime & POS Peripheral Vanguard
-- **Level:** **Lv. 18 (LEVEL UP!)** | **XP:** 2,900 / 3,500
-- **Attributes:** DEX: 97 | VIT: 91 | INT: 88
+- **Level:** **Lv. 19 (LEVEL UP!)** | **XP:** 3,700 / 4,200
+- **Attributes:** DEX: 99 | VIT: 92 | INT: 91
 - **Equipped Skills:**
   - `[ESC/POS Raw Stream]`: Native byte command streaming for 58mm and 80mm thermal receipt printers.
   - `[RJ11 Drawer Pulse]`: High-reliability cash drawer kick trigger without print delay.
   - `[Barcode Scanner Interceptor]`: Rapid USB HID keystroke buffering without losing characters.
   - `[58mm Flex Guardian]`: Enforces `flex-shrink: 0` and margin boundaries preventing centavo overflow on narrow thermal paper.
   - `[Tear-Bar Clearance Spacer]`: Ensures 5 feed lines (19mm) clearing physical cutter blades and tear bars.
+  - `[Skill: ISO-15416 Thermal Bar-Width Calibration]` *(NEW UNLOCKED)*: Enforces 2.5px–2.8px module bar widths and 14-module quiet zones with unscaled SVG rendering, eliminating thermal burn bleed on 203 DPI print heads.
 - **Quest History:**
   - Standardized thermal printer column alignment and ESC/POS command sequences.
   - Completed Surgical Strike Mission: Repaired CSS `flex-shrink: 0`, widened feed lines default to 19mm, eliminated Windows print double-margins (`marginType: 'none'`), and established `kickCashDrawer`.
   - Won the v2.1.0 Boss Battle: Landed cash drawer kick API and receipt cutter clearance into v2.1.0.
+  - Won the v2.1.1 Boss Battle: Calibrated CT221B thermal barcode rendering with ISO 15416 compliance (2.5px–2.8px bar widths, 14-module quiet zones, unscaled SVGs), eliminating bar merging and restoring 100% scanability.
 
 ---
 
@@ -109,6 +111,20 @@
 - **Quest History:**
   - Shipped v2.0.8, v2.0.9, and v2.1.0 hot patches directly to production GitHub releases.
   - Won the v2.1.0 Boss Battle: Successfully generated and dispatched `TindaPOS-Feature-Patch-2.1.0.zip` (SHA-256: `e0915e54...`) to GitHub Releases.
+
+---
+
+### 7. The Cloud Weaver — `tinda-cloud-sync-architect`
+- **Class:** Cloud Edge & Distributed Synchronization Architect
+- **Level:** **Lv. 20 (LEVEL UP!)** | **XP:** 3,300 / 3,800
+- **Attributes:** INT: 98 | WIS: 96 | AGI: 94 | LCK: 92
+- **Equipped Skills:**
+  - `[Skill: D1 Store-ID Case Normalization]` *(NEW UNLOCKED)*: Enforces case-insensitive store ID lookups and schema consistency across Cloudflare Workers D1 edge databases.
+  - `[Edge Auto-Registration Handshake]`: Automatically initializes and registers store credentials on Cloudflare D1 with ping health verification.
+  - `[Resilient Offline-Safe Pipeline]`: Streams sales, stocks, and shift summaries asynchronously with zero impact on local POS checkout speed.
+  - `[Verified Sync Backfill Counter]`: Verifies recent sale batch delivery on manual trigger with transparent UI feedback.
+- **Quest History:**
+  - Won the v2.1.1 Boss Battle: Deployed store auto-registration on Cloudflare D1, normalized case-sensitive store IDs, and integrated verified sale backfill counters in `cloudSync.ts`.
 
 ---
 

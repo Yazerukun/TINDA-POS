@@ -108,4 +108,76 @@ describe('cloudSync Service', () => {
     expect(res.ok).toBe(true)
     expect(res.message).toContain('Connected')
   })
+
+  it('returns accurate error message when /api/sync/ping returns 401 unauthorized', async () => {
+    updateSettings(db, {
+      cloud_sync_enabled: true,
+      cloud_api_url: 'https://cloud.example.com',
+      cloud_store_id: 'MY-STORE-UUID',
+      cloud_sync_key: 'tinda_invalid'
+    })
+
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith('/api/sync/ping')) {
+        return Promise.resolve({ ok: false, status: 401, json: async () => ({ error: 'Invalid sync credentials.' }) })
+      }
+      return Promise.resolve({ ok: true, status: 200 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const res = await syncNow(db)
+    expect(res.ok).toBe(false)
+    expect(res.message).toContain('Invalid Sync Credentials')
+  })
+
+  it('only increments pushedCount when sales post succeeds and normalizes storeId', async () => {
+    db.exec(`
+      CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, full_name TEXT);
+      CREATE TABLE customers (id INTEGER PRIMARY KEY, full_name TEXT);
+      CREATE TABLE sale_items (id INTEGER PRIMARY KEY, sale_id INTEGER, product_name TEXT, unit_name TEXT, qty REAL, unit_price_c INTEGER, subtotal_c INTEGER);
+      CREATE TABLE payments (id INTEGER PRIMARY KEY, sale_id INTEGER, method TEXT, amount_c INTEGER);
+      CREATE TABLE sales (
+        id INTEGER PRIMARY KEY,
+        transaction_no TEXT,
+        user_id INTEGER,
+        customer_id INTEGER,
+        subtotal_c INTEGER,
+        discount_c INTEGER,
+        total_c INTEGER,
+        status TEXT,
+        shift_id INTEGER,
+        notes TEXT,
+        created_at TEXT,
+        voided_at TEXT,
+        voided_by INTEGER,
+        void_reason TEXT
+      );
+    `)
+    db.prepare(`
+      INSERT INTO sales (id, transaction_no, user_id, customer_id, subtotal_c, discount_c, total_c, status, shift_id, created_at)
+      VALUES (1, 'TPOS-000001', 1, NULL, 5000, 0, 5000, 'COMPLETED', NULL, '2026-10-12 12:00:00')
+    `).run()
+
+    updateSettings(db, {
+      cloud_sync_enabled: true,
+      cloud_api_url: 'https://cloud.example.com',
+      cloud_store_id: 'UPPER-STORE-UUID-1234',
+      cloud_sync_key: 'tinda_validkey'
+    })
+
+    let salePayloadSent: any = null
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: any) => {
+      if (url.endsWith('/api/sync/sale')) {
+        salePayloadSent = JSON.parse(init.body)
+        return Promise.resolve({ ok: true, status: 200 })
+      }
+      return Promise.resolve({ ok: true, status: 200 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const res = await syncNow(db)
+    expect(res.ok).toBe(true)
+    expect(res.message).toContain('Synced 1 sale(s)')
+    expect(salePayloadSent.store_id).toBe('upper-store-uuid-1234')
+  })
 })

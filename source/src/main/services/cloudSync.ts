@@ -21,13 +21,13 @@ export function isVipActive(_settings?: StoreSettings): boolean {
 
 export function ensureSyncCredentials(db: Database.Database): StoreSettings {
   const settings = getSettings(db)
-  let storeId = settings.cloud_store_id?.trim()
+  let storeId = settings.cloud_store_id?.trim().toLowerCase()
   let syncKey = settings.cloud_sync_key?.trim()
   let apiUrl = settings.cloud_api_url?.trim()
   let updated = false
 
   if (!storeId) {
-    storeId = randomUUID()
+    storeId = randomUUID().toLowerCase()
     updated = true
   }
   if (!syncKey) {
@@ -39,7 +39,7 @@ export function ensureSyncCredentials(db: Database.Database): StoreSettings {
     updated = true
   }
 
-  if (updated) {
+  if (updated || settings.cloud_store_id !== storeId) {
     return updateSettings(db, {
       cloud_store_id: storeId,
       cloud_sync_key: syncKey,
@@ -67,8 +67,8 @@ export function getSyncCredentials(db: Database.Database): {
   return {
     enabled: true,
     apiUrl: s.cloud_api_url || 'https://tinda-sync.yomikaze-md.workers.dev',
-    storeId: s.cloud_store_id,
-    syncKey: s.cloud_sync_key,
+    storeId: (s.cloud_store_id || '').trim().toLowerCase(),
+    syncKey: (s.cloud_sync_key || '').trim(),
     branchName: s.store_name || 'My Store'
   }
 }
@@ -83,13 +83,19 @@ async function postToCloud(
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 6000) // 6s timeout
 
+    const normalizedPayload = {
+      ...payload,
+      store_id: payload.store_id.trim().toLowerCase(),
+      sync_key: payload.sync_key.trim()
+    }
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(normalizedPayload),
       signal: controller.signal
     })
     clearTimeout(timeout)
@@ -178,6 +184,14 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
   }
 
   const apiUrl = settings.cloud_api_url || 'https://tinda-sync.yomikaze-md.workers.dev'
+  const storeId = (settings.cloud_store_id || '').trim().toLowerCase()
+  const syncKey = (settings.cloud_sync_key || '').trim()
+  const branchName = settings.store_name || 'My Store'
+
+  if (!storeId || !syncKey) {
+    return { ok: false, message: 'Store ID and Sync Key must be configured in Settings.' }
+  }
+
   try {
     // Ping cloud endpoint
     const pingRes = await fetch(`${apiUrl.replace(/\/+$/, '')}/`, {
@@ -191,21 +205,31 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
     }
 
     // Auto-register and verify store on Cloudflare D1
-    try {
-      await fetch(`${apiUrl.replace(/\/+$/, '')}/api/sync/ping`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
-        },
-        body: JSON.stringify({
-          store_id: settings.cloud_store_id,
-          sync_key: settings.cloud_sync_key,
-          branch_name: settings.store_name || 'My Store'
-        }),
-        signal: AbortSignal.timeout(6000)
-      })
-    } catch {}
+    const syncPingRes = await fetch(`${apiUrl.replace(/\/+$/, '')}/api/sync/ping`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+      },
+      body: JSON.stringify({
+        store_id: storeId,
+        sync_key: syncKey,
+        branch_name: branchName
+      }),
+      signal: AbortSignal.timeout(6000)
+    })
+
+    if (!syncPingRes.ok) {
+      if (syncPingRes.status === 401) {
+        return { ok: false, message: 'Invalid Sync Credentials. Please verify Store ID and Sync Key in Settings.' }
+      }
+      let errDetail = ''
+      try {
+        const errJson = (await syncPingRes.json()) as any
+        if (errJson?.error) errDetail = `: ${errJson.error}`
+      } catch {}
+      return { ok: false, message: `Cloud authentication failed (${syncPingRes.status})${errDetail}` }
+    }
 
     // Push recent sales so cloud dashboard displays live data immediately
     let pushedCount = 0
@@ -219,10 +243,10 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
             payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
           const nonCash = getAmt('GCASH') + getAmt('MAYA') + getAmt('MARIBANK') + getAmt('UTANG')
           const actualCash = Math.max(0, s.total_c - nonCash)
-          await postToCloud(apiUrl, '/api/sync/sale', {
-            store_id: settings.cloud_store_id!,
-            sync_key: settings.cloud_sync_key!,
-            branch_name: settings.store_name || 'My Store',
+          const success = await postToCloud(apiUrl, '/api/sync/sale', {
+            store_id: storeId,
+            sync_key: syncKey,
+            branch_name: branchName,
             data: {
               local_sale_id: s.id,
               transaction_no: s.transaction_no,
@@ -248,7 +272,9 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
               }))
             }
           })
-          pushedCount++
+          if (success) {
+            pushedCount++
+          }
         }
       }
     } catch {}
