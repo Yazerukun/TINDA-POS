@@ -359,7 +359,7 @@ export async function printLabelTest(
   options?: { manual?: boolean; deviceName?: string }
 ): Promise<PrintResult> {
   const targetDevice = options?.deviceName || settings.label_printer || ''
-  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 38, barHeight: 28, includeText: true, barWidth: 1.8, fontSize: 8.5 })
+  const testSvg = generateBarcodeSvg('TINDA-CT221B', { height: 42, barHeight: 30, includeText: true, barWidth: 2.8, fontSize: 9, quietZone: 14 })
   const testHtml = `
     <!DOCTYPE html>
     <html>

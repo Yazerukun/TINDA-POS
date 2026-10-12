@@ -175,12 +175,12 @@ export function PriceTagPrintModal({
   const barcodeValue = activeProduct.barcode?.trim() || activeProduct.sku?.trim() || `TINDA-${activeProduct.id}`
   const isCompactTag = activeDims.height <= 20
   const barcodeSvgString = generateBarcodeSvg(barcodeValue, {
-    height: isCompactTag ? 28 : 38,
-    barHeight: isCompactTag ? 19 : 28,
+    height: isCompactTag ? 32 : 42,
+    barHeight: isCompactTag ? 22 : 30,
     includeText: true,
-    barWidth: activeDims.width <= 30 ? 1.5 : 1.8,
-    fontSize: isCompactTag ? 7 : 8.5,
-    quietZone: activeDims.width <= 30 ? 10 : 12
+    barWidth: activeDims.width <= 30 ? 2.5 : 2.8,  // CT221B fix: min 2.5px/module for thermal scanability (was 1.5/1.8 — too thin, bars merged)
+    fontSize: isCompactTag ? 7.5 : 9,
+    quietZone: 14  // ISO 15416: quiet zone ≥ 10× narrowest bar; 14 modules @ 2.8px = 39.2px (was 10-12 → too cramped)
   })
 
   const handlePrint = async (manual = false) => {
@@ -324,8 +324,10 @@ export function PriceTagPrintModal({
           }
           .barcode-box svg {
             display: block;
-            max-width: 98%;
+            width: auto;
+            max-width: 100%;
             height: auto;
+            overflow: visible;
             color: #000000;
             shape-rendering: crispEdges !important;
             image-rendering: -webkit-optimize-contrast !important;

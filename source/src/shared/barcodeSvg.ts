@@ -62,9 +62,9 @@ export function generateBarcodeSvg(
   const text = (rawText || '').trim().replace(/[^\x20-\x7E]/g, '') || '000000'
   const height = options.height ?? 50
   const includeText = options.includeText ?? true
-  const barWidth = options.barWidth ?? 1.8
+  const barWidth = options.barWidth ?? 2.5   // CT221B minimum: 2.5px/module — thermal heads need ≥2.5px to burn distinct bars (default was 1.8 → bars merged)
   const fontSize = options.fontSize ?? 10
-  const quietZoneModules = options.quietZone ?? 12
+  const quietZoneModules = options.quietZone ?? 14  // ISO 15416: 10× narrowest bar; 14×2.5=35px minimum quiet zone (was 12)
 
   const codes: number[] = []
   let i = 0
