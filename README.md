@@ -2,1153 +2,298 @@
 
 <img src="https://img.shields.io/badge/TINDA_POS-v2.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
-<img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
-<img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
-<img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
+<img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
+<img src="https://img.shields.io/badge/Tests-506%2F506_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
+<img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
+<img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
 
 <br /><br />
 
-# 🏪 TINDA POS
+# 🏪 TINDA POS (Desktop Master Edition)
 
-### Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses
+### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Sell products · Track inventory · Manage customer Utang · Reconcile cash · Ask TindaBot AI — all in one focused desktop app. No internet required.**
+**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Suki Utang Ledger · Wholesale Invoices · Daily E-Wallet Reconciliation · 1-Tap QR Cloud Sync**
 
 <br />
 
-[⚡ Fast Feature Patch v2.1.4](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.4 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.4_NSIS_(~116MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.4_Standalone_(~115MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.4_(0.94MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip)
+[![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
+
+<br />
+
+[📖 Cashier Guide](./docs/CASHIER-QUICK-GUIDE.md)&nbsp;&nbsp;·&nbsp;&nbsp;[📚 User Handbook](./docs/USER-MANUAL.md)&nbsp;&nbsp;·&nbsp;&nbsp;[🏗️ Architecture](./docs/MASTER-SYSTEM-ARCHITECTURE.md)&nbsp;&nbsp;·&nbsp;&nbsp;[🛠️ Tooling](./tools/README.md)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)
-
-> **Frictionless Cloud Sync: 1-Tap Mobile QR Code Pairing, background startup auto-sync loop, multi-owner account support on Cloudflare D1, and 1-click magic setup links.**
-
-- 📱 **1-Tap Mobile QR Code Pairing (`Settings.tsx`, `App.tsx`, `LoginPage.tsx`)**:
-  - **Instant Phone Camera Auto-Pair**: Scan the high-contrast QR code on the POS screen using iPhone Camera or Android QR scanner to automatically launch and connect the owner dashboard without typing Store ID or Sync Key.
-  - **Magic Setup Link Generation**: 1-click "Copy Setup Link" copies a direct magic URL for sharing via Messenger, SMS, or Viber.
-  - **Pre-Paired PC Launch**: Instant "Open Pre-Paired on this PC" opens the dashboard in the default browser pre-configured.
-- 🔄 **Autonomous Background Auto-Sync Loop (`cloudSync.ts`, `main/index.ts`)**:
-  - **Startup Backfill (4s Grace)**: Automatically pushes up to 50 recent transactions right when the POS launches.
-  - **3-Minute Continuous Cycle**: Keeps owner dashboards updated live in real time without manual button clicks.
-- 👥 **Multi-Owner D1 Branch Resolution (`store_owners` Table & `tinda-sync` Worker)**:
-  - Enabled multi-account branch associations so owners logging in with alternate accounts (e.g., `mary grace flor` and `adamgrace123`) both seamlessly view and manage their branch.
-
-## ✨ Previous: What's New in v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition)
-
-> **Thermal Print Head Calibration: +120% taller vertical barcode height for instant 1st-pass omnidirectional scanning, 900-weight bold tabular monospace font, and anti-hairline SVG stroke shield for deep black burns.**
-
-- 🏷️ **Instant 1st-Pass Laser/CCD Scan Geometry (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
-  - **Taller Vertical Scan Targets**: Raised barcode bar height (`barHeight`) from 22px/30px to **42px** (compact labels) and **60px** (standard labels; total SVG height 55px/78px), yielding ~7.5mm–9.0mm physical height on thermal paper. Eliminates partial-decode dropouts caused by scanner beam tilt.
-  - **ISO 15416 Quiet Zone Optimization**: Calibrated quiet zones to 10 modules, reducing total coordinate width by ~22px and cutting viewBox downscale compression by ~10% for wider, crisper bars.
-- 🔤 **High-Contrast Bold Thermal Font & Anti-Hairline Stroke Shield**:
-  - **Bold Tabular Monospace**: Replaced spindly typewriter Courier with heavy `Consolas, 'Roboto Mono', 'Courier New', Arial, sans-serif` at `font-weight: 900` with `1.5px` tracking.
-  - **Vector Stroke Shield**: Integrated `stroke="#000000" stroke-width="0.5" paint-order="stroke fill"` on SVG text, preventing 203 DPI thermal heads from dropping hairline stems to white.
-  - **Scaled Legibility**: Increased SVG font size from 7.5px/9px to **12px/13px**, resulting in ~5.5pt physical characters that cashiers can easily read without squinting.
-
-## ✨ Previous: What's New in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
-
-> **Hardware & Cloud Reliability: Industrial ISO 15416 barcode scanability calibration for Chiteng CT221B thermal printers, store ID case-insensitive normalization on Cloudflare D1, and verified live sync backfill counter.**
-
-- 🏷️ **CT221B Thermal Barcode Scanability Fix (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
-  - **ISO 15416 14-Module Quiet Zones**: Increased quiet zone margins to 14 modules (exceeding standard 10× narrowest bar requirement), ensuring handheld optical and CCD scanners instantly detect start/stop guard patterns.
-  - **Calibrated Module Bar Widths**: Raised barcode module bar widths from 1.5px–1.8px to 2.5px (compact labels ≤30mm) and 2.8px (standard labels), eliminating thermal burn bleed and bar merging on 203 DPI print heads.
-  - **Natural Unscaled SVG Rendering**: Replaced `max-width: 98%` scaling distortion with `width: auto; overflow: visible`, guaranteeing 1:1 pixel grid alignment.
-  - **Test Print Alignment**: Synced `printLabelTest` with 2.8px / 14-module defaults for 100% diagnostic accuracy.
-- ☁️ **Cloud Sync Store ID Normalization & Verified Push Counter (`cloudSync.ts`)**:
-  - **D1 Store ID Normalization**: Implemented case-insensitive Store ID normalization on the Cloudflare D1 edge pipeline to eliminate multi-store credential mismatches.
-  - **Verified Push Counter & Backfill**: Upgraded manual `syncNow` to auto-register store credentials on Cloudflare D1 and backfill up to 50 recent active sales with real-time UI feedback (`Synced X sale(s) to dashboard!`).
-  - **Cash Revenue Accuracy**: Fixed cash revenue calculation to correctly compute net cash tendered (`total_c - nonCash`), preventing inflated cash totals on split payments.
-
-## ✨ Previous: What's New in v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)
-
-> **Core Retail Hardening: Prorated refund discounts protecting cash drawers, Migration 15 composite indexes, true net landed cost COGS absorption, and native cash drawer kick pulse.**
-
-- 🛡️ **Prorated Refund Discount Invariant (`transaction.ts`)**:
-  - Refunding discounted items (e.g., Senior Citizen, PWD, bundle promos) now prorates discounts proportionally based on net revenue paid, stopping cash drawer leakage.
-- 💰 **Net Landed Cost COGS Absorption (`purchases.ts`)**:
-  - Purchase invoices now factor compounding trade discounts into catalog unit costs, ensuring profit margins and COGS reflect true acquisition costs.
-- ⚡ **Migration 15 & Foreign Key Indexes (`migrations.ts`, `canonical.ts`)**:
-  - Added 10 composite indexes across SQLite tables for sub-millisecond query performance.
-  - Added `product_recipes`, `ewallet_transactions`, and `ewallet_audits` to `CANONICAL_TABLES` to eliminate backup restore foreign key collisions.
-- 🖨️ **Cash Drawer Kick & Thermal Printer Feed (`printing.ts`, `receiptHtml.ts`)**:
-  - Exposed `window.api.printer.kickCashDrawer()` across IPC/preload.
-  - Widened default tear-bar feed spacer to 5 lines (19mm) and fixed `flex-shrink: 0` CSS on narrow 58mm paper.
-- 📊 **Dashboard 100k Transaction Limit (`dashboard.ts`)**:
-  - Removed the silent 50-item cutoff in `dashboardStats`, ensuring 100% daily sales and profit aggregation accuracy for high-volume stores.
-
-## ✨ Previous: What's New in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
-
-> **Invoices History Immunity: Resolved SQLite missing column/table error when switching to Invoices History on existing user databases.**
-
-- 🛡️ **Self-Healing Purchases & Dependency Tables (`purchases.ts`, `migrations.ts`)**:
-  - Fixed `SqliteError: no such column: invoice_no` crash caused by indexes attempting creation prior to column migrations on existing databases.
-  - Implemented automatic self-healing `ensurePurchasesTables` to guarantee `purchases`, `purchase_items`, `suppliers`, `users`, and `products` tables exist before queries execute.
-  - Hardened `shortDate` in `@shared/format.ts` to be 100% resilient against `null`, `undefined`, and malformed dates.
-  - Hardened `PurchaseInvoiceModal.tsx` history state with defensive array verification and graceful error handling.
-
-## ✨ Previous: What's New in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts Edition)
-
-> **Merchant VIP Feedback Edition: Multi-Packaging Wholesale Units (Pack, Bundle, Roll, Box, Case, Sack) with Custom Multipliers and Real-World Supplier Cascading Trade Discounts ("Less 5 Less 5", Compounded Series Math).**
-
-- 📦 **Wholesale Packaging Units & Conversion Multipliers (`PurchaseInvoiceModal.tsx`)**:
-  - Full support for wholesale receiving in `PACK`, `BUNDLE`, `ROLL`, `BOX`, `CASE`, `DOZEN`, `SACK`, `CAN`, `BOTTLE`, `KILO`, and custom units.
-  - Dedicated `Pcs/Unit` multiplier box with live visual inventory increment preview (e.g. `5 BOX × 24 = +120 pcs committed to physical inventory`).
-- 🏷️ **Supplier Cascading / Series Trade Discounts Engine ("Less 5 Less 5") (`supplierDiscount.ts`)**:
-  - Supports Philippine distributor compounded billing formats: `*-5%-5%-5%`, `5+5+5`, `10+5`, `10/5`, `-10%-5%`, single percent `5%`, and flat currency (`₱50`).
-  - Implements sequential integer-cent discount arithmetic: Net = Gross × $(1 - d_1) \times (1 - d_2) \dots (1 - d_n)$ matching distributor ERPs.
-  - Live discount breakdown strip: shows Gross, Discount Amount, Net Payable, and effective discount rate %.
-  - Automatically updates catalog purchase cost per piece with the net discounted price.
-
-## ✨ Previous: What's New in v2.0.7 (Daily E-Wallet Totals Hub & Loyverse-Style Promo Bundles Edition)
-
-> **Merchant Feedback Edition: Daily E-Wallet & Bills Totals Filter (Resets Daily at 12:00 AM) and Loyverse-Style Promo Bundles with Live Component Inventory Monitoring.**
-
-- 📱 **Daily E-Wallet & Bills Reconciliation Totals (`EwalletAudit.tsx`)**:
-  - Shifts left open across midnight or unclosed shifts no longer bleed yesterday's numbers into today's totals. Summaries default strictly to **Daily (Today)** starting at 12:00 AM local time.
-  - Added an Apple Cupertino Date Filter Bar (`Today (Daily)`, `Yesterday`, `Last 7 Days`, `This Month`, `Custom Date`, `All Time`) across Cash In/Out, Bills & E-Load, and 3-Way Audit.
-
-- 🎁 **Loyverse-Style Promo Bundles & Composite Inventory Combiner (`PromoBundlesModal.tsx`)**:
-  - Input items into Inventory first, then combine them directly into Promo Bundles.
-  - Dynamic available bundle stock monitoring: Available bundle stock is calculated directly from component inventory (`min(floor(component_stock / required_qty))`).
-  - Added direct **Promo Bundles** launcher button right inside the Inventory header and Quick Filter bar.
-  - Automatic recursive component stock deduction upon checkout with seamless POS cart promo discount application.
-
-## ✨ What's New in v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item Sales Analytics & Attendance/Payroll Edition)
-
-> **Wholesale/Retail Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`F1` Search · `F2` Qty Commit · `F3` Remove · `Ctrl+S` Post), Item-by-Item Sales Breakdown & Margin Analytics, Cashier Attendance & Payroll Hub, Credit Limits, Expiry Date Tracking, and Physical Stock Take.**
-
-- 🚚 **Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`PurchaseInvoiceModal.tsx`)**:
-  - Dedicated wholesale/retail **Purchase Invoice** module in Inventory & Catalog (`Receipt No.`, `Invoice No. / Trans #`, `Supplier` & `Address`, `Invoice Date`, `Paid` checkbox, `Terms (Days)`, and `Memo / Delivery Notes`).
-  - Ergonomic **Fast Item Entry Bar**: press `F1` to search/scan barcode, pick unit (`Box`/`Case`/`Pcs` with automatic base-unit multiplier), adjust supplier unit cost, and press `F2` or `Enter` in the Quantity box to immediately add to the invoice table.
-  - Full financial summary (`Gross Total`, `Discount (₱)`, `Net Payable`) and 1-tap `Post & Update Stocks (Ctrl+S)` that atomically increments product stock, updates catalog purchase costs, and logs full receiving history.
-- 📊 **Item-by-Item Sales Breakdown & Profit Margin Analytics (`Reports.tsx`)**:
-  - New **Item Sales** tab in Reports showing per-item quantity sold, gross revenue, cost of goods sold (COGS), net profit, and margin % with search/category filtering and 1-tap CSV export.
-- ⏱️ **Cashier Attendance & Automated Payroll Hub (`Shifts.tsx`)**:
-  - Time-In / Time-Out shift attendance tracking, hourly wage & overtime calculation, and printable payroll summaries.
-- 🛡️ **Credit Limits, Expiry Alerts & Physical Stock Take (`StockTakeModal.tsx`)**:
-  - Per-customer credit limit (`credit_limit_c`) warnings and guards, product expiry date (`expiry_date`) tracking, and batch Physical Stock Take reconciliation.
-
-## ✨ What's New in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition)
-
-> **Chiteng CT221B Direct Thermal Monochrome Spooler, 203 DPI Native Rasterization, Extended 2.5s Spool Buffer, Auto-Target Routing, Driver Guidance Notice, and Resilient Auto-Update Engine with 3-Strike Retry & Windows File-Lock Shield.**
-
-- 🏷️ **Chiteng CT221B Thermal Spooler & Direct Monochrome Standard**:
-  - Enforced strict direct thermal monochrome (`color: false`) and 203 DPI native rasterization (`dpi: { horizontal: 203, vertical: 203 }`) to eliminate color conversions that cause thermal printer drivers to reject print jobs.
-  - Extended Windows Print Spooler delay buffer before window destruction from 600ms to 2,500ms, ensuring Windows finishes streaming raw EMF/GDI spool commands to the USB printer port before the temporary webContents is closed.
-  - Auto-target resolution: Automatically detects connected label printers and routes jobs specifically to the label device instead of falling back to default office/inkjet printers.
-  - Driver installation guidance & manual print fallback: When no dedicated label printer driver is configured in Windows, the studio displays a clear Cupertino notice with official PC driver links (`www.claiot.com`) and automatically routes to the Windows System Print Dialog so merchants can pick their printer directly without silent failures.
-  - Expanded keyword match engine in `LABEL_PRINTER_KEYWORD_REGEX` supporting Chinese and English driver variants (`ct221b`, `clabel`, `chiteng`, `驰腾`, `dudian`, `度点`, `pos-label`, etc.).
-- 🛡️ **Resilient Auto-Update Engine (Zero Network Drops & Anti-Lock Windows Shield)**:
-  - Extended request timeout thresholds (30s connect timeout, 60s idle chunk timeout) with a 3-attempt exponential backoff retry loop (`retryOperation`) for slow or jittery mobile/prepaid store connections.
-  - Expanded CDN origin allowlist to include official Azure Blob storage (`*.blob.core.windows.net`) and Fastly CDN edges used by GitHub Releases, eliminating "unexpected update source" errors on asset redirects.
-  - Integrated Windows file-lock retry shield (`safeRmDirWithRetry` and `safeRenameWithRetry` with 5 attempts and 200ms delay) to prevent `EBUSY` / `EPERM` crashes when Windows Defender or search indexing scans freshly extracted patches.
-  - Gentle Cupertino update error state with direct manual download links to GitHub Releases.
-
-## ✨ What's New in v1.0.93 (Comprehensive Master Full Desktop Release Edition)
-
-> **Complete Windows Desktop Application Compilation (Setup.exe & Portable.exe), All Innovations Consolidated into Native Base Executable, and Multi-Track Zero-Downtime Delivery.**
-
-- 💿 **Full Windows Desktop Application Compilation (`Setup.exe` & `Portable.exe`)**:
-  - Full standalone production build compiling Electron Chromium runtime, native Better-SQLite3 binary bindings, and optimized client bundle into standard NSIS installer and zero-install portable executable.
-  - Hardened NSIS installer (`allowToChangeInstallationDirectory`, Desktop & Start Menu shortcuts, zero AppData data deletion on uninstall).
-- 📦 **All Innovations Consolidated into Native Base Executable**:
-  - **Pinned Categories Dual-Store Engine**: Persistent `localStorage` + SQLite settings sync, universal `parsePinnedCategoryIds` parser, 0ms cross-component event sync, search auto-clear.
-  - **Chiteng CT221B Barcode & Label Printer Support**: Plug-and-play auto-detection, pure vector Code 128 (Subset B) barcode engine, Cupertino label studio, and dual-printer separation.
-  - **Pinned Package & Combo Categories**: 1-tap POS chips, visual category customization hub (custom emojis & color themes), and dashboard bundle shortcuts.
-  - **Line-Item Price Editing for Credit Sales**: Live utang recalculation and permanent mistake cleaner.
-  - **Split / Mixed Payment POS Engine**: Seamless multi-method payment distribution across Cash, GCash, Maya, MariBank, and Utang.
-- ⚡ **Multi-Track Zero-Downtime Delivery**:
-  - Provided simultaneously as full Windows Setup installer (`TindaPOS-Setup-1.0.93.exe`), single-file portable (`TindaPOS-Portable-1.0.93.exe`), and live instant feature patch (`TindaPOS-Feature-Patch-1.0.93.zip`).
-
-## ✨ What's New in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition)
-
-> **Root-Cause Pinned Categories Visibility Repair, Universal Settings Array Parser, Client-Side Dual-Store (localStorage + SQLite) Persistence, Real-Time Event Sync, and Search Auto-Clear.**
-
-- 🔍 **Root-Cause Pinned Categories Visibility Repair ("Dili Makita ang Gi Pin")**:
-  - Fixed SQLite settings serialization dropping single numeric strings (e.g. `'8'`) due to strict array validation.
-  - Implemented universal `parsePinnedCategoryIds` supporting arrays, single numbers, raw strings, and comma-delimited values.
-- 💾 **Client-Side Dual-Store Persistence Engine**:
-  - Zero-latency persistence in `localStorage` (`tinda_pinned_categories_v1`) combined with background SQLite settings synchronization.
-  - Guarantees pinned categories are never wiped out during in-app hot-patch updates on older Electron base builds.
-- ⚡ **Cross-Component Real-Time Event Synchronization (`tinda-pinned-categories-changed`)**:
-  - Instant 0ms broadcast across `PinnedCategoriesBar`, POS Category Dropdown, `CustomizeCategoriesModal`, and Dashboard.
-  - Toggling or pinning updates all visible chips, badges, and counters concurrently.
-- 🔢 **Resilient Numeric Equality Matching**:
-  - Upgraded category matching from strict `===` to type-coerced `Number(c.id) === Number(id)`, preventing items from disappearing due to string/number ID discrepancies.
-- 🎯 **Ergonomic Category Filtering & Search Auto-Clear**:
-  - Clicking a category chip now clears any lingering search text (`setQ('')`), ensuring all products in the selected category are immediately displayed.
-  - Clicking an active pinned category toggles back to 'All Items' for fluid navigation.
-
-## ✨ What's New in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition)
-
-> **Chiteng / Clabel CT221B Portable Thermal Barcode & Label Printer Integration, High-Precision Code 128 Vector Engine, Dedicated Hardware Hub & Presets, and 1-Tap Alignment Test.**
-
-- 🏷️ **Native Chiteng / Clabel CT221B Thermal Label Printer Support**:
-  - Full plug-and-play compatibility with the portable Chiteng CT221B direct thermal sticker & barcode printer (USB & Bluetooth).
-  - Intelligent auto-detection engine recognizes CT221B, Chiteng, Clabel, Dudian, 4Bar, Niimbot, and TSC label hardware on connection.
-- 📐 **Vector Code 128 1D Barcode Rendering Engine**:
-  - Built-in zero-dependency Code 128 (Subset B) vector SVG generator producing crisp, 100% scannable 1D barcodes on thermal labels.
-  - Standard start/stop codes, high-density quiet zones, and mod-103 checksums for instant scanning with 1D/2D laser guns and phone cameras.
-- 🖨️ **Apple Cupertino Label Studio (`PriceTagPrintModal`)**:
-  - Live hardware readiness HUD (`🟢 Chiteng CT221B Ready`).
-  - Pre-calibrated label roll sizes: `40×30 mm` (CT221B Standard Retail), `50×30 mm`, `30×20 mm`, `40×20 mm`, and custom mm dimensions.
-  - Live interactive preview with store name, barcode, wholesale price, and SKU.
-  - 1-tap "Match Stock Quantity" accelerator to print exact sticker counts matching inventory on hand.
-  - Silent direct printing, Windows manual print dialog, and 1-tap alignment test sticker.
-- ⚙️ **Dedicated Label Hardware Hub in Settings**:
-  - New "Chiteng CT221B Barcode & Thermal Label Printer Hub" card in Settings -> Receipt & Hardware.
-  - Independent label printer selection isolated from receipt printer, custom label roll sizes, and instant test printing.
-- ⚡ **Zero-Database Risk & Instant In-App Live Patch Standard**:
-  - 100% hot-patch compatible with existing client installations via `npm run publish:patch`.
-
-## ✨ What's New in v1.0.90 (Pinned Package & Bundle Category Hub Edition)
-
-> **Pinned Package & Bundle Categories on POS & Dashboard, Full Visual Customization Hub (Custom Emojis & Color Accents), and 1-Tap Quick Selling Accelerators.**
-
-- 📌 **Pinned Categories Bar on POS Checkout**:
-  - Horizontal frosted Cupertino chip bar above the product grid displaying pinned packages, combos, and favorite categories.
-  - 1-tap filtering for rapid checkout with live active product count badges.
-- 🏪 **Dashboard Quick Bundles & Categories Hub**:
-  - Interactive "Quick Bundles & Pinned Categories" card on the Dashboard with 1-tap "Sell in POS →" direct navigation.
-- 🎨 **Full Category Customization Hub (`CustomizeCategoriesModal`)**:
-  - Custom emoji icons (📦, 🎁, 🛍️, 🍔, 🥤, 🍿, 🥫, ⚡, 🔥, 🏷️) and Cupertino color themes (Indigo, Emerald, Amber, Rose, Cyan, Violet, Slate).
-  - 1-tap Pin/Unpin toggles directly in category lists and POS dropdown.
-  - Instant category creation with pre-styled visuals.
-- ⚡ **Zero-Database Risk & Instant In-App Live Patch Standard**:
-  - 100% compatible with existing merchant databases via live patch (`npm run publish:patch`).
-
-## ✨ What's New in v1.0.89 (Line-Item Price Editing & Permanent Utang Mistake Cleaner Edition)
-
-> **Line-Item Unit Price Editing for Credit Sales, Permanent Ledger Purge Engine, 1-Tap Mistake Cleaner, and Intuitive Sign/Color Standards.**
-
-- ✏️ **Line-Item Price Editing in Credit Sales (`Items Taken on Credit`)**:
-  - Cashiers and store owners can now edit individual item unit prices directly inside the expanded credit sale items list.
-  - Live Apple-grade Cupertino modal previews new subtotal and real-time customer utang impact (emerald green deduction or rose red addition).
-  - Automatically synchronizes customer debt and updates sale line items.
-- 🧹 **Permanent Client-Side Purge & 1-Tap Mistake Cleaner**:
-  - Mistake records (such as ₱34,555.00 voided/reversal pairs) are persistently purged and removed from customer views.
-  - Automatically filters out internal rebalances (`[AUDIT_REBALANCE]`, `[SYSTEM_SYNC]`, and offset rows) so customer statements remain completely pristine.
-  - Dedicated 1-tap "Clean Mistake Rows" banner immediately restores verified customer balances (₱325,065.00).
-- 🎨 **Intuitive Sign & Color Standards**:
-  - Deductions (Payments, Reversals, Refunds) strictly render with minus sign (`−`) in emerald green.
-  - Debt additions (Credit Sales) strictly render with plus sign (`+`) in rose red.
-
-## ✨ What's New in v1.0.88 (Resilient Utang Ledger Repair & Direct Balance Correction Edition)
-
-> **Zero-Error Hot-Patch Resilience, Universal Ledger Offset Fallback, 1-Tap Direct Balance Correction, and Frontend Balance Recalculation.**
-
-- 🛡️ **Resilient Ledger Offset Fallback & Zero-Error Hot-Patch Guarantee**:
-  - Eliminated the runtime error `delete failed window.api.customers.deleteledgerEntry is not a function` when hot-patching older base app installations.
-  - Automatically applies a universal mathematical ledger offset using existing `adjust` and `revoke` APIs if native backend IPC is unavailable, guaranteeing zero downtime.
-- ✏️ **1-Tap Direct "Set Exact Balance" Tool in Utang Modal**:
-  - Added a dedicated Cupertino **Set / Fix Balance** (`Pencil`) button in the customer Balance status card to directly input verified customer debt figures (e.g. ₱325,065.00).
-- 🔄 **Resilient Frontend Balance Recalculation Engine**:
-  - `Sync Balance` (`RotateCcw`) calculates running debt chronologically from loaded ledger items and synchronizes customer balance instantly.
-
-## ✨ What's New in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition)
-
-> **Split / Mixed Payment POS Checkout, Root-Cause Utang Double-Reversal Fix, Interactive Ledger Row Deletion, and One-Tap Balance Re-Sync.**
-
-- 🔀 **Apple-Grade Split / Mixed Payment POS Checkout**:
-  - Integrated fluid 2-pill Cupertino mode switcher in `CheckoutModal`: `[ Single Payment ] [ 🔀 Split / Mixed Payment ]`.
-  - Cashiers can split charges across Cash, GCash, Maya, MariBank, and Utang with 1-tap `Fill Remaining` buttons and live Sukli (Change) calculation.
-- 🛡️ **Root-Cause Utang Double-Reversal Fix**:
-  - Guarded `deleteTransaction` to prevent deleting already-voided credit sales from applying duplicate reversals.
-- 🗑️ **Interactive Utang Ledger Entry Deletion & 1-Tap Re-Sync**:
-  - Added delete button (`Trash2`) on each ledger entry with Cupertino confirmation dialog and instant running balance recalculation.
-  - Added 1-tap **Sync Balance** (`RotateCcw`) button directly on the Customer Balance card in `LedgerModal`.
-
-## ✨ What's New in v1.0.86 (MariBank Checkout Integration & Fast Feature Patch Edition)
-
-> **MariBank 5-Method Apple Cupertino Grid, F12 1-Tap Checkout Accelerators, Dedicated Reference Input & Shopee/SeaBank Badging, Dual-Screen Customer TV QR Display, and Shift Reconciliation Parity.**
-
-- 🟠 **5-Payment Method Apple Cupertino Grid in Checkout Modal**:
-  - Expanded Checkout Modal from `max-w-md` (448px) to `max-w-lg` (512px) with a spacious 5-column button grid (`grid-cols-5 gap-1.5`).
-  - Integrated **MariBank** with distinct Shopee/SeaBank vibrant orange identity (`#FF6A00` border, `#FF8533` text, `Landmark` icon, and glow shadow), alongside Cash [F9], GCash [F10], Maya [F11], and Utang.
-- ⚡ **Ergonomic Hotkeys & 1-Tap Workflow Accelerators**:
-  - **Cart Screen**: Cashiers can press **`F12`** to jump immediately into Checkout with MariBank pre-selected and the reference input focused.
-  - **Modal Screen**: Pressing `F12` inside the modal instantly activates MariBank and selects the reference field.
-  - **Enter Key**: Finalizes payment with 1 tap (`Charge ₱... (Enter)`).
-- 🏷️ **Dedicated MariBank Reference Input & Customer Facing Display (CFD)**:
-  - Input header displays `MariBank Reference No. / Transaction ID` with `Shopee / SeaBank Transfer` tag and placeholder `e.g. MB-9823471 or Shopee Ref`.
-  - Dual-screen customer TV monitor displays `.badge-maribank` (`linear-gradient(135deg, #FF6A00, #EE4D2D)`), dynamic QR payload `maribank://pay?amount=...`, and prompt `"Scan with your MariBank App"`.
-- 🧾 **Thermal Receipts, Shift X/Z Reconciliation & Sales Monitor Parity**:
-  - Compact thermal receipts format `MARIBANK ₱XX.XX` with tabular numerals and reference number.
-  - Shift X-Read and Z-Read reports aggregate `maribank_c` in payment breakdown and ledger totals.
-  - Real-time Sales Monitor displays vibrant orange `MARIBANK` badge and includes digital bank payments in daily totals.
-- 🛡️ **Zero Database Risk & Instant In-App Live Patch Standard**:
-  - Completely non-breaking; no database table migrations needed (`payments.method TEXT NOT NULL`).
-  - Published via `npm run publish:patch` as a lightweight ~0.83 MB hot patch, applying live in 0.3s without restarting the desktop app.
-
-## ✨ What's New in v1.0.85 (Unified Cupertino Community Chat Minimize-to-Dock Edition)
-
-> **Seamless Minimize-to-Dock Lifecycle, In-Memory State Retention with Zero-Lag Resume, Reactive Minimized Dock Indicators & Unread Badges, and De-cluttered 330px Ergonomic Headers.**
-
-- 💬 **True Seamless Minimize-to-Dock Lifecycle**:
-  - Clicking **Minimize (`—`)** in Community Chat or TindaBot AI smoothly docks the window directly into the unified `FloatingWidgetsDock` capsule (`[ 🤖 Ask AI ] [ 💬 Chat · Min 🟢 ] [ — ]`).
-  - Completely eliminates awkward orphaned floating bars on screen, ensuring the POS checkout cart and totals remain 100% unobstructed.
-  - Active DOM state stays in memory without unmounting: draft input text, loaded messages, scroll position, audio context, and background connections resume instantly with 0.0s latency.
-- 🟢 **Reactive Minimized Dock State & Unread Pipeline**:
-  - Minimized buttons in the dock show active status indicators with live peer counters.
-  - Incoming background messages and developer announcements trigger the Web Audio chime and flash the pulsing `NEW` red badge.
-  - 1-click on `Chat` in the dock instantly pops the window back up at its exact screen coordinate.
-- 📐 **330px Ergonomic Header De-cluttering & Cupertino Standards**:
-  - Restructured header with strict `min-w-0` truncation so titles and store names never squeeze or push action buttons off-screen.
-  - Primary window controls (**Minimize to Dock**, **Close**, **Width Toggle**) are guaranteed 100% visible across all screen sizes.
-  - Width toggle icon upgraded from confusing `<Minimize2 />` to explicit `<Columns2 />` with clear tooltips (`"Compact 330px"` / `"Expand 390px"`).
-  - All tooltips standardized to 100% Strict English (`"Minimize to Dock"`, `"Close Chat"`).
-
-## ✨ What's New in v1.0.84 (Compact TindaBot & Non-Blocking POS Clearance Edition)
-
-> **Sleek 330px Compact UI, Unified Floating Widgets Dock, Non-Blocking POS Cashier Clearance, and 1-Click Distraction-Free Collapse Mode.**
-
-- 🎨 **Compact 330px AI Assistant & Community Chat**:
-  - Redesigned sleek 330px default width (reduced by 25% from 420px) and 450px height.
-  - Built-in width switcher (`⤢` / 330px ↔ 390px) in the header for comfortable multi-language reading.
-  - Micro-bar minimization (`240px × 42px`) with drag handle, live pulse dot, restore, and close buttons.
-- 🛡️ **Unified Floating Widgets Dock with POS Clearance**:
-  - Consolidated TindaBot AI and Community Chat launchers into a single compact dock: `[ 🤖 Ask AI ] [ 💬 Chat ] [ — ]`.
-  - **Zero Checkout Obstruction**: When viewing the POS Cashier screen (`page === 'pos'`), the dock automatically relocates to `right-[24.5rem]` (left of the Cart). The entire Cart column, totals, Hold, Clear, and the big `CHECKOUT` button remain 100% unobstructed.
-  - **Distraction-Free Collapse**: 1-click collapse to a miniature 36px floating badge (`[ ✦ ]`) for rush-hour cashier operations.
-- 🤝 **Side-by-Side Coexistence**:
-  - When opening both TindaBot and Community Chat, they tile side-by-side cleanly without overlapping.
-  - Header drag handles (`⠿`) allow repositioning anywhere on screen, with positions saved to local storage.
-- 🔒 **Zero-Key-Leak Desktop Vault & Multi-Model Free Pool**:
-  - Backend execution strictly in Electron Main process.
-  - Automated failover across OpenCode Free models (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`), cloud Gemini Flash Lite, and offline store handbook.
-
-## ✨ What's New in v1.0.83 (In-Store TindaBot AI Assistant & Multi-Model Free Pool Edition)
-
-> **Embedded TindaBot AI Copilot with Zero-Key-Leak Desktop Vault, Multi-Model OpenCode Free Pool Rotation, Google Gemini 2.5 Flash Lite Failover, and Draggable / Minimizable Screen Widget.**
-
-- 🤖 **TindaBot In-Store AI Copilot (`TindaAiAssistantModal.tsx` & `tindaAiKnowledge.ts`)**:
-  - Embedded friendly store mentor speaking conversational **Tagalog, Bisaya (Cebuano), and English**.
-  - Answers cashier questions with actionable deep-links (e.g. `[Buksan ang E-Wallet Audit Sheet ↗]`).
-  - Covers beginning float/funds for GCash/Maya/MariBank, Bills Payment, Telco E-Load, Senior/PWD 20% discounts, Barcode sticker printing, and thermal receipt printers.
-- 🔒 **Zero-Key-Leak Desktop Vault (`src/main/services/aiService.ts`)**:
-  - Secure main-process backend dispatch ensures system credentials and AI keys are never exposed in the React renderer, web inspector, or network tab.
-- 🔄 **Automated Multi-Model Free Failover Pool**:
-  - Pool of fast free models (**nemotron-3.5-lightning-free**, **mimo-v2.6-flash-free**, **exo-free**, **space-bunny-free**, **step-5-preview-free**) with automatic sequential failover.
-  - Automatic fallback to Gemini 2.5 Flash Lite and instant offline Store Handbook matching.
-- 🎨 **Draggable & Minimizable Widget**:
-  - Smooth drag handle (`⠿`) anywhere across the screen, minimize to single-line bar (`—` / `⤢`), and separated launcher buttons that never overlap with Community Chat.
-
-## ✨ What's New in v1.0.82 (Store Handbook Modernization, Zero-Rate-Limit Updates & Dual-Mode Patch Architecture)
-
-> **Comprehensive Store Handbook Modernization with 11 Full Operational Chapters (Including Chapter 11 on Zero-Restart Live Patches), Permanent Zero-Rate-Limit Public GitHub Redirect Fallback, Real-Time In-Memory Version Sync, and Clean Dual-Mode Update Flow.**
-
-- 📖 **Complete Store Handbook Modernization (`Handbook.tsx`)**:
-  - Expanded in-system digital handbook to **11 comprehensive operational chapters**:
-    1. *Welcome to TINDA POS:* 100% offline security, zero cloud lockout, 172 pre-seeded DTI products, and real-time Cloudflare D1 store sync dashboard.
-    2. *Daily Workflow & Shift Management:* Opening float cash, real-time Net Sales reconciliation (void handling & D1 sync), and evening cash count / Z-Reading.
-    3. *POS Terminal & Cashier Masterclass:* Fast searching (`F1`), quantity editing (`F2`), discounts (`F4`), cash (`F9`), GCash (`F10`), Utang (`F11`), hold & resume (`F8`), Terminal Tools (`F3`), and Dual-Screen TV customer display.
-    4. *Barcode Scanning:* Dual barcode engine, instant auto-capture in product form, and wireless smartphone companion with dual-canvas center-reticle crop and 120ms Wi-Fi burst tolerance.
-    5. *Inventory, Products & Multi-Units:* Piece vs case conversion math, low stock alert badges, 1-tap quick restock drawer, and near-expiry color-coded badges.
-    6. *Customer & Utang Management:* Suki credit ledgers, itemized package breakdown icon drawer, partial/full settlements, and credit limits.
-    7. *Database Backups & Zero Data Loss:* SQLite WAL durability, 1-click snapshot creation, and USB flash drive safety protocols.
-    8. *Keyboard Shortcuts Cheat Sheet:* Full reference matrix for `F1`–`F12`, `Esc`, `Alt+B`, and `Ctrl+P`.
-    9. *Troubleshooting & FAQ:* Brownout recovery, scanner trailing Enter keys, and multi-PC LAN sharing.
-    10. *Thermal Printers:* Zero-Blur integer typography, auto-detect for GOOJPRT 58H / Xprinter, Bluetooth setup, and paper scratch test.
-    11. *Software Updates & Zero-Restart Live Patches:* Dual-mode update architecture (Option A: 0.82 MB live 0.3s patch vs Option B: 130 MB full platform build), sidebar update hub, minimize to sidebar, and 24-hour smart throttle.
-  - Added direct interactive `Open Software Update Hub` button inside Chapter 11.
-- 🛡️ **Permanent Zero-Rate-Limit Update Engine (`updateTransport.ts`)**:
-  - Eliminated recurring unauthenticated GitHub REST API 403 Rate Limit errors by introducing public release redirect inspection (`releases/latest` HEAD probe).
-  - Inspects public release redirect in <100ms with zero rate limit, zero token requirement, and zero 403 network failures.
-- ⚡ **Clean Dual-Mode Update Architecture (`UpdateModal.tsx` & `updateService.ts`)**:
-  - **Option A (Fast Feature Patch):** Downloads in seconds (~0.8 MB) and hot-reloads the UI in 0.3s without restarting the desktop application, dropping SQLite connections, or losing active cashier carts.
-  - **Option B (Full Platform Build):** Dedicated standalone packages (`Setup.exe` on Windows, `AppImage` on Linux) with automated pre-update safety backup.
-  - **Real-Time Dynamic Version Sync:** Immediately updates version indicators across the modal, sidebar, and header upon patch apply.
-
-## ✨ What's New in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition)
-
-> **Complete Migration of Updates from Settings > About into the Sidebar Hub, True Zero-Restart Live Hot-Patching (Reloads in 0.3s Without Killing Processes or System Restart), and Interactive Fast Updates Nav Item.**
-
-- 📱 **100% Sidebar-Centric Update Hub**:
-  - Removed update checking and recovery cards from `Settings -> About`, dedicating the About page purely to store attribution, support, and licensing.
-  - Added a dedicated **Fast Updates** item in the main left Sidebar under *System & Guide* with dynamic pulsing `⚡ NEW` badge upon update detection.
-  - Clicking any update element opens the full Cupertino Update Hub modal with version details, release notes, and version rollback safeguards.
-- ⚡ **True Zero-Restart In-Place Live Patching Engine**:
-  - Code patches (~0.8 MB) download and unpack directly into the live application directory without closing the app, rebooting Windows, or losing cashier cart context.
-  - Fixed semver comparison boundary to ensure active patches are never prematurely cleaned up.
-  - 1-tap "Apply Live (0.3s · Zero Restart)" reloads the UI in-place in 300ms while keeping SQLite database connections, hardware barcode listeners, and local network servers active.
-
-## ✨ What's New in v1.0.78 (Real-Time Sidebar Fast Updates & Proactive Pop-up Hub Edition)
-
-> **Dedicated Real-Time Sidebar Update Center Widget, 10-Second High-Frequency Proactive Pop-up Engine, Instant GitHub CDN Raw Fallback (Bypassing API Rate Limits), and One-Tap Live Hot-Patching.**
-
-- 📱 **Dedicated Sidebar Fast Update Center Widget (`Sidebar.tsx`)**:
-  - Permanently mounted in the lower navigation sidebar directly above the cashier identity card with Cupertino translucent materials and glowing state indicators.
-  - Dynamically transitions through 4 interactive operational states:
-    - `Update Available`: Pulsing cyan status orb, `⚡ Fast Update` badge, new version pill, and 1-tap `Update Now` button.
-    - `Downloading...`: Live percentage ticker (`X%`) and animated gradient progress bar.
-    - `Ready to Apply`: Emerald glow card with 1-tap `Apply Patch (Live · 0.3s)` button.
-    - `Up to date`: Clean compact card with subtle version pill and instant manual check button (`RotateCcw`).
-- ⚡ **10-Second Proactive Pop-up Engine (`Shell.tsx` & `UpdateModal.tsx`)**:
-  - Automatically pops up the center Cupertino update modal front-and-center across all screens when an update is released.
-  - Periodic background polling reduced to 10 seconds with automatic triggers on application launch (1.5s post-boot), window focus (`focus`), and network reconnection (`online`).
-  - Cashiers never need to navigate into Settings or click "Check for Updates" manually.
-- 🛡️ **Rate-Limit-Free CDN Fallback Engine (`updateTransport.ts`)**:
-  - Added direct fallback manifest fetching from `raw.githubusercontent.com/.../latest.yml`, bypassing GitHub's unauthenticated REST API 60 req/hr rate limits during rapid polling.
-- 🚀 **Fast Hot-Patch First Pipeline**:
-  - Delivers rapid UI and bugfix updates in ~1.3 seconds via `npm run build:patch` (compressed ~0.8 MB) without requiring full 107 MB installer downloads or Windows UAC elevation.
-
-</div>
-
-## ✨ What's New in v2.0.1 (Major Release: Resilient POS Immunity, Rush ID Studio, & Cupertino Showcase Carousel Edition)
-
-> **Major Desktop Release featuring Apple Cupertino interactive sliding feature carousel showcase, bulletproof checkout crash immunity, official Rush ID studio packages, and full installer builds.**
-
-- 🌟 **Apple Cupertino Feature Showcase Carousel**:
-  - Added fluid sliding announcement carousel on the Dashboard with auto-rotation (every 6s), tactile pagination indicators, left/right spring navigation, and pause-on-hover.
-  - Interactive 1-tap quick action CTAs directly navigating to POS, Rush ID Studio, Printer Settings, CFD Hub, Utang Reminders, and F3 Calculator.
-  - Discreet expand/collapse mode with `localStorage` persistence, keeping the active POS checkout distraction-free.
-- 🛡️ **Zero-Crash POS Checkout Immunity**:
-  - Immunized checkout transaction engine against missing or deleted inventory records; items missing catalog rows are gracefully handled as custom service line items.
-  - Guarded composite bundle stock deductions against missing leaf components, ensuring cashiers are never blocked from completing a customer transaction.
-  - Sanitized checkout schema parser to strictly require positive integers or null for `product_id`.
-- 📸 **Rush ID Package & Lamination Combo**:
-  - Integrated **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with photo cut specs and rush turnaround badge.
-  - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00.
-  - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) directly on POS Quick Speed Keys.
-
-## ✨ What's New in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition)
-
-> **Complete eradication of "Product not found" checkout crash errors, resilient non-inventory line item fallbacks, official Rush ID studio packages, and 1-tap POS Fast Buttons integration.**
-
-- 🛡️ **Zero-Crash POS Checkout Immunity**:
-  - Immunized checkout transaction engine against missing or deleted inventory records; items missing catalog rows are gracefully handled as custom service line items.
-  - Guarded composite bundle stock deductions against missing leaf components, ensuring cashiers are never blocked from completing a customer transaction.
-  - Sanitized checkout schema parser to strictly require positive integers or null for `product_id`.
-- 📸 **Rush ID Package & Lamination Combo**:
-  - Integrated **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with photo cut specs and rush turnaround badge.
-  - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00.
-  - Added 1-tap **Rush ID Package** (`📸 ₱75.00`) directly on POS Quick Speed Keys.
-
-## ✨ What's New in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition)
-
-> **Complete resolution for printer and receipt customization persistence using proven dual-store synchronization, dynamic SQLite settings preservation, instant 0ms cross-component layout updates, and receipt template customization parity.**
-
-- 🖨️ **Dual-Store Persistence for Printer Studio Alignment & Layout**:
-  - Implemented the resilient dual-store engine (`tinda_printer_customization_v1`) across `useSettings` and `PrinterStudioModal`, guaranteeing user-configured printer margins and offsets never revert to defaults on reload.
-  - Dynamically retains and type-casts all database keys in SQLite `getSettings`, preventing parameter stripping on un-restarted Electron main processes.
-- ⚡ **Instant Cross-Component Live Sync & WYSIWYG Parity**:
-  - 0ms reactive synchronization between `PrinterStudioModal`, `PriceTagPrintModal`, `ReceiptPaper`, and `Settings.tsx`.
-  - On-screen receipt previews (`ReceiptPaper.tsx`) immediately render with customized margins, typography scale, line spacing, and cutter buffers.
-- 🧾 **Full Receipt Header/Footer & Thermal Engine Parity**:
-  - `buildReceiptLines` and `printSale` now fully honor `receipt_custom_header`, `receipt_custom_footer`, `receipt_show_cashier`, `receipt_show_customer`, and `receipt_show_change_breakdown`.
-- 🛡️ **Self-Healing State & Robust Factory Reset Presets**:
-  - `reconcilePrinterCustomization` seamlessly prioritizes explicit settings, recovers missing fields from local storage, self-heals local cache, and provides safe factory reset presets.
-
-## ✨ What's New in v1.0.99 (Chiteng & Receipt Studio, Dual CFD Hub, Utang Reminders & Resilient Calculator Edition)
-
-> **TINDA Print Master Studio & Chiteng CT221B Manual Alignment Customizer, Dual-Screen Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs, Utang Customer Due Date Reminders with Proactive Cashier Alerts, and Zero-Eval Resilient Quick Calculator & Universal F3 Shortcut Harmony.**
-
-- 🖨️ **TINDA Print Master Studio & Chiteng CT221B Alignment Customizer**:
-  - Live 1:1 WYSIWYG dual-tab calibration studio for Receipts (58mm/80mm) and Barcode Labels (Chiteng CT221B).
-  - Tactile alignment steppers for left margin offset (`receipt_offset_left_mm`, fixes first-letter clipping), cutter feed spacer lines (`receipt_feed_lines_end`), line spacing, and ultraBlack burn mode.
-  - 1-tap manual Windows print fallback bypassing stuck spooler ports.
-- 📱 **Customer Facing Display (CFD) Mirroring for Bills Payment & E-Wallet Hubs**:
-  - Real-time customer display for Bills Payment (biller name/icon, account details, breakdown, amount due).
-  - Real-time customer display for E-Wallet Cash In / Out (GCash/Maya/MariBank branded badges, dynamic amount breakdown, dynamic scannable QR code SVG, and live completed confirmation).
-- 👛 **Utang Notes, Collection Due Date Reminders & Proactive Notifications**:
-  - Dual-store persistent reminder notes engine (`localStorage` + SQLite `notes` metadata).
-  - Overdue and Due Today statistics, banner alerts, filter tab in Utang ledger, calendar picker presets (`Today`, `+3d`, `+7d`, `+15d`, `Month End`), promise note recording, and automatic alert in POS Checkout and Customer Picker.
-- 🧮 **Resilient Cashier Quick Calculator & F3 Shortcut Harmony**:
-  - Zero-eval Shunting-Yard arithmetic engine (100% immune to JS octal syntax errors, trailing operator crashes, and division by zero).
-  - Input focus isolation, `resetOnNext` clean number entry, `%` (Percent) calculation button, polished change / sukli calculation.
-  - Hotkey shield in `POS.tsx` blocking background `Enter` ("Out of stock" error toast eliminated!), `/`, and arrow keys while calculator is open.
-  - Global `F3` shortcut handler across all app screens with Chromium Find bar prevention.
-
-## ✨ What's New in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition)
-
-> **Fixed Root-Cause GitHub Releases CDN 302 Redirect Handling in Electron Network Transport, Eliminating the "Update encountered an error, retry download" Warning During Fast Feature Hot-Patching.**
-
-- ⚡ **Fixed In-App Feature Hot-Patch Download Engine**:
-  - Solved Chromium network transport issue where HTTP 302 redirect responses from GitHub Releases CDN (`release-assets.githubusercontent.com`) return empty `res.url` strings, which previously triggered false-positive source rejections.
-  - Added robust validation fallback and full CDN host coverage so hot-patches download, unpack, and live-reload smoothly.
-- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
-  - Permanently unlocked all 5 operational tabs without VIP crystal badges or upgrade paywalls.
-
-## ✨ What's New in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition)
-
-> **Unrestricted Access to E-Wallet & Bills Center for All Merchants, Removal of VIP Crystal Paywall Badges, Direct Operational Tab Access, and Pure Apple Cupertino Layout.**
-
-- 🔓 **Unrestricted E-Wallet & Bills Center Access**:
-  - Removed the VIP crystal badge (`💎 VIP`) from the navigation sidebar and module header.
-  - Permanently unlocked all 5 operational tabs for all merchants and cashiers: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
-  - Cashiers can immediately record Cash In, Cash Out, Utility Bills payments, and E-Load transactions without any license restrictions or paywall modals.
-- 🎨 **Streamlined Apple Cupertino User Interface**:
-  - Eliminated paywall banners and upgrade prompts inside the financial reconciliation hub.
-  - Full-featured cash register controls, fee calculation chips, thermal receipt generation, and manual OS print dialogs available natively.
-- 🛡️ **Continued Dual-Track Hot-Patch Engine & Database Safety Shield**:
-  - Instant feature updates delivered via lightweight ~0.8 MB hot-patches with zero data disruption.
-
-## ✨ What's New in v1.0.75 (Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition)
-
-> **Dual-Track Update Architecture with 5-Second In-App Feature Hot-Patching, Proactive Center Cupertino Update Alert Modal, 5-Point Steelclad Database Safety Shield, and 100% Strict English Standardization.**
-
-- ⚡ **Fast In-App Feature Hot-Patch Engine**:
-  - Eliminates the 2-minute build and 107 MB download bottleneck for minor features, UI enhancements, and bugfixes by packaging only compiled application code into a compact ~0.8 MB archive.
-  - Bundled in ~3 seconds via `npm run build:patch` (`tools/bundle_patch.mjs`) with SHA-256 verification.
-  - Downloads in ~3 seconds on Philippine store WiFi and applies seamlessly with a 2-second restart.
-- 🛡️ **5-Point Steelclad Database & User Safety Shield**:
-  - **Decoupled Data Storage**: Store SQLite database (`tindapos.db`) remains completely decoupled in `%APPDATA%\tinda-pos\database\` or `TindaPOS-Data\database\`, ensuring code updates never touch store sales or inventory.
-  - **Pre-Update Automated Backup Snapshot**: Automatically creates a verified `BEFORE_UPDATE` backup snapshot before applying code patches.
-  - **Cashier Operation Guard**: Active checkout cart ringing and payment processing lock out updates, preventing transaction interruption.
-  - **Additive Migrations Only**: Non-destructive schema updates safeguard existing products, prices, and utang balances.
-  - **Crash Sentinel & Auto-Rollback**: Automatic boot health monitor reverts to the prior stable bundle if a patch fails to boot within two consecutive attempts.
-- 🚀 **Proactive Zero-Click Apple Cupertino Update Pop-up Modal**:
-  - Directly surfaces an elegant frosted-glass modal in the center of the screen as soon as an update is detected, without requiring users to manually check Settings.
-  - Displays version badge, release highlights, and database safety guarantees with a 1-tap "Update & Restart Now (Takes 5 seconds)" action and progress tracking.
-- 🌐 **100% Strict Professional English Standardization**:
-  - Enforced pure professional English across all update dialogs, notifications, receipts, and system tools with zero dialect words.
-
-> **Complete Deletion Safeguards in E-Wallet Audit Sheet & Historical Audit Ledger, Interactive Cupertino Confirmation Modals, Dynamic Today's Audit Delete Banner, and 1-Tap Count Reset.**
-
-- 🗑️ **Interactive Cupertino Deletion for Audit Records**:
-  - Added dedicated Delete buttons (`Trash2`) with interactive Cupertino confirmation modals to each row in the Audit History ledger.
-  - Displays full audit metrics before deletion: Date, Cashier, Cash/GCash/Maya/MariBank differences, and Total Fees earned.
-- 🧹 **Bulk "Clear All Audits" Safeguard**:
-  - Added "Clear All Audits" action in the Audit History header with modal confirmation, allowing store owners to wipe test audits or start completely fresh.
-- 🔄 **Audit Sheet 1-Tap Reset & Today's Audit Delete Banner**:
-  - Added **Reset Sheet** button with `RotateCcw` icon to instantly clear all denomination inputs, float amounts, and notes.
-  - Interactive top banner on the Audit Sheet when an audit is recorded for today, featuring a 1-tap **Delete Saved Audit** button for effortless recounting.
-
-## ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition)
-
-> **Standardized Thermal Receipt Layouts Across Auto Print and Manual Print matching Retail Reference Specifications, Zero-Wrap Deterministic Timestamps, Double-Divider Total Hierarchy, and Bills Cash Tendered & Change Breakdown.**
-
-- 🧾 **Deterministic Zero-Wrap Receipt Timestamps**:
-  - Replaced wrapping date formats with compact, single-line timestamps (`MM/DD/YYYY h:mm A`, e.g. `10/08/2026 9:49 PM`).
-  - Guaranteed single-line display across narrow 58mm (32-col) and 80mm rolls on checkout receipts, test prints, X/Z shift reports, E-Wallet stubs, and Bills slips.
-- ⚡ **Standardized Double-Divider Total Hierarchy**:
-  - Grand total blocks strictly enclosed in double dividers (`================================`) above and below.
-  - Enhanced `rowsToHtml` renderer to eliminate redundant double borders when consecutive separators occur.
-- 💰 **Bills Cash Tendered & Change Calculation**:
-  - Added Cash Tendered input and real-time Change calculation to the Bills & E-Load center.
-  - Printed directly on thermal slips and manual printouts.
-- 🎯 **Ultra-Compact Typography & Strict English Standard**:
-  - Tight `line-height: 1.05`, 2mm micro-margins, and integer dot font sizing (`11px` bold headers, `10px` body, `9px` footers) for zero paper waste.
-  - 100% strict English standardization across all financial and cashier modules.
-
-## ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition)
-
-> **Native Electron Printable Inventory & Operations Documents, Dual Auto/Manual System Dialog Printing in E-Wallet Audit & History, and Complete MariBank Digital Banking Integration.**
-
-- 🖨️ **Native Inventory & Operations Document Printing Pipeline**:
-  - Replaced fragile browser popup printing with native Electron IPC `printer.printDocument`, resolving printing failures across all Windows printer drivers.
-  - Dedicated hidden BrowserWindow renderer with `@page` formatting and A4/Letter dimensions for crisp Stock on Hand Reports, Physical Count Sheets, Purchase Orders (P.O.), and Stock Adjustment Logs.
-  - Added dual **Auto Print (A4)** and **Manual Print (Dialog)** options to `InventoryPrintModal` and `PriceTagPrintModal`.
-- ⚖️ **Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger**:
-  - Upgraded audit printing IPC to support direct Windows System Print Dialog execution (`{ manual: true }`).
-  - Added dual **Auto Print** (Thermal direct) and **Manual Print** (OS Print Dialog) buttons to both the live **Audit Sheet** and the **Audit History** ledger table.
-- 🏦 **MariBank Digital Banking & E-Wallet Integration**:
-  - Added **MariBank** alongside GCash and Maya across Cash In / Out, Bills & E-Load center, transactions ledger, and shift audits.
-  - Distinct Shopee/Sea orange (`#FF6A00`) brand theme and badges.
-  - SQLite database Migration 13 for `ewallet_audits` (MariBank reconciliation float columns) and `ewallet_transactions` channel check constraints.
-  - Comprehensive thermal receipt audit printing breakdown including MariBank drawer reconciliations.
-
-## ✨ What's New in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition)
-
-> **Clean Fee Notation, Universal No-Seconds Receipt Timestamps, Next-Gen Community Chat with Emojis & Photos, Universal Store Logo & Desktop Taskbar Icon, and Staggered Dashboard Login Animations.**
-
-- 💳 **Clean Fee Notation & No-Seconds Receipts**:
-  - Removed `+` prefix from all E-Wallet and Bills fee displays, chips, table columns, and receipt slips (`Service Fee    P20.00`).
-  - Standardized thermal receipt timestamps to `{ dateStyle: 'medium', timeStyle: 'short' }` across all transactions, producing clean date/time stamps with zero seconds (e.g., `Oct 7, 2026, 10:07 PM`).
-- 💬 **Next-Gen Community Chat Overhaul**:
-  - Dragging fix: Moving the minimized pill never accidentally restores or opens the chat window.
-  - Renamed minimized label to **Chat**.
-  - Integrated 1-tap Emoji Picker (`😀 😂 😍 👍 🙏 🏪 📦 💰 🔥 👏 ❤️ 🎉 🚀 🇵🇭`) and image attachment upload/paste support with inline thumbnail rendering.
-  - Seen Receipts: See who read messages and at what time (`👁️ Seen by Cashier · 10:07 PM`).
-  - Live presence counter: Real-time `🟢 X Online` merchant indicator.
-- 🎨 **Universal Store Logo & Desktop Window Icon**:
-  - Free custom store logo upload for all stores; custom logo dynamically updates the Windows desktop taskbar and window frame icon.
-- ✨ **Cinematic Staggered Dashboard Login Animations**:
-  - Fluid CSS fade-in-up staggered entrance animations and personalized time-of-day store welcome banner.
-
-## ✨ What's New in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition)
-
-> **7-Eleven Retail Micro Thermal Spacing, Double-Divider Grand Totals, Tabular Right-Aligned E-Wallet & Bills Slips, and Express Manual Print in Cash In / Out Register.**
-
-- 🧾 **7-Eleven Micro Thermal Spacing & Double-Divider Receipts**:
-  - Standardized monospace font stack across all thermal printouts (`'Courier New', Courier, Consolas, monospace`).
-  - Added authentic double-line divider `================================` (`border-top: 3px double #000000`) before grand totals in both print CSS and screen preview.
-  - Ultra-compact vertical padding and micro-margins (`1mm 1mm 2mm 1mm`), reducing thermal roll consumption to 7-Eleven retail standards.
-  - Expanded money-line parser to right-align tabular numerals for E-Wallet and Bills slips (`Amount`, `Service Fee`, `Bill Amount`, `TOTAL PAID`, `TOTAL CASH RECEIVED`, `TOTAL CASH RELEASED`).
-- ⚡ **Express Manual Print in Cash In / Out Register**:
-  - Added direct **Manual** print button (`printEwalletReceipt(tx.id, true)`) and **Auto** print button to Recent E-Wallet Transactions on the Cash In / Out register page, allowing one-tap system print dialog invocation.
-
-## ✨ What's New in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition)
-
-> **Auto-Adjusting Laptop Screen Layout, Pinned Sticky Actions in E-Wallet & Bills, Idempotent Auth Setup Wizard, and Resilient First-Run Auto-Healing.**
-
-- 💻 **E-Wallet & Bills Responsiveness for Laptop Resolutions**:
-  - Automatically stacks forms and ledgers into full width on standard laptop displays ($1366\times 768$, $1280\times 720$) via `2xl:grid-cols-12`, eliminating horizontal table squishing.
-  - Sticky Actions column (`sticky right-0`) with drop shadow for both Bills and Transactions ledgers guarantees **Print**, **Manual Print**, and **Void / Delete** buttons remain perpetually pinned on-screen and never clipped.
-- 🛡️ **First-Run Setup Lockout Fix & Auto-Healing**:
-  - Solved `SqliteError: UNIQUE constraint failed: users.username` crash when restarting or updating into the setup wizard. Upserts existing admin credentials safely without SQLite constraint violations.
-  - Auto-heals empty or blank `store_name` in `firstRunComplete` so existing databases never falsely trap merchants in the setup wizard on restart or update.
-- 🧾 **58mm & 80mm Thermal Receipt Layout Alignment**:
-  - Clean monospace layout with right-aligned tabular numerals and double-line total borders for both automatic ESC/POS and manual Windows system dialog printing.
-
-## ✨ What's New in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition)
-
-> **Paper-Saving Micro-Tightened Thermal Receipt Spacing, Zero Centavo Clipping, Unified E-Wallet & Bills Center, Universal Manual Print, and Shelf Price Tag Label Engine.**
-
-- 🧾 **Ultra-Compact Thermal Receipt Spacing Engine (Paper-Saving Optimization)**:
-  - Responded directly to store owner feedback regarding paper roll consumption ("kalas ug papel").
-  - Tightened line-height to `1.15` and reduced line-item vertical margins from `0.15em` to `0.06em`.
-  - Compressed section separator margins, empty line gaps, and totals padding, trimming 20-30% off total receipt length.
-  - Reduced print bottom margin feed to `1.5mm` to avoid trailing empty paper waste while maintaining 100% sharp 203 DPI typography.
-- 💳 **Consolidated E-Wallet & Bills Center (Single Sidebar Module)**:
-  - Direct 1-tap price tag generation right from Inventory catalog and per-item action buttons.
-  - Multi-size presets tailored for retail and grocery operations: `30×20mm` (Micro grocery), `40×30mm` (Standard retail sticker with barcode), `50×30mm` (Wide pharmacy tag), or custom dimensions in millimeters.
-  - Generates crisp high-contrast black-and-white layouts with Product Name, Bold Peso Price (`₱99.00`), wholesale volume tiers, barcode Code128, and SKU reference.
-  - Direct output to dedicated thermal sticker label printers (Xprinter, Niimbot, TSC, Zebra) with exact micron page sizing and zero margins.
-- 📄 **Physical Inventory & Operations Printable Sheets Hub**:
-  - Accessible via `Print Sheets / P.O.` in the Inventory header with 4 professional A4 / Letter printable document templates:
-    1. **Stock on Hand Report**: Balance listing with cost price, SRP, and stock valuation.
-    2. **Physical Count Sheet**: Blind counting audit sheets with write-in boxes for manual inventory verification.
-    3. **Purchase / Restock Order (P.O.)**: Supplier order form with automated suggested reorder quantities based on low stock thresholds.
-    4. **Stock Adjustment Log**: Formal document for recording spoilage, damages, and reconciliations with signature lines.
-- 🖤 **Zero-Waste Thermal Receipt Gap & Decimal Precision Fix**:
-  - Tightened bottom feeding clearance from `10mm` to `3mm` and reduced vertical gaps from `12px` to `4px`, saving up to 40% thermal paper roll consumption per transaction.
-  - Fixed decimal clipping on narrow 58mm thermal rolls by introducing flex-aligned line items and explicit right gutter margins, guaranteeing all centavos (`.00`, `.50`, `.95`) render with 100% complete visibility.
-- 🔍 **Multi-Criteria Smart Product Search & Instant Enter-to-Punch Engine**:
-  - Search by product name, SKU, or barcode; pressing `Enter` instantly punches the matching item straight into the checkout cart without requiring down-arrow navigation.
-  - Multiplier rapid punch supported: type `5*egg` or `12*48000123` and hit `Enter` to instantly add bulk quantities.
-  - Proactive **Low-Stock Alert**: Instant warning toast whenever an item punched has $\le$ `low_stock_threshold` remaining.
-  - Upgraded **No Product Found** interactive Cupertino card with instant query clearing (`Esc`) and direct product addition.
-- ⚡ **Unified E-Wallet & Bills Center (Consolidated Single Sidebar Module)**:
-  - Unified into a single **E-Wallet & Bills** module under *Cashier & Register*, saving valuable sidebar space while centralizing store financial services.
-  - 5 Integrated Cupertino Tabs: `Cash In / Out`, `Bills & E-Load`, `Transactions`, `Audit Sheet`, and `Audit History`.
-  - **Native Hardware Thermal & Universal Manual Print**: Fully integrated with Electron's hardware printing engine (`ewallet:printBillSlip`), supporting direct thermal printing and Windows OS System Print Dialog for challenging printer setups.
-  - **Deletion & Void Safeguards**: Added interactive Cupertino confirmation modals for deleting or voiding e-wallet and bill payment records.
-- 💬 **TINDA Community Chat & Polished UI Standard**:
-  - Renamed Global Lounge to **Community Chat** across floating capsules, dialog headers, and empty states.
-  - Removed outdated "Hub" labels from user-facing navigation in favor of clean terminology (**Bills Payment & E-Load**, **TINDA POS Hardware Center**, **E-Wallet & Cash Audit**, **Multi-PC Network**).
-- 🛡️ **100% Quality Invariants Maintained**:
-  - All 416 automated vitest unit tests passing across 63 test files with 0 TypeScript compilation errors.
-
-## ✨ What's New in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition)
-
-> **Universal Manual Print Engine (Native Windows Print Dialog), Zero-Blur High-Density Thermal Typography Engine, and GOOJPRT 58H Hardware Model Support**
-
-- 🖨️ **Universal Manual Print Engine (Native Windows Print Dialog)**:
-  - Designed for challenging printers (e.g. GOOJPRT 58H / JP-58BL / KP58B-U / POS-58) that experience Windows driver spooler locking, virtual USB port delays, or driver name mismatches.
-  - Launches the native Windows System Print Dialog pre-bound to the detected thermal printer, allowing cashiers to manually choose any printer device, inspect print preferences, adjust darkness/density, or print to PDF.
-  - Added dedicated 1-tap **Manual Print** action buttons in:
-    - **Checkout Complete Modal**: Cashiers can trigger instant manual receipt printing even if automatic printing was disabled or interrupted.
-    - **Transactions Ledger & Receipt Preview**: Dedicated "Manual Print" action alongside "Print Receipt" (auto).
-    - **Terminal Tools [F3] (`PosToolsModal`)**: Hardware Hub quick strip offers both "Thermal Print" (auto) and "Manual" dialog test.
-    - **Settings -> Receipt Tab**: "Manual Test Print (Dialog)" for verifying Windows driver connection.
-    - **Automatic Manual Print Dialog Mode**: Added `manual_print_dialog` toggle in Settings so stores with strict printing workflows can open the OS dialog on every sale automatically.
-- 🖤 **Zero-Blur High-Density Thermal Typography Engine**:
-  - Fixed the root cause of blurry/faint thermal printing: Chromium previously rendered subpixel antialiased text with fractional font sizes (`9.5px`), which 203 DPI monochrome thermal heads dithered into faint, fuzzy dots.
-  - Replaced fractional font metrics with integer dot geometry (`11px` for 58mm / 32 columns, `12px` for 80mm).
-  - Injected print rules: `-webkit-font-smoothing: none !important`, `-moz-osx-font-smoothing: grayscale !important`, `font-smooth: never !important`, `text-rendering: geometricPrecision !important`, and `image-rendering: pixelated !important`.
-  - Set base thermal font-weight to `700 !important` and borders to solid `2px`/`3px` pure black (`#000000`), ensuring minimum 2-dot stroke widths so thermal pins burn pitch-black, needle-sharp text at 90mm/s.
-  - Switched Chromium print rasterizer to pure monochrome (`color: false`, `dpi: { horizontal: 203, vertical: 203 }`) to eliminate color-to-halftone dithering artifacts.
-  - Increased pre-print rasterization delay (350ms) and post-print spooler hold delay (500ms) to ensure complete buffer transmission.
-- 📖 **GOOJPRT 58H Hardware Model Matching & In-App Guide**:
-  - Expanded printer recognition regexes to match `58h`, `jp-?58`, and `kp-?58` (`KP58B-U` Bluetooth and `JP-58BL` USB models).
-  - Linked official [GOOJPRT 58H User Manual](https://manuals.plus/ae/1005008661058283) in Settings -> Receipt and Handbook Chapter 10.
-  - Documented exact Windows driver steps for setting **Print Density / Darkness** to Dark (Level 12-15), **Dithering** to None, and performing printhead cleaning with isopropyl alcohol.
-- 🛡️ **100% Quality Invariants Maintained**:
-  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
-
-## ✨ What's New in v1.0.64 (VIP Custom Logo & Universal Discount Edition)
-
-> **VIP Pro Custom Store Logo Upload, Universal Cart Discounts (% and ₱), 100% English Localization, POS Header Workspace Cleanup, and Live Sales Monitor Metric Alignment**
-
-- 🌟 **VIP Pro Custom Brand Identity & Store Logo Upload**:
-  - Store owners with active VIP Pro licenses can upload their personalized business logo (PNG, JPG, SVG, WebP up to 2MB).
-  - Stored securely in local settings and rendered within Apple-grade Cupertino squircle materials across the sidebar and headers, with live fallback to Quantum Mark.
-- 🏷️ **Universal Custom Cart Discount Engine (% and ₱)**:
-  - Cashiers can now apply flexible discounts right at the POS register: choose between statutory Senior Citizen / PWD 20% discount or custom percentage (5%, 10%, 15%, 20%, 50%, or custom input) or exact peso deduction (₱).
-  - Complete with real-time subtotal calculation and clear display on both POS cart and thermal printed tickets.
-- 🌐 **100% Professional English System-Wide Localization**:
-  - Replaced all legacy Bisaya/Filipino text across receipt tickets (`Thank you for your purchase!`, `Change`), Handbook Chapter 10, thermal printer troubleshooting, and wireless camera scanner pairing with clean professional English.
-- 🧹 **POS Register Header Workspace Cleanup**:
-  - Removed cluttered Terminal Tools button from the cashier register top bar for maximum catalog screen real estate, while retaining instant `F3` hotkey access and the permanent Sidebar footer button.
-- 📊 **Live Sales Monitor & Owner Dashboard 100% Alignment**:
-  - Re-synchronized `app:salesMonitorSummary` to query refunds and calculate Net Realized Sales (`cash + gcash + maya - refunds`), perfectly matching the Owner Dashboard metrics and strictly excluding uncollected customer credit (Utang).
-- 🛡️ **100% Quality Invariants Maintained**:
-  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
-
-## ✨ What's New in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition)
-
-> **Zero-Click Thermal Printer Auto-Detection, Automatic Paper Width Inference (58mm/80mm), Hardware Hub Auto-Detect Readiness & Zero-Config Plug-and-Play Checkout**
-
-- ⚡ **Zero-Click Thermal Printer Auto-Detection & Dynamic Binding**:
-  - Automatically identifies connected USB and Bluetooth POS receipt printers (GOOJPRT PB-58H, POS-58, JK-5802H, Xprinter, etc.) upon plug-in without requiring the user to navigate to Settings or click Save.
-  - Dynamically binds checkout receipts, shift summaries, and Z-readings to the detected printer, eliminating silent `NO_PRINTER` failures.
-- 📐 **Automatic Paper Width Inference (58mm vs 80mm)**:
-  - Smartly detects 58mm printer models (`pb-58`, `jk-58`, `pos-58`, `xp-58`, `58mm`) and auto-applies exact micron dimensions (`58,000 x 297,000 µm`) and font scaling.
-- 🧰 **Terminal Tools [F3] Auto-Detect Ready Status**:
-  - `PosToolsModal` and Sidebar tools display **Auto-Detect Ready** status and provide 1-tap thermal test printing straight from the cashier workspace.
-- 🛡️ **100% Quality Invariants Maintained**:
-  - All 414 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
-
-## ✨ What's New in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix Edition)
-
-> **Ultra-Modern Geometric Brand Mark, GOOJPRT PB-58H Zero-Margin Thermal Spooling & Blank Print Fix, Sidebar-Organized Terminal Tools [F3] & 1-Tap Diagnostic Print**
-
-- 💎 **Ultra-Modern Quantum Mark (Apple-Grade Cupertino Diamond-T)**:
-  - Completely redesigned `AppLogo.tsx` with hyper-clean Apple-grade aesthetics: translucent Cupertino squircle chassis, optical light spine ray, and balanced summation ($\Sigma$) winglets with radiant Emerald-Cyan laser gradients and VIP Pro Gold radiance.
-- 🖨️ **GOOJPRT PB-58H Zero-Margin Thermal Spooling & Blank Print Fix**:
-  - Traced and resolved the "print successful but no paper comes out" issue: eliminated hidden window premature destruction race condition during spooling, set explicit micron paper dimensions (`58,000 x 297,000 µm`), zero-margin `@page` and `@media print` CSS overrides, and 10mm bottom feed clearance.
-  - Added dedicated step-by-step diagnostic guidance in **Settings ⚙️ &rarr; Receipt** and **Handbook Chapter 10** covering thermal roll orientation (scratch test), Windows Virtual USB Port mapping (`USB001`), and feed button self-tests.
-- 🧰 **Sidebar-Organized Terminal Tools [F3] Hub**:
-  - Prominently organized the Sidebar footer with a full-width Cupertino pill button for **Terminal Tools [F3]** with hotkey badge and smooth hover micro-interactions.
-  - Added a 1-tap **Thermal Print** test action directly inside the hardware status strip for immediate printer diagnostics without switching screens.
-- 🛡️ **100% Quality Invariants Maintained**:
-  - All 411 automated vitest unit tests passing (`63/63` test files) with `0` TypeScript typecheck errors.
-
-
-## ✨ What's New in v1.0.61 (Mathematical Mass & GOOJPRT Desktop Thermal Edition)
-
-> **Mathematical Mass Identity Mark, GOOJPRT PB-58H 58mm Thermal Printer Support, Terminal Tools [F3] Hardware Hub, In-Cart Custom Unit Price, Multi-Network Phone Scanner & 58mm Handbook Guide**
-
-- 📐 **Mathematical Mass Brand Mark (The Quantum Summation T)**:
-  - High-precision geometric vector identity mark featuring an isometric hexagonal mass bounding volume, Golden Ratio ($\Phi = 1.618$) optical alignment, and a stylized mathematical summation ($\Sigma$) apex fused with the letter "T". Integrated into the Sidebar brand header and Terminal Tools modal with live hardware status pulse indicators.
-- 🖨️ **GOOJPRT PB-58H (USB + Bluetooth) Desktop Thermal Support**:
-  - Full hardware support and documentation for popular 58mm retail thermal printers (GOOJPRT PB-58H / JK-5802H / POS-58 / Xprinter). Added in-app setup guide in **Settings ⚙️ &rarr; Receipt** and published official **Chapter 10: Thermal Printers** in the offline **Store Handbook**.
-- 🧰 **Terminal Tools [F3] & Clean POS Workspace**:
-  - Consolidated 10 cluttered top-bar buttons into a single sleek Cupertino pill **Terminal Tools [F3]** in the header plus a dedicated **Tools** button in the sidebar footer.
-- 🏷️ **Line Item Custom Unit Price Editing**:
-  - Direct 1-click in-cart unit selling price override for cashiers and managers, replacing informal labels with professional **"Edit Unit Price"** modal and live subtotal calculation.
-- 📱 **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery**:
-  - Automatically identifies physical Wi-Fi/Ethernet adapters, filters out ghost/APIPA (`169.254.*`) and virtual interfaces, and offers an active adapter dropdown plus a 1-tap **Direct Snap (HTTP)** fallback to bypass mobile browser SSL warnings on iOS Safari & Android Chrome.
+---
+
+## ⚡ Quick Download & Release Assets (v2.1.4 Stable)
+
+| Asset | Size | Type | Description |
+|---|---|---|---|
+| [**TindaPOS-Setup-2.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe) | `116.7 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
+| [**TindaPOS-Portable-2.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-Feature-Patch-2.1.4.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip) | `0.94 MB` | **In-App Live Hot Patch** | Applied automatically in `0.3s` via "Check for Updates" without restarting or redownloading. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.1.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/SHA256SUMS-v2.1.4.txt) | `0.4 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-- 📜 **VIP Client Full Scrolling & Infinite Inventory Feed (Client Feedback Addressed)**:
-  - **Root Cause Solved**: Removed the hardcoded `limit: 60` query restriction and outer height trapping in `Shell.tsx` that previously caused catalog scrolling to abruptly stop after 60 items.
-  - **Continuous Infinite Pagination**: Implemented dynamic paginated auto-loading with `PAGE_SIZE = 120`, scroll-boundary listeners, `pb-28` bottom clearing, and `hasMore` tracking across both high-density table and grid views. Catalogs with 500 to 10,000+ items now scroll completely and fluidly without clipping.
-- 🧰 **Terminal Tools [F3] & Clean POS Workspace (Client Feedback Addressed)**:
-  - Consolidated 10 cluttered top-bar buttons (`Scanner Ready`, `Counter Camera`, `Pair Phone`, `Customer Screen`, `Sales Monitor`, `Petty Cash`, `E-Wallet`, `Sound On`, `Z-Reading`, `Guide`) into a single sleek Cupertino pill **Terminal Tools [F3]** in the header plus a dedicated **Tools** button in the sidebar footer.
-- 🏷️ **Line Item Custom Unit Price Editing (Client Feedback Addressed)**:
-  - Direct 1-click in-cart unit selling price override for cashiers and managers, replacing informal labels with professional **"Edit Unit Price"** modal and live subtotal calculation.
-- 📱 **Intelligent Wireless Phone Scanner Engine & Multi-Adapter Discovery (Client Feedback Addressed)**:
-  - Automatically identifies physical Wi-Fi/Ethernet adapters, filters out ghost/APIPA (`169.254.*`) and virtual interfaces, and offers an active adapter dropdown plus a 1-tap **Direct Snap (HTTP)** fallback to bypass mobile browser SSL warnings on iOS Safari & Android Chrome.
-- 💵 **Quick Cash Denomination & Increment Chips**:
-  - Added 1-Tap quick payment buttons in Cash Checkout: `Exact (₱...)`, `₱20`, `₱50`, `₱100`, `₱200`, `₱500`, `₱1,000`, and instant increment chips `+₱20`, `+₱50`, `+₱100` for ultra-fast customer change calculations.
-- 🔊 **Web Audio API Hardware Synthesizer**:
-  - Zero-asset, 100% offline audio engine with crisp high-pitched barcode scan confirmations (1300Hz-1750Hz sine), out-of-stock/error buzzers (280Hz sawtooth), cash register chime (C6-C7 arpeggio), and 1-tap header mute/unmute toggle.
-- ⚡ **Multiplier Scan & Rapid Entry Engine**:
-  - Cashiers can scan or enter `5*BARCODE` or `10*PRODUCT` to instantly add bulk quantities without tapping the plus button multiple times.
-- 🏷️ **Senior Citizen & PWD 20% Statutory Discount System**:
-  - One-click modal calculation of 20% discount on cart subtotal with OSCA / PWD booklet and ID tracking for tax compliance.
-- 🖨️ **1-Click Thermal Z-Reading / Daily Cash Balancing Print**:
-  - Quick header Z-Reading button directly prints daily sales and shift balancing reports to ESC/POS thermal printers.
-- 🛡️ **Automated 7-Day Rolling Daily SQLite Safety Snapshot & Live Inventory HUD**:
-  - Daily database backups are maintained on a 7-day rolling window with automatic pruning of older snapshots to optimize store storage. Real-time header badges for Low-Stock and Near-Expiry items with 1-click catalog filtering.
+## 🌟 Why TINDA POS? Core Superpowers
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        TINDA POS ARCHITECTURE                          │
+├──────────────────────────┬─────────────────────────────────────────────┤
+│ 🛡️ 100% Offline-First    │ Embedded SQLite database with WAL journaling│
+│                          │ Zero latency, zero cloud dependency         │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 🖨️ Thermal & Barcode Hub │ Chiteng CT221B labels + 58/80mm receipts    │
+│                          │ Pure vector Code 128 (Subset B) generator   │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 📱 1-Tap QR Cloud Sync   │ Scan screen with iPhone/Android camera      │
+│                          │ Streams to Cloudflare D1 Owner Dashboard    │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 👥 Suki Utang Ledger     │ Credit balance limits & due date alerts     │
+│                          │ Line-item mistake editing & audit history   │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 📦 Wholesale Receiving   │ Box/Case/Sack packaging multipliers         │
+│                          │ Compounded supplier discounts ("Less 5+5")  │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 🎁 Promo Bundles (BOM)   │ Loyverse-style composite inventory combiner │
+│                          │ Real-time component stock limiter           │
+├──────────────────────────┼─────────────────────────────────────────────┤
+│ 💵 E-Wallet Shift Hub    │ Daily midnight reset for Cash In/Out        │
+│                          │ 3-way reconciliation (Cash, GCash, Maya)    │
+└──────────────────────────┴─────────────────────────────────────────────┘
+```
+
+### 1. 🛡️ 100% Offline-First Local Engine
+Never lose a single sale to internet disconnects. All inventory items, customer credit ledgers, shifts, and transactions are stored directly on the cashier machine using **Better-SQLite3** with Write-Ahead Logging (WAL) and foreign-key integrity locks.
+
+### 2. 🖨️ Industrial Hardware Barcode & Label Engine
+- **Chiteng CT221B Label Printer Support**: Plug-and-play auto-detection for portable 203 DPI thermal label printers (40×30mm, 50×30mm, 30×20mm).
+- **Code 128 Vector Geometry (v2.1.3+)**: Raised vertical bar height (+120% to ~7.5–9mm physical height), ISO 15416 quiet zones, 900-weight bold tabular monospace font, and vector stroke shields for instant 1st-pass omnidirectional scanning.
+- **58mm / 80mm Receipt Printers**: Automatic ESC/POS cutter feed spacing, configurable left margin alignment (zero text clipping), and cash drawer kick pulse.
+
+### 3. 📱 1-Tap QR Code Mobile Auto-Pairing & Live Cloud Sync (v2.1.4+)
+- **Frictionless Phone Camera Setup**: Store owners scan the high-contrast QR code on the POS screen using their iPhone Camera or Android QR scanner. The owner dashboard launches and links the terminal automatically with zero typing.
+- **Copy Magic Link**: 1-click button to copy setup links for sharing via Messenger, SMS, or Viber.
+- **Background Auto-Sync Loop**: Pushes sales and shift snapshots on startup (4s grace) and recurs continuously every 3 minutes.
+- **Multi-Owner Account Resolution**: Multi-account linking on Cloudflare D1 (`store_owners` table) allowing store owners to view live sales under any linked username.
+
+### 4. 👥 Suki Customer Utang Ledger & Credit Protection
+- **Credit Limit Enforcement**: Automatic warnings and payment blocks when a customer's balance exceeds their credit limit (`credit_limit_c`).
+- **Due Date Reminders**: Calendar presets (`Today`, `+3d`, `+7d`, `+15d`, `Month End`) with proactive cashier alerts upon customer selection.
+- **Mistake Cleaner**: Edit or void utang entries with complete audit trail preservation.
+
+### 5. 📦 Wholesale Purchase Invoices & Cascading Trade Discounts
+- **Multi-Packaging Units**: Receive deliveries in wholesale packaging (`BOX`, `CASE`, `PACK`, `BUNDLE`, `SACK`, `DOZEN`) with customizable `Pcs/Unit` multipliers.
+- **Cascading Trade Discounts ("Less 5 Less 5")**: Computes real-world Philippine FMCG compounded billing formulas (`5+5+5`, `10+5`, `10/5`, `-10%-5%`, `₱50`) using deterministic sequential integer-cent arithmetic:
+  $$\text{Net} = \text{Gross} \times (1 - d_1) \times (1 - d_2) \dots (1 - d_n)$$
+- **Catalog Cost Auto-Update**: Atomically updates catalog unit cost with true net landed acquisition cost.
+
+### 6. 🎁 Loyverse-Style Promo Bundles & Composite Inventory (BOM)
+- Combine individual stock items into promotional packages or manufactured recipes.
+- Dynamic available stock monitoring calculated directly from limiting component inventory:
+  $$\text{Bundle Stock} = \min \left( \lfloor \text{Stock}_i / \text{Required}_i \rfloor \right)$$
+- Automatic recursive component stock deduction upon checkout.
+
+### 7. 💵 E-Wallet Hub & Daily Cash Drawer Reconciliation
+- Daily midnight (12:00 AM) auto-resetting totals for GCash, Maya, and MariBank Cash In / Cash Out and Bills Payment.
+- Z-Read shift closing drawer balance verification with cash breakdown calculator.
 
 ---
 
-## ✨ What's New in v1.0.59 (High-Density Enterprise Cashier Listing Table)
+## 🗂️ Repository Directory Structure
 
-> **Supermarket/Pharmacy Listing View, 1-Click Dual-Mode Switcher & Keyboard Navigation**
-
-- 📋 **High-Density Enterprise Cashier Listing Table**: 5-column supermarket listing displaying 36×36 product thumbnail avatar, product name, cyan mono SKU, barcode, category badge, real-time stock levels with safety pulse (🟢 Normal, 🟡 Low, 🔴 Out), wholesale/SRP/reference prices, in-line quantity steppers (`- count +`), and active in-cart counters.
-- 🔄 **1-Click Dual-Mode Switcher**: Instant switching between Table Listing and Card Grid modes with per-terminal persistent memory.
-- ⌨️ **High-Speed Keyboard Navigation**: `ArrowDown` / `ArrowUp` item navigation with auto-scrolling viewport and `Enter` key cart addition.
-
----
-
-## ✨ What's New in v1.0.58 (Profit Margins Restoration & Automated VIP Rollback Engine)
-
-> **Fulfilled Merchandise Margin Integrity, Hardened VIP Anti-Tamper Protection & Direct Auto-Restart ("Diritsyo Na")**
-
-- 📈 **Restored Gross Profit & True Net Profit Margin Integrity (VIP Feedback Addressed)**:
-  - Fixed an accounting distortion where uncollected customer credit (Utang) purchases artificially crashed Gross Profit into negative numbers.
-  - Gross Profit is strictly calculated from fulfilled merchandise markup (`(Gross Sales - Refunds) - COGS`), decoupling retail margins from customer debt collection schedules.
-  - Net Profit accurately computes `Gross Profit - Operating Expenses`.
-  - Daily, weekly, and monthly sales profit curves maintain realistic, accurate retail markup trajectories.
-- 🛡️ **Hardened VIP Downgrade Protection (Anti-Tamper & Security Invariants)**:
-  - Version rollback and downgrade recovery is strictly locked behind cryptographic VIP Pro license verification across IPC and UI layers.
-  - Protects store owners from unauthorized personnel downgrading to older builds to exploit patched vulnerabilities, bypass cashier restrictions, or alter sales ledgers.
-- ⚡ **Direct Execution & Automatic System Restart ("Diritsyo Na")**:
-  - Once the target version download completes, the engine spawns the installer detached and terminates the POS application cleanly after a 1.5-second buffer.
-  - Releasing SQLite database and process locks enables NSIS to seamlessly overwrite and relaunch TINDA POS into the chosen version without requiring cashiers to manually browse folders.
-  - Auto-detects runtime flavor (Portable vs Setup) to download and launch the matching executable.
-- 📊 **Professional Live Download Progress Bar**:
-  - Live IPC stream displays an Apple-standard progress bar showing exact transfer percentage and transfer volume (`X MB / Y MB`).
-- 🌐 **100% Professional English Interface**:
-  - All color schemes (`Midnight Black`, `Daylight White`, `Warm Eye-Care`, `Nordic Slate`) and guidance notes have been permanently translated into polished, professional English.
-
----
-
-## ✨ What's New in v1.0.57 (Financial Realized Revenue Model & Zero-Flicker VIP Store)
-
-> **Utang Exclusion from Realized Sales, Zero-Flicker Store Hydration & Multi-Theme Background Switcher**
-
-- 💵 **Financial Realized Revenue Model**:
-  - Uncollected store credit (Utang) is strictly excluded from Today's Realized Net Sales and Total Sales counters, standing purely in the Customer Credit Ledger until cash/digital payments are collected.
-  - For split payments (e.g. ₱50 Cash + ₱50 Utang), only the realized ₱50 Cash portion enters realized sales immediately.
-- ⚡ **Zero-Flicker VIP Store Experience**:
-  - Instant first-frame rendering without layout shifts, blinks, or banner flashes when opening E-Wallet & Audit or Settings tabs.
-  - Synchronous Zustand store hydration directly on app initialization.
-- 🎨 **Multi-Theme Eye-Care Engine**:
-  - 4 distinct theme environments designed for variable retail lighting conditions: Midnight Black (OLED contrast), Daylight White (bright sunlight/open storefront), Warm Eye-Care (soft sepia for night shifts), and Nordic Slate.
+```text
+TINDA-POS-Desktop/
+├── .agents/                   # Autonomous multi-agent coordination, memory, and skills
+│   └── skills/                # 9 Elite Specialist Subagents & audited stack skills
+├── docs/                      # Comprehensive technical documentation & guides
+│   ├── README.md              # Documentation sitemap and navigation portal
+│   ├── CASHIER-QUICK-GUIDE.md # 1-page operational cheat sheet for cashiers
+│   ├── USER-MANUAL.md         # Full 13-chapter store operations handbook
+│   ├── MASTER-SYSTEM-ARCHITECTURE.md # Main process, SQLite, and IPC design
+│   ├── MULTI_PC_AND_VPS_GUIDE.md     # Multi-terminal LAN & VPS clustering
+│   ├── RELEASE-WORKFLOW.md    # Multi-stage release quality gate specification
+│   ├── RELEASE-STATE.md       # Active release stage state machine
+│   └── releases/              # Historical release notes archive (v1.0.50 – v1.0.79)
+├── source/                    # Core Electron + React 19 + TypeScript application
+│   ├── README.md              # Source code architecture and developer guide
+│   ├── package.json           # Dependencies, scripts, and version tracking
+│   ├── electron-builder.yml   # Windows NSIS & Portable packaging specification
+│   └── src/
+│       ├── main/              # Node.js process: SQLite database, migrations, services
+│       ├── preload/           # ContextBridge secure IPC interface (window.api)
+│       ├── renderer/          # React 19 UI: Cupertino modals, pages, Zustand stores
+│       └── shared/            # Cross-process shared types, contracts, and utilities
+└── tools/                     # Packaging, patch bundling, and release automation
+    ├── README.md              # Tooling catalog and execution reference
+    ├── check_master_invariants.mjs # Pre-flight release verification gate
+    ├── bundle_patch.mjs       # Live hot-patch zip packager
+    ├── publish_patch.mjs      # Rapid in-app patch publisher
+    └── publish_v214.mjs       # Full Windows release publisher
+```
 
 ---
 
-## ✨ What's New in v1.0.56 (Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery)
+## ⌨️ Cashier High-Speed Keyboard Shortcuts
 
-> **Quad-Vault Self-Healing VIP Licensing, Zero Machine ID Drift & 1-Tap Version Rollback Recovery**
-
-- 💎 **Permanent Hardware-Anchored VIP Licensing**: Solved the issue where software updates or network switching caused VIP merchants to lose their license. The canonical Machine ID is calculated once from immutable hardware attributes (`MachineGuid` + Motherboard UUID) without volatile network interface dependencies, and locked across 4 durable storage locations (`machine.id`, registry, database).
-- 🛡️ **Quad-Vault Redundant Persistence & Self-Healing**: Licenses are mirrored synchronously across 4 vaults (`%USERPROFILE%/.tindapos/tinda_license.json`, `%APPDATA%/TINDA POS/tinda_license.json`, Windows Registry `HKCU\Software\TindaPOS\LicensePayload`, and SQLite DB `system_license_vault`). If any file is deleted or cleared by disk cleanup or updates, the system automatically detects, restores, and self-heals all vaults on startup.
-- 🔄 **Zero-Friction Legacy VIP Rescue**: Automatically detects and reconciles existing VIP Pro licenses and legacy candidate IDs, locking their status permanently so merchants never lose their VIP status and Dev Francis never has to re-issue keys.
-- ⏪ **Version Rollback & Safe Downgrade Recovery Manager (Client Requested)**:
-  - If a merchant encounters any issues or bugs with a newly installed update, they can safely 1-tap rollback to any previous version (`v1.0.55`, `v1.0.54`) directly from Settings > About or Backup & Restore.
-  - Automatically creates a verified SQLite safety backup (`createBackupSync`) before initiating rollback.
-  - Additive database migrations ensure previous versions open the existing database cleanly with zero data loss.
-  - Automatically downloads and launches the previous version's installer with real-time download tracking.
-
----
-
-## ✨ What's New in v1.0.55 (VIP E-Wallet Reconciliation Hub Polish & Zero Float)
-
-> **Zero-Typing Barcode Gun Auto-Capture, Active Input Contamination Sanitizer & Store Handbook Polish**
-
-- ⚡ **Instant Barcode Auto-Capture (Zero Manual Typing)**: When adding or editing products in Inventory, cashiers no longer need to type long 12- or 13-digit EAN/UPC barcodes. Simply scan the product package with any USB/2.4GHz barcode gun or wireless smartphone companion camera; the barcode is instantly auto-populated into the Barcode slot.
-- 🛡️ **Active Input Contamination Sanitizer**: Solves the common retail headache where scanning while focused on the product Name or Cost field would leak barcode digits into that field. High-speed keystroke bursts (<120ms) are intercepted, cleanly stripped from the focused field, and routed exclusively to the barcode slot without triggering premature form submissions.
-- 🔊 **Sub-Second Audio & Visual Feedback**: Emits an audible 1050 Hz confirmation chirp via the standard Web Audio API and displays a live pulsing status indicator (`● Auto-Capture`) alongside a green badge (`✓ Auto-captured: [code]`).
-- ⚠️ **Proactive Duplicate Barcode Detection**: Automatically cross-references the store catalog and warns if a scanned barcode is already assigned to another active item (`⚠️ Already used by [Product Name]`), preventing duplicate stock confusion.
-- 📸 **Camera & Smartphone Companion Integration**: Includes a 1-Click `"Camera / Phone"` trigger modal supporting wireless phone cameras and laptop webcams directly inside the product modal, plus individual barcode scan buttons for multi-unit (tingi) pack conversions.
-- 🔍 **Inventory List Fast-Track Scan Handler**: Scanning barcodes while browsing the main Inventory list immediately filters directly to that product if it exists, or automatically opens the "New Product" modal with the scanned barcode pre-filled if it's uncataloged.
-- 📖 **Store Handbook Modernization**: Fully upgraded Chapter 4 to standard professional English with comprehensive guides for hardware scanners, 1-Click smartphone companion pairing, and zero-typing inventory workflows.
+| Shortcut | Action | Description |
+|---|---|---|
+| **`F1`** or **`/`** | Focus Search Bar | Instant focus to search products or scan barcode gun |
+| **`F2`** or **`Enter`** | Quantity Accelerator | Change quantity of the active cart item |
+| **`F3`** | Resilient Calculator | Pop up built-in change and arithmetic calculator |
+| **`F4`** | Clear Cart | Empties the current transaction cart |
+| **`F12`** | Fast Checkout | Opens payment modal with automatic cash change |
+| **`Ctrl + S`** | Post Invoice | Atomically commit purchase receiving delivery to inventory |
+| **`Ctrl + P`** | Reprint Receipt | Print duplicate copy of the last completed sale |
 
 ---
 
-> **100% Offline Binary Epoch 41 Lock, Database Trigger Safeguards & 5 VIP Value Pillars**
+## 🖨️ Hardware Compatibility Matrix
 
-- 🔒 **100% Offline Cryptographic Anti-Downgrade & Binary Epoch Lock (Epoch 41)**: SQLite Migration 9 establishes the immutable `app_session_auth` singleton table and 3 native database triggers (`trg_anti_downgrade_sales`, `trg_anti_downgrade_shifts`, `trg_anti_downgrade_products`) inside `tindapos.db`. Legacy offline versions attempting to write to upgraded databases are immediately aborted by the SQLite engine with `EPOCH_DOWNGRADE_LOCKED`.
-- 📊 **5 Strategic Value Gating Pillars (Free Community vs ₱500 VIP Pro)**:
-  1. **Inventory**: 50-product capacity meter with real-time status bar (Brand / Amber / Rose) and seamless VIP upgrade trigger.
-  2. **Reports**: 7-day operational sales window for Free tier; lifetime sales history, CSV audit, and tax records unlocked with VIP Pro.
-  3. **Loss Prevention**: Automated Cash Drawer Variance Audit in Z-Read finalization (Shortage/Overage Guard vs Expected Cash) with live status badge and 100% professional English.
-  4. **Utang**: 15 active credit debtors capacity meter & 1-Click polite SMS/Messenger collection reminder generator.
-  5. **Branding**: Clean `[ Powered by TINDA POS Free Community ]` receipt footer; VIP Pro unlocks custom store logo and DTI/BIR tax headers.
-- ⚡ **Zero Counter Paralysis Invariant**: Daily checkout, barcode scanning, cash and GCash payments, and change calculations never freeze or block.
-- 🛡️ **Zero License Disruption Guarantee**: Existing VIP Pro licenses remain 100% valid and automatically unlock all gating pillars across your store.
-
----
-
-## ✨ What's New in v1.0.40 (Startup Single-Instance Lock & Port Collision Hardening)
-
-> **PC Startup Double-Instance Immunity, Bounded Port Fallback & Crash Dialog Elimination**
-
-- ⚡ **Synchronous Single-Instance Lock Protection**: Eliminates race conditions when the app auto-launches on Windows PC startup while the cashier also manually clicks the desktop shortcut. Secondary instances immediately exit synchronously (`process.exit(0)`), focusing the primary window and preventing port collision conflicts.
-- 🛡️ **Bounded Port Allocation with Windows Service Immunity**: Fixed auto-incrementing retry loops that previously collided with Windows system services like `CDPSvc` (TCP port `5040`). Phone Scanner and LAN Hub now enforce a strict ceiling (maximum 5 port attempts) with full `.on('error')` listeners on both HTTP and HTTPS fallback instances.
-- 🧘 **Non-Fatal Graceful Server Degradation**: If auxiliary network services encounter firewall or occupied port blocks, the application logs a non-fatal warning and allows POS cashier sales to continue running smoothly with 0% downtime.
-- 🛡️ **Global Process Exception Protection**: Integrated global `uncaughtException` and `unhandledRejection` guards in the Electron main process to prevent unexpected network/port errors from triggering raw JavaScript crash popups for end users.
+| Hardware Type | Tested & Verified Models | Status |
+|---|---|---|
+| **Thermal Label Printers** | Chiteng CT221B, Clabel CT221B, Niimbot B21/B3S, Dudian, 4Bar, TSC | ✅ Verified 100% Plug-and-Play |
+| **Receipt Printers (58mm)**| Xprinter XP-58, POS-58, Milestone, GOOJPRT, Mini Bluetooth Thermal | ✅ Verified (ESC/POS Auto-Cutter) |
+| **Receipt Printers (80mm)**| Epson TM-T88, Xprinter XP-N160M, POS-80, Bixolon SRP-350 | ✅ Verified (High-Density Black) |
+| **Barcode Scanners (1D/2D)**| Honeywell 1900, Netum C750, Eyoyo Wireless, Standard USB HID Guns | ✅ Verified (Instant 1st-Pass Scan) |
+| **Cash Drawers** | Standard RJ11 (12V / 24V) triggered via receipt printer port | ✅ Verified (`kickCashDrawer()`) |
+| **Companion Phone Scanner**| iPhone iOS 15+, Android 10+ (Built-in Camera / WebRTC) | ✅ Verified (Zero App Install) |
 
 ---
 
-## ✨ What's New in v1.0.39 (Multi-Terminal LAN Visibility, Stock Withdrawal Search, Audited Transaction Deletion & Rapid Hotkeys)
+## 💻 Developer Quickstart
 
-> **Real-Time LAN Sales Parity, Instant Withdraw Search, Permanent Audited Sale Deletion & High-Speed POS Shortcuts**
+### Prerequisites
+- **Node.js**: v20.x or v22.x or v24.x
+- **Package Manager**: npm or pnpm
+- **Operating System**: Windows 10/11 (Native) or Linux / macOS
 
-- 🔄 **Real-Time Multi-PC LAN Sales Parity**: Satellite terminals now seamlessly execute checkouts (`pos:checkout`), query transactions (`transactions:list`), process refunds, and view live cashier shifts through the Master Server. Server-Sent Events (`transactions:changed`) ensure real-time screen updates across all computers with zero manual page refreshes.
-- 🔍 **Instant Search in Withdraw Stocks Modal**: Easily search and filter through hundreds of inventory products by name, SKU, or barcode when recording damaged, expired, or spoiled goods.
-- 🗑️ **Permanent Audited Transaction Deletion**: Store managers can permanently delete voided or erroneous transactions with an optional one-click physical inventory restock, automatic Utang ledger reversal, cashier shift recalculation, and a strict safety confirmation prompt (`DELETE`).
-- ⌨️ **Rapid-Fire POS Keyboard Shortcuts (Hotkeys)**:
-  - **`F1` or `/`**: Instantly focuses and selects the product search bar.
-  - **`F2`**: Quick focus and select the quantity of the last item in the cart.
-  - **`F4`**: Quick focus the cart Discount (₱) input.
-  - **`F8`**: 1-key hold current sale.
-  - **`F9`**: Quick Cash Checkout (opens modal pre-selected to Cash).
-  - **`F10`**: Quick GCash Checkout (opens modal pre-selected to GCash).
-  - **`Enter`**: Instant charge / submit checkout.
-  - **`Esc`**: Dismiss modal, clear search, or close menu.
-- 🛡️ **Zero License Disruption Guarantee**: Existing VIP Pro licenses remain 100% active. Cryptographic machine bindings and licenses stored in `%USERPROFILE%\.tindapos` carry over automatically without requiring re-activation.
+### Installation & Development
+```bash
+# 1. Clone repository
+git clone https://github.com/Yazerukun/TINDA-POS-Source.git
+cd TINDA-POS-Desktop/source
 
----
+# 2. Install dependencies
+npm install
 
-## ✨ What's New in v1.0.36 (Multi-Terminal Local LAN Hub & Self-Hosted VPS Cloud Mirroring)
+# 3. Start local development server with Hot Module Reloading
+npm run dev
 
-> **Multi-Computer Local LAN Hub, Zero-Internet Shared Database, 6-Digit PIN Pairing & Self-Hosted VPS Mirroring**
+# 4. Run TypeScript typecheck (Zero errors required)
+npm run typecheck
 
-- 🖥️ **Local Multi-Computer LAN Hub (100% Offline)**: Run 2 or more cashier computers in the store sharing a single unified database without requiring internet. Includes **Master Server Mode (Host)** and **Satellite Terminal Mode (Client)** with real-time bidirectional product search, cart checkout, and customer utang updates.
-- 🔐 **6-Digit Security Pairing PIN & HMAC Session Tokens**: Protects your store against unauthorized Wi-Fi access. Satellite terminals must be paired using an on-screen PIN generated by the Master PC.
-- 🛡️ **Role-Based Satellite Lockdown**: Satellite computers are locked to cashier checkout operations. Destructive actions (**Reset Database**, **Restore Backup**, and **Raw File Exports**) remain strictly locked to the physical Master console.
-- ⚡ **Real-Time Inventory Broadcast (SSE)**: Sales ringing up on any terminal immediately update stock badges across all connected screens via live Server-Sent Events with zero screen refresh required.
-- ☁️ **Self-Hosted VPS Cloud Mirroring Bridge**: Store owners running their own Linux VPS ($4-$5/mo) can connect for remote sales viewing from a phone while keeping physical store checkout 100% offline-first. Complete setup instructions provided in [`docs/MULTI_PC_AND_VPS_GUIDE.md`](docs/MULTI_PC_AND_VPS_GUIDE.md).
+# 5. Execute full unit test suite (506 tests)
+npm test
 
----
+# 6. Build production Windows executables
+npm run build:win
 
-## ✨ What's New in v1.0.35 (Hands-Free Counter Camera & Zero-Click Background Scanning)
-
-> **In-Cart Docked Counter Camera, Zero-Click Background Phone Stream & 3-Way Hardware Concurrency**
-
-- 🎥 **Docked Hands-Free Counter Camera**: Cashiers no longer need to click buttons or open modal windows to scan items. The counter webcam scanner is now embedded right above the cart in the POS screen, featuring power toggle, minimize/expand drawer, camera selection, live laser reticle, and visual green flash on scan.
-- 📱 **Zero-Click Wireless Phone Scanning**: Pair a smartphone once using the QR code modal and close the dialog immediately. The phone scanner continues streaming barcodes directly into the POS cart in real time in the background.
-- ⚡ **Concurrent Three-Way Scanner Flow**: USB handheld laser scanners, docked counter webcams, and wireless companion smartphones operate concurrently with zero latency and automatic duplicate protection.
-- 🔔 **POS Header Status & Audio Feedback**: Header badges (`🟢 Phone Ready`, `📷 Counter Camera`, `🟢 Scanner Ready`) provide real-time connection status at a glance, accompanied by 920Hz audio beeps on every scan.
+# 7. Publish instant live patch (<1 MB)
+npm run publish:patch
+```
 
 ---
 
-## ✨ What's New in v1.0.34 (Multi-Frame Barcode Consensus & Product Editing Stabilization)
+## ✨ Release Changelog
 
-> **Multi-Frame Temporal Consensus, Zero Ghost Reads, Auto-SKU Generation & Product Editing Fixes**
+### 🚀 v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition) · Oct 12, 2026
+- **📱 1-Tap Mobile Phone QR Code Pairing (`Settings.tsx`, `App.tsx`, `LoginPage.tsx`)**:
+  - Scan the high-contrast QR code on the POS screen using iPhone Camera or Android QR scanner to automatically launch and connect the owner dashboard without typing Store ID or Sync Key.
+  - Added 1-click **"📋 Copy Setup Link for Messenger / SMS"** button to send direct pairing links to store owners.
+  - Added **"🌐 Open Pre-Paired on this PC"** button for instant one-click dashboard launch.
+- **🔄 Autonomous Background Auto-Sync Engine (`cloudSync.ts`, `main/index.ts`)**:
+  - Added startup backfill timer (pushes recent sales after 4s grace period on app launch).
+  - Added continuous 3-minute recurring background sync loop so sales and shifts stream live to Cloudflare D1 without requiring cashier intervention or manual "Sync Now" button clicks.
+- **👥 Multi-Owner D1 Branch Resolution (`store_owners` Table & `tinda-sync` Worker)**:
+  - Added `store_owners` linking table supporting multi-account access per branch (e.g. `mary grace flor` and `adamgrace123` for Adamgrace Minimart).
+  - Fully resolved zero-branch and zero-sales visibility for store owners.
 
-- 🛠️ **Product Editing Stabilization**: Fixed a critical validation bug where newly created products with barcodes could not be edited, throwing false `Duplicate barcode on a product unit` errors. SQLite queries now isolate external units, allowing seamless edits to product prices, names, and stock at any time.
-- 🏷️ **Deterministic Auto-SKU Generator (`SKU-XXXX`)**: Products saved without entering an SKU now automatically receive a unique sequential SKU (`SKU-0001`+), completely eliminating `UNIQUE constraint failed: products.sku` database collisions.
-- 🎯 **Multi-Frame Stability Consensus**: Both webcam and wireless phone camera scanners now require **2 consecutive frames** with the identical barcode candidate before dispatching, filtering out 99.9% of false-positive reads from packaging graphics, shadows, and reflection glare.
-- 🛒 **Zero Accidental Cart Additions**: Removed loose product fallback matches from the POS scan handler. Scanning requires an exact match on master barcode, unit barcode, or SKU, preventing random products from erroneously entering the cart.
-- ⏱️ **Extended Anti-Duplicate Debounce**: Built-in 3.5s (phone) and 3.0s (webcam) duplicate protection prevents repeated bursts when holding a product in front of the lens.
-- ⚡ **Visual Reticle Confirmation**: The phone camera reticle flashes bright green upon successful scan transmission.
-
----
-
-## ✨ What's New in v1.0.33 (Dual-Mode Secure Phone Scanner)
-
-> **HTTPS W3C Secure Context Engine, Zero-Warning Direct Photo Snap Scanner & GS1 Modulo-10 Precision Checksum**
-
-- ⚡ **Dual-Mode Phone Companion Scanner (HTTPS + HTTP)**:
-  - **Live Video Mode (HTTPS on port 3113)**: Built-in 100-year self-signed SSL certificate unlocks W3C Secure Context (`isSecureContext === true`) on mobile browsers (Android Chrome, iOS Safari), fixing the `getUserMedia` camera permission restriction. Provides continuous 60 FPS live video scanning with animated laser reticle.
-  - **Direct Snap Mode (HTTP on port 3112)**: Zero-warning native camera photo snapshot mode via `<input type="file" capture="environment">`. Works instantly across 100% of mobile browsers without certificate warnings or security bypass. Tap the camera button on phone to snap barcodes straight into the POS cart!
-- 🔄 **Adaptive Mobile Web Client**: Companion page dynamically detects browser capabilities and provides a 1-tap switcher between live video and instant photo snap modes.
-- 📱 **Desktop Mode Toggle**: Cashiers can easily switch between **⚡ Live Video Scanner** and **📸 Direct Snap Scanner** in the desktop pairing modal.
-- 🛡️ **GS1 Modulo-10 Algorithmic Verification**: Enforces official GS1 checksum validation for EAN-13, UPC-A, and EAN-8 barcodes, eliminating all false-positive and misread partial barcodes.
-- 🔌 **Physical USB Scanner 100% Preserved**: High-speed USB/wireless handheld barcode scanners continue operating simultaneously in parallel.
-
----
-
-## ✨ What's New in v1.0.30 (Universal Barcode Scanner & Multi-PC LAN Hub Blueprint)
-
-> **Driver-Free Hardware Barcode Scanner Engine, Global Keystroke Burst Interceptor & Multi-Terminal Offline LAN Blueprint**
-
-- 🎯 **Universal Hardware Barcode Scanner (Driver-Free Plug-and-Play)** — seamless out-of-the-box compatibility with 95%+ of retail handheld barcode scanners (Honeywell, Zebra, Netum, Eyoyo, generic USB/2.4G HID keyboard wedges) with zero driver installation on Windows 10/11.
-- ⚡ **Global Keystroke Burst Interceptor** — cashiers can scan barcodes anywhere on the screen without clicking the search input box first; sub-50ms keystrokes are automatically intercepted and matched items are added directly to the cart.
-- 🟢 **Live "Scanner Ready" HUD Indicator** — persistent pulsing green badge in the POS header confirms hardware scanner listening status in real time.
-- 🚫 **Out-of-Stock Protection** — immediately alerts cashiers if a scanned barcode belongs to an item with 0 sellable inventory, preventing checkout errors.
-- 🖥️ **Multi-PC LAN Hub & VPS Remote Sync Architecture** — architectural blueprint in `SYSTEM_MASTER.md` explaining why raw SQLite over SMB corrupts files, and detailing the Master-Satellite local LAN HTTP hub and VPS asynchronous replication topology.
-
----
-
-## ✨ What's New in v1.0.29 (Simple POS Backup Import & Non-Destructive Migration)
-
-> **Zero Setup Migration: Direct Simple POS JSON Ingest, Pre-Import Safety Snapshot & Complete Auth Isolation**
-
-- 📥 **Direct Simple POS JSON Backup Ingest** — seamlessly migrate existing inventory and catalog from third-party Simple POS exports (`simple_pos_secure_*.json`) directly into TINDA POS in seconds without re-encoding items manually.
-- 🗃️ **Unified Import Modal (CSV & Simple POS Backup)** — the Inventory import tool now supports both standard `.csv` spreadsheets and `.json` secure backup files with auto-format detection and live status indicators.
-- 🛡️ **Absolute User & Auth Lockout Protection** — third-party `users` arrays are strictly ignored and quarantined, guaranteeing that existing store owner and cashier credentials, PINs, and sessions are never altered, overwritten, or corrupted.
-- 🔢 **Deterministic SKU Generation** — automatically generates structured, collision-free `SP-0001`+ SKUs mapped from original numerical IDs to fulfill SQLite uniqueness constraints.
-- 🧹 **Robust Data Sanitization** — clamps negative stocks to zero, rounds fractional kilogram quantities to whole base integer units, and preserves multiple selling units.
-- 💾 **Pre-Import Safety Snapshot Backup** — auto-triggers a checkpointed SQLite database snapshot before batch import execution with 100% ACID transaction rollback on any fatal failure.
-
----
-
-## ✨ What's New in v1.0.28 (Utang Credit Sale Item-Level Breakdown & Reprint)
-
-- 📦 **Expandable Credit Sale Breakdown** — tap the package icon on any CREDIT_SALE entry in the Utang ledger to view item-by-item breakdown (product name, quantity × unit price, and subtotal).
-- 🖨️ **Direct Utang Receipt Reprint** — reprint receipts directly from the Utang ledger with one click without navigating to the Transactions history.
+### 🏷️ v2.1.3 (CT221B Barcode Instant-Scan & High-Contrast Font Edition) · Oct 12, 2026
+- **Instant 1st-Pass Laser/CCD Scan Geometry (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
+  - Raised barcode bar height (`barHeight`) by **+100% to +126%** (from 22/30px to **42px** on compact tags and **60px** on standard tags; total SVG height 55px/78px), yielding ~7.5mm–9.0mm physical height on thermal paper. Eliminates partial-decode dropouts caused by scanner beam tilt.
+  - ISO 15416 quiet zone calibrated to 10 modules, reducing total coordinate width by ~22px and cutting viewBox downscale compression by ~10% for wider, crisper bars.
+- **High-Contrast Bold Thermal Font & Anti-Hairline Stroke Shield**:
+  - Switched font stack to heavy `Consolas, 'Roboto Mono', 'Courier New', Arial, sans-serif` at `font-weight: 900` with `1.5px` tracking.
+  - Added SVG vector stroke shield (`stroke="#000000" stroke-width="0.5" paint-order="stroke fill"`), preventing 203 DPI thermal heads from dropping hairline stems to white.
+  - Increased SVG font size from 7.5px/9px to **12px/13px**, resulting in crisp ~5.5pt physical text.
 
 <details>
-<summary>📋 <b>Full Version History</b></summary>
+<summary><b>📜 View Historical Releases (v1.0.50 – v2.1.2)</b></summary>
 
 <br />
 
-| Version | Highlights |
-|---|---|
-| **v1.0.31** | Built-in Camera & Smartphone Barcode Scanner (@zxing/library), live video reticle, smartphone setup guide, physical scanner parallel mode |
-| **v1.0.30** | Universal USB barcode scanner engine (driver-free keyboard wedge), global burst interceptor, Scanner Ready HUD badge, Multi-PC LAN Hub & VPS remote sync blueprint |
-| **v1.0.29** | Simple POS JSON backup ingest, unified Import Products / Backup modal, auto-SKU generation, pre-import safety backup, auth isolation |
-| **v1.0.28** | Utang credit sale item-level breakdown (📦 package icon), direct receipt reprint from Utang ledger |
-| **v1.0.27** | Complete 172-item market catalog across 12 categories, built-in offline seed, real-time live feed, Scrapling v0.4.15 harvester |
-| **v1.0.26** | TINDA BANTAY real-time online market feed, auto live-sync on open/reconnect, pulsing green LIVE indicator, TINDA SCOUT Scrapling harvester |
-| **v1.0.25** | Price Guide modal stability fix, auto-seed catalog for empty databases, offline-first online price guide & market price reference |
-| **v1.0.24** | Offline-First Online Price Guide / Market Price Reference, DTI SRP guidance, advisory price ranges, dual-probe sync, seed catalog, Price Guide modal, and POS reference indicators |
-| **v1.0.23** | Global Responsive Table Auto-Fit across all screens, Product Picture Uploads with thumbnails, Suggested Retail Price (SRP) with Auto-Markup (+10% to +30%), and Dashboard Update Notifications |
-| **v1.0.22** | English Standardization in Utang (With Balance / Settled / All), responsive table auto-adjustment across all screens, strict column alignment in Utang & Transactions with dedicated expanded items `<tfoot>` |
-| **v1.0.21** | Utang Customer Filter Tabs (May Utang / Bayad Na / Tanan), Utang Quick Stats bar, `BAYAD NA ✓` status badges, contextual Pay/Ledger action buttons |
-| **v1.0.20** | Semantic color-coded Dashboard cards (Green Sales, Teal Profit, Red Utang, Amber Expenses); whole-peso Unit Cost validation in Restock/Receiving; aligned Receiving Details modal; `table-fixed` aligned columns in Transactions Expand items |
-| **v1.0.19** | Universal Windows↔Android `.tinda-backup` exchange; refund-aware Estimated Profit; withdrawal notes in Stock History; Reset Database RESET-gate; aligned 58/80mm receipts |
-| **v1.0.18** | Itemized accordion for Recent Transactions (Dashboard + Transactions page) |
-| **v1.0.17** | Windows Startup checkbox accessibility fix |
-| **v1.0.16** | Dual-layer Windows auto-start, profit double-deduction fix, POS discount Pesos format, receipt payment breakdown order |
-| **v1.0.15** | Utang customer selection from checkout modal |
-| **v1.0.14** | Utang customer reachability fix |
+#### v2.1.2 — CT221B Barcode Scanability & Cloud Sync Precision Edition
+- Industrial ISO 15416 barcode scanability calibration (2.5px/2.8px module widths).
+- Case-insensitive Store ID normalization on Cloudflare D1 edge pipeline.
+- Verified push backfill counter for up to 50 recent active sales on manual `syncNow`.
+
+#### v2.1.0 — Proportional Refund Immunity & Net COGS Absorption
+- Prorated refund discount invariant in `transaction.ts`, eliminating cash drawer leakage.
+- Net landed acquisition cost COGS absorption factoring cascading trade discounts.
+- Migration 15: 10 composite SQLite foreign-key indexes for sub-millisecond query performance.
+- Native cash drawer kick pulse across IPC/preload (`window.api.printer.kickCashDrawer()`).
+
+#### v2.0.9 — Purchase Invoices History Immunity & Self-Healing Migration
+- Self-healing `ensurePurchasesTables` resolving SQLite missing column/table error on existing user databases.
+- Resilient null-safe date formatting in `shortDate`.
+
+#### v2.0.8 — Multi-Packaging Units & Supplier Cascading Trade Discounts
+- Multi-packaging wholesale units (`PACK`, `BUNDLE`, `ROLL`, `BOX`, `CASE`, `DOZEN`, `SACK`, `CAN`, `BOTTLE`, `KILO`).
+- Compounded supplier trade discounts ("Less 5 Less 5", `5+5+5`, `10+5`, `10/5`).
+
+#### v2.0.7 — Daily E-Wallet Reconciliation Hub & Promo Bundles
+- Daily midnight (12:00 AM) auto-resetting totals for E-Wallet Cash In / Out.
+- Loyverse-style promo bundles with live limiting component inventory monitoring.
+
+#### v2.0.6 — Supplier Purchase Receiving Hub & Cashier Attendance
+- Wholesale purchase invoice receiving hub (`Receipt No.`, `Invoice No.`, `Supplier`, `Terms`).
+- Item-by-item sales breakdown and profit margin analytics in Reports.
+- Cashier Time-In / Time-Out attendance and automated payroll slip engine.
+
+#### v2.0.1 — Resilient POS Checkout Immunity & Cupertino Feature Showcase
+- Safeguarded checkout against missing product crashes by auto-converting to custom line items.
+- Dedicated Rush ID Studio Packages (`4x 1x1 + 2x 2x2 + 2x Passport` for ₱75.00).
+- Interactive Cupertino feature showcase banner on Dashboard.
+
+#### v1.0.99 — Chiteng & Receipt Studio Calibration & Dual CFD
+- Universal calibration studio for receipts and label stickers with real-time 1:1 canvas previews.
+- Real-time Customer Facing Display (CFD) mirroring for bills payment and e-wallet QR codes.
+- Customer utang due date reminders with calendar presets.
 
 </details>
 
 ---
 
-## 🏪 Why TINDA POS?
+## 🏛️ Development Team & The 9 Elite Specialists
 
-TINDA POS is built specifically for everyday Philippine store operations. Checkout stays usable **100% offline**, your database stays on your own computer, and the workflow is intuitive for both store owners and cashiers — no complex training needed.
+TINDA POS Desktop is architected and maintained under the leadership of **Jin** (Doctoral & Master's Degree Engineer, Master Developer, Master General & Fixer Agent All-in-One) and his roster of 9 world-class specialist agents:
 
-| Icon | Feature | Description |
-|:---:|---|---|
-| 🛒 | **Fast POS Checkout** | Instant product search, barcode scanner support, category filters, Hold/Resume sales, and quick quantity controls |
-| 💵 | **Flexible Payments** | Cash with auto-computed change (sukli), GCash, Maya, split payments, and customer Utang (credit) |
-| 📦 | **Inventory Management** | Multi-unit products (piece, sachet, pack, box), stock receiving, restock validation, withdrawals, and low-stock alerts |
-| 📅 | **Expiration Tracking** | Per-item and per-batch expiration dates with checkout warnings to prevent selling expired goods |
-| 👥 | **Complete Utang Ledger** | Customer profiles, credit limits, payment history, balance adjustments, and audit trail |
-| 🧾 | **Receipts & Shifts** | Thermal receipt printing (58mm/80mm), refunds, voids, receipt reprints, X-Read, Cash Count, and Z-Read |
-| 📊 | **Reports & Analytics** | Sales, profit margins, inventory valuation, and Utang ledgers with one-click CSV export |
-| 💾 | **Rock-Solid Backups** | Local `.tinda-backup` files, cloud sync (OneDrive / Google Drive / Dropbox), and verified restore |
-| 🔒 | **Security & Access** | PIN protection, Admin/Cashier roles, expense tracking, and seamless software auto-updates |
-
----
-
-## ⬇️ Downloads & Installers
-
-**For Windows 10 / 11 (64-bit)**
-
-| Deliverable | Description | Download Link |
-|---|---|:---:|
-| **TINDA POS Setup (Installer)** | ✅ **Recommended.** Installs TINDA POS with automatic desktop shortcut and background auto-update support. | [⬇️ Download Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe) |
-| **TINDA POS Portable** | Standalone version. Runs directly from a USB drive or folder without installation. Stores database beside the EXE. | [📦 Download Portable](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Portable-1.0.74.exe) |
-| **Official User Guide (PDF)** | Comprehensive 28-page printable step-by-step user guide with screenshots, workflows, and troubleshooting. | [📄 Download PDF Guide](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf) |
-| **Release Checksum Manifest** | SHA256 checksums to verify file integrity. | [🛡️ View SHA256SUMS](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/SHA256SUMS-v1.0.74.txt) |
-
-> ℹ️ **If Windows SmartScreen appears:** click **"More info" → "Run anyway"**. This is standard for newly released and community-distributed Windows applications.
-
-🔗 *View all past releases and changelogs on the [GitHub Releases Page](https://github.com/Yazerukun/TINDA-POS/releases).*
-
----
-
-## 🚀 Quick Start (5 Easy Steps)
-
-1. **Install:** Run `TindaPOS-Setup-1.0.27.exe` and launch the application.
-2. **First-Run Wizard:** Enter your store name, set your admin password and PIN, and customize receipt header/footer details.
-3. **Add Products:** Open **Inventory** → add your items with purchase cost (whole pesos), selling prices, units, and initial stock.
-4. **Setup Printer:** Go to **Settings → Receipt / Printer**, select your thermal printer (58mm or 80mm), and click **Test Print**.
-5. **Start Selling:** Open **POS**, search or scan an item, and complete your first sale!
-
----
-
-## 💳 Payment Methods & Utang Management
-
-### Payment Types
-
-| Method | How It Works |
-|---|---|
-| **Cash** | Enter amount tendered — change (*sukli*) is automatically calculated in real-time. |
-| **GCash / Maya** | Enter the transaction reference number for auditing and balance reconciliation. |
-| **Utang (Credit)** | Select the customer first, verify credit balance, and charge to their account ledger. |
-| **Split Payment** | Click **Add Payment** to combine multiple payment methods (e.g. Part Cash + Part GCash) in a single transaction. |
-
-### 👥 Utang (Credit) Flow
-To prevent charging the wrong customer, TINDA POS features a strict safety check:
-1. In POS checkout, click **Select Customer** under *Select the borrower*.
-2. Search by customer name or phone number.
-3. Click the customer row — the selected customer is highlighted with a green checkmark `✓`.
-4. Confirm **Selected: [Customer Name] ✓** before charging.
-5. If no customer is selected, the system blocks Utang checkout with a helpful prompt.
-
----
-
-## 🔍 Transactions & Expand Items View
-
-Click the **▾ chevron** beside any receipt number in the **Transactions** table to inspect itemized details inline:
-
-| Product | Qty | Unit Price | Subtotal |
-|---|:---:|---:|---:|
-| Nescafe Classic 50g Refill | 2 pcs | ₱45.00 | ₱90.00 |
-| Bear Brand Powdered Milk 33g | 5 sachets | ₱12.00 | ₱60.00 |
-| San Miguel Pale Pilsen 330ml | 3 bottles | ₱65.00 | ₱195.00 |
-
-* **Footer Breakdown:** Displays payment methods used, applied discounts, and bold grand total.
-* **Precise Alignment:** In v1.0.20+, `Qty`, `Unit Price`, and `Subtotal` columns are fixed-width and right-aligned with monospace tabular figures (`font-mono tabular-nums`) so numbers line up perfectly across every transaction.
-
----
-
-## 🔄 Automatic Software Updates
-
-For users on the **Setup** edition, updating is fully automated:
-1. Open **Settings → About → Software Update → Check for Updates**.
-2. TINDA POS downloads the update in the background with progress indicator (0–100%).
-3. Click **Restart & Install** once the download completes.
-4. A safety database backup is created automatically before the update is applied.
-
-> 💡 **Seamless Upgrade:** Users on previous versions (v1.0.19, v1.0.20, v1.0.21, v1.0.22, v1.0.23, v1.0.24, v1.0.25, v1.0.26) will automatically detect and upgrade to **v1.0.27** with zero data loss or manual re-configuration.
-
----
-
-## 💾 Database Safety & Backups
-
-Your store database is stored safely at:
-`%APPDATA%\TINDA POS\database\tindapos.db`
-
-* **Automatic Backups:** Created on system checkpoints, database resets, and software updates.
-* **Manual Backups:** Open **Backup** → click **Create Backup** to generate a timestamped `.tinda-backup` file.
-* **Cloud Sync:** Select your OneDrive, Google Drive, or Dropbox local sync folder as the backup destination.
-* **Data Guarantee:** Uninstalling or upgrading TINDA POS **never deletes your database**. Your sales records, inventory, and customer utang history remain 100% intact.
-
----
-
-## 🔁 Shifts, Cash Count, X-Read & Z-Read
-
-| Operation | Purpose & Timing |
-|---|---|
-| **X-Read** | Non-final mid-shift summary. Check current sales, cash drawer status, and transaction totals anytime without closing the shift. |
-| **Cash Count** | Physical bill and coin drawer count. Must be completed and saved while the shift is still active. |
-| **Z-Read** | Official end-of-day shift closing report. Finalizes the cashier shift and prints the end-of-day summary receipt. |
-
----
-
-## 🛠️ Common Troubleshooting
-
-| Issue | Recommended Solution |
-|---|---|
-| **Utang button disabled** | Ensure a customer is selected first under *Select the borrower* until the `✓` badge appears. |
-| **Printer not printing** | Check power and USB connection, verify printer selection in **Settings → Receipt**, and run a **Test Print**. |
-| **Cash discrepancy** | Review starting drawer float, logged cash sales, recorded expenses, refunds, and Cash Count breakdown. |
-| **Unit Cost validation error** | Restock Unit Cost requires whole peso amounts (e.g. ₱5, ₱10, ₱25 — no centavos like .10 or .50). |
-| **Update check failed** | Confirm internet connection, wait 30 seconds, and click *Check for Updates* again. |
-
-When reporting issues on [GitHub Issues](https://github.com/Yazerukun/TINDA-POS/issues), please specify:
-* App version (e.g., `v1.0.24`)
-* Edition (Setup or Portable)
-* Brief description and screenshot (please blur any sensitive customer names)
-
----
-
-## 🧑‍💻 Technical Stack & Development
-
-TINDA POS is built with modern desktop and web technologies:
-* **Framework:** Electron & Vite
-* **Frontend:** React 19, TypeScript, Tailwind CSS, Lucide Icons, Zustand
-* **Database:** SQLite with `better-sqlite3` (WAL mode enabled)
-* **Testing:** Vitest (411/411 passing tests across 63 test suites)
-
-```bash
-# Clone and run locally
-cd source
-npm install
-
-# Start development environment
-npm run dev
-
-# Run quality & verification gates
-npm run typecheck    # TypeScript verification (0 errors)
-npm run lint         # ESLint code quality
-npm test             # Vitest test suite (411/411 passing)
-npm run build        # Production bundle
-```
+| Specialist | Codename | Domain & Responsibilities |
+|---|---|---|
+| ⚡ **UI Speed Coder** | `FLASH` | React 19, Tailwind CSS, fluid Apple Cupertino animations & gestures |
+| 🔬 **Bug Detective** | `SHERLOCK` | Systematic root-cause bug hunting, crash forensics & error reproduction |
+| 🛡️ **Security Shield** | `IRONCLAD` | Ed25519 VIP licensing, SQL injection immunity & data protection |
+| 📊 **Analytics & SQL** | `ORACLE` | Financial mathematics, sales aggregation, Z-reading & reporting engines |
+| 🚀 **Deploy & Packaging**| `FALCON` | Fast feature hot-patch publisher, Windows NSIS packaging & releases |
+| 🧪 **QA & Testing** | `VIPER` | Vitest unit test suite, TypeScript strict typecheck & release gates |
+| 📐 **Software Architect**| `BLUEPRINT` | Architecture design, ponytail minimalism & YAGNI code review |
+| 📝 **Documentation** | `SCRIBE` | Release notes, cashier handbooks, user manuals & technical specs |
+| 🐙 **GitHub Grandmaster**| `KRAKEN` | Open-source showcase standards, README engineering & repo elegance |
 
 ---
 
 ## 📄 License
 
-**Proprietary.** Free for personal and small-business use.  
-Unauthorized resale, commercial rebranding, or redistribution without permission is strictly prohibited.
+TINDA POS is released under the **TINDA POS Community License** — Free for personal, non-commercial, and small-to-medium business (SMB) sari-sari store operations across the Philippines.
 
----
-
-<div align="center">
-
-Made with ❤️ for Philippine sari-sari stores, groceries, and small businesses.
-
-**[⬇️ Download v1.0.74 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-Setup-1.0.74.exe)** · **[📄 User Guide PDF](https://github.com/Yazerukun/TINDA-POS/releases/download/v1.0.74/TindaPOS-User-Guide.pdf)** · **[💬 Community Issues](https://github.com/Yazerukun/TINDA-POS/issues)**
-
-</div>
+Copyright © 2026 TINDA POS. All rights reserved.

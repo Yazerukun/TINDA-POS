@@ -142,32 +142,59 @@ async function main() {
   console.log(`⚡ Asset:        ${patchFile} (${patchSizeMb} MB)`)
   console.log(`======================================================\n`)
 
-  const body = `## ⚡ TINDA POS ${TAG} — Live Feature Patch (0.3s Zero Restart)
+  // Dynamically extract release notes from README.md or GEMINI.md
+  let releaseNotes = ''
+  try {
+    const readmePaths = [
+      path.resolve('..', 'README.md'),
+      path.resolve('.', 'README.md'),
+      path.resolve('..', 'GEMINI.md')
+    ]
+    for (const rPath of readmePaths) {
+      if (fs.existsSync(rPath)) {
+        const text = fs.readFileSync(rPath, 'utf8')
+        const regex = new RegExp(`## ✨ What's New in ${TAG}[^\\n]*\\n([\\s\\S]*?)(?=\\n## ✨|\\n<details|$)`, 'i')
+        const match = text.match(regex)
+        if (match && match[1].trim()) {
+          releaseNotes = match[1].trim()
+          break
+        }
+      }
+    }
+  } catch {}
 
-Official Live Feature Patch Release: **${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}**
+  if (!releaseNotes) {
+    releaseNotes = `> **Live In-App Hot Patch for TINDA POS ${TAG}**\n\n- Applied in **0.3s** live without restarting the application or downloading 100MB+ full installers.\n- Seamless backward compatibility with all local SQLite store data and hardware peripherals.`
+  }
+
+  const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const body = `## ⚡ TINDA POS ${TAG} — Live Feature Hot Patch
+
+> **Official Fast Feature Patch Release · ${todayStr}**  
+> *Cashiers can apply this update live in 0.3 seconds via **'Check for Updates'** with zero downtime or restart.*
+
+---
+
+### 📦 Quick Download Assets
+| Asset | Size | Type | Download Link |
+|---|---|---|---|
+| ⚡ **${patchFile}** | ${patchSizeMb} MB | In-App Live Hot Patch | [Download Patch](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${patchFile}) |
+| 🛡️ **SHA-256 Checksum** | 64 B | Verification Hash | \`${shaContent.split(' ')[0]}\` |
+
+---
 
 ### 🌟 What's New in ${TAG}:
-1. **🌟 Interactive Apple Cupertino Feature Showcase Carousel:**
-   - Smooth horizontal slide animations highlighting all core POS superpowers on the Dashboard.
-   - Auto-rotates smoothly every 6 seconds, pauses on mouse hover, with tactile pagination indicators and left/right controls.
-   - Discrete expand/collapse toggle with \`localStorage\` persistence ensuring cashiers are never distracted during rapid scanning.
-2. **🛡️ Bulletproof POS Checkout Immunity against "Product Not Found" Errors:**
-   - Eradicated cashier checkout crashes (\`Error invoking remote method 'pos:checkout': Product not found\`).
-   - If a line item or composite component is missing, deleted, or unsynced in the catalog, it is gracefully converted into a custom service line item without blocking the sale.
-   - Composite bundle recipe stock deductions are safely guarded against missing ingredient records.
-   - Sanitized input parameters so \`product_id\` is strictly positive integers or \`null\`.
-3. **📸 Dedicated Rush ID Studio Packages & Fast POS Speed Key:**
-   - Added official **Rush ID Package (4x 1x1 + 2x 2x2 + 2x Passport)** at ₱75.00 in Printing Hub with 260gsm glossy photo cut specs and rush turnaround badge.
-   - Added **Rush ID + Lamination Combo (8x 1x1 + 4x 2x2 + Pouch)** at ₱95.00 for all-in-one rush photo and badge jobs.
-   - Added 1-tap **Rush ID Package** (\`📸 ₱75.00\`) directly to the POS Quick Speed Keys grid for instantaneous ringing up.
-4. **🖨️ Printer & Receipt Customization Dual-Store Persistence & Parity:**
-   - Dual-store synchronization (\`localStorage\` + SQLite \`settings\`) ensuring all margins, coordinate offsets, and optical typography persist across restarts.
-   - 0ms cross-component live sync across \`PrinterStudioModal\`, \`PriceTagPrintModal\`, \`ReceiptPaper\`, and \`Settings\`.
+${releaseNotes}
 
-### 📦 Patch Verification Hash:
-\`\`\`
+---
+
+### 🔒 Cryptographic Verification
+\`\`\`text
 ${shaContent}
 \`\`\`
+
+🌐 **Cloud Owner Dashboard**: [https://tinda-owner-dashboard.pages.dev/](https://tinda-owner-dashboard.pages.dev/)  
+📖 **Cashier Quick Guide**: [https://github.com/Yazerukun/TINDA-POS-Source/blob/master/docs/CASHIER-QUICK-GUIDE.md](https://github.com/Yazerukun/TINDA-POS-Source/blob/master/docs/CASHIER-QUICK-GUIDE.md)
 `
 
   // 1. Check if release exists or create it

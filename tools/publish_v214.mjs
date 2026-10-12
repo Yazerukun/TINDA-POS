@@ -141,8 +141,19 @@ async function main() {
 
   const releaseNotes = `## ✨ What's New in TINDA POS ${TAG} (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)
 
-> **Official Full Executable & Feature Patch Release · October 12, 2026**
+> **Official Full Executable & Feature Patch Release · October 12, 2026**  
 > *Introduces 1-tap mobile QR code pairing for the Cloud Owner Dashboard, continuous background auto-sync loop, multi-owner account linking in Cloudflare D1, and instant 1-click magic setup links.*
+
+---
+
+### 📦 Quick Download Assets
+| Asset | Size | Type | Direct Download Link |
+|---|---|---|---|
+| 💿 **TindaPOS-Setup-2.1.4.exe** | ~116.7 MB | Official Windows NSIS Installer | [Download Setup](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/TindaPOS-Setup-2.1.4.exe) |
+| 🚀 **TindaPOS-Portable-2.1.4.exe** | ~115.8 MB | Standalone Zero-Install Executable | [Download Portable](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/TindaPOS-Portable-2.1.4.exe) |
+| ⚡ **TindaPOS-Feature-Patch-2.1.4.zip** | ~0.94 MB | Fast In-App Live Hot Patch | [Download Patch](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/TindaPOS-Feature-Patch-2.1.4.zip) |
+| 📄 **latest.yml** | ~360 B | Auto-Updater Manifest | [Download latest.yml](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/latest.yml) |
+| 🛡️ **SHA256SUMS-v2.1.4.txt** | ~310 B | Cryptographic Verification Hashes | [Download Hashes](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/SHA256SUMS-v2.1.4.txt) |
 
 ---
 
@@ -163,10 +174,10 @@ async function main() {
 
 ---
 
-### 📦 Release Assets
-- **NSIS Setup Installer:** \`TindaPOS-Setup-2.1.4.exe\` (~116 MB)
-- **Standalone Portable:** \`TindaPOS-Portable-2.1.4.exe\` (~115 MB)
-- **Fast Feature Hot Patch:** \`TindaPOS-Feature-Patch-2.1.4.zip\` (~0.94 MB)
+### 🌐 Live Cloud Infrastructure
+- **Store Owner Mobile Dashboard:** [https://tinda-owner-dashboard.pages.dev/](https://tinda-owner-dashboard.pages.dev/)
+- **Documentation & User Guide:** [https://github.com/Yazerukun/TINDA-POS-Source](https://github.com/Yazerukun/TINDA-POS-Source)
+- **Source Code Repository:** [https://github.com/Yazerukun/TINDA-POS-Source](https://github.com/Yazerukun/TINDA-POS-Source)
 `
 
   // 1. Check if release already exists

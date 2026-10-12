@@ -1,20 +1,22 @@
-# Graph Report - TINDA-POS-v1.0.37  (2026-10-10)
+# Graph Report - TINDA-POS-Desktop  (2026-10-12)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 725 files · ~661,673 words
+- Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 42 file(s) not represented in the graph (top: .blockmap 29, (none) 8, .dot 1)
 
 ## Summary
-- 4919 nodes · 8885 edges · 469 communities (285 shown, 184 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 301 edges (avg confidence: 0.92)
+- 5695 nodes · 9822 edges · 556 communities (348 shown, 208 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 342 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d8aeb5f3`
+- Built from commit: `7c6c9468`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- ref_node_fs
+- backup.ts
 - brigade_mcp_server.mjs
 - Shell.tsx
 - index.js
@@ -22,10 +24,10 @@
 - toastSuccess
 - vitest
 - SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture
-- e2e-workflow.test.ts
+- ref_node_fs
 - products.ts
-- ref_shared_types
-- Utang.tsx
+- Settings.tsx
+- react
 - TINDA POS v1.0.59 User Manual
 - POS.tsx
 - 🏪 TINDA POS
@@ -33,10 +35,10 @@
 - shared/update.ts
 - ipc/index.ts
 - gen_user_guide.py
-- useSettings
+- CustomizeCategoriesModal.tsx
 - ewallet.ts
 - shared/types.ts
-- refund-profit.test.ts
+- v206-purchases-and-item-sales.test.ts
 - Node.js Best Practices
 - Enable HPA if not active
 - TINDA POS RELEASE STATE
@@ -51,7 +53,7 @@
 - phoneScannerService.ts
 - DevOps Automator Agent Personality
 - patchService.ts
-- lanHubService.ts
+- getDb
 - Minimal Change Engineer Agent
 - Integration Agent Personality
 - UI Designer Agent Personality
@@ -65,7 +67,7 @@
 - createNotImplementedError
 - createNotImplementedError
 - TINDA POS — Project Progress
-- ref_shared_format
+- FastButtonsBar.tsx
 - scripts
 - ref_node_child_process
 - compilerOptions
@@ -87,7 +89,7 @@
 - Describe API
 - Concurrency & Parallelism
 - Mocking
-- ref_node_crypto
+- publish_v1081.mjs
 - React Composition Patterns
 - Tailwind CSS Layout Patterns
 - Tailwind CSS Documentation
@@ -102,8 +104,8 @@
 - Quick Reference
 - RELEASE PLAN — TINDA POS v1.0.8
 - TINDA POS — Cashier Quick Reference & Counter Cheat Sheet
-- updateTransport.ts
-- Reports.tsx
+- TestUpdater
+- App.tsx
 - schemas.ts
 - compilerOptions
 - 7. JavaScript Performance
@@ -123,16 +125,16 @@
 - Snapshot Testing
 - shared/format.ts
 - bundle_patch.mjs
-- .downloadPatch
+- Subagent-Driven Development
 - Software Architect Agent
 - Vite Configuration
 - vite/SKILL.md
 - Vite Plugin API
 - Multi-PC LAN Hub & Self-Hosted VPS Guide — TINDA POS
-- barcodeScanner.ts
-- ElectronUpdateTransport
+- Test-Driven Development (TDD)
+- updateTransport.ts
 - cash-count.test.ts
-- buildReceiptLines
+- useSettings
 - 6. Rendering Performance
 - Rolldown Migration (Vite 8)
 - PLAN-v1.0.32.md — TINDA POS v1.0.32 Development & Release Plan
@@ -190,7 +192,7 @@
 - Step-by-Step VPS Cloud Setup
 - TINDA POS — Windows Build Guide
 - 🌟 What's New in Version 1.0.72
-- printerCustomization.ts
+- stabilization.test.ts
 - TINDA POS LIVE
 - keygen.mjs
 - publish_v1058.mjs
@@ -209,17 +211,17 @@
 - publish_v1072.mjs
 - publish_v1073.mjs
 - publish_v1074.mjs
-- publish_v1075.mjs
+- server.cjs
 - publish_v1076.mjs
 - publish_v1077.mjs
 - publish_v1078.mjs
 - publish_v1079.mjs
 - publish_v1080.mjs
-- publish_v1084.mjs
+- Visual Companion Guide
 - publish_v1095.mjs
 - publish_v1096.mjs
 - publish_v1097.mjs
-- publish_v1098.mjs
+- getSettings
 - publish_v1099.mjs
 - 1. Eliminating Waterfalls
 - 2. Bundle Size Optimization
@@ -249,11 +251,11 @@
 - Expiration: Per Item o Per Batch
 - 🌟 Key Highlights & Engineering Advancements
 - 🌟 Key Highlights & Engineering Advancements
-- aiService.ts
+- CameraScannerModal.tsx
 - chat-worker-extension.js
 - publish_v1047.mjs
 - publish_v1048.mjs
-- publish_v1049.mjs
+- ref_node_crypto
 - publish_v1050.mjs
 - publish_v1051.mjs
 - publish_v1053.mjs
@@ -265,7 +267,7 @@
 - Ponytail
 - 8. Advanced Patterns
 - React Hook Form
-- append
+- array-complete-default-objects.md
 - Zod
 - Log
 - TINDA POS v1.0.1 — Final Stabilization Release
@@ -277,7 +279,7 @@
 - Cash Count
 - 💎 Verified VIP Badges, Animated Shimmer & Linux Auto-Updater
 - 🛡️ Bulletproof User Management & Modern Categorized Sidebar UX
-- holdSubmission.test.ts
+- Active Party Members (Hired Subagent Champions)
 - Perceivable
 - Common issues by impact
 - Ponytail Review
@@ -290,7 +292,7 @@
 - Mabilis na gabay sa araw-araw
 - Software Update
 - Settings → Data
-- 80.3 100% Manual vs Automatic Print Parity Contract
+- Creation Log: Systematic Debugging Skill
 - #getAllDecodedParams
 - #getAllDecodedParams
 - frontend-design/SKILL.md
@@ -456,7 +458,7 @@
 - RELEASE-NOTES-v1.0.14.md
 - RELEASE-NOTES-v1.0.16.md
 - RELEASE-PLAN-v1.0.15.md
-- docs/RELEASE-STATE.md
+- Session diagnosis: <session-id>
 - Customers and Utang
 - Hanapin ang kailangan mo
 - Transactions and Receipt Generation
@@ -469,96 +471,172 @@
 - dispatch
 - buildRegExpStr
 - dispatch
+- publish_v1075.mjs
+- publish_v1084.mjs
+- Code Review Reception
+- Testing CLAUDE.md Skills Documentation
+- expenses.ts
 - emit
 - parseBody
 - emit
 - parseBody
+- Root Cause Tracing
+- Systematic Debugging
+- Persuasion Principles for Skill Design
+- Finishing a Development Branch
+- Using Git Worktrees
+- Writing Skills
+- Dispatching Parallel Agents
+- Agent Definitions
+- Testing Skills With Subagents
+- Defense-in-Depth Validation
+- Writing Plans
+- [Analysis Title]
+- handleRequest
+- startServer
+- Returns: "OK" or lists conflicts
+- compilerOptions
+- Brainstorming
+- Verification Before Completion
+- Skill structure
+- helper.js
+- maybeOpenBrowser
+- codex-tools.md
+- Skill authoring best practices
+- EwalletAudit.tsx
+- publish_v202.mjs
+- issue.md
+- render-graphs.js
+- publish_v1066.mjs
+- stop-server.sh
+- Diagnosing Superpowers
+- Superpowers session diagnosis bundle
+- Case: <session-id>
+- Gemini CLI Tool Mapping
+- Hermes Agent Tool Mapping
+- REFACTOR Phase: Close Loopholes (Stay Green)
+- sync_public_api.mjs
+- Muse Tool Mapping
+- using-superpowers/SKILL.md
+- Skill Discovery Optimization (SDO)
+- Bulletproofing Skills Against Rationalization
+- receipt-layout.test.ts
+- 64. Architecture Plan & Specification: Clean Fee Notation, No-Seconds Receipt Timestamps & Next-Gen Community Chat (v1.0.71)
+- publish_v1056.mjs
+- renderBranding
+- Pressure Test 1: Emergency Production Fix
+- Pressure Test 2: Sunk Cost + Exhaustion
+- Pressure Test 3: Authority + Social Pressure
+- anthropic-best-practices.md
+- Anti-Patterns
+- Testing All Skill Types
+- RED-GREEN-REFACTOR for Skills
+- VERIFY GREEN: Pressure Testing
+- GitHub issues
+- Pi Tool Mapping
+- Evaluation and iteration
+- Checklist for effective Skills
+- Core principles
+- File Organization
+- Skill Types
+- Example: TDD Skill Bulletproofing
+- start-server.sh
+- Antigravity CLI (`agy`) Tool Mapping
+- Claude Code Tool Notes
+- 82. Zero-Crash Checkout Immunity, Cupertino Feature Carousel & Dual-Store Hardware Alignment (v2.0.1 Spec)
+- builder-check-prompt.md
+- context-safety.md
+- redaction-policy.md
+- session-discovery.md
+- array-separate-crud-operations.md
+- find-polluter.sh
+- test-academic.md
 
 ## God Nodes (most connected - your core abstractions)
-1. `toastSuccess()` - 84 edges
-2. `SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture` - 82 edges
-3. `toastError()` - 81 edges
-4. `vitest` - 78 edges
-5. `getDb()` - 68 edges
-6. `Modal()` - 68 edges
-7. `TINDA POS v1.0.59 User Manual` - 65 edges
-8. `🏪 TINDA POS` - 60 edges
-9. `react` - 56 edges
-10. `better-sqlite3` - 56 edges
+1. `toastSuccess()` - 87 edges
+2. `toastError()` - 85 edges
+3. `SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture` - 84 edges
+4. `vitest` - 81 edges
+5. `Modal()` - 71 edges
+6. `getDb()` - 70 edges
+7. `🏪 TINDA POS` - 68 edges
+8. `TINDA POS v1.0.59 User Manual` - 65 edges
+9. `better-sqlite3` - 58 edges
+10. `react` - 57 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `✨ What's New in v1.0.56 (Permanent Hardware-Anchored VIP Licensing & Version Rollback Recovery)` --references--> `createBackupSync()`  [INFERRED]
   README.md → source/src/main/repositories/backup.ts
 - `7. Complete Backup & Import Matrix (Verified Protocols)` --references--> `createBackupSync()`  [INFERRED]
   SYSTEM_MASTER.md → source/src/main/repositories/backup.ts
-- `Key Features in v1.0.58` --references--> `Settings()`  [INFERRED]
-  GEMINI.md → source/src/renderer/src/pages/Settings.tsx
-- `Key Features in v1.0.61 (Mathematical Mass Mark & GOOJPRT Thermal Support)` --references--> `Settings()`  [INFERRED]
-  GEMINI.md → source/src/renderer/src/pages/Settings.tsx
-- `81.4 Promo Bundles & Dynamic Cart Combo Engine` --references--> `evaluateCartPromos()`  [INFERRED]
-  SYSTEM_MASTER.md → source/src/renderer/src/utils/promoBundles.ts
+- `Access Errors via Optional Chaining or Lodash Get` --references--> `get()`  [INFERRED]
+  .agents/skills/react-hook-form/references/valid-error-message-strategy.md → source/src/main/repositories/cashCounts.ts
+- `2026-10-10 11:41 | agy (v2.0.1 Major Release: Full Desktop Compilation, Carousel Banner & Printing Checkout Immunity)` --references--> `getProduct()`  [INFERRED]
+  .agents/memory/session.md → source/src/main/repositories/products.ts
+- `3. Bug fixes` --references--> `lowStockProducts()`  [INFERRED]
+  docs/archive/RELEASE-PLAN-v1.0.8.md → source/src/main/repositories/products.ts
 
 ## Import Cycles
 - 3-file cycle: `source/src/main/index.ts -> source/src/main/ipc/index.ts -> source/src/main/services/checkout.ts -> source/src/main/index.ts`
 - 4-file cycle: `source/src/main/index.ts -> source/src/main/ipc/index.ts -> source/src/main/services/printing.ts -> source/src/main/services/checkout.ts -> source/src/main/index.ts`
 
-## Communities (469 total, 184 thin omitted)
+## Communities (556 total, 208 thin omitted)
 
-### Community 0 - "ref_node_fs"
-Cohesion: 0.05
-Nodes (72): Bug fixes this pass, Log, electron, readPackage(), AppDirs, clearAppDirsCache(), closeDb(), dataLocationInfo() (+64 more)
+### Community 0 - "backup.ts"
+Cohesion: 0.12
+Nodes (29): Bug fixes this pass, Log, readPackage(), appDirs, clearAppDirsCache(), dataLocationInfo(), writeModeFile(), handle() (+21 more)
 
 ### Community 1 - "brigade_mcp_server.mjs"
 Cohesion: 0.06
-Nodes (77): add(), applyEmbeddings(), applyFeedback(), atom(), backend(), backlinksTo(), bm25Score(), clampImportance() (+69 more)
+Nodes (78): add(), append(), applyEmbeddings(), applyFeedback(), atom(), backend(), backlinksTo(), bm25Score() (+70 more)
 
 ### Community 2 - "Shell.tsx"
-Cohesion: 0.06
-Nodes (57): zustand, App(), TindaAiAssistantModal(), FloatingWidgetsDock(), playNotificationChime(), resizeImageToDataUrl(), TindaCommunityChat(), ConnectionStatus() (+49 more)
+Cohesion: 0.08
+Nodes (45): zustand, TindaAiAssistantModal(), AppLogo(), AppLogoProps, FloatingWidgetsDock(), playNotificationChime(), resizeImageToDataUrl(), TindaCommunityChat() (+37 more)
 
 ### Community 5 - "toastSuccess"
 Cohesion: 0.08
-Nodes (60): Key Features in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub), Key Features in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition), Key Features in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition), Key Features in v1.0.77 (In-App Hot-Patch Redirect Engine Fix Edition), ✨ What's New in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition), ✨ What's New in v1.0.76 (Unrestricted E-Wallet & Bills Center Edition), CameraScannerModal(), CameraScannerModalProps (+52 more)
+Nodes (59): CASH_DENOMINATIONS, CashierCalculatorModal(), CashierCalculatorModalProps, colors, ExpirationAlerts(), ExpirationList(), ExpiryLabel(), labels (+51 more)
 
 ### Community 6 - "vitest"
 Cohesion: 0.08
-Nodes (37): better-sqlite3, vitest, migrate(), ensureSchemaColumns(), Migration, migrations, runMigrations(), db() (+29 more)
+Nodes (35): Stage 02 progress (this session), better-sqlite3, vitest, migrate(), ensureSchemaColumns(), Migration, migrations, runMigrations() (+27 more)
 
 ### Community 7 - "SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture"
 Cohesion: 0.03
-Nodes (60): input(), 11. Dual-Repository Security & Intellectual Property Protection Architecture, 12. In-System Knowledge Architecture & Digital Book System (`Handbook.tsx`, v1.0.31+), 14. Hands-Free Counter Camera & Zero-Click Background Scanning Architecture (v1.0.35), 15. Cryptographic Machine-Locked Licensing & Anti-Theft Architecture (v1.0.37), 16. Interactive Legal & Privacy Architecture (Privacy Policy & Terms of Service), 17. UI Scaling & Modal Accessibility Architecture (v1.0.38), 18. Multi-Terminal LAN Synchronization, Inventory Search, Audit Deletion & POS Hotkeys Engine (v1.0.39) (+52 more)
+Nodes (61): 11. Dual-Repository Security & Intellectual Property Protection Architecture, 12. In-System Knowledge Architecture & Digital Book System (`Handbook.tsx`, v1.0.31+), 14. Hands-Free Counter Camera & Zero-Click Background Scanning Architecture (v1.0.35), 15. Cryptographic Machine-Locked Licensing & Anti-Theft Architecture (v1.0.37), 16. Interactive Legal & Privacy Architecture (Privacy Policy & Terms of Service), 17. UI Scaling & Modal Accessibility Architecture (v1.0.38), 18. Multi-Terminal LAN Synchronization, Inventory Search, Audit Deletion & POS Hotkeys Engine (v1.0.39), 19. Startup Single-Instance Concurrency, Port Hardening & Crash Dialog Elimination Architecture (v1.0.40) (+53 more)
 
-### Community 8 - "e2e-workflow.test.ts"
-Cohesion: 0.08
-Nodes (40): Key Features in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition), Key Features in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition), broadcastSaleCompleted(), audit(), applyCreditEntry(), customerLedger(), deleteCreditLedgerEntry(), getCustomer() (+32 more)
+### Community 8 - "ref_node_fs"
+Cohesion: 0.06
+Nodes (41): Key Features in v1.0.101 (Resilient POS Checkout Immunity & Rush ID Package Edition), electron, closeDb(), reopenDb(), DataLocationInfo, DataMode, ModeFile, portableRootFromEnvironment() (+33 more)
 
 ### Community 9 - "products.ts"
-Cohesion: 0.07
-Nodes (53): applyExpirationStock(), batchesFor(), configureExpiration(), ExpirationStockOptions, listExpiration(), updateBatchDate(), validateExpiration(), createProduct() (+45 more)
+Cohesion: 0.06
+Nodes (62): sumExpenses(), applyExpirationStock(), batchesFor(), configureExpiration(), ExpirationStockOptions, listExpiration(), updateBatchDate(), validateExpiration() (+54 more)
 
-### Community 10 - "ref_shared_types"
-Cohesion: 0.08
-Nodes (36): Key Features in v1.0.79 (Sidebar Fast Updates & Zero-Restart Live Engine Edition), lucide-react, react, react-dom, LegalModal(), LegalModalProps, LegalTab, NetworkSettingsTab() (+28 more)
+### Community 10 - "Settings.tsx"
+Cohesion: 0.11
+Nodes (27): LegalModal(), LegalModalProps, LegalTab, NetworkSettingsTab(), RollbackModal(), VipUpgradeBanner(), VipUpgradeBannerProps, VipUpgradeModal() (+19 more)
 
-### Community 11 - "Utang.tsx"
-Cohesion: 0.08
-Nodes (41): Phase 3 — Dashboard quick row, Key Features in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition), ✨ What's New in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition), EmptyState(), EmptyStateProps, SectionCard(), StatusBadge(), PageHeader() (+33 more)
+### Community 11 - "react"
+Cohesion: 0.11
+Nodes (37): Phase 3 — Dashboard quick row, ✨ What's New in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition), lucide-react, react, FeatureCarouselBanner(), SLIDES, EmptyState(), EmptyStateProps (+29 more)
 
 ### Community 12 - "TINDA POS v1.0.59 User Manual"
 Cohesion: 0.04
 Nodes (50): 80mm and 58mm, Auto Print After Sale, Backup and Restore, Bago sa v1.0.19, Bago sa v1.0.20, Bago sa v1.0.21, Bago sa v1.0.22, Bago sa v1.0.23 (+42 more)
 
 ### Community 13 - "POS.tsx"
-Cohesion: 0.10
-Nodes (39): PromoBundlesModal(), PromoBundlesModalProps, availableBase(), calculateItemUnitPrice(), cartHasStockConflict(), hasStockConflict(), maxQuantity(), reservedBase() (+31 more)
+Cohesion: 0.09
+Nodes (48): PromoBundlesModal(), PromoBundlesModalProps, playSuccessChirp(), QuickExpenseModal(), QuickExpenseModalProps, availableBase(), calculateItemUnitPrice(), cartHasStockConflict() (+40 more)
 
 ### Community 14 - "🏪 TINDA POS"
 Cohesion: 0.04
-Nodes (49): 🔄 Automatic Software Updates, 🛠️ Common Troubleshooting, 💾 Database Safety & Backups, ⬇️ Downloads & Installers, 📄 License, Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses, 🚀 Quick Start (5 Easy Steps), 🔁 Shifts, Cash Count, X-Read & Z-Read (+41 more)
+Nodes (57): 🔄 Automatic Software Updates, 🛠️ Common Troubleshooting, 💾 Database Safety & Backups, ⬇️ Downloads & Installers, 📄 License, Offline Point-of-Sale for Philippine Sari-Sari Stores & Small Businesses, ✨ Previous: What's New in v2.0.7 (Daily E-Wallet Totals Hub & Loyverse-Style Promo Bundles Edition), ✨ Previous: What's New in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts Edition) (+49 more)
 
 ### Community 15 - "services/auth.ts"
-Cohesion: 0.10
-Nodes (35): Key Features in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition), 2026-10-04: v1.0.54 Phase 7 — Bulletproof User Management & Multi-Account Login System, makeAdmin(), makeCashier(), seedDb(), assignRoles(), createUser(), findUserByPin() (+27 more)
+Cohesion: 0.09
+Nodes (38): 2026-10-04: v1.0.54 Phase 7 — Bulletproof User Management & Multi-Account Login System, audit(), makeAdmin(), makeCashier(), seedDb(), assignRoles(), createUser(), findUserByPin() (+30 more)
 
 ### Community 16 - "shared/update.ts"
 Cohesion: 0.07
@@ -566,27 +644,27 @@ Nodes (41): 1. Goal, 2. What was built, 3. Gates, 4. Windows artifacts (BUILT ON
 
 ### Community 17 - "ipc/index.ts"
 Cohesion: 0.11
-Nodes (36): Pillar 1: Universal Settings Array Parser (`parsePinnedCategoryIds`), Phase 1 — Data plumbing (main + shared), Why renderer-only (and why that's safe for a patch), Key Features in v1.0.93 (Comprehensive Master Full Desktop Release Edition), ✨ What's New in v1.0.93 (Comprehensive Master Full Desktop Release Edition), toggleSalesMonitorWindow(), Handler, registerIpcHandlers() (+28 more)
+Nodes (27): getDbFile(), toggleSalesMonitorWindow(), Handler, registerIpcHandlers(), router, AskAiResult, askMainAiService(), OPENCODE_FREE_MODELS (+19 more)
 
 ### Community 18 - "gen_user_guide.py"
 Cohesion: 0.06
 Nodes (9): el(), H1(), sec(), compute_sha256_hex(), compute_sha512_base64(), verify_release_artifacts(), harvest_live_prices(), main() (+1 more)
 
-### Community 19 - "useSettings"
-Cohesion: 0.13
-Nodes (36): 2. Engineered Solution Architecture, Pillar 2: Client-Side Dual-Store Persistence Engine (`categoryCustomization.ts`), Pillar 3: Resilient Number Comparison & Reactive Event Sync Across UI, Key Features in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition), ✨ What's New in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition), AppLogo(), AppLogoProps, CustomizeCategoriesModal() (+28 more)
+### Community 19 - "CustomizeCategoriesModal.tsx"
+Cohesion: 0.16
+Nodes (28): 2. Engineered Solution Architecture, Pillar 2: Client-Side Dual-Store Persistence Engine (`categoryCustomization.ts`), Pillar 3: Resilient Number Comparison & Reactive Event Sync Across UI, Key Features in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition), ✨ What's New in v1.0.90 (Pinned Package & Bundle Category Hub Edition), ✨ What's New in v1.0.92 (Resilient Pinned Categories Dual-Store & Live Visibility Repair Edition), CustomizeCategoriesModal(), CustomizeCategoriesModalProps (+20 more)
 
 ### Community 20 - "ewallet.ts"
-Cohesion: 0.07
-Nodes (32): Key Features in v1.0.74 (Audit & History Delete Safeguards Edition), 1. Interactive Cupertino Deletion for E-Wallet Audit Records, 2. Bulk "Clear All Audits" Safeguard, 3. Audit Sheet 1-Tap Count Reset & Today's Audit Delete Banner, 4. 100% Quality Invariants & Automated Test Verification, TINDA POS v1.0.74 — Release Notes, 🔒 Verification & Integrity Hashes (SHA-256), 🌟 What's New in Version 1.0.74 (+24 more)
+Cohesion: 0.08
+Nodes (30): Key Features in v1.0.74 (Audit & History Delete Safeguards Edition), 1. Interactive Cupertino Deletion for E-Wallet Audit Records, 2. Bulk "Clear All Audits" Safeguard, 3. Audit Sheet 1-Tap Count Reset & Today's Audit Delete Banner, 4. 100% Quality Invariants & Automated Test Verification, TINDA POS v1.0.74 — Release Notes, 🔒 Verification & Integrity Hashes (SHA-256), 🌟 What's New in Version 1.0.74 (+22 more)
 
 ### Community 21 - "shared/types.ts"
 Cohesion: 0.05
-Nodes (39): ✅ Phase 6: VIP E-Wallet & Cash Audit Hub — GCash, Maya, Cash-In/Out & 3-Way Audit (COMPLETED in v1.0.53), cashSale, gcashSale, store, utangSale, CartItem, CloudSaleSyncItem, CloudSaleSyncPayload (+31 more)
+Nodes (40): ✅ Phase 6: VIP E-Wallet & Cash Audit Hub — GCash, Maya, Cash-In/Out & 3-Way Audit (COMPLETED in v1.0.53), CartItem, CloudSaleSyncItem, CloudSaleSyncPayload, CloudShiftSyncPayload, CloudStockSyncPayload, CreditEntryType, DashboardStats (+32 more)
 
-### Community 22 - "refund-profit.test.ts"
-Cohesion: 0.08
-Nodes (28): insertLegacyShift(), seedStore(), createCategory(), createCustomer(), createExpense(), createExpenseCategory(), getExpense(), listExpenses() (+20 more)
+### Community 22 - "v206-purchases-and-item-sales.test.ts"
+Cohesion: 0.33
+Nodes (9): TINDA POS RELEASE RESUME, Key Features in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition), ✨ Previous: What's New in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition), createPurchase(), ensurePurchasesTables(), getPurchase(), listPurchases(), nextPurchaseNo() (+1 more)
 
 ### Community 23 - "Node.js Best Practices"
 Cohesion: 0.05
@@ -602,7 +680,7 @@ Nodes (39): Active updater incident - 2026-09-12, Approved scope, Current owner-
 
 ### Community 26 - "ipc.ts"
 Cohesion: 0.08
-Nodes (38): CartPayloadItem, CheckoutPayload, CompleteSetupPayload, CustomerInput, DataLocationStatus, ExpenseInput, LoginResult, PaymentInput (+30 more)
+Nodes (40): CartPayloadItem, CheckoutPayload, CompleteSetupPayload, CustomerInput, DataLocationStatus, ExpenseInput, LoginResult, PaymentInput (+32 more)
 
 ### Community 27 - "TINDA POS Permanent Development, QA, Software Update, and Release Workflow"
 Cohesion: 0.05
@@ -621,16 +699,16 @@ Cohesion: 0.12
 Nodes (29): ANDROID_TABLES, BACKUP_EXTENSION, CANONICAL_TABLES, CanonicalTableName, FORMAT_ID, FORMAT_VERSION, SCHEMA_VERSION, WINDOWS_TABLES (+21 more)
 
 ### Community 31 - "windows-smoke.mjs"
-Cohesion: 0.08
-Nodes (30): 🚀 Advanced Capabilities, CI: Sharded, Traced, Merge-Blocking (GitHub Actions), 🚨 Critical Rules You Must Follow, Deterministic Playwright Test (No Sleeps, API Setup, Role Selectors), Flake Triage Table, Framework Depth, 🔄 Learning & Memory, Suite Operations at Scale (+22 more)
+Cohesion: 0.05
+Nodes (42): 🚀 Advanced Capabilities, CI: Sharded, Traced, Merge-Blocking (GitHub Actions), 🚨 Critical Rules You Must Follow, Deterministic Playwright Test (No Sleeps, API Setup, Role Selectors), Flake Triage Table, Framework Depth, 🔄 Learning & Memory, Suite Operations at Scale (+34 more)
 
 ### Community 32 - "priceReferences.ts"
 Cohesion: 0.15
-Nodes (28): comparePrice(), createPriceReference(), deletePriceReference(), ensureSeedData(), getPriceReference(), getPriceReferenceByBarcode(), getPriceReferenceByProductId(), linkProduct() (+20 more)
+Nodes (27): comparePrice(), createPriceReference(), deletePriceReference(), ensureSeedData(), getPriceReference(), getPriceReferenceByBarcode(), getPriceReferenceByProductId(), linkProduct() (+19 more)
 
 ### Community 33 - "LicenseService"
 Cohesion: 0.18
-Nodes (12): deleteWinRegistry(), getDatabaseConnection(), getElectronUserDataPath(), getInternalSecret(), LicenseService, PEPPER_BYTES, readWinRegistry(), StoredLicensePayload (+4 more)
+Nodes (12): deleteWinRegistry(), getDatabaseConnection(), getElectronUserDataPath(), getInternalSecret(), licenseService, PEPPER_BYTES, readWinRegistry(), StoredLicensePayload (+4 more)
 
 ### Community 34 - "phoneScannerService.ts"
 Cohesion: 0.15
@@ -644,9 +722,9 @@ Nodes (27): 🚀 Advanced Capabilities, Automate Infrastructure and Deployments,
 Cohesion: 0.19
 Nodes (19): createWindow(), applyPatchArchive(), cleanupPatch(), execFileAsync, extractZipArchive(), getPatchDir(), getPatchedEntryHtml(), getPatchManifest() (+11 more)
 
-### Community 37 - "lanHubService.ts"
-Cohesion: 0.15
-Nodes (23): emitInventoryChanged(), emitTransactionsChanged(), broadcastLanEvent(), connectSatelliteSse(), FORBIDDEN_REMOTE_CHANNELS, generatePin(), getLanStatus(), getLocalIp() (+15 more)
+### Community 37 - "getDb"
+Cohesion: 0.13
+Nodes (29): getDb(), initializeEpochLock(), listExpenses(), publicUsers(), exportCsv(), toCsv(), connectSatelliteSse(), FORBIDDEN_REMOTE_CHANNELS (+21 more)
 
 ### Community 38 - "Minimal Change Engineer Agent"
 Cohesion: 0.07
@@ -669,24 +747,20 @@ Cohesion: 0.08
 Nodes (25): Accessibility and Inclusive Design, Accessibility Leadership, 🚀 Advanced Capabilities, Create Modern Web Applications, 🚨 Critical Rules You Must Follow, Editor Integration Engineering, Frontend Developer Agent Personality, 🔄 Learning & Memory (+17 more)
 
 ### Community 43 - "toast.ts"
-Cohesion: 0.12
-Nodes (18): PRESET_DIMENSIONS, PriceTagPrintModalProps, TagSizePreset, PrinterStudioModalProps, KINDS, ToastHost(), checkConnection(), getSnapshot() (+10 more)
+Cohesion: 0.09
+Nodes (20): InvoiceLineItem, PurchaseInvoiceModalProps, STANDARD_PACKAGING_UNITS, KINDS, ToastHost(), INK_COSTS, InkCoverage, LAMINATION_COSTS (+12 more)
 
 ### Community 44 - "Performance Benchmarker Agent Personality"
 Cohesion: 0.08
 Nodes (24): 🚀 Advanced Capabilities, Advanced Performance Testing Suite Example, Capacity Planning and Scalability Assessment, Comprehensive Performance Testing, 🚨 Critical Rules You Must Follow, Infrastructure Performance, 🔄 Learning & Memory, Performance Benchmarker Agent Personality (+16 more)
-
-### Community 45 - "UpdateTransport"
-Cohesion: 0.17
-Nodes (4): UpdateService, UpdateStorage, UpdateTransport, 74. Real-Time Dynamic In-Memory Version Sync on Live Hot-Patching
 
 ### Community 46 - "TypeScript Advanced Types"
 Cohesion: 0.08
 Nodes (23): 1. Generics, 1. Infer Keyword, 2. Conditional Types, 2. Type Guards, 3. Assertion Functions, 3. Mapped Types, 4. Template Literal Types, 5. Utility Types (+15 more)
 
 ### Community 47 - "TINDA POS Desktop (Master Edition)"
-Cohesion: 0.08
-Nodes (23): Key Features in v1.0.58, Key Features in v1.0.59, Key Features in v1.0.60 (VIP Client Feedback & 10 Core Enhancements), Key Features in v1.0.61 (Mathematical Mass Mark & GOOJPRT Thermal Support), Key Features in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix), Key Features in v1.0.64 (VIP Custom Logo & Universal Discount Edition), Key Features in v1.0.71 (Next-Gen Community Chat & Universal Store Branding Edition), Key Features in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition) (+15 more)
+Cohesion: 0.06
+Nodes (33): Key Features in v1.0.58, Key Features in v1.0.59, Key Features in v1.0.60 (VIP Client Feedback & 10 Core Enhancements), Key Features in v1.0.61 (Mathematical Mass Mark & GOOJPRT Thermal Support), Key Features in v1.0.62 (Ultra-Modern Quantum Mark & GOOJPRT Hardware Fix), Key Features in v1.0.64 (VIP Custom Logo & Universal Discount Edition), Key Features in v1.0.66 (Universal Shelf Price Tags, Operations Sheets, Zero-Waste Thermal & Bills Hub), Key Features in v1.0.68 (Ultra-Compact Zero-Waste Thermal Receipt Spacing Edition) (+25 more)
 
 ### Community 48 - "createNotImplementedError"
 Cohesion: 0.08
@@ -700,21 +774,21 @@ Nodes (24): abort(), addEventListener(), assert(), binding(), cpuUsage(), create
 Cohesion: 0.09
 Nodes (22): Artifacts, Checklist, Commit, Commit trail (Phase 2), Current release — v1.0.2 Hotfix 1 (SHIPPED), Docs + release updates performed (git commit trail), Log, Native Windows CI QA run — PASS (all steps) (+14 more)
 
-### Community 51 - "ref_shared_format"
-Cohesion: 0.22
-Nodes (16): CustomizeFastButtonsModal(), CustomizeFastButtonsModalProps, EMOJI_OPTIONS, FastButtonsBar(), FastButtonsBarProps, PriceReferenceCard(), PriceReferenceCardProps, ProductImage() (+8 more)
+### Community 51 - "FastButtonsBar.tsx"
+Cohesion: 0.23
+Nodes (16): CustomizeFastButtonsModal(), CustomizeFastButtonsModalProps, EMOJI_OPTIONS, FastButtonsBar(), FastButtonsBarProps, DEFAULT_SPEED_KEYS, getStoredSpeedKeys(), resetSpeedKeysToDefault() (+8 more)
 
 ### Community 52 - "scripts"
-Cohesion: 0.09
-Nodes (23): scripts, build, build:linux, build:patch, build:win, build:win:all, build:win:portable, build:win:setup (+15 more)
+Cohesion: 0.08
+Nodes (25): scripts, build, build:linux, build:patch, build:win, build:win:all, build:win:portable, build:win:setup (+17 more)
 
 ### Community 53 - "ref_node_child_process"
-Cohesion: 0.11
-Nodes (16): code, codeLines, lines, outDir, rawContent, rawPath, BUILDS_DIR, ghRequest() (+8 more)
+Cohesion: 0.12
+Nodes (14): criticalFiles, migrationContent, code, codeLines, lines, outDir, rawContent, rawPath (+6 more)
 
 ### Community 54 - "compilerOptions"
-Cohesion: 0.09
-Nodes (20): compilerOptions, jsx, lib, module, moduleResolution, target, types, extends (+12 more)
+Cohesion: 0.17
+Nodes (11): compilerOptions, jsx, lib, module, moduleResolution, target, types, useDefineForClassFields (+3 more)
 
 ### Community 55 - "bind"
 Cohesion: 0.11
@@ -725,8 +799,8 @@ Cohesion: 0.11
 Nodes (22): bind(), createOwnerSession(), createOwnerUser(), ensureStore(), extractBearer(), findOwnerByUsername(), getBranchDetail(), getLinkedBranches() (+14 more)
 
 ### Community 57 - "receiptHtml.ts"
-Cohesion: 0.15
-Nodes (20): 2026-10-10 08:55 | agy (TINDA Print Master Studio: Universal Receipt & Barcode Alignment Customizer), Key Features in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition), ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition), BillSlipPayload, CURRENCY_SYMBOLS, currencySymbol(), escapeHtml(), fmt() (+12 more)
+Cohesion: 0.14
+Nodes (21): 2026-10-10 08:55 | agy (TINDA Print Master Studio: Universal Receipt & Barcode Alignment Customizer), Key Features in v1.0.70 (7-Eleven Micro Thermal Spacing & Express Manual Print Edition), Key Features in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition), ✨ What's New in v1.0.73 (Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition), BillSlipPayload, CURRENCY_SYMBOLS, currencySymbol(), escapeHtml() (+13 more)
 
 ### Community 58 - "react-hook-form/AGENTS.md"
 Cohesion: 0.10
@@ -741,8 +815,8 @@ Cohesion: 0.10
 Nodes (21): devDependencies, autoprefixer, electron, electron-builder, electron-vite, eslint, @eslint/js, eslint-plugin-react (+13 more)
 
 ### Community 61 - "updateService.ts"
-Cohesion: 0.15
-Nodes (11): beginCriticalOperation(), hasCriticalOperation(), names, OperationInProgressError, checkService(), makeService(), CheckFailureKind, createUpdateService() (+3 more)
+Cohesion: 0.11
+Nodes (17): beginCriticalOperation(), hasCriticalOperation(), names, OperationInProgressError, checkService(), makeService(), broadcast(), getUpdateService() (+9 more)
 
 ### Community 62 - "Test API"
 Cohesion: 0.10
@@ -753,8 +827,8 @@ Cohesion: 0.16
 Nodes (18): Key Features in v1.0.63 (Zero-Click Auto-Detect Thermal Printer Edition), AutoDetectedLabelPrinter, AutoDetectedPrinter, autoDetectLabelPrinter(), autoDetectThermalPrinter(), FIFTY_EIGHT_MM_REGEX, inferPaperWidth(), isLabelPrinterName() (+10 more)
 
 ### Community 64 - "printing.ts"
-Cohesion: 0.15
-Nodes (15): defaultSettings, autoPrintAfterCheckout(), getDriverInstallerPath(), getDriverTutorialPath(), installLabelDriver(), openDriverTutorial(), printDocument(), printLabelTest() (+7 more)
+Cohesion: 0.13
+Nodes (19): Key Features in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition), ✨ Previous: What's New in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition), autoPrintAfterCheckout(), getDriverInstallerPath(), getDriverTutorialPath(), installLabelDriver(), openDriverTutorial(), printDocument() (+11 more)
 
 ### Community 65 - "Desktop App Engineer"
 Cohesion: 0.11
@@ -788,9 +862,9 @@ Nodes (17): Bail on Failure, CI Example (GitHub Actions), Concurrency & Parallel
 Cohesion: 0.11
 Nodes (17): Async Timer Methods, Auto-mock with Spy, Clearing Mocks, Config Auto-Reset, Dynamic Mocking (vi.doMock), Hoisted Variables for Mocks, Key Points, Manual Mocks (__mocks__) (+9 more)
 
-### Community 73 - "ref_node_crypto"
-Cohesion: 0.15
-Nodes (13): files, results, BUILDS_DIR, ghRequest(), ghUploadAsset(), main(), sha256File(), BUILDS_DIR (+5 more)
+### Community 73 - "publish_v1081.mjs"
+Cohesion: 0.36
+Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
 
 ### Community 74 - "React Composition Patterns"
 Cohesion: 0.12
@@ -848,13 +922,9 @@ Nodes (15): 10. Automated QA, 11. Windows upgrade acceptance, 12. Final release 
 Cohesion: 0.12
 Nodes (15): 🌅 1. Morning Routine — Opening the Shift, 🛒 2. How to Ring Up Sales (POS Screen), 💳 3. Processing Payments, 📟 4. Barcode Scanner Setup Guide, 📋 5. Customer Utang (Credit Ledger), 🌙 6. Closing the Shift (End of Day Z-Reading), 💾 7. Data Safety Golden Rule, ⌨️ 8. Keyboard Shortcuts Cheat Sheet (+7 more)
 
-### Community 88 - "updateTransport.ts"
-Cohesion: 0.17
-Nodes (8): electron-updater, downloadInstalledUpdate(), dirs, release, TestUpdater, GITHUB_ASSET_HOSTS, realUpdateTransport(), toBytes()
-
-### Community 89 - "Reports.tsx"
-Cohesion: 0.20
-Nodes (10): recharts, ReceiptPaper(), ReceiptPaperProps, SalesChart(), SalesChartProps, CashCountPanel(), CompState, ReadPanel() (+2 more)
+### Community 89 - "App.tsx"
+Cohesion: 0.12
+Nodes (22): react-dom, App(), ConnectionStatus(), Splash(), checkConnection(), getSnapshot(), listeners, publish() (+14 more)
 
 ### Community 90 - "schemas.ts"
 Cohesion: 0.25
@@ -897,8 +967,8 @@ Cohesion: 0.19
 Nodes (10): BUILDS_DIR, ghRequest(), run(), sha256File(), uploadAsset(), BUILDS_DIR, ghRequest(), GITHUB_TOKEN (+2 more)
 
 ### Community 100 - "67. Ultra-Compact Zero-Wrap Thermal Receipts & Universal Receipt Standard Edition (v1.0.73)"
-Cohesion: 0.19
-Nodes (14): BillRecord, localTime(), readReportLines(), formatBillSlipLines(), formatEwalletAuditLines(), formatEwalletSlipLines(), formatReceiptDate(), CommunityChatMessage (+6 more)
+Cohesion: 0.33
+Nodes (9): BillRecord, localTime(), readReportLines(), formatBillSlipLines(), formatEwalletAuditLines(), formatEwalletSlipLines(), formatReceiptDate(), ReadReport (+1 more)
 
 ### Community 101 - "Tailwind CSS Accessibility Guidelines"
 Cohesion: 0.14
@@ -925,16 +995,16 @@ Cohesion: 0.14
 Nodes (13): Basic Snapshot, Concurrent Test Snapshots, Custom Serializers, Error Snapshots, File Snapshots, Inline Snapshots, Key Points, Object Shape Matching (+5 more)
 
 ### Community 107 - "shared/format.ts"
-Cohesion: 0.18
+Cohesion: 0.19
 Nodes (4): formatQuantity(), money(), moneyWholePesos(), pesoFmt
 
 ### Community 108 - "bundle_patch.mjs"
 Cohesion: 0.14
 Nodes (13): buildsDir, elapsed, fileBuffer, hash, manifest, outDir, pkg, pkgPath (+5 more)
 
-### Community 109 - ".downloadPatch"
-Cohesion: 0.24
-Nodes (9): 2026-10-09 16:38 | agy (v1.0.94 Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), Key Features in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), ✨ What's New in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), safeRenameWithRetry(), safeRmDirWithRetry(), retryOperation(), fetchWithStartTimeout(), officialResponseUrl() (+1 more)
+### Community 109 - "Subagent-Driven Development"
+Cohesion: 0.04
+Nodes (39): 1. Take the task, 2. Work the steps, 3. The completion contract, 4. Complete the task, Common Rationalizations, Example Workflow, Executing Plans, Final Review (+31 more)
 
 ### Community 110 - "Software Architect Agent"
 Cohesion: 0.15
@@ -956,21 +1026,21 @@ Nodes (13): Basic Structure, Client-Server Communication, Conditional Applicatio
 Cohesion: 0.15
 Nodes (10): ⚠️ Critical Rule: Why Windows Shared Folders (SMB) are Forbidden, 📌 Executive Summary, ❓ Frequently Asked Questions (FAQ), Multi-PC LAN Hub & Self-Hosted VPS Guide — TINDA POS, Q: Can two cashiers sell the same product at the exact same time in Local LAN mode?, Q: Does the store need internet for the Multi-Computer LAN setup?, Q: What happens if the store's Wi-Fi router gets turned off or loses power?, Q: Who pays for the VPS server? (+2 more)
 
-### Community 115 - "barcodeScanner.ts"
-Cohesion: 0.24
-Nodes (10): @zxing/library, CounterCameraScanner(), CounterCameraScannerProps, playBeep(), createScannerListener(), isUsbScannerSupported(), isValidBarcode(), playScanBeep() (+2 more)
+### Community 115 - "Test-Driven Development (TDD)"
+Cohesion: 0.06
+Nodes (29): Common Rationalizations, Debugging Integration, Example: Bug Fix, Final Rule, Good Tests, GREEN - Minimal Code, Overview, Red Flags - STOP and Start Over (+21 more)
 
-### Community 116 - "ElectronUpdateTransport"
-Cohesion: 0.24
-Nodes (6): broadcast(), getUpdateService(), startAutoUpdateCheck(), UpdateProgressHandler, createUpdateFileStorage(), ElectronUpdateTransport
+### Community 116 - "updateTransport.ts"
+Cohesion: 0.10
+Nodes (18): 2026-10-09 16:38 | agy (v1.0.94 Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), Key Features in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), ✨ What's New in v1.0.94 (Chiteng CT221B Thermal Spooler & Resilient Auto-Update Edition), electron-updater, downloadInstalledUpdate(), safeRenameWithRetry(), safeRmDirWithRetry(), dirs (+10 more)
 
 ### Community 117 - "cash-count.test.ts"
 Cohesion: 0.23
 Nodes (10): actualCashCent(), CASH_COUNT_DENOMINATION_CENTS, CASH_COUNT_DENOMINATIONS, CashCountDenomination, cashCountLines(), CashCountReport, cashCountStatusText(), formatCashCountMoney() (+2 more)
 
-### Community 118 - "buildReceiptLines"
-Cohesion: 0.35
-Nodes (10): 2026-10-10 10:56 | agy (Printer Studio Dual-Store Persistence & v1.0.100 Release), Key Features in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition), ✨ What's New in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition), ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition), ✨ What's New in v1.0.91 (Chiteng CT221B Barcode & Thermal Label Printer Edition), buildReceiptLines(), printSale(), PriceTagPrintModal() (+2 more)
+### Community 118 - "useSettings"
+Cohesion: 0.11
+Nodes (32): 2026-10-10 10:56 | agy (Printer Studio Dual-Store Persistence & v1.0.100 Release), Key Features in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition), ✨ What's New in v1.0.100 (Printer Studio Dual-Store Persistence & Resilient Settings Edition), ✨ What's New in v1.0.72 (Native Document Printing, Audit Dual Print & MariBank Edition), recharts, 1. Native Document Printing Engine (Inventory Sheets & Operations Reports), printSale(), PRESET_DIMENSIONS (+24 more)
 
 ### Community 119 - "6. Rendering Performance"
 Cohesion: 0.17
@@ -993,8 +1063,8 @@ Cohesion: 0.29
 Nodes (10): calculateReminderStatus(), CustomerReminder, getLocalCustomerReminders(), getMergedCustomerReminder(), parseCustomerNotes(), REMINDERS_STORAGE_KEY, ReminderStatus, ReminderStatusInfo (+2 more)
 
 ### Community 124 - "Recent Handoff History"
-Cohesion: 0.20
-Nodes (8): 2026-10-09 16:00 | agy (v1.0.93 Comprehensive Master Full Desktop Release Edition), 2026-10-10 10:04 | agy (F3 Quick Calculator Error Resolution & Math Engine Resilience), 2026-10-10 11:21 | agy (Checkout Product Not Found Immunity & Rush ID Package Release v1.0.101), Active Claim, Recent Handoff History, TINDA POS Agent Session Memory, MathEvalResult, safeEvalArithmetic()
+Cohesion: 0.18
+Nodes (9): 2026-10-09 16:00 | agy (v1.0.93 Comprehensive Master Full Desktop Release Edition), 2026-10-10 10:04 | agy (F3 Quick Calculator Error Resolution & Math Engine Resilience), 2026-10-10 11:21 | agy (Checkout Product Not Found Immunity & Rush ID Package Release v1.0.101), 2026-10-10 11:41 | agy (v2.0.1 Major Release: Full Desktop Compilation, Carousel Banner & Printing Checkout Immunity), Active Claim, Recent Handoff History, TINDA POS Agent Session Memory, MathEvalResult (+1 more)
 
 ### Community 125 - "WCAG 2.2 Quick Reference"
 Cohesion: 0.18
@@ -1117,8 +1187,8 @@ Cohesion: 0.22
 Nodes (8): 1. Utang Customer Filter Tabs (May Utang, Bayad Na, Tanan), 2. Utang Quick Stats Summary Bar, 3. Clear Visual Status Badges, 4. Contextual Action Buttons, Assets, QA & Verification, TINDA POS v1.0.21 Stable, What's new
 
 ### Community 155 - "TINDA POS v1.0.22 Stable"
-Cohesion: 0.22
-Nodes (8): 1. Utang Module English Standardization, 2. Responsive Table Auto-Adjustment Across All Screens, 3. Strict Column Alignment (Utang & Transactions), Assets, QA & Verification, TINDA POS v1.0.22 Stable, What's new, Customer
+Cohesion: 0.25
+Nodes (7): 1. Utang Module English Standardization, 2. Responsive Table Auto-Adjustment Across All Screens, 3. Strict Column Alignment (Utang & Transactions), Assets, QA & Verification, TINDA POS v1.0.22 Stable, What's new
 
 ### Community 156 - "What's new"
 Cohesion: 0.22
@@ -1129,8 +1199,8 @@ Cohesion: 0.22
 Nodes (8): For installer users, For portable users, Highlights, IMPORTANT UPGRADE NOTE, Remaining Limitations, TINDA POS v1.0.3, Updater QA — honest note, Windows Packaging
 
 ### Community 158 - "TINDA POS v1.0.8 RELEASE STATE (zero-regression user-feedback patch)"
-Cohesion: 0.22
-Nodes (9): Documentation gate (this session) — PASS, Evidence of current baseline (this session), GitHub this session, Next required action, RC freeze check, Scope (owner-specified, see `docs/RELEASE-PLAN-v1.0.8.md`), Stage 02 progress (this session), Stage 08 progress (this session) — Windows native updater acceptance PASS (+1 more)
+Cohesion: 0.25
+Nodes (8): Documentation gate (this session) — PASS, Evidence of current baseline (this session), GitHub this session, Next required action, RC freeze check, Scope (owner-specified, see `docs/RELEASE-PLAN-v1.0.8.md`), Stage 08 progress (this session) — Windows native updater acceptance PASS, TINDA POS v1.0.8 RELEASE STATE (zero-regression user-feedback patch)
 
 ### Community 159 - "eslint.config.mjs"
 Cohesion: 0.22
@@ -1149,8 +1219,8 @@ Cohesion: 0.22
 Nodes (8): 1. Dual-Track Update Engine (Fast Feature Hot-Patching), 2. Zero-Restart In-Place Live Reload (0.3s Apply), 3. 5-Point Steelclad Database & User Safety Shield, 4. Proactive Zero-Click Apple Cupertino Update Pop-up Modal (`UpdateModal.tsx`), 5. 100% Strict Professional English Standardization, 🌟 Key Highlights & Engineering Advancements, 📦 Release Verification & Hashes, TINDA POS v1.0.75 — Fast In-App Feature Hot-Patch & Proactive Cupertino Update Engine Edition
 
 ### Community 163 - "81. Speed Keys, Composite BOM Engine, Printing Services Hub & Promo Bundles Architecture (v1.0.98 Spec)"
-Cohesion: 0.22
-Nodes (9): calculateRollupCost(), hasRecipeCycle(), resolveLeafComponents(), 81.1 Fast Buttons (Speed Keys) & Cashier Calculator (`F3`), 81.2 Composite & Nested Bill of Materials (BOM) Engine, 81.3 Printing Business & Document Services Hub, 81.4 Promo Bundles & Dynamic Cart Combo Engine, 81.5 Category-Based Physical Inventory & Stock Valuation (+1 more)
+Cohesion: 0.40
+Nodes (5): 81.1 Fast Buttons (Speed Keys) & Cashier Calculator (`F3`), 81.3 Printing Business & Document Services Hub, 81.4 Promo Bundles & Dynamic Cart Combo Engine, 81.5 Category-Based Physical Inventory & Stock Valuation, 81. Speed Keys, Composite BOM Engine, Printing Services Hub & Promo Bundles Architecture (v1.0.98 Spec)
 
 ### Community 164 - "updateDownload.ts"
 Cohesion: 0.33
@@ -1197,12 +1267,12 @@ Cohesion: 0.25
 Nodes (7): Build on an actual Windows machine, Build on Linux via Wine (works, no Windows needed), Build steps, Data location (matches runtime), Installer options (pre-configured in electron-builder.yml), TINDA POS — Windows Build Guide, Troubleshooting
 
 ### Community 175 - "🌟 What's New in Version 1.0.72"
-Cohesion: 0.25
-Nodes (7): 1. Native Document Printing Engine (Inventory Sheets & Operations Reports), 2. Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger, 3. MariBank Digital Banking & E-Wallet Ecosystem Integration, 4. 100% Quality Invariants & Automated Test Verification, TINDA POS v1.0.72 — Release Notes, 🔒 Verification & Integrity Hashes (SHA-256), 🌟 What's New in Version 1.0.72
+Cohesion: 0.29
+Nodes (6): 2. Dual Printing in E-Wallet Audit Sheet & Historical Audit Ledger, 3. MariBank Digital Banking & E-Wallet Ecosystem Integration, 4. 100% Quality Invariants & Automated Test Verification, TINDA POS v1.0.72 — Release Notes, 🔒 Verification & Integrity Hashes (SHA-256), 🌟 What's New in Version 1.0.72
 
-### Community 176 - "printerCustomization.ts"
-Cohesion: 0.46
-Nodes (6): DEFAULT_PRINTER_CUSTOMIZATION, getStoredPrinterCustomization(), PRINTER_CONFIG_CHANGED_EVENT, PRINTER_CUSTOMIZATION_STORAGE_KEY, PrinterCustomizationSettings, saveStoredPrinterCustomization()
+### Community 176 - "stabilization.test.ts"
+Cohesion: 0.08
+Nodes (41): Key Features in v1.0.65 (Zero-Blur High-Density Thermal & Universal Manual Print Edition), Key Features in v1.0.87 (Split Mixed Payment & Utang Ledger Repair Edition), integrityCheck(), applyCreditEntry(), customerLedger(), deleteCreditLedgerEntry(), getCustomer(), recalculateCustomerBalance() (+33 more)
 
 ### Community 177 - "TINDA POS LIVE"
 Cohesion: 0.25
@@ -1276,9 +1346,9 @@ Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAs
 Cohesion: 0.36
 Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
 
-### Community 195 - "publish_v1075.mjs"
-Cohesion: 0.36
-Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
+### Community 195 - "server.cjs"
+Cohesion: 0.08
+Nodes (24): clients, CONTENT_DIR, crypto, debounceTimers, frameTemplate, fs, helperScript, http (+16 more)
 
 ### Community 196 - "publish_v1076.mjs"
 Cohesion: 0.36
@@ -1300,9 +1370,9 @@ Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAs
 Cohesion: 0.36
 Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
 
-### Community 201 - "publish_v1084.mjs"
-Cohesion: 0.32
-Nodes (5): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), uploadAsset()
+### Community 201 - "Visual Companion Guide"
+Cohesion: 0.10
+Nodes (19): Browser Events Format, Cards (visual designs), Cleaning Up, CSS Classes Available, Design Tips, File Naming, How It Works, Mock elements (wireframe building blocks) (+11 more)
 
 ### Community 202 - "publish_v1095.mjs"
 Cohesion: 0.36
@@ -1316,9 +1386,9 @@ Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAs
 Cohesion: 0.36
 Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
 
-### Community 205 - "publish_v1098.mjs"
-Cohesion: 0.36
-Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
+### Community 205 - "getSettings"
+Cohesion: 0.21
+Nodes (21): Pillar 1: Universal Settings Array Parser (`parsePinnedCategoryIds`), Phase 1 — Data plumbing (main + shared), Why renderer-only (and why that's safe for a patch), Key Features in v1.0.69 (Laptop Responsive Layout & Auth Setup Resilience Edition), Key Features in v1.0.93 (Comprehensive Master Full Desktop Release Edition), ✨ What's New in v1.0.93 (Comprehensive Master Full Desktop Release Edition), getSettings(), parsePinnedCategoryIds() (+13 more)
 
 ### Community 206 - "publish_v1099.mjs"
 Cohesion: 0.36
@@ -1436,9 +1506,9 @@ Nodes (5): 1. In-App Hot-Patch Redirect Engine Fix, 2. Unrestricted E-Wallet & B
 Cohesion: 0.33
 Nodes (5): 1. 100% Sidebar-Centric Fast Updates Hub (`Sidebar.tsx`), 2. True Zero-Restart In-Place Live Patch Engine (`patchService.ts` & `updateTransport.ts`), 3. Streamlined Settings -> About Tab (`Settings.tsx`), 🌟 Key Highlights & Engineering Advancements, TINDA POS v1.0.79 — Sidebar Fast Updates & Zero-Restart Live Engine Edition
 
-### Community 235 - "aiService.ts"
-Cohesion: 0.47
-Nodes (5): AskAiResult, askMainAiService(), OPENCODE_FREE_MODELS, tryGeminiOnline(), tryOpenCodeFreePool()
+### Community 235 - "CameraScannerModal.tsx"
+Cohesion: 0.23
+Nodes (11): @zxing/library, CameraScannerModal(), CameraScannerModalProps, playBeep(), CounterCameraScanner(), CounterCameraScannerProps, playBeep(), createScannerListener() (+3 more)
 
 ### Community 236 - "chat-worker-extension.js"
 Cohesion: 0.53
@@ -1452,9 +1522,9 @@ Nodes (5): BUILDS_DIR, ghRequest(), run(), sha256File(), uploadAsset()
 Cohesion: 0.60
 Nodes (5): BUILDS_DIR, ghRequest(), run(), sha256File(), uploadAsset()
 
-### Community 239 - "publish_v1049.mjs"
-Cohesion: 0.60
-Nodes (5): BUILDS_DIR, ghRequest(), run(), sha256File(), uploadAsset()
+### Community 239 - "ref_node_crypto"
+Cohesion: 0.21
+Nodes (9): files, results, files, results, BUILDS_DIR, ghRequest(), run(), sha256File() (+1 more)
 
 ### Community 240 - "publish_v1050.mjs"
 Cohesion: 0.60
@@ -1500,10 +1570,6 @@ Nodes (5): 8.1 Do Not Put Effect Events in Dependency Arrays, 8.2 Initialize App
 Cohesion: 0.40
 Nodes (5): Abstract, React Hook Form, References, Source Files, Table of Contents
 
-### Community 251 - "append"
-Cohesion: 0.40
-Nodes (3): Provide Complete Default Objects for Field Array Operations, Separate Sequential Field Array Operations, append()
-
 ### Community 252 - "Zod"
 Cohesion: 0.40
 Nodes (5): Abstract, References, Source Files, Table of Contents, Zod
@@ -1548,9 +1614,9 @@ Nodes (4): 🚀 Highlights & New Features, TINDA POS v1.0.52 — Release Notes, 
 Cohesion: 0.40
 Nodes (4): 🛡️ Bulletproof User Management & Modern Categorized Sidebar UX, 🚀 Highlights & New Features, TINDA POS v1.0.54 — Release Notes, 📦 Verify Release Checksums (SHA-256)
 
-### Community 263 - "holdSubmission.test.ts"
-Cohesion: 0.50
-Nodes (3): createHoldSubmission(), held, payload
+### Community 263 - "Active Party Members (Hired Subagent Champions)"
+Cohesion: 0.17
+Nodes (12): 1. Doctoral Fixer Agent — `tinda-pos-doctoral-fixer`, 2. Rune-Keeper of Data — `tinda-pos-database-reliability`, 3. Invariant Hunter — `tinda-pos-qa-tester`, 4. Ironclad Artificer — `tinda-pos-hardware-desktop`, 5. Merchant Alchemist — `tinda-pos-accounting-compliance`, 6. Aegis Warden — `tinda-pos-release-gatekeeper`, 7. The Cloud Weaver — `tinda-cloud-sync-architect`, Active Party Members (Hired Subagent Champions) (+4 more)
 
 ### Community 264 - "Perceivable"
 Cohesion: 0.50
@@ -1592,9 +1658,9 @@ Nodes (4): Manual upgrade para sa lumang versions, Offline behavior, Portable ed
 Cohesion: 0.50
 Nodes (4): Portable Data Mode, Settings → Data, Shared AppData (default), Start New Store
 
-### Community 276 - "80.3 100% Manual vs Automatic Print Parity Contract"
-Cohesion: 0.50
-Nodes (4): 80.1 Zero First-Letter Clipping Contract ("Walay Putol sa Sinugdanan"), 80.2 High-Density Solid Black Print Standard ("Dili Blury, Klaro ug Itom"), 80.3 100% Manual vs Automatic Print Parity Contract, 80. Universal Thermal Receipt Alignment & High-Density Solid Black Standard (v1.0.97 Spec)
+### Community 276 - "Creation Log: Systematic Debugging Skill"
+Cohesion: 0.10
+Nodes (19): Bulletproofing Elements, Creation Log: Systematic Debugging Skill, Enhancement 1: TDD Reference, Extraction Decisions, Final Outcome, Initial Version, Iterations, Key Insight (+11 more)
 
 ### Community 277 - "#getAllDecodedParams"
 Cohesion: 0.67
@@ -1644,25 +1710,289 @@ Nodes (3): arrayBuffer(), convertFormDataToBodyData(), parseFormData()
 Cohesion: 0.67
 Nodes (3): getEntriesByName(), measure(), now()
 
+### Community 445 - "Session diagnosis: <session-id>"
+Cohesion: 0.11
+Nodes (18): 1. Problem statement (REQUIRED), 2. Triage verdict (REQUIRED), 3. Environment (REQUIRED), 4. Sessions examined (REQUIRED), 5. Timeline (REQUIRED), 6.1 Skill timeline, 6.2 Plan adherence, 6.3 Repeated work (+10 more)
+
+### Community 458 - "publish_v1075.mjs"
+Cohesion: 0.36
+Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
+
+### Community 459 - "publish_v1084.mjs"
+Cohesion: 0.32
+Nodes (5): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), uploadAsset()
+
+### Community 460 - "Code Review Reception"
+Cohesion: 0.12
+Nodes (16): Acknowledging Correct Feedback, Code Review Reception, Common Mistakes, Forbidden Responses, From External Reviewers, From your human partner, GitHub Thread Replies, Gracefully Correcting Your Pushback (+8 more)
+
+### Community 461 - "Testing CLAUDE.md Skills Documentation"
+Cohesion: 0.12
+Nodes (16): Documentation Variants to Test, Expected Results, Next Steps, NULL (Baseline - no skills doc), Scenario 1: Time Pressure + Confidence, Scenario 2: Sunk Cost + Works Already, Scenario 3: Authority + Speed Bias, Scenario 4: Familiarity + Efficiency (+8 more)
+
+### Community 462 - "expenses.ts"
+Cohesion: 0.09
+Nodes (21): insertLegacyShift(), seedStore(), createCategory(), findCategoryByName(), listCategories(), createCustomer(), createExpense(), createExpenseCategory() (+13 more)
+
+### Community 469 - "Root Cause Tracing"
+Cohesion: 0.12
+Nodes (15): 1. Observe the Symptom, 2. Find Immediate Cause, 3. Ask: What Called This?, 4. Keep Tracing Up, 5. Find Original Trigger, Adding Stack Traces, Finding Which Test Causes Pollution, Key Principle (+7 more)
+
+### Community 470 - "Systematic Debugging"
+Cohesion: 0.12
+Nodes (15): Common Rationalizations, Overview, Phase 1: Root Cause Investigation, Phase 2: Pattern Analysis, Phase 3: Hypothesis and Testing, Phase 4: Implementation, Quick Reference, Red Flags - STOP and Follow Process (+7 more)
+
+### Community 471 - "Persuasion Principles for Skill Design"
+Cohesion: 0.12
+Nodes (15): 1. Authority, 2. Commitment, 3. Scarcity, 4. Social Proof, 5. Unity, 6. Reciprocity, 7. Liking, Ethical Use (+7 more)
+
+### Community 472 - "Finishing a Development Branch"
+Cohesion: 0.13
+Nodes (14): Common Rationalizations, Finishing a Development Branch, If your human partner asks to discard the work, Option 1: Merge Locally, Option 2: Push and Create PR, Option 3: Keep As-Is, Overview, Quick Reference (+6 more)
+
+### Community 473 - "Using Git Worktrees"
+Cohesion: 0.13
+Nodes (14): 1a. Native Worktree Tools (preferred), 1b. Git Worktree Fallback, Common Rationalizations, Create the Worktree, Directory Selection, Overview, Quick Reference, Report (+6 more)
+
+### Community 474 - "Writing Skills"
+Cohesion: 0.13
+Nodes (15): Code Examples, Common Rationalizations for Skipping Testing, Directory Structure, Discovery Workflow, Flowchart Usage, Match the Form to the Failure, Overview, Skill Creation Checklist (TDD Adapted) (+7 more)
+
+### Community 475 - "Dispatching Parallel Agents"
+Cohesion: 0.14
+Nodes (13): 1. Identify Independent Domains, 2. Create Focused Agent Tasks, 3. Dispatch in Parallel, 4. Review and Integrate, Agent Prompt Structure, Common Mistakes, Dispatching Parallel Agents, Overview (+5 more)
+
+### Community 476 - "Agent Definitions"
+Cohesion: 0.14
+Nodes (13): Agent Definitions, 📐 BLUEPRINT — Elite Software Architect, 🚀 FALCON — Elite Build & Deploy Specialist, ⚡ FLASH — Elite UI Speed Coder, How to Deploy Agents, 🛡️ IRONCLAD — Elite Security Specialist, 📊 ORACLE — Elite Analytics & Reporting Engine, 🏛️ Org Chart (+5 more)
+
+### Community 477 - "Testing Skills With Subagents"
+Cohesion: 0.15
+Nodes (13): Common Mistakes (Same as TDD), GREEN Phase: Write Minimal Skill (Make It Pass), Meta-Testing (When GREEN Isn't Working), Overview, Quick Reference (TDD Cycle), Real-World Impact, RED Phase: Baseline Testing (Watch It Fail), TDD Mapping for Skill Testing (+5 more)
+
+### Community 478 - "Defense-in-Depth Validation"
+Cohesion: 0.17
+Nodes (11): Applying the Pattern, Defense-in-Depth Validation, Example from Session, Key Insight, Layer 1: Entry Point Validation, Layer 2: Business Logic Validation, Layer 3: Environment Guards, Layer 4: Debug Instrumentation (+3 more)
+
+### Community 479 - "Writing Plans"
+Cohesion: 0.17
+Nodes (11): Execution Handoff, File Structure, Overview, Plan Document Header, Scope Check, Self-Review, Step Granularity, Task Right-Sizing (+3 more)
+
+### Community 480 - "[Analysis Title]"
+Cohesion: 0.17
+Nodes (12): Advanced: Skills with executable code, [Analysis Title], Anti-patterns to avoid, Avoid offering too many options, Avoid Windows-style paths, Conditional workflow pattern, Examples pattern, Executive summary (+4 more)
+
+### Community 481 - "handleRequest"
+Cohesion: 0.22
+Nodes (11): bootstrapPage(), getNewestScreen(), handleRequest(), isAuthorized(), isFullDocument(), isRegularFileInsideContentDir(), parseCookies(), pathnameOf() (+3 more)
+
+### Community 482 - "startServer"
+Cohesion: 0.22
+Nodes (9): broadcast(), computeAcceptKey(), decodeFrame(), encodeFrame(), handleMessage(), handleUpgrade(), isAllowedWebSocketOrigin(), startServer() (+1 more)
+
+### Community 483 - "Returns: "OK" or lists conflicts"
+Cohesion: 0.18
+Nodes (11): Avoid assuming tools are installed, Create verifiable intermediate outputs, MCP tool references, Next steps, Package dependencies, Returns: "OK" or lists conflicts, Runtime environment, Technical notes (+3 more)
+
+### Community 484 - "compilerOptions"
+Cohesion: 0.18
+Nodes (10): compilerOptions, jsx, lib, module, moduleResolution, target, types, extends (+2 more)
+
+### Community 485 - "Brainstorming"
+Cohesion: 0.20
+Nodes (9): Brainstorming, First: What Do You Actually Know?, Play It Back, Red Flags, Size the Work, The Conversation, The Written Design, Visual Companion (+1 more)
+
+### Community 486 - "Verification Before Completion"
+Cohesion: 0.20
+Nodes (9): Common Failures, Key Patterns, Overview, Rationalization Prevention, Red Flags - STOP, The Gate Function, The Iron Law, Verification Before Completion (+1 more)
+
+### Community 487 - "Skill structure"
+Cohesion: 0.20
+Nodes (10): Avoid deeply nested references, Naming conventions, Pattern 1: High-level guide with references, Pattern 2: Domain-specific organization, Pattern 3: Conditional details, Progressive disclosure patterns, Skill structure, Structure longer reference files with table of contents (+2 more)
+
+### Community 488 - "helper.js"
+Cohesion: 0.42
+Nodes (7): connect(), nextReconnectDelay(), reloadAfterRecovery(), sessionKey(), setStatus(), showTombstone(), websocketUrl()
+
+### Community 489 - "maybeOpenBrowser"
+Cohesion: 0.22
+Nodes (8): browserLauncherForPlatform(), chmodOwnerOnly(), companionUrl(), generateToken(), initialToken(), maybeOpenBrowser(), onListen(), urlHostForHttp()
+
+### Community 490 - "codex-tools.md"
+Cohesion: 0.22
+Nodes (5): Codex App Finishing, Environment Detection, Model routing on spawns, Subagent dispatch requires multi-agent support, Waiting on children
+
+### Community 491 - "Skill authoring best practices"
+Cohesion: 0.22
+Nodes (9): Avoid time-sensitive information, Common patterns, Content guidelines, Implement feedback loops, Skill authoring best practices, Template pattern, Use consistent terminology, Use workflows for complex tasks (+1 more)
+
+### Community 492 - "EwalletAudit.tsx"
+Cohesion: 0.33
+Nodes (8): BILLER_PRESETS, computeEwalletSummaryFromTransactions(), EwalletAudit(), EwalletDatePeriod, formatLocalDateKey(), matchesEwalletDatePeriod(), parseRecordLocalDateKey(), toast
+
+### Community 493 - "publish_v202.mjs"
+Cohesion: 0.31
+Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), ensureUpload(), uploadAsset()
+
+### Community 494 - "issue.md"
+Cohesion: 0.25
+Nodes (7): Actual behavior, Debug log or conversation transcript, Environment (required), Expected behavior, Is this a Superpowers issue or a platform issue?, Steps to reproduce, What happened?
+
+### Community 495 - "render-graphs.js"
+Cohesion: 0.39
+Nodes (5): combineGraphs(), extractDotBlocks(), extractGraphBody(), main(), renderToSvg()
+
+### Community 496 - "publish_v1066.mjs"
+Cohesion: 0.36
+Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAsset()
+
+### Community 497 - "stop-server.sh"
+Cohesion: 0.52
+Nodes (6): command_has_server_id(), command_line_for_pid(), is_brainstorm_server(), mark_stopped(), read_expected_server_id(), stop-server.sh script
+
+### Community 498 - "Diagnosing Superpowers"
+Cohesion: 0.29
+Nodes (6): Diagnosing Superpowers, Hard rules, Overview, Quick reference, Red Flags, Workflow
+
+### Community 499 - "Superpowers session diagnosis bundle"
+Cohesion: 0.29
+Nodes (6): Files, How to read it, Producer instructions, Redaction, Superpowers session diagnosis bundle, What this is
+
+### Community 500 - "Case: <session-id>"
+Cohesion: 0.29
+Nodes (6): Case: <session-id>, Context-safety rules for every reader of these files, Discovered sources and record meanings, Environment, Problem statement (agreed with your human partner), Sessions
+
+### Community 501 - "Gemini CLI Tool Mapping"
+Cohesion: 0.29
+Nodes (7): Additional Gemini CLI tools, Gemini CLI Tool Mapping, Instructions file, Parallel dispatch, Personal skills directory, Prompt filling, Subagent support
+
+### Community 502 - "Hermes Agent Tool Mapping"
+Cohesion: 0.29
+Nodes (6): Hermes Agent Tool Mapping, Instructions file, Invoking a skill, Subagent dispatch, Task tracking, Tools
+
+### Community 503 - "REFACTOR Phase: Close Loopholes (Stay Green)"
+Cohesion: 0.29
+Nodes (7): 1. Explicit Negation in Rules, 2. Entry in Rationalization Table, 3. Red Flag Entry, 4. Update description, Plugging Each Hole, Re-verify After Refactoring, REFACTOR Phase: Close Loopholes (Stay Green)
+
+### Community 504 - "sync_public_api.mjs"
+Cohesion: 0.47
+Nodes (4): ghRequest(), GITHUB_TOKEN, main(), syncFile()
+
+### Community 505 - "Muse Tool Mapping"
+Cohesion: 0.33
+Nodes (5): Instructions file, Muse Tool Mapping, Skill invocation, Subagent dispatch, Task tracking
+
+### Community 506 - "using-superpowers/SKILL.md"
+Cohesion: 0.33
+Nodes (5): Platform Adaptation, Red Flags, Skill Priority, The Rule, User Instructions
+
+### Community 507 - "Skill Discovery Optimization (SDO)"
+Cohesion: 0.33
+Nodes (6): 1. Rich Description Field, 2. Keyword Coverage, 3. Descriptive Naming, 4. Token Efficiency (Critical), 5. Cross-Referencing Other Skills, Skill Discovery Optimization (SDO)
+
+### Community 508 - "Bulletproofing Skills Against Rationalization"
+Cohesion: 0.33
+Nodes (6): Address "Spirit vs Letter" Arguments, Build Rationalization Table, Bulletproofing Skills Against Rationalization, Close Every Loophole Explicitly, Create Red Flags List, Update SDO for Violation Symptoms
+
+### Community 509 - "receipt-layout.test.ts"
+Cohesion: 0.33
+Nodes (5): cashSale, gcashSale, store, utangSale, Sale
+
+### Community 512 - "publish_v1056.mjs"
+Cohesion: 0.53
+Nodes (5): BUILDS_DIR, ghRequest(), ghUploadAsset(), main(), sha256File()
+
+### Community 513 - "renderBranding"
+Cohesion: 0.40
+Nodes (5): brandMarkup(), escapeHtmlText(), renderBranding(), waitingPage(), wrapInFrame()
+
+### Community 514 - "Pressure Test 1: Emergency Production Fix"
+Cohesion: 0.40
+Nodes (4): Choose A, B, or C, Pressure Test 1: Emergency Production Fix, Scenario, Your Options
+
+### Community 515 - "Pressure Test 2: Sunk Cost + Exhaustion"
+Cohesion: 0.40
+Nodes (4): Choose A, B, or C, Pressure Test 2: Sunk Cost + Exhaustion, Scenario, Your Options
+
+### Community 516 - "Pressure Test 3: Authority + Social Pressure"
+Cohesion: 0.40
+Nodes (4): Choose A, B, or C, Pressure Test 3: Authority + Social Pressure, Scenario, Your Options
+
+### Community 517 - "anthropic-best-practices.md"
+Cohesion: 0.40
+Nodes (4): [Analysis Title], Executive summary, Key findings, Recommendations
+
+### Community 518 - "Anti-Patterns"
+Cohesion: 0.40
+Nodes (5): Anti-Patterns, ❌ Code in Flowcharts, ❌ Generic Labels, ❌ Multi-Language Dilution, ❌ Narrative Example
+
+### Community 519 - "Testing All Skill Types"
+Cohesion: 0.40
+Nodes (5): Discipline-Enforcing Skills (rules/requirements), Pattern Skills (mental models), Reference Skills (documentation/APIs), Technique Skills (how-to guides), Testing All Skill Types
+
+### Community 520 - "RED-GREEN-REFACTOR for Skills"
+Cohesion: 0.40
+Nodes (5): GREEN: Write Minimal Skill, Micro-Test Wording Before Full Scenarios, RED-GREEN-REFACTOR for Skills, RED: Write Failing Test (Baseline), REFACTOR: Close Loopholes
+
+### Community 521 - "VERIFY GREEN: Pressure Testing"
+Cohesion: 0.40
+Nodes (5): Key Elements of Good Scenarios, Pressure Types, Testing Setup, VERIFY GREEN: Pressure Testing, Writing Pressure Scenarios
+
+### Community 522 - "GitHub issues"
+Cohesion: 0.50
+Nodes (3): File, GitHub issues, Search
+
+### Community 523 - "Pi Tool Mapping"
+Cohesion: 0.50
+Nodes (3): Pi Tool Mapping, Subagents, Task lists
+
+### Community 524 - "Evaluation and iteration"
+Cohesion: 0.50
+Nodes (4): Build evaluations first, Develop Skills iteratively with the agent, Evaluation and iteration, Observe how agents navigate Skills
+
+### Community 525 - "Checklist for effective Skills"
+Cohesion: 0.50
+Nodes (4): Checklist for effective Skills, Code and scripts, Core quality, Testing
+
+### Community 526 - "Core principles"
+Cohesion: 0.50
+Nodes (4): Concise is key, Core principles, Set appropriate degrees of freedom, Test with all models you plan to use
+
+### Community 527 - "File Organization"
+Cohesion: 0.50
+Nodes (4): File Organization, Self-Contained Skill, Skill with Heavy Reference, Skill with Reusable Tool
+
+### Community 528 - "Skill Types"
+Cohesion: 0.50
+Nodes (4): Pattern, Reference, Skill Types, Technique
+
+### Community 529 - "Example: TDD Skill Bulletproofing"
+Cohesion: 0.50
+Nodes (4): Example: TDD Skill Bulletproofing, Initial Test (Failed), Iteration 1 - Add Counter, Iteration 2 - Add Foundational Principle
+
+### Community 534 - "82. Zero-Crash Checkout Immunity, Cupertino Feature Carousel & Dual-Store Hardware Alignment (v2.0.1 Spec)"
+Cohesion: 0.67
+Nodes (3): 82.1 Zero-Crash Checkout Immunity Contract, 82.2 Rush ID Studio Packages & Fast POS Speed Key, 82. Zero-Crash Checkout Immunity, Cupertino Feature Carousel & Dual-Store Hardware Alignment (v2.0.1 Spec)
+
 ## Knowledge Gaps
-- **20 isolated node(s):** `ELECTRON_BUILDER_CACHE`, `ELECTRON_CACHE`, `npm_config_cache`, `PATH`, `PNPM_STORE_DIR` (+15 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2662 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **184 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2654 isolated node(s):** `crypto`, `http`, `fs`, `path`, `OPCODES` (+2649 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3203 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **208 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `vitest` connect `vitest` to `ref_node_fs`, `toastSuccess`, `holdSubmission.test.ts`, `e2e-workflow.test.ts`, `products.ts`, `ref_shared_types`, `POS.tsx`, `services/auth.ts`, `shared/update.ts`, `ipc/index.ts`, `ewallet.ts`, `shared/types.ts`, `refund-profit.test.ts`, `validate.ts`, `priceReferences.ts`, `phoneScannerService.ts`, `patchService.ts`, `lanHubService.ts`, `updateDownload.ts`, `package.json`, `printerCustomization.ts`, `ref_shared_format`, `updateService.ts`, `printer.ts`, `printing.ts`, `gen_user_guide.mjs`, `updateTransport.ts`, `schemas.ts`, `shared/format.ts`, `barcodeScanner.ts`, `cash-count.test.ts`, `buildReceiptLines`, `customerReminders.ts`, `Recent Handoff History`?**
-  _High betweenness centrality (0.037) - this node is a cross-community bridge._
-- **What connects `ELECTRON_BUILDER_CACHE`, `ELECTRON_CACHE`, `npm_config_cache` to the rest of the system?**
-  _20 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `ref_node_fs` be split into smaller, more focused modules?**
-  _Cohesion score 0.05115830115830116 - nodes in this community are weakly interconnected._
-- **Why does `🏪 TINDA POS` connect `🏪 TINDA POS` to `toastSuccess`, `Utang.tsx`, `.downloadPatch`, `ipc/index.ts`, `Multi-PC LAN Hub & Self-Hosted VPS Guide — TINDA POS`, `useSettings`, `buildReceiptLines`, `receiptHtml.ts`, `💳 Payment Methods & Utang Management`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+- **Why does `🏪 TINDA POS` connect `🏪 TINDA POS` to `printing.ts`, `react`, `getSettings`, `Multi-PC LAN Hub & Self-Hosted VPS Guide — TINDA POS`, `CustomizeCategoriesModal.tsx`, `updateTransport.ts`, `useSettings`, `v206-purchases-and-item-sales.test.ts`, `receiptHtml.ts`, `💳 Payment Methods & Utang Management`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **What connects `crypto`, `http`, `fs` to the rest of the system?**
+  _2654 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `backup.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.11522048364153627 - nodes in this community are weakly interconnected._
+- **Why does `vitest` connect `vitest` to `backup.ts`, `toastSuccess`, `ref_node_fs`, `products.ts`, `Settings.tsx`, `react`, `POS.tsx`, `services/auth.ts`, `shared/update.ts`, `ipc/index.ts`, `ewallet.ts`, `v206-purchases-and-item-sales.test.ts`, `validate.ts`, `priceReferences.ts`, `phoneScannerService.ts`, `patchService.ts`, `getDb`, `updateDownload.ts`, `package.json`, `toast.ts`, `stabilization.test.ts`, `FastButtonsBar.tsx`, `updateService.ts`, `printer.ts`, `gen_user_guide.mjs`, `getSettings`, `expenses.ts`, `schemas.ts`, `CameraScannerModal.tsx`, `shared/format.ts`, `updateTransport.ts`, `cash-count.test.ts`, `useSettings`, `customerReminders.ts`, `Recent Handoff History`, `receipt-layout.test.ts`?**
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **Should `brigade_mcp_server.mjs` be split into smaller, more focused modules?**
-  _Cohesion score 0.060144346431435444 - nodes in this community are weakly interconnected._
-- **Why does `Stage 02 progress (this session)` connect `TINDA POS v1.0.8 RELEASE STATE (zero-regression user-feedback patch)` to `products.ts`, `vitest`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+  _Cohesion score 0.05929989550679206 - nodes in this community are weakly interconnected._
+- **Why does `TINDA POS v1.0.59 User Manual` connect `TINDA POS v1.0.59 User Manual` to `Transactions and Receipt Generation`, `Login and Dashboard`, `Stock adjustment and low stock`, `POS and Checkout`, `Cash Count`, `Realtime stock`, `Expiration: Per Item o Per Batch`, `Mabilis na gabay sa araw-araw`, `Multi-PC LAN Hub & Self-Hosted VPS Guide — TINDA POS`, `Settings → Data`, `Software Update`, `Products, SKU, barcode, and categories`, `Bago magsara: Cash Count muna, saka Z-Read`, `Receipt Printer Setup`, `Customers and Utang`, `Hanapin ang kailangan mo`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **Should `Shell.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.06323396567299007 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0818452380952381 - nodes in this community are weakly interconnected._
