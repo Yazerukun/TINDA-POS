@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.0.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.0.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,21 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.0.8](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Feature-Patch-2.0.8.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.8 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Setup-2.0.8.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Portable-2.0.8.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.0.9](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Feature-Patch-2.0.9.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.9 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Setup-2.0.9.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Portable-2.0.9.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts Edition)
+## ✨ What's New in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
+
+> **Invoices History Immunity: Resolved SQLite missing column/table error when switching to Invoices History on existing user databases.**
+
+- 🛡️ **Self-Healing Purchases & Dependency Tables (`purchases.ts`, `migrations.ts`)**:
+  - Fixed `SqliteError: no such column: invoice_no` crash caused by indexes attempting creation prior to column migrations on existing databases.
+  - Implemented automatic self-healing `ensurePurchasesTables` to guarantee `purchases`, `purchase_items`, `suppliers`, `users`, and `products` tables exist before queries execute.
+  - Hardened `shortDate` in `@shared/format.ts` to be 100% resilient against `null`, `undefined`, and malformed dates.
+  - Hardened `PurchaseInvoiceModal.tsx` history state with defensive array verification and graceful error handling.
+
+## ✨ Previous: What's New in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts Edition)
 
 > **Merchant VIP Feedback Edition: Multi-Packaging Wholesale Units (Pack, Bundle, Roll, Box, Case, Sack) with Custom Multipliers and Real-World Supplier Cascading Trade Discounts ("Less 5 Less 5", Compounded Series Math).**
 

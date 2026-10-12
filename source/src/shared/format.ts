@@ -30,9 +30,16 @@ export function nowLocal(): string {
   return new Date().toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-export function shortDate(iso: string): string {
-  const d = new Date(iso.replace(' ', 'T'))
-  return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+export function shortDate(iso?: string | null): string {
+  if (!iso) return '—'
+  try {
+    const clean = String(iso).replace(' ', 'T')
+    const d = new Date(clean)
+    if (isNaN(d.getTime())) return String(iso)
+    return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+  } catch {
+    return String(iso || '—')
+  }
 }
 
 export function shortDateTime(iso: string): string {

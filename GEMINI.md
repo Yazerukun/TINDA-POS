@@ -28,7 +28,15 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts "Less 5 Less 5" Edition)**
+- Current Version: **v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)**
+
+## Key Features in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
+1. **Invoices History Immunity & Self-Healing Database Engine (`purchases.ts`, `migrations.ts`)**:
+   - Fixed the `SqliteError: no such column: invoice_no` and missing table error when opening or clicking the Invoices History tab on existing databases.
+   - Defer index creation until after `ALTER TABLE` column migrations have successfully executed.
+   - Added self-healing `ensurePurchasesTables` that guarantees `purchases`, `purchase_items`, `suppliers`, `users`, and `products` are safely present with all schema columns prior to any query execution.
+   - Hardened `shortDate` in `@shared/format.ts` to be 100% resilient against `null`, `undefined`, empty string, and malformed dates.
+   - Added defensive array fallback in `PurchaseInvoiceModal.tsx` (`setHistoryList(Array.isArray(res?.rows) ? res.rows : [])`).
 
 ## Key Features in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts "Less 5 Less 5" Edition)
 1. **Multi-Packaging Wholesale Units Support (`PurchaseInvoiceModal.tsx`, `STANDARD_PACKAGING_UNITS`)**:

@@ -182,4 +182,21 @@ describe('v2.0.6 Supplier Purchase Invoice & Item Sales Analytics', () => {
     expect(luckyMeRow?.profit_c).toBe(2000)
     expect(luckyMeRow?.margin_pct).toBe(25)
   })
+
+  it('handles default invoice history listPurchases({ limit: 50 }) safely and self-heals tables on clean db', () => {
+    // 1. Default limit: 50 query as executed by Invoices History tab
+    const res = listPurchases(db, { limit: 50 })
+    expect(res).toBeDefined()
+    expect(Array.isArray(res.rows)).toBe(true)
+    expect(res.total).toBeGreaterThanOrEqual(1)
+    expect(res.rows[0]?.purchase_no).toBe('PPO-000001')
+    expect(res.rows[0]?.items).toBeDefined()
+
+    // 2. Self-healing on fresh bare in-memory SQLite database
+    const freshDb = new (require('better-sqlite3'))(':memory:')
+    const freshRes = listPurchases(freshDb, { limit: 50 })
+    expect(freshRes.total).toBe(0)
+    expect(freshRes.rows).toEqual([])
+    freshDb.close()
+  })
 })

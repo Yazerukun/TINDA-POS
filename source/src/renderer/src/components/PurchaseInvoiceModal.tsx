@@ -145,9 +145,11 @@ export function PurchaseInvoiceModal({
     setHistoryLoading(true)
     try {
       const res = await window.api.purchases.list({ limit: 50 })
-      setHistoryList(res.rows)
+      setHistoryList(Array.isArray(res?.rows) ? res.rows : [])
     } catch (err) {
+      console.error('Failed to load purchase history:', err)
       toastError('Failed to load purchase history', String((err as Error)?.message || err))
+      setHistoryList([])
     } finally {
       setHistoryLoading(false)
     }

@@ -85,31 +85,66 @@ export function ensureSchemaColumns(db: Database.Database): void {
       CREATE INDEX IF NOT EXISTS idx_product_recipes_component ON product_recipes(component_product_id);
     `)
 
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS purchases (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        purchase_no TEXT NOT NULL UNIQUE,
+        supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL,
+        purchase_date TEXT NOT NULL DEFAULT (date('now','localtime')),
+        reference TEXT,
+        total_c INTEGER NOT NULL DEFAULT 0,
+        notes TEXT,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        invoice_no TEXT,
+        receipt_no TEXT,
+        is_paid INTEGER NOT NULL DEFAULT 1,
+        terms_days INTEGER NOT NULL DEFAULT 0,
+        discount_c INTEGER NOT NULL DEFAULT 0,
+        net_total_c INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+      );
+      CREATE INDEX IF NOT EXISTS idx_purchases_date ON purchases(purchase_date);
+
+      CREATE TABLE IF NOT EXISTS purchase_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        purchase_id INTEGER NOT NULL REFERENCES purchases(id) ON DELETE CASCADE,
+        product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+        unit_name TEXT NOT NULL,
+        qty REAL NOT NULL,
+        qty_base REAL NOT NULL,
+        unit_cost_c INTEGER NOT NULL,
+        subtotal_c INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_purchase_items_purchase ON purchase_items(purchase_id);
+      CREATE INDEX IF NOT EXISTS idx_purchase_items_product ON purchase_items(product_id);
+    `)
+
     const purchCols = new Set(
       (db.prepare("PRAGMA table_info('purchases')").all() as { name: string }[]).map((c) => c.name)
     )
-    if (purchCols.size > 0) {
-      if (!purchCols.has('invoice_no')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN invoice_no TEXT')
-      }
-      if (!purchCols.has('receipt_no')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN receipt_no TEXT')
-      }
-      if (!purchCols.has('is_paid')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN is_paid INTEGER NOT NULL DEFAULT 1')
-      }
-      if (!purchCols.has('terms_days')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN terms_days INTEGER NOT NULL DEFAULT 0')
-      }
-      if (!purchCols.has('discount_c')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
-      }
-      if (!purchCols.has('net_total_c')) {
-        db.exec('ALTER TABLE purchases ADD COLUMN net_total_c INTEGER NOT NULL DEFAULT 0')
-      }
-      db.exec('CREATE INDEX IF NOT EXISTS idx_purchases_invoice_no ON purchases(invoice_no)')
-      db.exec('CREATE INDEX IF NOT EXISTS idx_purchases_receipt_no ON purchases(receipt_no)')
+    if (!purchCols.has('invoice_no')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN invoice_no TEXT')
     }
+    if (!purchCols.has('receipt_no')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN receipt_no TEXT')
+    }
+    if (!purchCols.has('is_paid')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN is_paid INTEGER NOT NULL DEFAULT 1')
+    }
+    if (!purchCols.has('terms_days')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN terms_days INTEGER NOT NULL DEFAULT 0')
+    }
+    if (!purchCols.has('discount_c')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
+    }
+    if (!purchCols.has('net_total_c')) {
+      db.exec('ALTER TABLE purchases ADD COLUMN net_total_c INTEGER NOT NULL DEFAULT 0')
+    }
+
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_purchases_invoice_no ON purchases(invoice_no);
+      CREATE INDEX IF NOT EXISTS idx_purchases_receipt_no ON purchases(receipt_no);
+    `)
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }
