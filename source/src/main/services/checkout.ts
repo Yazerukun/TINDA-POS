@@ -262,6 +262,8 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
     const payments = (sale as any).payments || []
     const getAmt = (m: string): number =>
       payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
+    const nonCash = getAmt('GCASH') + getAmt('MAYA') + getAmt('MARIBANK') + getAmt('UTANG')
+    const actualCash = Math.max(0, sale.total_c - nonCash)
     pushSaleToCloud(db, {
       local_sale_id: sale.id,
       transaction_no: sale.transaction_no,
@@ -271,7 +273,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
       discount_c: sale.discount_c,
       total_c: sale.total_c,
       status: sale.status,
-      cash_c: getAmt('CASH'),
+      cash_c: actualCash,
       gcash_c: getAmt('GCASH'),
       maya_c: getAmt('MAYA'),
       utang_c: getAmt('UTANG'),

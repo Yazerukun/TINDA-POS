@@ -7,6 +7,7 @@ import type {
   CloudShiftSyncPayload
 } from '@shared/types'
 import { getSettings, updateSettings } from '../repositories/settings'
+import { listSales } from '../repositories/sales'
 import { licenseService } from './licenseService'
 
 export function isVipActive(_settings?: StoreSettings): boolean {
@@ -189,12 +190,63 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       return { ok: false, message: `Cloud server responded with status: ${pingRes.status}` }
     }
 
+    // Push recent sales so cloud dashboard displays live data immediately
+    let pushedCount = 0
+    try {
+      const hasSalesTable = Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sales'").get())
+      if (hasSalesTable) {
+        const recent = listSales(db, { limit: 50 }).rows.filter((s: any) => s.status !== 'VOIDED')
+        for (const s of recent) {
+          const payments = (s as any).payments || []
+          const getAmt = (m: string): number =>
+            payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
+          const nonCash = getAmt('GCASH') + getAmt('MAYA') + getAmt('MARIBANK') + getAmt('UTANG')
+          const actualCash = Math.max(0, s.total_c - nonCash)
+          await postToCloud(apiUrl, '/api/sync/sale', {
+            store_id: settings.cloud_store_id!,
+            sync_key: settings.cloud_sync_key!,
+            branch_name: settings.store_name || 'My Store',
+            data: {
+              local_sale_id: s.id,
+              transaction_no: s.transaction_no,
+              cashier_name: null,
+              customer_name: (s as any).customer_name || null,
+              subtotal_c: s.subtotal_c,
+              discount_c: s.discount_c,
+              total_c: s.total_c,
+              status: s.status,
+              cash_c: actualCash,
+              gcash_c: getAmt('GCASH'),
+              maya_c: getAmt('MAYA'),
+              utang_c: getAmt('UTANG'),
+              net_sales_c: Math.max(0, s.total_c - getAmt('UTANG')),
+              local_shift_id: s.shift_id,
+              sold_at: s.created_at,
+              items: ((s as any).items || []).map((it: any) => ({
+                product_name: it.product_name || it.name || 'Item',
+                unit_name: it.unit_name || 'pc',
+                qty: it.qty,
+                unit_price_c: it.unit_price_c,
+                subtotal_c: it.subtotal_c
+              }))
+            }
+          })
+          pushedCount++
+        }
+      }
+    } catch {}
+
     updateSettings(db, {
       cloud_last_synced_at: new Date().toISOString(),
       cloud_sync_pending: false
     })
 
-    return { ok: true, message: 'Connected successfully to Cloud Server.' }
+    return {
+      ok: true,
+      message: pushedCount > 0
+        ? `Connected to Cloud Server. Synced ${pushedCount} sale(s) to dashboard!`
+        : 'Connected successfully to Cloud Server.'
+    }
   } catch (err: unknown) {
     return { ok: false, message: 'Connection failed: ' + ((err as Error)?.message || 'Network error') }
   }
