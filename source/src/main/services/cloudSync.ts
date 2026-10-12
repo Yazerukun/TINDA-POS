@@ -190,6 +190,23 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       return { ok: false, message: `Cloud server responded with status: ${pingRes.status}` }
     }
 
+    // Auto-register and verify store on Cloudflare D1
+    try {
+      await fetch(`${apiUrl.replace(/\/+$/, '')}/api/sync/ping`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+        },
+        body: JSON.stringify({
+          store_id: settings.cloud_store_id,
+          sync_key: settings.cloud_sync_key,
+          branch_name: settings.store_name || 'My Store'
+        }),
+        signal: AbortSignal.timeout(6000)
+      })
+    } catch {}
+
     // Push recent sales so cloud dashboard displays live data immediately
     let pushedCount = 0
     try {
