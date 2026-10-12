@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.0.6-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.0.7-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-492_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/AI_Copilot-TindaBot_Auto--Pool-10b981?style=for-the-badge" alt="TindaBot Copilot">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-f59e0b?style=for-the-badge" alt="License">
 
@@ -17,9 +17,23 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.0.6](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Feature-Patch-2.0.6.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.6 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Setup-2.0.6.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.6/TindaPOS-Portable-2.0.6.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.0.7](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Feature-Patch-2.0.7.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.7 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Setup-2.0.7.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Portable-2.0.7.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
+
+## ✨ What's New in v2.0.7 (Daily E-Wallet Totals Hub & Loyverse-Style Promo Bundles Edition)
+
+> **Merchant Feedback Edition: Daily E-Wallet & Bills Totals Filter (Resets Daily at 12:00 AM) and Loyverse-Style Promo Bundles with Live Component Inventory Monitoring.**
+
+- 📱 **Daily E-Wallet & Bills Reconciliation Totals (`EwalletAudit.tsx`)**:
+  - Shifts left open across midnight or unclosed shifts no longer bleed yesterday's numbers into today's totals. Summaries default strictly to **Daily (Today)** starting at 12:00 AM local time.
+  - Added an Apple Cupertino Date Filter Bar (`Today (Daily)`, `Yesterday`, `Last 7 Days`, `This Month`, `Custom Date`, `All Time`) across Cash In/Out, Bills & E-Load, and 3-Way Audit.
+
+- 🎁 **Loyverse-Style Promo Bundles & Composite Inventory Combiner (`PromoBundlesModal.tsx`)**:
+  - Input items into Inventory first, then combine them directly into Promo Bundles.
+  - Dynamic available bundle stock monitoring: Available bundle stock is calculated directly from component inventory (`min(floor(component_stock / required_qty))`).
+  - Added direct **Promo Bundles** launcher button right inside the Inventory header and Quick Filter bar.
+  - Automatic recursive component stock deduction upon checkout with seamless POS cart promo discount application.
 
 ## ✨ What's New in v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item Sales Analytics & Attendance/Payroll Edition)
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -17,6 +17,7 @@ import { CameraScannerModal } from '../components/CameraScannerModal'
 import { PriceTagPrintModal } from '../components/PriceTagPrintModal'
 import { InventoryPrintModal } from '../components/InventoryPrintModal'
 import { RecipeModal } from '../components/RecipeModal'
+import { PromoBundlesModal } from '../components/PromoBundlesModal'
 import { PurchaseInvoiceModal } from '../components/PurchaseInvoiceModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
@@ -53,6 +54,7 @@ export function Inventory(): React.JSX.Element {
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const [purchaseInvoiceOpen, setPurchaseInvoiceOpen] = useState(false)
+  const [promoModalOpen, setPromoModalOpen] = useState(false)
   const filterMenuRef = useRef<HTMLDivElement>(null)
   const loadState = useRef({ sequence: 0 })
 
@@ -188,8 +190,12 @@ export function Inventory(): React.JSX.Element {
         await window.api.products.update(f.id, updateProductInput(f))
         toastSuccess('Product updated')
       } else {
-        await window.api.products.create(createProductInput(f))
+        const created = await window.api.products.create(createProductInput(f))
         toastSuccess('Product created')
+        if (f.item_type === 'COMPOSITE') {
+          // Loyverse style: immediately open recipe combiner to pick component items
+          setRecipeProduct(created)
+        }
       }
       setEditing(null)
       void load()
@@ -199,7 +205,7 @@ export function Inventory(): React.JSX.Element {
   // Instant Hardware & Phone Barcode Scanner Detection in Inventory View
   useEffect(() => {
     // Only intercept when no modal or dialog is open
-    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen || purchaseInvoiceOpen) {
+    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen || purchaseInvoiceOpen || promoModalOpen) {
       return
     }
 
@@ -268,6 +274,13 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
           <button onClick={() => setPurchaseInvoiceOpen(true)} className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-sm font-semibold">
             <FileSpreadsheet className="h-4 w-4" /> Purchase Invoice (F2)
+          </button>
+          <button
+            onClick={() => setPromoModalOpen(true)}
+            className="btn-primary bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-2 shadow-sm font-semibold"
+            title="Combine Inventory items into promo bundles & monitor available stock (Loyverse Style)"
+          >
+            <Gift className="h-4 w-4" /> Promo Bundles
           </button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
           <button onClick={() => setWithdrawing(true)} className="btn-primary flex items-center gap-2"><PackageMinus className="h-4 w-4" /> Withdraw</button>
@@ -557,6 +570,12 @@ export function Inventory(): React.JSX.Element {
           onSuccess={() => void load()}
         />
       )}
+      <PromoBundlesModal
+        open={promoModalOpen}
+        onClose={() => setPromoModalOpen(false)}
+        products={products}
+        onProductsChanged={() => void load()}
+      />
       <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => void load()} />
     </div>
   )
@@ -1358,7 +1377,7 @@ function ProductModal({
                 Stock is dynamically derived from component ingredients. When sold at POS, component quantities deduct automatically.
               </p>
             </div>
-            {f.id && onOpenRecipe && (
+            {f.id && onOpenRecipe ? (
               <button
                 type="button"
                 onClick={() => {
@@ -1370,6 +1389,10 @@ function ProductModal({
                 <Layers className="h-3.5 w-3.5" />
                 Configure Recipe
               </button>
+            ) : (
+              <span className="shrink-0 text-[11px] font-semibold text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded border border-purple-400/30">
+                Saving will open Recipe Combiner
+              </span>
             )}
           </div>
         )}

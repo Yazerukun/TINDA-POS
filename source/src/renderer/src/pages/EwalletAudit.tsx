@@ -16,6 +16,7 @@ import {
   Search,
   Receipt,
   RotateCcw,
+  Calendar,
   X
 } from 'lucide-react'
 import type {
@@ -27,6 +28,156 @@ import type {
 } from '@shared/types'
 import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
 import { toastSuccess, toastError } from '../stores/toast'
+
+export type EwalletDatePeriod = 'TODAY' | 'YESTERDAY' | 'LAST_7_DAYS' | 'THIS_MONTH' | 'CUSTOM' | 'ALL'
+
+export function formatLocalDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function parseRecordLocalDateKey(raw: string | undefined | null): string {
+  if (!raw) return ''
+  const trimmed = raw.trim()
+  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmed)
+    ? `${trimmed.replace(' ', 'T')}Z`
+    : trimmed
+  const parsed = new Date(normalized)
+  if (!Number.isNaN(parsed.getTime())) {
+    return formatLocalDateKey(parsed)
+  }
+  return trimmed.slice(0, 10)
+}
+
+export function matchesEwalletDatePeriod(
+  rawDate: string | undefined | null,
+  period: EwalletDatePeriod,
+  customDate: string,
+  now = new Date()
+): boolean {
+  if (period === 'ALL') return true
+  const recKey = parseRecordLocalDateKey(rawDate)
+  if (!recKey) return false
+
+  const todayKey = formatLocalDateKey(now)
+  if (period === 'TODAY') {
+    return recKey === todayKey
+  }
+  if (period === 'YESTERDAY') {
+    const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+    return recKey === formatLocalDateKey(y)
+  }
+  if (period === 'CUSTOM') {
+    return customDate ? recKey === customDate : recKey === todayKey
+  }
+  if (period === 'THIS_MONTH') {
+    return recKey.slice(0, 7) === todayKey.slice(0, 7)
+  }
+  if (period === 'LAST_7_DAYS') {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6)
+    const startKey = formatLocalDateKey(start)
+    return recKey >= startKey && recKey <= todayKey
+  }
+  return true
+}
+
+export function computeEwalletSummaryFromTransactions(
+  rows: EwalletTransactionRecord[]
+): EwalletShiftSummary {
+  let gcash_in_count = 0
+  let gcash_in_amount_c = 0
+  let gcash_in_fees_c = 0
+  let gcash_out_count = 0
+  let gcash_out_amount_c = 0
+  let gcash_out_fees_c = 0
+
+  let maya_in_count = 0
+  let maya_in_amount_c = 0
+  let maya_in_fees_c = 0
+  let maya_out_count = 0
+  let maya_out_amount_c = 0
+  let maya_out_fees_c = 0
+
+  let maribank_in_count = 0
+  let maribank_in_amount_c = 0
+  let maribank_in_fees_c = 0
+  let maribank_out_count = 0
+  let maribank_out_amount_c = 0
+  let maribank_out_fees_c = 0
+
+  let net_cash_drawer_delta_c = 0
+
+  for (const r of rows) {
+    const feeInCash = r.fee_collected_via === 'CASH' ? r.fee_c : 0
+    if (r.channel === 'GCASH') {
+      if (r.type === 'CASH_IN') {
+        gcash_in_count++
+        gcash_in_amount_c += r.amount_c
+        gcash_in_fees_c += r.fee_c
+        net_cash_drawer_delta_c += r.amount_c + feeInCash
+      } else {
+        gcash_out_count++
+        gcash_out_amount_c += r.amount_c
+        gcash_out_fees_c += r.fee_c
+        net_cash_drawer_delta_c -= r.amount_c - feeInCash
+      }
+    } else if (r.channel === 'MAYA') {
+      if (r.type === 'CASH_IN') {
+        maya_in_count++
+        maya_in_amount_c += r.amount_c
+        maya_in_fees_c += r.fee_c
+        net_cash_drawer_delta_c += r.amount_c + feeInCash
+      } else {
+        maya_out_count++
+        maya_out_amount_c += r.amount_c
+        maya_out_fees_c += r.fee_c
+        net_cash_drawer_delta_c -= r.amount_c - feeInCash
+      }
+    } else if (r.channel === 'MARIBANK') {
+      if (r.type === 'CASH_IN') {
+        maribank_in_count++
+        maribank_in_amount_c += r.amount_c
+        maribank_in_fees_c += r.fee_c
+        net_cash_drawer_delta_c += r.amount_c + feeInCash
+      } else {
+        maribank_out_count++
+        maribank_out_amount_c += r.amount_c
+        maribank_out_fees_c += r.fee_c
+        net_cash_drawer_delta_c -= r.amount_c - feeInCash
+      }
+    }
+  }
+
+  const total_fees_c =
+    gcash_in_fees_c +
+    gcash_out_fees_c +
+    maya_in_fees_c +
+    maya_out_fees_c +
+    maribank_in_fees_c +
+    maribank_out_fees_c
+
+  return {
+    gcash_in_count,
+    gcash_in_amount_c,
+    gcash_in_fees_c,
+    gcash_out_count,
+    gcash_out_amount_c,
+    gcash_out_fees_c,
+    maya_in_count,
+    maya_in_amount_c,
+    maya_in_fees_c,
+    maya_out_count,
+    maya_out_amount_c,
+    maya_out_fees_c,
+    maribank_in_count,
+    maribank_in_amount_c,
+    maribank_in_fees_c,
+    maribank_out_count,
+    maribank_out_amount_c,
+    maribank_out_fees_c,
+    total_fees_c,
+    net_cash_drawer_delta_c
+  }
+}
 
 const toast = {
   success: (title: string, msg?: string) => toastSuccess(title, msg),
@@ -72,6 +223,10 @@ export interface BillRecord {
 
 export function EwalletAudit(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<'register' | 'bills' | 'transactions' | 'audit' | 'history'>('register')
+
+  // Daily / Date Period Filter (Defaults strictly to TODAY so yesterday's totals are never mixed in)
+  const [datePeriod, setDatePeriod] = useState<EwalletDatePeriod>('TODAY')
+  const [customDate, setCustomDate] = useState<string>(() => formatLocalDateKey(new Date()))
 
   // Bills & E-Load State
   const [billRecords, setBillRecords] = useState<BillRecord[]>(() => {
@@ -120,7 +275,7 @@ export function EwalletAudit(): React.JSX.Element {
 
   // Transactions & Summary Data
   const [transactions, setTransactions] = useState<EwalletTransactionRecord[]>([])
-  const [summary, setSummary] = useState<EwalletShiftSummary | null>(null)
+  const [_backendSummary, setSummary] = useState<EwalletShiftSummary | null>(null)
   const [audits, setAudits] = useState<EwalletAuditRecord[]>([])
 
   // Audit Form State
@@ -140,7 +295,7 @@ export function EwalletAudit(): React.JSX.Element {
   const loadData = useCallback(async () => {
     try {
       const [txList, shiftSummary, auditList] = await Promise.all([
-        window.api.ewallet.listTransactions({ limit: 100 }),
+        window.api.ewallet.listTransactions({ limit: 500 }),
         window.api.ewallet.getShiftSummary(),
         window.api.ewallet.listAudits({ limit: 30 })
       ])
@@ -265,9 +420,42 @@ export function EwalletAudit(): React.JSX.Element {
     }
   }, [denominations])
 
+  // Period-filtered transactions (Defaults to TODAY so yesterday's records are never mixed in)
+  const periodTransactions = useMemo(() => {
+    return transactions.filter((tx) => matchesEwalletDatePeriod(tx.created_at, datePeriod, customDate))
+  }, [transactions, datePeriod, customDate])
+
+  // Period-filtered bills & E-load records
+  const periodBillRecords = useMemo(() => {
+    return billRecords.filter((b) => matchesEwalletDatePeriod(b.createdAt, datePeriod, customDate))
+  }, [billRecords, datePeriod, customDate])
+
+  // Period summary calculated strictly from the active period's transactions
+  const summary = useMemo(
+    () => computeEwalletSummaryFromTransactions(periodTransactions),
+    [periodTransactions]
+  )
+
+  const periodLabel = useMemo(() => {
+    switch (datePeriod) {
+      case 'TODAY':
+        return 'Today (Daily)'
+      case 'YESTERDAY':
+        return 'Yesterday'
+      case 'LAST_7_DAYS':
+        return 'Last 7 Days'
+      case 'THIS_MONTH':
+        return 'This Month'
+      case 'CUSTOM':
+        return customDate ? `Date: ${customDate}` : 'Custom Date'
+      case 'ALL':
+        return 'All Time'
+    }
+  }, [datePeriod, customDate])
+
   // Filtered transactions for the ledger view
   const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx) => {
+    return periodTransactions.filter((tx) => {
       if (txFilterChannel !== 'ALL' && tx.channel !== txFilterChannel) return false
       if (txFilterType !== 'ALL' && tx.type !== txFilterType) return false
       if (txSearch.trim()) {
@@ -284,7 +472,7 @@ export function EwalletAudit(): React.JSX.Element {
       }
       return true
     })
-  }, [transactions, txFilterChannel, txFilterType, txSearch])
+  }, [periodTransactions, txFilterChannel, txFilterType, txSearch])
 
   const expectedCashC = Math.round((parseFloat(expectedCashDrawerStr) || 0) * 100)
   const cashDifferenceC = actualCashC - expectedCashC
@@ -643,7 +831,7 @@ export function EwalletAudit(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-6 space-y-6">
+    <div className="flex h-full flex-col overflow-y-auto p-6 space-y-5">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink-line pb-4">
         <div>
@@ -652,6 +840,9 @@ export function EwalletAudit(): React.JSX.Element {
               <Smartphone className="h-6 w-6 text-emerald-400" />
               E-Wallet &amp; Bills Center
             </h1>
+            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
+              {datePeriod === 'TODAY' ? 'Daily Totals · Resets 12:00 AM' : periodLabel}
+            </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             GCash, Maya &amp; MariBank Cash In / Cash Out, Utilities &amp; Loan Bills Payment, Instant Thermal &amp; Manual Printing, and 3-Way Audit.
@@ -682,7 +873,7 @@ export function EwalletAudit(): React.JSX.Element {
             }`}
           >
             <Zap className="h-3.5 w-3.5 text-amber-400" />
-            Bills &amp; E-Load ({billRecords.length})
+            Bills &amp; E-Load ({periodBillRecords.length})
           </button>
           <button
             type="button"
@@ -694,7 +885,7 @@ export function EwalletAudit(): React.JSX.Element {
             }`}
           >
             <Receipt className="h-3.5 w-3.5" />
-            Transactions ({transactions.length})
+            Transactions ({periodTransactions.length})
           </button>
           <button
             type="button"
@@ -722,6 +913,64 @@ export function EwalletAudit(): React.JSX.Element {
           </button>
         </div>
       </div>
+
+      {/* Cupertino Daily / Date Filter Bar */}
+      {activeTab !== 'history' && (
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 rounded-2xl border border-ink-line bg-ink-900/90 px-4 py-3 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 mr-1">
+              <Calendar className="h-4 w-4 text-brand-400" />
+              <span>Viewing Period:</span>
+            </div>
+            {(
+              [
+                { id: 'TODAY', label: 'Today (Daily)' },
+                { id: 'YESTERDAY', label: 'Yesterday' },
+                { id: 'LAST_7_DAYS', label: 'Last 7 Days' },
+                { id: 'THIS_MONTH', label: 'This Month' },
+                { id: 'CUSTOM', label: 'Custom Date' },
+                { id: 'ALL', label: 'All Time' }
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setDatePeriod(opt.id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  datePeriod === opt.id
+                    ? 'bg-brand-600 text-white shadow-sm ring-1 ring-brand-400/40'
+                    : 'bg-ink-950 text-slate-400 border border-ink-line hover:text-white hover:border-slate-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+
+            {datePeriod === 'CUSTOM' && (
+              <input
+                type="date"
+                value={customDate}
+                onChange={(e) => setCustomDate(e.target.value)}
+                className="rounded-lg border border-brand-500/40 bg-ink-950 px-2.5 py-1 text-xs font-semibold text-white outline-none focus:border-brand-400"
+              />
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="text-slate-400">
+              {periodLabel} Transactions:{' '}
+              <strong className="text-white font-bold">{periodTransactions.length}</strong>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-slate-400">
+              {periodLabel} Fees Earned:{' '}
+              <strong className="text-amber-400 font-black">
+                ₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </strong>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       {activeTab === 'register' && (
@@ -994,8 +1243,10 @@ export function EwalletAudit(): React.JSX.Element {
             {/* Shift Snapshot Card */}
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                <span>Active Shift E-Wallet Metrics</span>
-                <span className="text-emerald-400 font-bold">● Active</span>
+                <span>{periodLabel} E-Wallet Metrics</span>
+                <span className="text-emerald-400 font-bold">
+                  {datePeriod === 'TODAY' ? '● Daily Total' : `● ${periodLabel}`}
+                </span>
               </h3>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1051,7 +1302,7 @@ export function EwalletAudit(): React.JSX.Element {
               {/* Total Service Fees & Cash Impact */}
               <div className="border-t border-ink-line pt-3 flex items-center justify-between text-xs">
                 <div>
-                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Fees Earned</p>
+                  <p className="text-[10px] uppercase text-slate-500 font-semibold">Total Fees Earned ({periodLabel})</p>
                   <p className="text-lg font-black text-amber-400">
                     ₱{((summary?.total_fees_c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
@@ -1072,26 +1323,26 @@ export function EwalletAudit(): React.JSX.Element {
             <div className="card p-5 border border-ink-line bg-ink-900 rounded-2xl shadow-card space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Recent E-Wallet Transactions
+                  {periodLabel} E-Wallet Transactions
                 </h3>
-                {transactions.length > 0 && (
+                {periodTransactions.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setActiveTab('transactions')}
                     className="text-[11px] font-bold text-brand-400 hover:text-brand-300 transition"
                   >
-                    View All ({transactions.length}) →
+                    View All ({periodTransactions.length}) →
                   </button>
                 )}
               </div>
 
               <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
-                {transactions.length === 0 ? (
+                {periodTransactions.length === 0 ? (
                   <div className="text-center py-8 text-slate-500 text-xs">
-                    No transactions recorded yet today.
+                    No transactions recorded for {periodLabel.toLowerCase()}.
                   </div>
                 ) : (
-                  transactions.map((tx) => (
+                  periodTransactions.map((tx) => (
                     <div
                       key={tx.id}
                       className="flex items-center justify-between p-2.5 rounded-xl border border-ink-line bg-ink-950 text-xs"
@@ -1432,7 +1683,7 @@ export function EwalletAudit(): React.JSX.Element {
                   <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Receipt className="h-4 w-4 text-brand-400" />
-                      Bills &amp; E-Load Transactions ({billRecords.length})
+                      {periodLabel} Bills &amp; E-Load Transactions ({periodBillRecords.length})
                     </h3>
                     <p className="text-[11px] text-slate-400">
                       Print official thermal stubs, trigger manual print dialog, or void entries.
@@ -1450,6 +1701,28 @@ export function EwalletAudit(): React.JSX.Element {
                   </div>
                 </div>
 
+                {/* Daily Bills Summary Strip */}
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="rounded-xl border border-ink-line bg-ink-950 p-2.5">
+                    <p className="text-[10px] font-semibold uppercase text-slate-400">{periodLabel} Bills Paid</p>
+                    <p className="text-sm font-bold text-white mt-0.5">
+                      ₱{periodBillRecords.reduce((acc, b) => acc + (b.amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2.5">
+                    <p className="text-[10px] font-semibold uppercase text-emerald-400">{periodLabel} Convenience Fees</p>
+                    <p className="text-sm font-bold text-emerald-300 mt-0.5">
+                      ₱{periodBillRecords.reduce((acc, b) => acc + (b.serviceFee || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-brand-500/20 bg-brand-500/5 p-2.5">
+                    <p className="text-[10px] font-semibold uppercase text-brand-300">Total Cash Collected</p>
+                    <p className="text-sm font-bold text-white mt-0.5">
+                      ₱{periodBillRecords.reduce((acc, b) => acc + (b.amount || 0) + (b.serviceFee || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="border-b border-ink-line text-slate-400 uppercase text-[10px] tracking-wider">
@@ -1464,7 +1737,7 @@ export function EwalletAudit(): React.JSX.Element {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-line/50">
-                      {billRecords.filter((b) =>
+                      {periodBillRecords.filter((b) =>
                         b.biller.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
                         b.accountNo.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
                         b.customerName.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
@@ -1472,11 +1745,11 @@ export function EwalletAudit(): React.JSX.Element {
                       ).length === 0 ? (
                         <tr>
                           <td colSpan={7} className="py-8 text-center text-slate-500">
-                            No bills payment or E-load transactions recorded yet.
+                            No bills payment or E-load transactions recorded for {periodLabel.toLowerCase()}.
                           </td>
                         </tr>
                       ) : (
-                        billRecords
+                        periodBillRecords
                           .filter((b) =>
                             b.biller.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
                             b.accountNo.toLowerCase().includes(billSearchQuery.toLowerCase()) ||
@@ -1567,7 +1840,7 @@ export function EwalletAudit(): React.JSX.Element {
             <div>
               <h2 className="text-sm font-bold text-white flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-400" />
-                E-Wallet Transactions Ledger & Management
+                E-Wallet Transactions Ledger & Management ({periodLabel})
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
                 Review complete Cash In / Out entries, search by reference or customer, reprint thermal slips, or void mistyped records.
@@ -1577,13 +1850,13 @@ export function EwalletAudit(): React.JSX.Element {
             {/* Total summary chip */}
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400">
-                Total Fees Earned:{' '}
+                {periodLabel} Fees Earned:{' '}
                 <strong className="text-amber-400 font-bold">
                   ₱{((summary?.total_fees_c || 0) / 100).toFixed(2)}
                 </strong>
               </span>
               <span className="rounded-full bg-ink-950 px-2.5 py-1 text-xs font-semibold text-slate-300 border border-ink-line">
-                {filteredTransactions.length} of {transactions.length} records
+                {filteredTransactions.length} of {periodTransactions.length} records
               </span>
             </div>
           </div>

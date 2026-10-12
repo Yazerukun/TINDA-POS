@@ -28,16 +28,46 @@ SELECT p.*, c.name AS category_name
 FROM products p
 LEFT JOIN categories c ON c.id = p.category_id`
 
+export function calculateCompositeStock(db: Database.Database, productId: number): number | null {
+  try {
+    const leaves = resolveLeafComponents(db, productId)
+    if (leaves.size === 0) return null
+    let maxBundles = Infinity
+    for (const [leafId, leafData] of leaves) {
+      if (leafId === productId) continue
+      const comp = db.prepare('SELECT stock FROM products WHERE id = ?').get(leafId) as
+        | { stock: number }
+        | undefined
+      if (!comp || leafData.qty <= 0) {
+        maxBundles = 0
+        break
+      }
+      const possible = Math.floor(Math.max(0, Number(comp.stock) || 0) / leafData.qty)
+      maxBundles = Math.min(maxBundles, possible)
+    }
+    return maxBundles === Infinity ? null : Math.max(0, maxBundles)
+  } catch {
+    return null
+  }
+}
+
 function rowToProduct(db: Database.Database, row: Record<string, unknown>): Product {
-  const units = listUnits(db, row.id as number)
-  const stock = row.stock as number
+  const productId = row.id as number
+  const units = listUnits(db, productId)
+  const itemType = ((row.item_type as string) || 'STANDARD') as import('@shared/types').ProductItemType
+  const rawStock = row.stock as number
+  const compositeStock = itemType === 'COMPOSITE' ? calculateCompositeStock(db, productId) : null
+  const stock = compositeStock !== null ? compositeStock : rawStock
+  const rawCostC = row.purchase_cost_c as number
+  const purchaseCostC =
+    itemType === 'COMPOSITE' && rawCostC === 0 ? calculateRollupCost(db, productId) : rawCostC
   const threshold = row.low_stock_threshold as number
   const mode = (row.expiration_mode ?? 'NONE') as NonNullable<Product['expiration_mode']>
-  const batches = mode === 'BATCH' ? batchesFor(db, row.id as number) : []
+  const batches = mode === 'BATCH' ? batchesFor(db, productId) : []
   const date = (row.expiration_date ?? null) as string | null
   const today = localDate()
   return {
-    id: row.id as number,
+    id: productId,
     category_id: (row.category_id as number | null) ?? null,
     category_name: (row.category_name as string | null) ?? null,
     name: row.name as string,
@@ -45,7 +75,7 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     barcode: (row.barcode as string | null) ?? null,
     description: (row.description as string | null) ?? null,
     base_unit: row.base_unit as string,
-    purchase_cost_c: row.purchase_cost_c as number,
+    purchase_cost_c: purchaseCostC,
     default_price_c: row.default_price_c as number,
     srp_c: (row.srp_c as number | null) ?? null,
     wholesale_price_c: (row.wholesale_price_c as number | null) ?? null,
@@ -57,14 +87,20 @@ function rowToProduct(db: Database.Database, row: Record<string, unknown>): Prod
     expiration_mode: mode,
     expiration_date: date,
     batches,
-    sellable_stock: mode === 'BATCH' ? batches.reduce((n, b) => n + (b.expiration_date && b.expiration_date >= today ? b.quantity : 0), 0)
-      : mode === 'ITEM' && (!date || date < today) ? 0 : stock,
+    sellable_stock:
+      compositeStock !== null
+        ? compositeStock
+        : mode === 'BATCH'
+        ? batches.reduce((n, b) => n + (b.expiration_date && b.expiration_date >= today ? b.quantity : 0), 0)
+        : mode === 'ITEM' && (!date || date < today)
+        ? 0
+        : stock,
     image_path: (row.image_path as string | null) ?? null,
     status: row.status as ProductStatus,
     notes: (row.notes as string | null) ?? null,
     units,
     stock_status: stockStatusFor(stock, threshold),
-    item_type: ((row.item_type as string) || 'STANDARD') as import('@shared/types').ProductItemType,
+    item_type: itemType,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string
   }
@@ -572,6 +608,17 @@ export function saveRecipe(
     if (it.component_product_id && it.quantity > 0) {
       insert.run(parentProductId, it.component_product_id, it.quantity, it.unit_name?.trim() || 'pc')
     }
+  }
+  const compStock = calculateCompositeStock(db, parentProductId)
+  const rollupCost = calculateRollupCost(db, parentProductId)
+  if (compStock !== null) {
+    db.prepare(
+      `UPDATE products
+       SET stock = ?,
+           purchase_cost_c = CASE WHEN purchase_cost_c = 0 THEN ? ELSE purchase_cost_c END,
+           updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(compStock, rollupCost, parentProductId)
   }
 }
 

@@ -1,7 +1,12 @@
+import type { Product } from '@shared/types'
+
 export type PromoType = 'FIXED_COMBO' | 'VOLUME_TIER'
 
 export interface PromoBundleItem {
   product_id?: number
+  product_name?: string
+  sku?: string
+  unit_name?: string
   name_keyword: string
   quantity: number
   unit_price_c?: number
@@ -15,11 +20,36 @@ export interface PromoBundle {
   is_active: boolean
   description: string
   badge?: string
-  // For FIXED_COMBO: required items
+  composite_product_id?: number
+  // For FIXED_COMBO: required items from Inventory
   items: PromoBundleItem[]
   // For VOLUME_TIER:
+  target_product_id?: number
   target_name_keyword?: string
   min_quantity?: number
+}
+
+export interface BundleComponentStatus {
+  item: PromoBundleItem
+  product?: Product
+  availableStock: number
+  requiredQty: number
+  maxBundles: number
+  unitName: string
+  unitPriceC: number
+  unitCostC: number
+  isLinked: boolean
+  isEnoughStock: boolean
+}
+
+export interface PromoBundleInventoryStatus {
+  availableBundles: number
+  regularPriceC: number
+  totalCostC: number
+  savingsC: number
+  allLinkedToInventory: boolean
+  hasOutOfStockComponent: boolean
+  components: BundleComponentStatus[]
 }
 
 const STORAGE_KEY = 'tinda_promo_bundles_v1'
@@ -89,6 +119,142 @@ export function savePromoBundles(bundles: PromoBundle[]): void {
   }
 }
 
+function getSellableStock(p: Product): number {
+  return Math.max(0, p.sellable_stock ?? p.stock ?? 0)
+}
+
+/**
+ * Resolves a PromoBundleItem to an actual Inventory Product.
+ * Prioritizes exact product_id match (Loyverse style), then SKU, then keyword match.
+ */
+export function resolveBundleComponentProduct(
+  item: PromoBundleItem,
+  products: Product[]
+): Product | undefined {
+  if (item.product_id != null) {
+    const byId = products.find((p) => p.id === item.product_id)
+    if (byId) return byId
+  }
+  if (item.sku) {
+    const skuLower = item.sku.toLowerCase().trim()
+    const bySku = products.find((p) => p.sku.toLowerCase() === skuLower)
+    if (bySku) return bySku
+  }
+  const kw = (item.product_name || item.name_keyword || '').toLowerCase().trim()
+  if (!kw) return undefined
+  const exactName = products.find((p) => p.name.toLowerCase() === kw)
+  if (exactName) return exactName
+  return products.find(
+    (p) => p.name.toLowerCase().includes(kw) || p.sku.toLowerCase().includes(kw)
+  )
+}
+
+/**
+ * Computes real-time Loyverse-style Inventory monitoring metrics for a PromoBundle:
+ * - How many complete bundles can be assembled from current Inventory stock
+ * - Combined regular retail price vs promo price (Customer Savings)
+ * - Combined component purchase cost
+ * - Per-component stock availability
+ */
+export function getPromoBundleInventoryStatus(
+  bundle: PromoBundle,
+  products: Product[]
+): PromoBundleInventoryStatus {
+  const effectiveItems: PromoBundleItem[] =
+    bundle.type === 'VOLUME_TIER'
+      ? [
+          {
+            product_id: bundle.target_product_id,
+            name_keyword: bundle.target_name_keyword || bundle.name,
+            quantity: bundle.min_quantity || 3
+          }
+        ]
+      : bundle.items || []
+
+  if (effectiveItems.length === 0) {
+    return {
+      availableBundles: 0,
+      regularPriceC: 0,
+      totalCostC: 0,
+      savingsC: 0,
+      allLinkedToInventory: false,
+      hasOutOfStockComponent: true,
+      components: []
+    }
+  }
+
+  // Track total required qty per product_id in case multiple rows reference the same product
+  const requiredByProductId = new Map<number, number>()
+  const components: BundleComponentStatus[] = []
+  let regularPriceC = 0
+  let totalCostC = 0
+  let allLinkedToInventory = true
+
+  for (const item of effectiveItems) {
+    const qty = Math.max(0.001, Number(item.quantity) || 1)
+    const prod = resolveBundleComponentProduct(item, products)
+    if (prod) {
+      requiredByProductId.set(prod.id, (requiredByProductId.get(prod.id) || 0) + qty)
+      const avail = getSellableStock(prod)
+      const maxForThisRow = Math.floor(avail / qty)
+      regularPriceC += Math.round(prod.default_price_c * qty)
+      totalCostC += Math.round(prod.purchase_cost_c * qty)
+      components.push({
+        item,
+        product: prod,
+        availableStock: avail,
+        requiredQty: qty,
+        maxBundles: maxForThisRow,
+        unitName: prod.base_unit || item.unit_name || 'pc',
+        unitPriceC: prod.default_price_c,
+        unitCostC: prod.purchase_cost_c,
+        isLinked: true,
+        isEnoughStock: avail >= qty
+      })
+    } else {
+      allLinkedToInventory = false
+      const fallbackPrice = item.unit_price_c || 0
+      regularPriceC += Math.round(fallbackPrice * qty)
+      components.push({
+        item,
+        product: undefined,
+        availableStock: 0,
+        requiredQty: qty,
+        maxBundles: 0,
+        unitName: item.unit_name || 'pc',
+        unitPriceC: fallbackPrice,
+        unitCostC: 0,
+        isLinked: false,
+        isEnoughStock: false
+      })
+    }
+  }
+
+  let availableBundles = allLinkedToInventory ? Infinity : 0
+  if (allLinkedToInventory) {
+    for (const [prodId, totalReqQty] of requiredByProductId.entries()) {
+      const prod = products.find((p) => p.id === prodId)
+      const avail = prod ? getSellableStock(prod) : 0
+      const canMake = Math.floor(avail / totalReqQty)
+      availableBundles = Math.min(availableBundles, canMake)
+    }
+    if (availableBundles === Infinity) availableBundles = 0
+  }
+
+  const hasOutOfStockComponent = components.some((c) => !c.isLinked || !c.isEnoughStock)
+  const savingsC = Math.max(0, regularPriceC - bundle.bundle_price_c)
+
+  return {
+    availableBundles: Math.max(0, availableBundles),
+    regularPriceC,
+    totalCostC,
+    savingsC,
+    allLinkedToInventory,
+    hasOutOfStockComponent,
+    components
+  }
+}
+
 export interface EvaluatedPromo {
   bundle: PromoBundle
   appliedCount: number
@@ -97,6 +263,7 @@ export interface EvaluatedPromo {
 
 /**
  * Pure evaluator for cart items against active promo bundles.
+ * Matches by exact Inventory product_id first (Loyverse style), then falls back to keyword.
  * Calculates how many times each combo can be fulfilled and total customer savings.
  */
 export function evaluateCartPromos(
@@ -110,13 +277,19 @@ export function evaluateCartPromos(
     if (bundle.type === 'FIXED_COMBO') {
       if (!bundle.items || bundle.items.length === 0) continue
 
-      // Find cart matching items
       let possibleCombos = Infinity
       let regularComboPriceC = 0
 
       for (const required of bundle.items) {
-        const keyword = required.name_keyword.toLowerCase().trim()
-        const found = cartItems.find((i) => i.name.toLowerCase().includes(keyword))
+        const keyword = (required.product_name || required.name_keyword || '').toLowerCase().trim()
+        const found =
+          required.product_id != null
+            ? cartItems.find((i) => i.product_id === required.product_id) ||
+              (keyword ? cartItems.find((i) => i.name.toLowerCase().includes(keyword)) : undefined)
+            : keyword
+            ? cartItems.find((i) => i.name.toLowerCase().includes(keyword))
+            : undefined
+
         if (!found || found.qty < required.quantity) {
           possibleCombos = 0
           break
@@ -137,13 +310,20 @@ export function evaluateCartPromos(
         }
       }
     } else if (bundle.type === 'VOLUME_TIER') {
-      if (!bundle.target_name_keyword || !bundle.min_quantity) continue
-      const keyword = bundle.target_name_keyword.toLowerCase().trim()
-      const found = cartItems.find((i) => i.name.toLowerCase().includes(keyword))
+      const minQty = bundle.min_quantity || 0
+      if (minQty <= 0) continue
+      const keyword = (bundle.target_name_keyword || '').toLowerCase().trim()
+      const found =
+        bundle.target_product_id != null
+          ? cartItems.find((i) => i.product_id === bundle.target_product_id) ||
+            (keyword ? cartItems.find((i) => i.name.toLowerCase().includes(keyword)) : undefined)
+          : keyword
+          ? cartItems.find((i) => i.name.toLowerCase().includes(keyword))
+          : undefined
 
-      if (found && found.qty >= bundle.min_quantity) {
-        const tiersCount = Math.floor(found.qty / bundle.min_quantity)
-        const regularPriceForTier = bundle.min_quantity * found.unit_price_c
+      if (found && found.qty >= minQty) {
+        const tiersCount = Math.floor(found.qty / minQty)
+        const regularPriceForTier = minQty * found.unit_price_c
         const savingsPerTier = Math.max(0, regularPriceForTier - bundle.bundle_price_c)
 
         if (savingsPerTier > 0) {
@@ -159,3 +339,4 @@ export function evaluateCartPromos(
 
   return results
 }
+

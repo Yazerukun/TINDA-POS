@@ -1658,6 +1658,7 @@ export function POS(): React.JSX.Element {
         open={promoModalOpen}
         onClose={() => setPromoModalOpen(false)}
         products={products}
+        onProductsChanged={() => void search(q, catFilter === 'ALL' ? null : Number(catFilter), false)}
       />
     </div>
   )

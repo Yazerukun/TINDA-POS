@@ -28,7 +28,18 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item-by-Item Sales Analytics, Attendance/Payroll & Obra Superpowers v7.0.0 Edition)**
+- Current Version: **v2.0.7 (Daily E-Wallet Totals Hub, Loyverse-Style Promo Bundles & Composite Inventory Combiner Edition)**
+
+## Key Features in v2.0.7 (Daily E-Wallet Totals Hub, Loyverse-Style Promo Bundles & Composite Inventory Combiner Edition)
+1. **Daily E-Wallet & Bills Reconciliation Totals (`EwalletAudit.tsx`, `ewallet.ts`)**:
+   - Resolved multi-day continuous accumulation issue: E-Wallet Cash In / Out and Bills Payment shift summaries now strictly default to **Daily (Today)** starting at 12:00 AM local time.
+   - Integrated an Apple Cupertino Date Period Bar (`Today (Daily)`, `Yesterday`, `Last 7 Days`, `This Month`, `Custom Date`, `All Time`) with real-time reactive summaries across Cash In/Out, Bills & E-Load, Transactions, and 3-Way Audit sheets.
+2. **Loyverse-Style Promo Bundles & Composite Inventory Combiner (`PromoBundlesModal.tsx`, `RecipeModal.tsx`, `products.ts`, `promoBundles.ts`, `Inventory.tsx`, `POS.tsx`)**:
+   - Input individual items into Inventory first, then combine them directly into Promo Bundles or Composite BOM recipes.
+   - Dynamic real-time bundle stock monitoring: Available bundle stock is dynamically derived from limiting component inventory (`min(floor(component_stock / required_qty))`).
+   - Integrated live Inventory product picker, component stock preview, combined regular price, roll-up cost, and customer savings calculation.
+   - Added direct **Promo Bundles** launcher button right inside the Inventory header and Quick Filter bar.
+   - Automatic recursive component stock deduction upon checkout with seamless POS cart promo discount application.
 
 ## Key Features in v2.0.6 (Supplier Purchase Invoice Receiving Hub, Item-by-Item Sales Analytics, Attendance/Payroll & Obra Superpowers v7.0.0 Edition)
 1. **Supplier Purchase Invoice & Batch Stock-In Receiving Hub (`PurchaseInvoiceModal.tsx`, `purchases.ts`, Migration 19)**:

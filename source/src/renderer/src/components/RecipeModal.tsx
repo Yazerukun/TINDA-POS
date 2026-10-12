@@ -76,11 +76,26 @@ export function RecipeModal({
 
   if (!open || !product) return null
 
-  // Calculate live rollup cost
+  // Calculate live rollup cost and available bundle stock from Inventory components
   const totalRollupCostC = items.reduce(
     (sum, it) => sum + Math.round(it.component_cost_c * it.quantity),
     0
   )
+
+  const availableBundleStock =
+    items.length === 0
+      ? 0
+      : items.reduce((minBundles, it) => {
+          const comp = allProducts.find((p) => p.id === it.component_product_id)
+          if (!comp) return 0
+          if (comp.item_type === 'SERVICE') return minBundles
+          const compStock = Math.max(0, Number(comp.sellable_stock ?? comp.stock ?? 0))
+          const possible = it.quantity > 0 ? Math.floor(compStock / it.quantity) : 0
+          return Math.min(minBundles, possible)
+        }, Number.MAX_SAFE_INTEGER)
+
+  const normalizedBundleStock =
+    availableBundleStock === Number.MAX_SAFE_INTEGER ? 0 : Math.max(0, availableBundleStock)
 
   const handleAddComponent = async () => {
     if (!selectedCompId) {
@@ -155,7 +170,7 @@ export function RecipeModal({
         }))
       )
 
-      // Also ensure product is marked as COMPOSITE and update its purchase_cost_c to rollup cost
+      // Also ensure product is marked as COMPOSITE and sync its rollup cost
       await window.api.products.update(product.id, {
         item_type: 'COMPOSITE',
         purchase_cost_c: totalRollupCostC
@@ -163,8 +178,8 @@ export function RecipeModal({
 
       await onRecipeSaved()
       toastSuccess(
-        'Recipe saved',
-        `Updated BOM for "${product.name}". Total Rollup Cost: ${money(totalRollupCostC)}.`
+        'Recipe & Bundle Stock Saved',
+        `Updated BOM for "${product.name}". Available Stock: ${normalizedBundleStock} · Rollup Cost: ${money(totalRollupCostC)}.`
       )
       onClose()
     } catch (err) {
@@ -186,7 +201,7 @@ export function RecipeModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={`Bill of Materials & Recipe: ${product.name}`}
+      title={`Bill of Materials & Promo Bundle Recipe: ${product.name}`}
       maxWidth="max-w-2xl"
     >
       <div className="space-y-4">
@@ -194,21 +209,31 @@ export function RecipeModal({
         <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3 text-xs text-indigo-200">
           <p className="font-bold flex items-center gap-1.5 text-indigo-100">
             <Layers className="h-4 w-4 text-indigo-400" />
-            Composite & Nested Recipe Assembly (BOM)
+            Loyverse-Style Composite & Promo Bundle Inventory Combiner
           </p>
           <p className="mt-1 text-slate-300">
-            When <strong>{product.name}</strong> is sold at checkout, the system automatically and recursively deducts its raw ingredients from stock and rolls up the exact production cost.
+            Combine existing Inventory items below. When <strong>{product.name}</strong> is sold at checkout, component quantities automatically deduct from Inventory and available bundle stock updates in real time.
           </p>
         </div>
 
         {/* Recipe Components List */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Ingredients / Sub-Components ({items.length})
+              Combined Inventory Components ({items.length})
             </h4>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-400">Total Roll-up Cost:</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-slate-400">Available Bundles:</span>
+              <span
+                className={`font-mono font-extrabold px-2 py-0.5 rounded border ${
+                  normalizedBundleStock > 0
+                    ? 'text-sky-300 bg-sky-500/10 border-sky-500/30'
+                    : 'text-rose-300 bg-rose-500/10 border-rose-500/30'
+                }`}
+              >
+                {normalizedBundleStock} sets
+              </span>
+              <span className="text-slate-400">Roll-up Cost:</span>
               <span className="font-mono font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
                 {money(totalRollupCostC)}
               </span>
@@ -221,20 +246,34 @@ export function RecipeModal({
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-dashed border-ink-line p-6 text-center text-xs text-slate-400">
-              No ingredients added yet. Select a product below to add it to the recipe.
+              No Inventory components added yet. Search and select products below to combine them.
             </div>
           ) : (
             <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1 scrollbar-thin">
               {items.map((it, idx) => {
                 const subtotalCost = Math.round(it.component_cost_c * it.quantity)
+                const compProd = allProducts.find((p) => p.id === it.component_product_id)
+                const compStock = compProd ? Math.max(0, Number(compProd.sellable_stock ?? compProd.stock ?? 0)) : 0
+                const maxSets = it.quantity > 0 ? Math.floor(compStock / it.quantity) : 0
                 return (
                   <div
                     key={`${it.component_product_id}-${idx}`}
                     className="flex items-center justify-between gap-3 rounded-lg border border-ink-line bg-ink-850 px-3 py-2 text-xs"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-white truncate">{it.component_name}</p>
-                      <p className="text-[11px] text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-white truncate">{it.component_name}</p>
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                            maxSets > 0
+                              ? 'bg-emerald-500/15 text-emerald-300'
+                              : 'bg-rose-500/20 text-rose-300'
+                          }`}
+                        >
+                          Stock: {compStock} {compProd?.base_unit || it.unit_name} ({maxSets} sets max)
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
                         {it.quantity} {it.unit_name} × {money(it.component_cost_c)} ={' '}
                         <span className="text-emerald-400 font-mono font-medium">{money(subtotalCost)}</span>
                       </p>

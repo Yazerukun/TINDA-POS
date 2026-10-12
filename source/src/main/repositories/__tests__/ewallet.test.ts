@@ -247,5 +247,32 @@ describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
     expect(cleared).toBe(1)
     expect(listEwalletAudits(db)).toHaveLength(0)
   })
+
+  it('isolates summary to today only, excluding transactions from previous days', () => {
+    // 1. Transaction from yesterday
+    db.prepare(`
+      INSERT INTO ewallet_transactions (
+        shift_id, user_id, channel, type, amount_c, fee_c, fee_collected_via, created_at
+      ) VALUES (
+        1, 1, 'GCASH', 'CASH_IN', 50000, 1000, 'CASH', datetime('now', '-1 day')
+      )
+    `).run()
+
+    // 2. Transaction from today
+    db.prepare(`
+      INSERT INTO ewallet_transactions (
+        shift_id, user_id, channel, type, amount_c, fee_c, fee_collected_via, created_at
+      ) VALUES (
+        1, 1, 'GCASH', 'CASH_IN', 100000, 1500, 'CASH', datetime('now')
+      )
+    `).run()
+
+    const summary = getEwalletShiftSummary(db, 1)
+    // Only today's ₱1,000 + ₱15 fee should be counted; yesterday's ₱500 is excluded
+    expect(summary.gcash_in_count).toBe(1)
+    expect(summary.gcash_in_amount_c).toBe(100000)
+    expect(summary.gcash_in_fees_c).toBe(1500)
+    expect(summary.total_fees_c).toBe(1500)
+  })
 })
 
