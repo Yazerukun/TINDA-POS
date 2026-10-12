@@ -346,6 +346,7 @@ export interface TindaApi {
     ) => Promise<PrintResult>
     testPrintLabel: (options?: { manual?: boolean; deviceName?: string }) => Promise<PrintResult>
     saveLabel: (input: { name: string; paperSize?: string }) => Promise<StoreSettings>
+    kickCashDrawer: (deviceName?: string) => Promise<PrintResult>
     installDriver: () => Promise<{ ok: boolean; message: string }>
     openDriverTutorial: () => Promise<{ ok: boolean; message: string }>
   }

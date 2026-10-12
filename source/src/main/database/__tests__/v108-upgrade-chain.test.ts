@@ -92,11 +92,11 @@ describe('v1.0.8 DB upgrade chain (v1.0.6 -> v1.0.7 -> v1.0.8)', () => {
     // Current app boot applies shift numbering, the additive expiration schema, product srp, price references, epoch 41, wholesale tiering, ewallet hub, system license vault, and maribank ewallet support.
     runMigrations(db)
     expect(db.pragma('integrity_check', { simple: true })).toBe('ok')
-    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(14)
+    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(15)
 
     // A re-boot of the same build is a safe no-op (idempotent migration engine).
     runMigrations(db)
-    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(14)
+    expect(COUNT(db, 'SELECT COUNT(*) c FROM app_migrations')).toBe(15)
     expect(db.pragma('integrity_check', { simple: true })).toBe('ok')
 
     // No data lost, added, or altered in ANY other table.

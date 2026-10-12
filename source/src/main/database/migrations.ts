@@ -145,6 +145,24 @@ export function ensureSchemaColumns(db: Database.Database): void {
       CREATE INDEX IF NOT EXISTS idx_purchases_invoice_no ON purchases(invoice_no);
       CREATE INDEX IF NOT EXISTS idx_purchases_receipt_no ON purchases(receipt_no);
     `)
+
+    const tbls = new Set(
+      (db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]).map((t) => t.name)
+    )
+    if (tbls.has('products')) db.exec('CREATE INDEX IF NOT EXISTS idx_products_supplier ON products(supplier_id);')
+    if (tbls.has('purchases')) {
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_purchases_supplier ON purchases(supplier_id);
+        CREATE INDEX IF NOT EXISTS idx_purchases_reference ON purchases(reference);
+      `)
+    }
+    if (tbls.has('inventory_movements')) db.exec('CREATE INDEX IF NOT EXISTS idx_movements_reference ON inventory_movements(reference);')
+    if (tbls.has('credit_ledger')) db.exec('CREATE INDEX IF NOT EXISTS idx_credit_reference ON credit_ledger(reference_type, reference_id);')
+    if (tbls.has('held_sale_items')) db.exec('CREATE INDEX IF NOT EXISTS idx_held_items_held ON held_sale_items(held_sale_id);')
+    if (tbls.has('batch_movements')) db.exec('CREATE INDEX IF NOT EXISTS idx_batch_movements_batch ON batch_movements(batch_id);')
+    if (tbls.has('refund_items')) db.exec('CREATE INDEX IF NOT EXISTS idx_refund_items_sale_item ON refund_items(sale_item_id);')
+    if (tbls.has('shifts')) db.exec('CREATE INDEX IF NOT EXISTS idx_shifts_opened ON shifts(opened_at);')
+    if (tbls.has('payments')) db.exec('CREATE INDEX IF NOT EXISTS idx_payments_sale_method ON payments(sale_id, method);')
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }
@@ -821,6 +839,23 @@ CREATE TABLE IF NOT EXISTS product_recipes (
 CREATE INDEX IF NOT EXISTS idx_product_recipes_parent ON product_recipes(parent_product_id);
 CREATE INDEX IF NOT EXISTS idx_product_recipes_component ON product_recipes(component_product_id);
 `
+  },
+  {
+    version: 15,
+    name: 'foreign_key_composite_indexes',
+    sql: `
+CREATE INDEX IF NOT EXISTS idx_products_supplier ON products(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_supplier ON purchases(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchases_reference ON purchases(reference);
+CREATE INDEX IF NOT EXISTS idx_movements_reference ON inventory_movements(reference);
+CREATE INDEX IF NOT EXISTS idx_credit_reference ON credit_ledger(reference_type, reference_id);
+CREATE INDEX IF NOT EXISTS idx_held_items_held ON held_sale_items(held_sale_id);
+CREATE INDEX IF NOT EXISTS idx_batch_movements_batch ON batch_movements(batch_id);
+CREATE INDEX IF NOT EXISTS idx_refund_items_sale_item ON refund_items(sale_item_id);
+CREATE INDEX IF NOT EXISTS idx_shifts_opened ON shifts(opened_at);
+CREATE INDEX IF NOT EXISTS idx_payments_sale_method ON payments(sale_id, method);
+`
   }
 ]
+
 

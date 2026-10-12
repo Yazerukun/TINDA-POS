@@ -28,7 +28,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)**
+- Current Version: **v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)**
+
+## Key Features in v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)
+1. **Prorated Refund Discount Invariant (`transaction.ts`)**:
+   - Refunding discounted items (e.g., Senior Citizen, PWD, bundle promos) now prorates discounts proportionally based on net revenue paid, stopping cash drawer leakage.
+2. **Net Landed Cost COGS Absorption (`purchases.ts`)**:
+   - Purchase invoices now factor compounding trade discounts into catalog unit costs, ensuring profit margins and COGS reflect true acquisition costs.
+3. **Migration 15 & Foreign Key Indexes (`migrations.ts`, `canonical.ts`)**:
+   - Added 10 composite indexes across SQLite tables for sub-millisecond query performance.
+   - Added `product_recipes`, `ewallet_transactions`, and `ewallet_audits` to `CANONICAL_TABLES` to eliminate backup restore foreign key collisions.
+4. **Cash Drawer Kick & Thermal Printer Feed (`printing.ts`, `receiptHtml.ts`)**:
+   - Exposed `window.api.printer.kickCashDrawer()` across IPC/preload.
+   - Widened default tear-bar feed spacer to 5 lines (19mm) and fixed `flex-shrink: 0` CSS on narrow 58mm paper.
+5. **Dashboard 100k Transaction Limit (`dashboard.ts`)**:
+   - Removed the silent 50-item cutoff in `dashboardStats`, ensuring 100% daily sales and profit aggregation accuracy for high-volume stores.
 
 ## Key Features in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
 1. **Invoices History Immunity & Self-Healing Database Engine (`purchases.ts`, `migrations.ts`)**:

@@ -31,7 +31,8 @@ describe('v1.0.6 to v1.0.7 upgrade preserves data (user feedback release)', () =
         { version: 11, name: 'ewallet_hub' },
         { version: 12, name: 'system_license_vault' },
         { version: 13, name: 'maribank_ewallet_support' },
-        { version: 14, name: 'composite_items_bom' }
+        { version: 14, name: 'composite_items_bom' },
+        { version: 15, name: 'foreign_key_composite_indexes' }
       ])
     const shiftNumbering = migrations.find((m) => m.version === 5)
     expect(shiftNumbering?.name).toBe('shift_numbering')

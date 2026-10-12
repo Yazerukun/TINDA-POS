@@ -678,6 +678,10 @@ handle('printer:printLines', async (_e: IpcMainInvokeEvent, lines: string[], opt
   sessionSvc.requirePermission('transactions:view')
   return printingSvc.printLines(settingRepo.getSettings(db()), lines, options)
 })
+handle('printer:kickCashDrawer', async (_e: IpcMainInvokeEvent, deviceName?: string) => {
+  sessionSvc.requirePermission('pos:checkout')
+  return printingSvc.kickCashDrawer(settingRepo.getSettings(db()), { deviceName })
+})
 handle('printer:printDocument', async (_e: IpcMainInvokeEvent, html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter'; deviceName?: string; widthMm?: number; heightMm?: number }) => {
   return printingSvc.printDocument(html, options)
 })

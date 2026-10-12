@@ -150,7 +150,7 @@ export function getPurchase(db: Database.Database, id: number): Purchase {
     reference: (row.reference as string | null) ?? null,
     invoice_no: (row.invoice_no as string | null) ?? null,
     receipt_no: (row.receipt_no as string | null) ?? null,
-    is_paid: row.is_paid !== undefined ? Boolean(row.is_paid) : true,
+    is_paid: row.is_paid != null ? Boolean(row.is_paid) : true,
     terms_days: (row.terms_days as number) ?? 0,
     discount_c: (row.discount_c as number) ?? 0,
     net_total_c: (row.net_total_c as number) ?? (row.total_c as number) ?? 0,
@@ -203,10 +203,9 @@ export function createPurchase(
   const grossTotal = input.items.reduce((s, i) => s + i.subtotal_c, 0)
   const discount = Math.max(0, input.discount_c || 0)
   const netTotal = Math.max(0, grossTotal - discount)
-  const no = nextPurchaseNo(db)
   const ref = input.invoice_no || input.receipt_no || input.reference || null
-
   const txn = db.transaction(() => {
+    const no = nextPurchaseNo(db)
     const info = db
       .prepare(
         `INSERT INTO purchases (
@@ -237,6 +236,11 @@ export function createPurchase(
     for (const it of input.items) {
       stmt.run(purchaseId, it.product_id, it.unit_name, it.qty, it.qty_base, it.unit_cost_c, it.subtotal_c)
 
+      // Effective net unit cost per base unit after trade discount
+      const netBaseCostC = it.qty_base > 0
+        ? Math.round(it.subtotal_c / it.qty_base)
+        : Math.round(it.unit_cost_c / (it.qty > 0 ? it.qty_base / it.qty : 1))
+
       // Atomic stock increment and receiving movement record
       adjustStock(
         db,
@@ -251,17 +255,15 @@ export function createPurchase(
           supplier_id: input.supplier_id,
           received_unit: it.unit_name,
           received_quantity: it.qty,
-          unit_cost_c: it.unit_cost_c,
+          unit_cost_c: netBaseCostC,
           notes: input.notes ?? null
         }
       )
 
-      // Optionally update catalog product purchase cost
+      // Optionally update catalog product purchase cost with true net acquisition cost
       if (input.update_product_costs) {
-        const baseMultiplier = it.qty > 0 ? it.qty_base / it.qty : 1
-        const baseCostC = Math.round(it.unit_cost_c / baseMultiplier)
         db.prepare(`UPDATE products SET purchase_cost_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
-          baseCostC,
+          netBaseCostC,
           it.product_id
         )
       }
@@ -336,7 +338,7 @@ export function listPurchases(
         reference: (r.reference as string | null) ?? null,
         invoice_no: (r.invoice_no as string | null) ?? null,
         receipt_no: (r.receipt_no as string | null) ?? null,
-        is_paid: r.is_paid !== undefined ? Boolean(r.is_paid) : true,
+        is_paid: r.is_paid != null ? Boolean(r.is_paid) : true,
         terms_days: (r.terms_days as number) ?? 0,
         discount_c: (r.discount_c as number) ?? 0,
         net_total_c: (r.net_total_c as number) ?? (r.total_c as number) ?? 0,

@@ -30,7 +30,7 @@ export interface ChainDiscountResult {
  * Calculates compound/series trade discount from any distributor string notation.
  */
 export function calculateChainDiscount(grossC: number, discountInput: string): ChainDiscountResult {
-  const safeGross = Math.max(0, Math.round(grossC))
+  const safeGross = Number.isFinite(grossC) ? Math.max(0, Math.round(grossC)) : 0
   const trimmed = (discountInput || '').trim()
 
   if (!trimmed || trimmed === '0' || trimmed === '0%' || safeGross === 0) {
@@ -70,7 +70,8 @@ export function calculateChainDiscount(grossC: number, discountInput: string): C
 
   // Extract all numbers from the input string (handles "-5%-5%-5%", "10/5", "5+5+5", "5%", "50", etc.)
   const rawMatches = trimmed.match(/\d+(?:\.\d+)?/g) || []
-  const numbers = rawMatches.map((n) => parseFloat(n)).filter((n) => !isNaN(n) && n > 0 && n <= 100)
+  // Cap percentage values at 100% max
+  const numbers = rawMatches.map((n) => Math.min(100, parseFloat(n))).filter((n) => !isNaN(n) && n > 0)
 
   const hasPercentSign = trimmed.includes('%')
 
@@ -108,7 +109,7 @@ export function calculateChainDiscount(grossC: number, discountInput: string): C
 
   // Single number without '%' or separators (e.g. "50"):
   const singleVal = parseFloat(trimmed.replace(/[^\d.]/g, ''))
-  if (!isNaN(singleVal) && singleVal > 0) {
+  if (!hasPercentSign && !isNaN(singleVal) && singleVal > 0) {
     const discountC = Math.min(safeGross, Math.round(singleVal * 100))
     const netAmountC = Math.max(0, safeGross - discountC)
     const effRate = safeGross > 0 ? discountC / safeGross : 0

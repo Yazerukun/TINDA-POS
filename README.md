@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.0.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.0-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,28 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.0.9](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Feature-Patch-2.0.9.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.9 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Setup-2.0.9.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.9/TindaPOS-Portable-2.0.9.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.1.0](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.0/TindaPOS-Feature-Patch-2.1.0.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.0 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.0/TindaPOS-Setup-2.1.0.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.0/TindaPOS-Portable-2.1.0.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
+## ✨ What's New in v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)
+
+> **Core Retail Hardening: Prorated refund discounts protecting cash drawers, Migration 15 composite indexes, true net landed cost COGS absorption, and native cash drawer kick pulse.**
+
+- 🛡️ **Prorated Refund Discount Invariant (`transaction.ts`)**:
+  - Refunding discounted items (e.g., Senior Citizen, PWD, bundle promos) now prorates discounts proportionally based on net revenue paid, stopping cash drawer leakage.
+- 💰 **Net Landed Cost COGS Absorption (`purchases.ts`)**:
+  - Purchase invoices now factor compounding trade discounts into catalog unit costs, ensuring profit margins and COGS reflect true acquisition costs.
+- ⚡ **Migration 15 & Foreign Key Indexes (`migrations.ts`, `canonical.ts`)**:
+  - Added 10 composite indexes across SQLite tables for sub-millisecond query performance.
+  - Added `product_recipes`, `ewallet_transactions`, and `ewallet_audits` to `CANONICAL_TABLES` to eliminate backup restore foreign key collisions.
+- 🖨️ **Cash Drawer Kick & Thermal Printer Feed (`printing.ts`, `receiptHtml.ts`)**:
+  - Exposed `window.api.printer.kickCashDrawer()` across IPC/preload.
+  - Widened default tear-bar feed spacer to 5 lines (19mm) and fixed `flex-shrink: 0` CSS on narrow 58mm paper.
+- 📊 **Dashboard 100k Transaction Limit (`dashboard.ts`)**:
+  - Removed the silent 50-item cutoff in `dashboardStats`, ensuring 100% daily sales and profit aggregation accuracy for high-volume stores.
+
+## ✨ Previous: What's New in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
 
 > **Invoices History Immunity: Resolved SQLite missing column/table error when switching to Invoices History on existing user databases.**
 

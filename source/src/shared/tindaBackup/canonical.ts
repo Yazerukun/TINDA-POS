@@ -15,6 +15,7 @@ export const CANONICAL_TABLES = [
   'suppliers',
   'products',
   'product_units',
+  'product_recipes',
   'stock_batches',
   'purchases',
   'purchase_items',
@@ -35,6 +36,8 @@ export const CANONICAL_TABLES = [
   'cash_movements',
   'cash_counts',
   'z_reads',
+  'ewallet_transactions',
+  'ewallet_audits',
   'audit_logs',
   'settings'
 ] as const

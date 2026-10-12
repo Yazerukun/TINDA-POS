@@ -106,7 +106,7 @@ export async function submitPrint(
         copies,
         pageSize: pageSizeMicrons,
         margins: {
-          marginType: 'printableArea'
+          marginType: 'none'
         }
       },
       (success, failureReason) => {
@@ -180,13 +180,21 @@ export async function printLines(
       manual: isManual
     })
 
-    // Wait an additional 500ms so Windows Print Spooler finishes reading before destroying the WebContents
-    await new Promise((r) => setTimeout(r, 500))
+    // Wait an additional 1500ms so Windows Print Spooler finishes reading before destroying the WebContents
+    await new Promise((r) => setTimeout(r, 1500))
 
     return result
   } finally {
     if (!window.isDestroyed()) window.destroy()
   }
+}
+
+export async function kickCashDrawer(
+  settings: StoreSettings,
+  options?: { deviceName?: string }
+): Promise<PrintResult> {
+  // Triggers the thermal printer's kick pulse by sending a minimal print burst
+  return printLines(settings, [''], { manual: false, deviceName: options?.deviceName })
 }
 
 export async function listPrinters(webContents: WebContents): Promise<PrinterInfo[]> {

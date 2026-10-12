@@ -10,7 +10,8 @@ export function dashboardStats(): DashboardStats {
 
   const sales = listSales(db, {
     from: `${today} 00:00:00`,
-    to: `${today} 23:59:59`
+    to: `${today} 23:59:59`,
+    limit: 100000
   }).rows.filter((s) => s.status !== 'VOIDED')
   const todaySales = sales.reduce((s, x) => s + x.total_c, 0)
   const todayCost = sales.reduce((s, x) => s + x.items.reduce((a, i) => a + i.cost_base_c * i.qty_base, 0), 0)

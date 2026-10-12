@@ -212,7 +212,7 @@ const baseCss = `
   .tp-item { margin: 0; padding: 0.5px 0; line-height: 1.15; }
   .tp-item .tp-name { font-size: 10.5px; font-weight: 800; line-height: 1.15; margin: 0; }
   .tp-itemline { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10.5px; line-height: 1.15; margin: 0; padding-right: 3px; font-weight: 800; }
-  .tp-qty { font-size: 10.5px; white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; shrink: 0; }
+  .tp-qty { font-size: 10.5px; white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .tp-amt { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-weight: 900; padding-right: 3px; }
   .tp-item .tp-amt, .tp-sum .tp-amt { font-weight: 900; }
   .tp-sum, .tp-total, .tp-sukli { display: flex; justify-content: space-between; align-items: baseline; width: 100%; gap: 2px; overflow: visible; font-size: 10.5px; line-height: 1.15; margin: 0; padding-right: 3px; }
@@ -343,7 +343,7 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
 export function receiptBodyHtml(lines: string[], width: ReceiptWidth, currency = '', options?: ReceiptLayoutOptions): string {
   const feedLines = typeof options?.feedLinesEnd === 'number' && options.feedLinesEnd > 0
     ? options.feedLinesEnd
-    : 2
+    : 5
   const feedSpacer = `<div style="height: ${feedLines * 3.8}mm;" class="tp-feed-spacer"></div>`
   return `<div class="tp-sheet">${rowsToHtml(lines, currency)}${feedSpacer}</div>`
 }

@@ -179,6 +179,7 @@ const api: TindaApi = {
     printDocument: (html: string, options?: { manual?: boolean; title?: string; pageSize?: 'A4' | 'Letter'; deviceName?: string; widthMm?: number; heightMm?: number }) => invoke<import('@shared/ipc').PrintResult>('printer:printDocument', html, options),
     testPrintLabel: (options?: { manual?: boolean; deviceName?: string }) => invoke<import('@shared/ipc').PrintResult>('printer:testPrintLabel', options),
     saveLabel: (input: { name: string; paperSize?: string }) => invoke<import('@shared/types').StoreSettings>('printer:saveLabel', input),
+    kickCashDrawer: (deviceName?: string) => invoke<import('@shared/ipc').PrintResult>('printer:kickCashDrawer', deviceName),
     installDriver: () => invoke<{ ok: boolean; message: string }>('printer:installDriver'),
     openDriverTutorial: () => invoke<{ ok: boolean; message: string }>('printer:openDriverTutorial')
   },

@@ -33,7 +33,11 @@ export function processRefund(payload: RefundPayload): import('@shared/types').R
       if (!Number.isFinite(it.qty_base) || it.qty_base <= 0 || it.qty_base > available)
         throw new Error(`Cannot refund ${it.qty_base}. Only ${available} available.`)
       const qty = it.qty_base / (saleItem.unit_price_c === 0 ? 1 : 1) // qty units derived if needed
-      const amountC = Math.round((it.qty_base / saleItem.qty_base) * saleItem.subtotal_c)
+      const discountRatio = (sale.subtotal_c > 0 && sale.total_c < sale.subtotal_c)
+        ? (sale.total_c / sale.subtotal_c)
+        : 1
+      const effectiveLineSubtotal = Math.round(saleItem.subtotal_c * discountRatio)
+      const amountC = Math.round((it.qty_base / saleItem.qty_base) * effectiveLineSubtotal)
       totalC += amountC
       return { ...it, amount_c: amountC, qty }
     })
