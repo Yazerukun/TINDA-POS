@@ -28,7 +28,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)**
+- Current Version: **v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)**
+
+## Key Features in v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)
+1. **Interactive Real-Time Item & Letter Search for Printable Inventory Sheets (`InventoryPrintModal.tsx`)**:
+   - Integrated real-time search input with glassmorphism styling, `Search` icon, autofocus, and 1-click `✕` clear button across all inventory print types (Stock on Hand, Physical Count Sheet, Price List, Reorder/Low Stock).
+   - Real-time case-insensitive substring matching against product `name`, `sku`, `barcode`, `category_name`, and `description` (e.g. typing "elbow" filters specifically for PVC elbow fittings).
+   - Reactive match indicator: `Ready to print: X product items (matching "elbow")` and zero-match warning banner.
+   - Dynamic document generation: automatically injects `Filter: "elbow" • X Products` in the printed report header and recalculates `totalVal` exclusively for filtered items (`Total Inventory Value (Filtered): ₱...`).
+2. **Cloud Owner Dashboard Custom Date Picker & Historical Sales Parity (`OverviewPage.tsx`, `BranchDetailPage.tsx`)**:
+   - Upgraded `OverviewPage.tsx` with a 5th Segmented button `📅 Custom` and Apple glassmorphism `custom-date-strip` (`From` and `To` native `<input type="date">` inputs, Apply button, and Active date indicator).
+   - Upgraded `BranchDetailPage.tsx` with symmetrical Date Filter Bar (Today, Yesterday, Last 7 Days, This Month, Custom Date) so store owners can drill into any historical date window without returning to Overview.
+   - Fixed `LIMIT 100` sales list truncation: added backend `periodFinancials` SQL aggregate query in `tinda-sync` Cloudflare D1 worker for mathematically exact revenue, payment method totals, and counts across arbitrary date ranges.
+   - Raised individual sales query limit from 100 to 300 rows and normalized timezone fallback to `Asia/Manila`.
+3. **SQLite Double-Timezone Roll-Over Fix (`ewallet.ts`)**:
+   - Fixed 4:00 PM (16:00 UTC+8) date rollover bug in SQLite: replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` because `created_at` timestamps were already recorded in local time, preventing double shift into the next day.
 
 ## Key Features in v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition)
 1. **1-Tap Mobile Phone Pairing & Auto-Connect Modal (`Settings.tsx`)**:

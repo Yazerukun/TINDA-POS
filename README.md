@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-506%2F506_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.4_NSIS_(~116MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.4_Standalone_(~115MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.4_(0.94MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.5_(0.94MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,13 +31,13 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.4 Stable)
+## ⚡ Quick Download & Release Assets (v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
+| [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (Latest)** | Applied automatically in `0.3s` via "Check for Updates" without restarting or redownloading. |
 | [**TindaPOS-Setup-2.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe) | `116.7 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.1.4.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip) | `0.94 MB` | **In-App Live Hot Patch** | Applied automatically in `0.3s` via "Check for Updates" without restarting or redownloading. |
 | [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
 | [**SHA256SUMS-v2.1.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/SHA256SUMS-v2.1.4.txt) | `0.4 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
@@ -205,6 +205,22 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🔍 v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition) · Oct 12, 2026
+- **🔍 Real-Time Item & Letter Search for Printable Sheets (`InventoryPrintModal.tsx`)**:
+  - Integrated real-time search input with glassmorphism styling, `Search` icon, autofocus, and 1-click `✕` clear button across all inventory print types (Stock on Hand, Physical Stock Count, Price List, Reorder/Low Stock).
+  - Real-time case-insensitive filtering matching product `name`, `sku`, `barcode`, `category_name`, and `description` (e.g. typing "elbow" filters specifically for PVC elbow fittings).
+  - Live matching badge (`Ready to print: X product items (matching "elbow")`) and zero-match alert banner.
+  - Dynamic document generation: automatically injects `Filter: "elbow" • X Products` in the printed report header and recalculates `totalVal` exclusively for filtered items (`Total Inventory Value (Filtered): ₱...`).
+- **📅 Cloud Owner Dashboard Custom Date Picker (`OverviewPage.tsx`, `BranchDetailPage.tsx`)**:
+  - Upgraded `OverviewPage.tsx` with a 5th Segmented button `📅 Custom` and Apple glassmorphism `custom-date-strip` (`From` and `To` native `<input type="date">` inputs, Apply button, and Active date indicator).
+  - Upgraded `BranchDetailPage.tsx` with symmetrical Date Filter Bar (Today, Yesterday, Last 7 Days, This Month, Custom Date) so store owners can drill into any historical date window without returning to Overview.
+  - Connected `App.tsx` to synchronize `onDateChange` between Overview and Branch Detail views.
+- **⚡ Cloudflare D1 Backend `periodFinancials` Query & `LIMIT 100` Truncation Lift (`reports.ts`)**:
+  - Added dedicated `periodFinancials` SQL aggregate query in `tinda-sync` Cloudflare D1 worker for mathematically exact revenue, payment method breakdowns, and transaction counts across any date range.
+  - Raised individual sales query limit from 100 to 300 rows and normalized timezone fallback to `Asia/Manila`.
+- **🛡️ SQLite Double-Timezone Roll-Over Fix (`ewallet.ts`)**:
+  - Fixed 4:00 PM (16:00 UTC+8) date rollover bug in SQLite: replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` because `created_at` timestamps were already recorded in local time, preventing double shift into the next day.
 
 ### 🚀 v2.1.4 (1-Tap QR Code Auto-Pair & Background Auto-Sync Loop Edition) · Oct 12, 2026
 - **📱 1-Tap Mobile Phone QR Code Pairing (`Settings.tsx`, `App.tsx`, `LoginPage.tsx`)**:

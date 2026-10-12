@@ -1,31 +1,33 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v1.0.79 (SIDEBAR FAST UPDATES & ZERO-RESTART LIVE ENGINE EDITION)
+- v2.1.5 (PRINTABLE INVENTORY SHEETS SEARCH & CLOUD ANALYTICS CALENDAR EDITION)
 
 TARGET:
-- v1.0.80 (NEXT RELEASE CYCLE)
+- v2.1.6 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Published & Live (GitHub Releases v1.0.79 + Auto-Update Mirror Synced)
+- Production Release — v2.1.5 Live Feature Patch
 
 COMPLETED:
-- Stage 01: Sidebar Fast Updates Hub & Zero-Restart Live Engine (migrated update controls from Settings > About into Sidebar; added Fast Updates nav entry; added openHub and closeHub state; upgraded patchService semver preservation > 0 and installedVersion active patch reporting; updated UpdateModal as standalone Cupertino Update Hub with zero-restart indicators and integrated version rollback).
-- Stage 02: Comprehensive Quality Assurance (425/425 vitest unit tests passing across 64 test suites, 0 TypeScript compiler errors, master invariants verified 100%).
-- Stage 03: Fast Feature Patch Packaging (`TindaPOS-Feature-Patch-1.0.79.zip` [0.81 MB] bundled in 1.09s with SHA-256 verification).
-- Stage 04: Production Packaging (`TindaPOS-Setup-1.0.79.exe` [107.18 MB], `TindaPOS-Portable-1.0.79.exe` [106.96 MB], blockmap, `latest.yml`, and SHA256 checksums generated and verified).
-- Stage 05: Production Deployment & GitHub Releases Publishing (Assets uploaded to https://github.com/Yazerukun/TINDA-POS/releases/tag/v1.0.79; latest.yml auto-update manifest and release notes synced to public repository).
+- Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
+- Stage 02: Multi-Packaging Units Support in Purchase Invoices: `PACK`, `BUNDLE`, `ROLL`, `BOX`, `CASE`, `DOZEN`, `SACK`, `CAN`, `BOTTLE`, `KILO`, and `CUSTOM` with configurable base conversion multipliers (`Pcs/Unit`).
+- Stage 03: Fast Item Entry Bar live calculation: shows instant preview of base stock addition (`+120 pcs`) and live trade discount breakdown (`Less 5% Less 5% Less 5% = -₱142.63 (-14.26%)`).
+- Stage 04: Net Cost per piece catalog update: passing `netUnitCostC` into purchase posting updates catalog cost with true net discounted price.
+- Stage 05: Invoices History Immunity & Self-Healing: Resolved SQLite missing table/column crash on existing databases by introducing self-healing `ensurePurchasesTables`, safe index ordering after column verification, resilient null-safe date formatting in `shortDate`, and defensive array fallback in `PurchaseInvoiceModal.tsx`.
+- Stage 06: Proportional Refund Discount Invariant: `processRefund` prorates sale-level discounts onto refunded items, completely eliminating cash drawer bleed.
+- Stage 07: Net Acquisition Landed Cost: `purchases.ts` records true net unit cost after trade discounts in both movements and catalog cost, restoring accurate Gross Profit and COGS.
+- Stage 08: Dashboard 100k Limit: Removed silent 50-item cutoff in `dashboardStats`, ensuring full daily revenue accuracy.
+- Stage 09: Cash Drawer Kick & Thermal Printer Feed: Exposed `window.api.printer.kickCashDrawer()` through IPC/preload, increased default tear-bar feed spacer to 5 lines (19mm), and fixed `flex-shrink: 0`.
+- Stage 10: Migration 15 & Canonical Tables Update: Added 10 composite foreign key indexes in SQLite, resolved backup restore `product_recipes` foreign key collision.
+- Stage 11: Interactive Real-Time Item & Letter Search for Printable Inventory Sheets (`InventoryPrintModal.tsx`): substring filter across names, skus, barcodes, categories, and descriptions (e.g. "elbow"), with live count badges and filtered total valuation.
+- Stage 12: Cloud Owner Dashboard Custom Date Picker (`OverviewPage.tsx`, `BranchDetailPage.tsx`): custom `<input type="date">` calendar strip, synchronized date state across overview and branch view.
+- Stage 13: Cloudflare D1 Backend `periodFinancials` Query & `LIMIT 100` Truncation Lift (`tinda-sync/src/reports.ts`): exact aggregate financial metrics and raised row limit to 300.
+- Stage 14: SQLite 4:00 PM Double-Timezone Roll-Over Fix (`ewallet.ts`): replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` resolving premature day rollover.
+- Stage 15: Quality Gates verified: Vitest (506/506 tests passing across 79 test files), Typecheck (0 errors across Node & Web), In-app live hot patch bundled & published to GitHub Releases (`v2.1.5`).
 
 PENDING APPROVAL:
 - None (Approved by Owner).
 
 BLOCKERS:
 - None.
-
-ARTIFACTS (v1.0.79):
-- Setup: `source/builds/TindaPOS-Setup-1.0.79.exe` (SHA256: `13e339cb3716bd24540fa0254ee7336506da3eaa49e53f0d00926af5020faf22`)
-- Portable: `source/builds/TindaPOS-Portable-1.0.79.exe` (SHA256: `097653968019c1b974191ce496c7af1dbc0f5337d771def10dc8dc9e4893620f`)
-- Blockmap: `source/builds/TindaPOS-Setup-1.0.79.exe.blockmap` (SHA256: `515b83e27d4e339bb3104c2f90d602d9cf1f052409ddc25376356a7539decf7b`)
-- Feature Patch: `source/builds/TindaPOS-Feature-Patch-1.0.79.zip` (SHA256: `91328a4b35f0f0e554d002370f51b3a02605c7f27f814c66c0e6431cd4f10a29`)
-- Auto-Update Manifest: `source/builds/latest.yml` (SHA256: `12c1b9778ffe77e2b3e3e368370f8cf095334307bff831d3db45716af5e9b440`)
-- Checksums: `source/builds/SHA256SUMS-v1.0.79.txt`
