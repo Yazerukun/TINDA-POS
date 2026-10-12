@@ -25,6 +25,26 @@ import { ReceiptPaper } from '../components/ReceiptPaper'
 import { toastSuccess, toastError } from '../stores/toast'
 import type { BillRecord } from './EwalletAudit'
 
+export interface EwalletBillLedgerItem {
+  key: string
+  kind: 'EWALLET' | 'BILL'
+  date: string
+  channel: string
+  type: 'CASH_IN' | 'CASH_OUT' | 'BILLS'
+  amount_c: number
+  fee_c: number
+  total_c: number
+  fee_collected_via: 'CASH' | 'WALLET'
+  reference_no: string
+  customer_name: string
+  customer_phone: string
+  biller?: string
+  account_no?: string
+  notes?: string
+  rawTx?: EwalletTransactionRecord
+  rawBill?: BillRecord
+}
+
 export function Transactions(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<'pos' | 'ewallet'>('pos')
 
@@ -50,6 +70,8 @@ export function Transactions(): React.JSX.Element {
   const [ewalletFilterType, setEwalletFilterType] = useState<string>('ALL')
   const [ewalletFrom, setEwalletFrom] = useState('')
   const [ewalletTo, setEwalletTo] = useState('')
+  const [ewalletToDelete, setEwalletToDelete] = useState<EwalletBillLedgerItem | null>(null)
+  const [isDeletingEwallet, setIsDeletingEwallet] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -83,6 +105,8 @@ export function Transactions(): React.JSX.Element {
       const savedBills = localStorage.getItem('tinda_bills_load_records')
       if (savedBills) {
         setBillRecords(JSON.parse(savedBills))
+      } else {
+        setBillRecords([])
       }
     } catch (e) {
       console.warn('Could not load bills from localStorage:', e)
@@ -105,26 +129,8 @@ export function Transactions(): React.JSX.Element {
 
   const total = rows.filter((s) => s.status !== 'VOIDED').reduce((s, x) => s + x.total_c, 0)
 
-  const combinedEwalletItems = useMemo(() => {
-    const list: Array<{
-      key: string
-      kind: 'EWALLET' | 'BILL'
-      date: string
-      channel: string
-      type: 'CASH_IN' | 'CASH_OUT' | 'BILLS'
-      amount_c: number
-      fee_c: number
-      total_c: number
-      fee_collected_via: 'CASH' | 'WALLET'
-      reference_no: string
-      customer_name: string
-      customer_phone: string
-      biller?: string
-      account_no?: string
-      notes?: string
-      rawTx?: EwalletTransactionRecord
-      rawBill?: BillRecord
-    }> = []
+  const combinedEwalletItems = useMemo<EwalletBillLedgerItem[]>(() => {
+    const list: EwalletBillLedgerItem[] = []
 
     const billRefs = new Set(billRecords.map((b) => b.referenceNo?.trim()).filter(Boolean))
 
@@ -226,7 +232,7 @@ export function Transactions(): React.JSX.Element {
   const totalEwalletFeesC = filteredEwalletItems.reduce((s, x) => s + x.fee_c, 0)
   const totalEwalletCashC = filteredEwalletItems.reduce((s, x) => s + x.total_c, 0)
 
-  const handlePrintItemSlip = async (item: typeof combinedEwalletItems[0], manual = false) => {
+  const handlePrintItemSlip = async (item: EwalletBillLedgerItem, manual = false) => {
     if (item.kind === 'EWALLET' && item.rawTx?.id) {
       try {
         const res = await window.api.ewallet.printSlip(item.rawTx.id, { manual })
@@ -266,6 +272,78 @@ export function Transactions(): React.JSX.Element {
       } catch (e) {
         toastError('Print Error', String((e as Error)?.message || e))
       }
+    }
+  }
+
+  const handleConfirmDeleteEwallet = async () => {
+    if (!ewalletToDelete) return
+    setIsDeletingEwallet(true)
+    try {
+      if (ewalletToDelete.kind === 'EWALLET' && ewalletToDelete.rawTx?.id) {
+        if (window.api?.ewallet?.deleteTransaction) {
+          await window.api.ewallet.deleteTransaction(ewalletToDelete.rawTx.id)
+        }
+        if (ewalletToDelete.reference_no?.trim()) {
+          const ref = ewalletToDelete.reference_no.trim()
+          try {
+            const savedBills = localStorage.getItem('tinda_bills_load_records')
+            if (savedBills) {
+              const list: BillRecord[] = JSON.parse(savedBills)
+              const next = list.filter((b) => b.referenceNo?.trim() !== ref)
+              if (next.length !== list.length) {
+                localStorage.setItem('tinda_bills_load_records', JSON.stringify(next))
+                setBillRecords(next)
+              }
+            }
+          } catch (e) {
+            console.warn('Could not remove mirrored bill from localStorage:', e)
+          }
+        }
+      } else if (ewalletToDelete.kind === 'BILL' && ewalletToDelete.rawBill) {
+        const b = ewalletToDelete.rawBill
+        // 1. Remove bill record from localStorage
+        try {
+          const savedBills = localStorage.getItem('tinda_bills_load_records')
+          if (savedBills) {
+            const list: BillRecord[] = JSON.parse(savedBills)
+            const next = list.filter((item) => {
+              if (b.id && item.id) return item.id !== b.id
+              if (b.referenceNo && item.referenceNo) return item.referenceNo !== b.referenceNo
+              return item.createdAt !== b.createdAt
+            })
+            localStorage.setItem('tinda_bills_load_records', JSON.stringify(next))
+            setBillRecords(next)
+          }
+        } catch (e) {
+          console.warn('Could not remove bill from localStorage:', e)
+        }
+
+        // 2. If mirrored in SQLite ewallet_transactions (by reference number or notes), delete from SQLite if matching ID exists
+        const ref = (b.referenceNo || ewalletToDelete.reference_no || '').trim()
+        if (window.api?.ewallet?.deleteTransaction) {
+          const matchingTxs = ewalletTxs.filter((tx) => {
+            if (ref && tx.reference_no?.trim() === ref) return true
+            if (ref && tx.notes && tx.notes.includes(ref)) return true
+            if (b.accountNo?.trim() && tx.notes && tx.notes.includes(b.accountNo.trim())) return true
+            return false
+          })
+          for (const m of matchingTxs) {
+            try {
+              await window.api.ewallet.deleteTransaction(m.id)
+            } catch (err) {
+              console.warn('Could not delete mirrored ewallet tx:', err)
+            }
+          }
+        }
+      }
+
+      await loadEwalletAndBills()
+      toastSuccess('Transaction Deleted', 'E-Wallet / Bill transaction removed.')
+      setEwalletToDelete(null)
+    } catch (err) {
+      toastError('Delete Failed', (err as Error)?.message || 'Failed to delete transaction.')
+    } finally {
+      setIsDeletingEwallet(false)
     }
   }
 
@@ -664,6 +742,13 @@ export function Transactions(): React.JSX.Element {
                               >
                                 <Printer className="h-4 w-4" />
                               </button>
+                              <button
+                                onClick={() => setEwalletToDelete(item)}
+                                className="btn-ghost-2 rounded-lg p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition"
+                                title="Void / Delete Transaction"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -681,6 +766,14 @@ export function Transactions(): React.JSX.Element {
       {refund && <RefundModal sale={refund} onClose={() => setRefund(null)} onDone={() => { setRefund(null); void load() }} />}
       {voider && <VoidModal sale={voider} onClose={() => setVoider(null)} onDone={() => { setVoider(null); void load() }} />}
       {deleter && <DeleteTransactionModal sale={deleter} onClose={() => setDeleter(null)} onDone={() => { setDeleter(null); void load() }} />}
+      {ewalletToDelete && (
+        <DeleteEwalletModal
+          item={ewalletToDelete}
+          isDeleting={isDeletingEwallet}
+          onClose={() => setEwalletToDelete(null)}
+          onConfirm={handleConfirmDeleteEwallet}
+        />
+      )}
     </div>
   )
 }
@@ -964,3 +1057,87 @@ function DeleteTransactionModal({ sale, onClose, onDone }: { sale: Sale; onClose
     </Modal>
   )
 }
+
+function DeleteEwalletModal({
+  item,
+  isDeleting,
+  onClose,
+  onConfirm
+}: {
+  item: EwalletBillLedgerItem
+  isDeleting: boolean
+  onClose: () => void
+  onConfirm: () => Promise<void>
+}): React.JSX.Element {
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={item.kind === 'BILL' ? 'Delete Bills Payment Record' : 'Void E-Wallet Transaction'}
+      maxWidth="max-w-md"
+      footer={
+        <>
+          <button className="btn-ghost" onClick={onClose} disabled={isDeleting}>
+            Cancel
+          </button>
+          <button
+            onClick={() => void onConfirm()}
+            disabled={isDeleting}
+            className="btn-danger flex items-center gap-1.5"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isDeleting ? 'Deleting…' : 'Delete Record'}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-3 text-sm text-slate-300">
+        <p className="text-rose-400 font-semibold text-xs">
+          ⚠️ Warning: This will permanently remove this {item.kind === 'BILL' ? 'bills payment' : 'e-wallet'} record. This action cannot be undone.
+        </p>
+
+        <div className="rounded-lg border border-ink-line bg-ink-950 p-3.5 space-y-2 text-xs">
+          <div className="flex justify-between">
+            <span className="text-slate-400">Channel &amp; Type:</span>
+            <span className="font-semibold text-white">
+              {item.channel} · {item.type === 'CASH_IN' ? 'Cash In' : item.type === 'CASH_OUT' ? 'Cash Out' : item.biller || 'Bills Payment'}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Date &amp; Time:</span>
+            <span className="text-slate-300">{shortDateTime(item.date)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Customer:</span>
+            <span className="text-slate-200">{item.customer_name || 'Walk-in Customer'}</span>
+          </div>
+          {(item.customer_phone || item.account_no) && (
+            <div className="flex justify-between">
+              <span className="text-slate-400">{item.account_no ? 'Account No:' : 'Phone Number:'}</span>
+              <span className="font-mono text-brand-300">{item.account_no || item.customer_phone}</span>
+            </div>
+          )}
+          {item.reference_no && (
+            <div className="flex justify-between">
+              <span className="text-slate-400">Reference No:</span>
+              <span className="font-mono text-slate-300">{item.reference_no}</span>
+            </div>
+          )}
+          <div className="border-t border-ink-line/60 pt-2 flex justify-between">
+            <span className="text-slate-400">Principal Amount:</span>
+            <span className="font-bold text-slate-200 font-mono">{money(item.amount_c)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Convenience Fee:</span>
+            <span className="font-bold text-emerald-400 font-mono">+{money(item.fee_c)}</span>
+          </div>
+          <div className="border-t border-ink-line/60 pt-2 flex justify-between">
+            <span className="text-slate-300 font-semibold">Total Handled:</span>
+            <span className="font-bold text-white font-mono text-sm">{money(item.total_c)}</span>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
