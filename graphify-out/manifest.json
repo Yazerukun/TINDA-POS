@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1791789399.2908213,
-    "seen": 1791789661.468218,
-    "ast_hash": "a084090661926bd2952e48679965211f",
+    "mtime": 1791794563.130426,
+    "seen": 1791794938.8198934,
+    "ast_hash": "bce77e793c867a2471760d2b24940e95",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "source/src/main/repositories/ewallet.ts": {
-    "mtime": 1791770882.399918,
-    "seen": 1791787239.6923275,
-    "ast_hash": "9beeafe1760ecd1d3cfc2924eccf5396",
+    "mtime": 1791793786.2403886,
+    "seen": 1791794938.8257475,
+    "ast_hash": "7874dcfba5b4a672d3622f36a0328a5b",
     "semantic_hash": ""
   },
   "source/src/main/repositories/expenses.ts": {
@@ -768,10 +768,10 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/InventoryPrintModal.tsx": {
-    "mtime": 1791420566.1853888,
-    "seen": 1791787239.6925554,
-    "ast_hash": "557c8e8d72efe1a59abd2b8701d85df4",
-    "semantic_hash": "557c8e8d72efe1a59abd2b8701d85df4"
+    "mtime": 1791793557.3357706,
+    "seen": 1791794938.8555086,
+    "ast_hash": "a0c3f70a2bedcdde15f2d1515e018efc",
+    "semantic_hash": ""
   },
   "source/src/renderer/src/components/LegalModal.tsx": {
     "mtime": 1791347953.8408728,
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1791789427.961496,
-    "seen": 1791789661.587191,
-    "ast_hash": "19df44cfba4ff1381c32873e7a1c73b0",
+    "mtime": 1791794574.40591,
+    "seen": 1791794938.8561804,
+    "ast_hash": "a3bda5e5932d980e1ed38f22fe4730b2",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1791789449.4776936,
-    "seen": 1791789661.9777725,
-    "ast_hash": "22e9b39ad665f52115b3087fd828cc1f",
+    "mtime": 1791794772.1997793,
+    "seen": 1791794938.9873507,
+    "ast_hash": "8996196b1aaff3c2913144445c84f1dc",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,9 +3102,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791790869.8785448,
-    "seen": 1791791095.4110138,
-    "ast_hash": "31110aac90aa5feb4c616b1461c8b57c",
+    "mtime": 1791794826.8570719,
+    "seen": 1791794938.9879537,
+    "ast_hash": "a699d895ad6d8156efda1182b639b134",
     "semantic_hash": ""
   },
   "SYSTEM_MASTER.md": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1791789485.8591084,
-    "seen": 1791789661.986977,
-    "ast_hash": "d646ef0e8c47e764a6b042f446476fb6",
+    "mtime": 1791794791.2237341,
+    "seen": 1791794938.9899971,
+    "ast_hash": "d4df19a976fe6cabb9e20780ee23ca6d",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {

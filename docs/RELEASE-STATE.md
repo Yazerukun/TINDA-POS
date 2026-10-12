@@ -7,7 +7,7 @@ TARGET:
 - v2.1.6 (NEXT RELEASE CYCLE)
 
 CURRENT STAGE:
-- Production Release — v2.1.5 Live Feature Patch
+- Production Release — v2.1.5 Full Windows Setup & Portable Stable Release Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -25,6 +25,7 @@ COMPLETED:
 - Stage 13: Cloudflare D1 Backend `periodFinancials` Query & `LIMIT 100` Truncation Lift (`tinda-sync/src/reports.ts`): exact aggregate financial metrics and raised row limit to 300.
 - Stage 14: SQLite 4:00 PM Double-Timezone Roll-Over Fix (`ewallet.ts`): replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` resolving premature day rollover.
 - Stage 15: Quality Gates verified: Vitest (506/506 tests passing across 79 test files), Typecheck (0 errors across Node & Web), In-app live hot patch bundled & published to GitHub Releases (`v2.1.5`).
+- Stage 16: Full Windows Setup & Portable Stable Release Packaging: electron-builder compiled `TindaPOS-Setup-2.1.5.exe`, `TindaPOS-Portable-2.1.5.exe`, `latest.yml`, and `SHA256SUMS-v2.1.5.txt`; published and verified as Latest Stable Release on GitHub Releases (`Yazerukun/TINDA-POS`).
 
 PENDING APPROVAL:
 - None (Approved by Owner).
