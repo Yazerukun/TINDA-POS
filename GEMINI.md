@@ -28,7 +28,15 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)**
+- Current Version: **v2.1.1 (CT221B Barcode Scanability Hotfix Edition)**
+
+## Key Features in v2.1.1 (CT221B Barcode Scanability Hotfix Edition)
+1. **CT221B Barcode Scanability Fix (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
+   - Root cause: `barWidth` was 1.5–1.8px per module — too thin for CT221B thermal burn head, causing adjacent bars to merge into solid unreadable blocks.
+   - Fix: `barWidth` raised to **2.5px** (compact ≤30mm labels) and **2.8px** (standard labels). Global default in `barcodeSvg.ts` raised from 1.8 → 2.5px.
+   - `quietZone` raised from 10–12 → **14 modules** (ISO 15416 compliance: ≥10× narrowest bar width as quiet zone).
+   - SVG CSS: removed `max-width: 98%` scaling constraint that further compressed bars before printing; now uses `width: auto; overflow: visible`.
+   - `printLabelTest` updated to same params (2.8px / 14 modules) for accurate test prints.
 
 ## Key Features in v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)
 1. **Prorated Refund Discount Invariant (`transaction.ts`)**:
@@ -43,6 +51,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
    - Widened default tear-bar feed spacer to 5 lines (19mm) and fixed `flex-shrink: 0` CSS on narrow 58mm paper.
 5. **Dashboard 100k Transaction Limit (`dashboard.ts`)**:
    - Removed the silent 50-item cutoff in `dashboardStats`, ensuring 100% daily sales and profit aggregation accuracy for high-volume stores.
+
 
 ## Key Features in v2.0.9 (Purchase Invoices History Immunity & Self-Healing Migration Fix Edition)
 1. **Invoices History Immunity & Self-Healing Database Engine (`purchases.ts`, `migrations.ts`)**:
