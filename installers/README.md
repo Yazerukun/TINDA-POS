@@ -1,16 +1,39 @@
-# TINDA POS — Release Files
+# 💿 TINDA POS Installer & Release Artifacts Hub
 
-v1.0.2 release assets will be added after final Windows packaging. No v1.0.2 executable or download link is available yet.
+Welcome to the official distribution directory for TINDA POS desktop client binaries, auto-updater metadata, and cryptographic integrity manifests.
 
-The existing v1.0.1 GitHub release remains published with its original assets:
+---
 
-| File | Type | Exact size |
-|------|------|------------|
-| `TindaPOS-Setup-1.0.1.exe` | Windows NSIS installer | 114,690,966 bytes |
-| `TindaPOS-Portable-1.0.1.exe` | Windows portable package | 102,535,252 bytes |
-| `TindaPOS-User-Guide.pdf` | Printable user guide | 25,611 bytes |
-| `SHA256SUMS.txt` | Release verification hashes | — |
+## ⚡ Current Production Release: v2.1.4
 
-Download links are listed in the project README. The maintained text manual is at `docs/USER-MANUAL.md`.
+| Asset | Type | Target Platform | Description |
+|---|---|---|---|
+| [`TindaPOS-Setup-2.1.4.exe`](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Setup-2.1.4.exe) | NSIS Setup | Windows 10 / 11 (x64) | Full installation wizard with desktop shortcut and uninstaller |
+| [`TindaPOS-Portable-2.1.4.exe`](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Portable-2.1.4.exe) | Portable Binary | Windows 10 / 11 (x64) | Zero-installation standalone executable (run directly from USB / folder) |
+| [`TindaPOS-Feature-Patch-2.1.4.zip`](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.4/TindaPOS-Feature-Patch-2.1.4.zip) | Live Hot Patch | Any Existing Install | 0.3-second in-app live patch package without full installer download |
+| [`latest.yml`](./latest.yml) | Update Manifest | Electron-Updater | Cryptographic SHA-512 manifest for automatic background updates |
+| [`SHA256SUMS-v2.1.4.txt`](./SHA256SUMS-v2.1.4.txt) | Verification Hash | Security Audit | Cryptographic SHA-256 integrity checksums for all release binaries |
 
-Setup and Portable use the same `%APPDATA%\TINDA POS` data directory. Moving either executable does not create a new database.
+---
+
+## 🛡️ Cryptographic Verification
+
+To verify the authentic integrity of your downloaded installer binary on Windows PowerShell:
+
+```powershell
+# Compute SHA-256 hash
+Get-FileHash -Algorithm SHA256 .\TindaPOS-Setup-2.1.4.exe
+
+# Compare against official manifest
+Get-Content .\SHA256SUMS-v2.1.4.txt
+```
+
+---
+
+## 🔄 Automatic Updater Channel
+
+TINDA POS includes an autonomous updater engine powered by `electron-updater`:
+- The client periodically checks `latest.yml` hosted on GitHub Releases (`https://github.com/Yazerukun/TINDA-POS/releases`).
+- When a new release or hot patch is published, store terminals receive update notifications or apply hot patches live with zero cashier downtime.
+
+For full technical specifications and user manuals, see the [`docs/`](../docs/README.md) directory.

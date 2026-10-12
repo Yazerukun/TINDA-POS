@@ -1,0 +1,4 @@
+9f87f824d9218e18b790b6ab4ccfc48d161acf46b89a9bbbede49036ae0e5856  TindaPOS-Setup-2.1.4.exe
+bc6d3f6b7eb0e1853b48dcfd53dd760f9f4a482758f419ee4072c2b52f99cae4  TindaPOS-Portable-2.1.4.exe
+c59364c2e540e096ec6d56c46838f0ebaf5ac181446716069dde1a229d699ecc  TindaPOS-Setup-2.1.4.exe.blockmap
+ab86023316185f18a4f860567091062071e7a55da8ef7d80ae72cd27c17074ca  TindaPOS-Feature-Patch-2.1.4.zip
