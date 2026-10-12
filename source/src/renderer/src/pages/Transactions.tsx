@@ -1,14 +1,34 @@
-import { Fragment, useEffect, useState } from 'react'
-import { Search, Eye, RotateCcw, Ban, Trash2, ListOrdered, ReceiptText, Printer, ChevronDown, ChevronUp } from 'lucide-react'
-import type { Sale } from '@shared/types'
+import { Fragment, useEffect, useState, useMemo, useCallback } from 'react'
+import {
+  Search,
+  Eye,
+  RotateCcw,
+  Ban,
+  Trash2,
+  ListOrdered,
+  ReceiptText,
+  Printer,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Smartphone,
+  ArrowDownLeft,
+  ArrowUpRight,
+  RefreshCw
+} from 'lucide-react'
+import type { Sale, EwalletTransactionRecord } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { ReceiptPaper } from '../components/ReceiptPaper'
 import { toastSuccess, toastError } from '../stores/toast'
+import type { BillRecord } from './EwalletAudit'
 
 export function Transactions(): React.JSX.Element {
+  const [activeTab, setActiveTab] = useState<'pos' | 'ewallet'>('pos')
+
+  // POS Sales State
   const [rows, setRows] = useState<Sale[]>([])
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
@@ -20,6 +40,16 @@ export function Transactions(): React.JSX.Element {
   const [voider, setVoider] = useState<Sale | null>(null)
   const [deleter, setDeleter] = useState<Sale | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
+
+  // E-Wallet & Bills Center State
+  const [ewalletTxs, setEwalletTxs] = useState<EwalletTransactionRecord[]>([])
+  const [billRecords, setBillRecords] = useState<BillRecord[]>([])
+  const [loadingEwallet, setLoadingEwallet] = useState(false)
+  const [ewalletSearch, setEwalletSearch] = useState('')
+  const [ewalletFilterChannel, setEwalletFilterChannel] = useState<string>('ALL')
+  const [ewalletFilterType, setEwalletFilterType] = useState<string>('ALL')
+  const [ewalletFrom, setEwalletFrom] = useState('')
+  const [ewalletTo, setEwalletTo] = useState('')
 
   const load = async () => {
     setLoading(true)
@@ -38,190 +68,613 @@ export function Transactions(): React.JSX.Element {
       setLoading(false)
     }
   }
+
+  const loadEwalletAndBills = useCallback(async () => {
+    setLoadingEwallet(true)
+    try {
+      if (window.api?.ewallet?.listTransactions) {
+        const txList = await window.api.ewallet.listTransactions({ limit: 500 })
+        setEwalletTxs(txList || [])
+      }
+    } catch (e) {
+      console.warn('Could not load ewallet txs:', e)
+    }
+    try {
+      const savedBills = localStorage.getItem('tinda_bills_load_records')
+      if (savedBills) {
+        setBillRecords(JSON.parse(savedBills))
+      }
+    } catch (e) {
+      console.warn('Could not load bills from localStorage:', e)
+    } finally {
+      setLoadingEwallet(false)
+    }
+  }, [])
+
   // Mount-only load; auto-refreshes when transactions or inventory change on any terminal.
   useEffect(() => {
     void load()
+    void loadEwalletAndBills()
     const cleanTx = window.api.transactions?.onChanged?.(() => { void load() })
     const cleanInv = window.api.inventory?.onChanged?.(() => { void load() })
     return () => {
       cleanTx?.()
       cleanInv?.()
     }
-  }, [])
+  }, [loadEwalletAndBills])
 
   const total = rows.filter((s) => s.status !== 'VOIDED').reduce((s, x) => s + x.total_c, 0)
 
+  const combinedEwalletItems = useMemo(() => {
+    const list: Array<{
+      key: string
+      kind: 'EWALLET' | 'BILL'
+      date: string
+      channel: string
+      type: 'CASH_IN' | 'CASH_OUT' | 'BILLS'
+      amount_c: number
+      fee_c: number
+      total_c: number
+      fee_collected_via: 'CASH' | 'WALLET'
+      reference_no: string
+      customer_name: string
+      customer_phone: string
+      biller?: string
+      account_no?: string
+      notes?: string
+      rawTx?: EwalletTransactionRecord
+      rawBill?: BillRecord
+    }> = []
+
+    const billRefs = new Set(billRecords.map((b) => b.referenceNo?.trim()).filter(Boolean))
+
+    for (const b of billRecords) {
+      const amt_c = Math.round(b.amount * 100)
+      const fee_c = Math.round(b.serviceFee * 100)
+      const total_c = b.feeMode === 'DEDUCT' ? Math.max(0, amt_c - fee_c) : amt_c + fee_c
+      list.push({
+        key: `bill-${b.id || b.referenceNo || Math.random()}`,
+        kind: 'BILL',
+        date: b.createdAt,
+        channel: b.sourceWallet || 'GCASH',
+        type: 'BILLS',
+        amount_c: amt_c,
+        fee_c: fee_c,
+        total_c,
+        fee_collected_via: 'CASH',
+        reference_no: b.referenceNo || '',
+        customer_name: b.customerName || '',
+        customer_phone: b.customerPhone || '',
+        biller: b.biller,
+        account_no: b.accountNo,
+        rawBill: b
+      })
+    }
+
+    for (const tx of ewalletTxs) {
+      if (tx.reference_no && billRefs.has(tx.reference_no.trim())) {
+        continue
+      }
+      const total_c =
+        tx.type === 'CASH_IN'
+          ? tx.fee_collected_via === 'CASH'
+            ? tx.amount_c + tx.fee_c
+            : tx.amount_c
+          : Math.max(0, tx.amount_c - tx.fee_c)
+
+      list.push({
+        key: `ewallet-${tx.id}`,
+        kind: 'EWALLET',
+        date: tx.created_at,
+        channel: tx.channel,
+        type: tx.type,
+        amount_c: tx.amount_c,
+        fee_c: tx.fee_c,
+        total_c,
+        fee_collected_via: tx.fee_collected_via,
+        reference_no: tx.reference_no || '',
+        customer_name: tx.customer_name || '',
+        customer_phone: tx.customer_phone || '',
+        notes: tx.notes || '',
+        rawTx: tx
+      })
+    }
+
+    list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    return list
+  }, [ewalletTxs, billRecords])
+
+  const filteredEwalletItems = useMemo(() => {
+    return combinedEwalletItems.filter((item) => {
+      if (ewalletFilterChannel !== 'ALL') {
+        if (ewalletFilterChannel === 'BILLS') {
+          if (item.kind !== 'BILL') return false
+        } else if (item.channel !== ewalletFilterChannel) {
+          return false
+        }
+      }
+
+      if (ewalletFilterType !== 'ALL') {
+        if (ewalletFilterType === 'CASH_IN' && item.type !== 'CASH_IN') return false
+        if (ewalletFilterType === 'CASH_OUT' && item.type !== 'CASH_OUT') return false
+        if (ewalletFilterType === 'BILLS' && item.type !== 'BILLS') return false
+      }
+
+      const itemDateStr = item.date.slice(0, 10)
+      if (ewalletFrom && itemDateStr < ewalletFrom) return false
+      if (ewalletTo && itemDateStr > ewalletTo) return false
+
+      if (ewalletSearch.trim()) {
+        const q = ewalletSearch.toLowerCase()
+        const matchRef = item.reference_no.toLowerCase().includes(q)
+        const matchCust = item.customer_name.toLowerCase().includes(q)
+        const matchPhone = item.customer_phone.toLowerCase().includes(q)
+        const matchBiller = item.biller?.toLowerCase().includes(q)
+        const matchAcct = item.account_no?.toLowerCase().includes(q)
+        const matchNotes = item.notes?.toLowerCase().includes(q)
+        const matchChannel = item.channel.toLowerCase().includes(q)
+        if (!matchRef && !matchCust && !matchPhone && !matchBiller && !matchAcct && !matchNotes && !matchChannel) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [combinedEwalletItems, ewalletFilterChannel, ewalletFilterType, ewalletFrom, ewalletTo, ewalletSearch])
+
+  const totalEwalletPrincipalC = filteredEwalletItems.reduce((s, x) => s + x.amount_c, 0)
+  const totalEwalletFeesC = filteredEwalletItems.reduce((s, x) => s + x.fee_c, 0)
+  const totalEwalletCashC = filteredEwalletItems.reduce((s, x) => s + x.total_c, 0)
+
+  const handlePrintItemSlip = async (item: typeof combinedEwalletItems[0], manual = false) => {
+    if (item.kind === 'EWALLET' && item.rawTx?.id) {
+      try {
+        const res = await window.api.ewallet.printSlip(item.rawTx.id, { manual })
+        if (res.ok) {
+          toastSuccess(manual ? 'Manual Print Dialog' : 'Thermal Slip Printed', 'E-Wallet slip printed successfully.')
+        } else {
+          toastError('Printing Notice', res.message)
+        }
+      } catch (e) {
+        toastError('Print Error', String((e as Error)?.message || e))
+      }
+    } else if (item.kind === 'BILL' && item.rawBill) {
+      const b = item.rawBill
+      try {
+        const res = await window.api.ewallet.printBillSlip(
+          {
+            biller: b.biller,
+            referenceNo: b.referenceNo,
+            accountNo: b.accountNo,
+            customerName: b.customerName,
+            customerPhone: b.customerPhone,
+            amount: b.amount,
+            serviceFee: b.serviceFee,
+            feeMode: b.feeMode,
+            sourceWallet: b.sourceWallet,
+            createdAt: b.createdAt,
+            cashReceived: b.cashReceived,
+            change: b.change
+          },
+          { manual }
+        )
+        if (res.ok) {
+          toastSuccess(manual ? 'Manual Print Dialog' : 'Receipt Printed', 'Bills & E-Load slip printed successfully.')
+        } else {
+          toastError('Printing Notice', res.message)
+        }
+      } catch (e) {
+        toastError('Print Error', String((e as Error)?.message || e))
+      }
+    }
+  }
+
   return (
     <div className="p-6">
-      <PageHeader title="Transactions" subtitle={`${rows.length} shown · net ${money(total)}`} />
+      <PageHeader
+        title="Transactions Ledger"
+        subtitle={
+          activeTab === 'pos'
+            ? `${rows.length} sales shown · net ${money(total)}`
+            : `${filteredEwalletItems.length} records shown · net volume ${money(totalEwalletPrincipalC)} · fee profit ${money(totalEwalletFeesC)}`
+        }
+        actions={
+          <div className="flex rounded-xl border border-ink-line bg-ink-900 p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setActiveTab('pos')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-lg transition ${
+                activeTab === 'pos'
+                  ? 'bg-brand-500 text-slate-950 shadow-md font-black'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🛒 POS Sales &amp; Receipts
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('ewallet')
+                void loadEwalletAndBills()
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold rounded-lg transition ${
+                activeTab === 'ewallet'
+                  ? 'bg-brand-500 text-slate-950 shadow-md font-black'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ⚡ E-Wallet &amp; Bills Center
+            </button>
+          </div>
+        }
+      />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-48">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && void load()}
-            placeholder="Receipt #, product…"
-            className="input w-full pl-9"
-          />
-        </div>
-        <select value={status} onChange={(e) => { setStatus(e.target.value); setTimeout(() => void load(), 0) }} className="input w-40">
-          <option value="">All status</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="REFUNDED">Refunded</option>
-          <option value="PARTIALLY_REFUNDED">Partially refunded</option>
-          <option value="VOIDED">Voided</option>
-        </select>
-        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input w-40" />
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input w-40" />
-        <button onClick={() => void load()} className="btn-primary">Apply</button>
-      </div>
+      {activeTab === 'pos' ? (
+        <>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-48">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void load()}
+                placeholder="Receipt #, product…"
+                className="input w-full pl-9"
+              />
+            </div>
+            <select value={status} onChange={(e) => { setStatus(e.target.value); setTimeout(() => void load(), 0) }} className="input w-40">
+              <option value="">All status</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="REFUNDED">Refunded</option>
+              <option value="PARTIALLY_REFUNDED">Partially refunded</option>
+              <option value="VOIDED">Voided</option>
+            </select>
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input w-40" />
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input w-40" />
+            <button onClick={() => void load()} className="btn-primary">Apply</button>
+          </div>
 
-      {loading ? (
-        <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-12 animate-pulse" />)}</div>
-      ) : rows.length === 0 ? (
-        <EmptyState title="No transactions" message="Sales will appear here." icon={<ListOrdered className="h-7 w-7" />} />
+          {loading ? (
+            <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="card h-12 animate-pulse" />)}</div>
+          ) : rows.length === 0 ? (
+            <EmptyState title="No transactions" message="Sales will appear here." icon={<ListOrdered className="h-7 w-7" />} />
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th className="w-[22%] py-3 px-2 text-center align-middle">Receipt</th>
+                      <th className="w-[15%] py-3 px-2 text-center align-middle whitespace-nowrap">Date</th>
+                      <th className="w-[13%] py-3 px-2 text-center align-middle">Cashier</th>
+                      <th className="w-[16%] py-3 px-2 text-center align-middle">Customer</th>
+                      <th className="w-[12%] py-3 px-2 text-center align-middle">Total</th>
+                      <th className="w-[11%] py-3 px-2 text-center align-middle">Status</th>
+                      <th className="w-[11%] py-3 px-2 text-center align-middle">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((s) => {
+                      const isOpen = expandedId === s.id
+                      const toggle = () => setExpandedId(isOpen ? null : s.id)
+                      return (
+                        <Fragment key={s.id}>
+                          <tr className={`transition-colors hover:bg-ink-800/40 ${isOpen ? 'bg-ink-800/70' : ''}`}>
+                            <td className="w-[22%] py-3 px-2 text-center align-middle">
+                              <button
+                                onClick={toggle}
+                                className="inline-flex items-center justify-center gap-1.5 font-medium text-brand-400 hover:text-brand-300 font-mono text-xs max-w-full"
+                                title={isOpen ? 'Collapse items' : 'Expand items'}
+                              >
+                                {isOpen
+                                  ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                                  : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-500" />}
+                                <span className="truncate">{s.transaction_no}</span>
+                              </button>
+                            </td>
+                            <td className="w-[15%] py-3 px-2 text-center align-middle whitespace-nowrap text-xs text-slate-400">
+                              {shortDateTime(s.created_at)}
+                            </td>
+                            <td className="w-[13%] py-3 px-2 text-center align-middle text-xs text-slate-300 truncate" title={s.cashier_name}>
+                              {s.cashier_name}
+                            </td>
+                            <td className="w-[16%] py-3 px-2 text-center align-middle text-xs text-slate-400 truncate" title={s.customer_name || '—'}>
+                              {s.customer_name || '—'}
+                            </td>
+                            <td className="w-[12%] py-3 px-2 text-center align-middle font-mono tabular-nums font-bold text-white text-sm">
+                              {money(s.total_c)}
+                            </td>
+                            <td className="w-[11%] py-3 px-2 text-center align-middle">
+                              <StatusBadge status={s.status} />
+                            </td>
+                            <td className="w-[11%] py-3 px-2 text-center align-middle">
+                              <div className="flex items-center justify-center gap-1">
+                                <button onClick={() => setView(s)} className="btn-ghost-2 rounded-lg p-1.5" title="View"><Eye className="h-4 w-4" /></button>
+                                {(s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (
+                                  <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-1.5" title="Refund"><RotateCcw className="h-4 w-4" /></button>
+                                )}
+                                {s.status === 'COMPLETED' && (
+                                  <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-1.5 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
+                                )}
+                                <button
+                                  onClick={() => setDeleter(s)}
+                                  className="btn-ghost-2 rounded-lg p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                                  title="Delete Transaction"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {isOpen && (
+                            <tr key={`${s.id}-items`} className="bg-ink-800/70 border-b border-ink-line">
+                              <td colSpan={7} className="px-4 pb-3 pt-0">
+                                <div className="rounded-lg border border-ink-line overflow-hidden bg-ink-900/50">
+                                  {/* Item rows */}
+                                  <table className="w-full table-fixed text-xs">
+                                    <thead>
+                                      <tr className="border-b border-ink-line bg-ink-950/70">
+                                        <th className="w-[46%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Product</th>
+                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Qty</th>
+                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Unit Price</th>
+                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Subtotal</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {s.items.map((i) => (
+                                        <tr key={i.id} className="border-b border-ink-line/50 last:border-0 hover:bg-ink-800/40">
+                                          <td className="w-[46%] py-2 px-3 text-center align-middle text-slate-200 truncate" title={i.product_name}>
+                                            <span className="font-medium">{i.product_name}</span>
+                                            {i.refunded_qty_base > 0 && (
+                                              <span className="ml-1.5 text-amber-400 text-[11px] font-normal">(ref {i.refunded_qty_base})</span>
+                                            )}
+                                          </td>
+                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
+                                            {i.qty} <span className="font-sans text-[11px] text-slate-500">{i.unit_name}</span>
+                                          </td>
+                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
+                                            {money(i.unit_price_c)}
+                                          </td>
+                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-semibold text-slate-100">
+                                            {money(i.subtotal_c)}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                    <tfoot>
+                                      {s.discount_c > 0 && (
+                                        <tr className="border-t border-ink-line bg-ink-950/40 text-xs">
+                                          <td colSpan={3} className="py-1.5 px-3 text-center align-middle text-slate-400">
+                                            Discount
+                                          </td>
+                                          <td className="w-[18%] py-1.5 px-3 text-center align-middle font-mono tabular-nums text-amber-400">
+                                            −{money(s.discount_c)}
+                                          </td>
+                                        </tr>
+                                      )}
+                                      <tr className="border-t border-ink-line bg-ink-950/60 text-xs font-semibold">
+                                        <td colSpan={3} className="py-2 px-3 text-center align-middle">
+                                          <div className="flex items-center justify-center gap-2 text-slate-500 font-normal">
+                                            <span className="text-[11px] uppercase tracking-wider text-slate-500">Payment:</span>
+                                            <span className="text-slate-300">
+                                              {s.payments.map((p) => `${p.method} ${money(p.amount_c)}`).join(' · ')}
+                                            </span>
+                                          </div>
+                                        </td>
+                                        <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-bold text-white">
+                                          {money(s.total_c)}
+                                        </td>
+                                      </tr>
+                                    </tfoot>
+                                  </table>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="table w-full">
-              <thead>
-                <tr>
-                  <th className="w-[22%] py-3 px-2 text-center align-middle">Receipt</th>
-                  <th className="w-[15%] py-3 px-2 text-center align-middle whitespace-nowrap">Date</th>
-                  <th className="w-[13%] py-3 px-2 text-center align-middle">Cashier</th>
-                  <th className="w-[16%] py-3 px-2 text-center align-middle">Customer</th>
-                  <th className="w-[12%] py-3 px-2 text-center align-middle">Total</th>
-                  <th className="w-[11%] py-3 px-2 text-center align-middle">Status</th>
-                  <th className="w-[11%] py-3 px-2 text-center align-middle">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((s) => {
-                  const isOpen = expandedId === s.id
-                  const toggle = () => setExpandedId(isOpen ? null : s.id)
-                  return (
-                    <Fragment key={s.id}>
-                      <tr className={`transition-colors hover:bg-ink-800/40 ${isOpen ? 'bg-ink-800/70' : ''}`}>
-                        <td className="w-[22%] py-3 px-2 text-center align-middle">
-                          <button
-                            onClick={toggle}
-                            className="inline-flex items-center justify-center gap-1.5 font-medium text-brand-400 hover:text-brand-300 font-mono text-xs max-w-full"
-                            title={isOpen ? 'Collapse items' : 'Expand items'}
-                          >
-                            {isOpen
-                              ? <ChevronUp className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-                              : <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-500" />}
-                            <span className="truncate">{s.transaction_no}</span>
-                          </button>
-                        </td>
-                        <td className="w-[15%] py-3 px-2 text-center align-middle whitespace-nowrap text-xs text-slate-400">
-                          {shortDateTime(s.created_at)}
-                        </td>
-                        <td className="w-[13%] py-3 px-2 text-center align-middle text-xs text-slate-300 truncate" title={s.cashier_name}>
-                          {s.cashier_name}
-                        </td>
-                        <td className="w-[16%] py-3 px-2 text-center align-middle text-xs text-slate-400 truncate" title={s.customer_name || '—'}>
-                          {s.customer_name || '—'}
-                        </td>
-                        <td className="w-[12%] py-3 px-2 text-center align-middle font-mono tabular-nums font-bold text-white text-sm">
-                          {money(s.total_c)}
-                        </td>
-                        <td className="w-[11%] py-3 px-2 text-center align-middle">
-                          <StatusBadge status={s.status} />
-                        </td>
-                        <td className="w-[11%] py-3 px-2 text-center align-middle">
-                          <div className="flex items-center justify-center gap-1">
-                            <button onClick={() => setView(s)} className="btn-ghost-2 rounded-lg p-1.5" title="View"><Eye className="h-4 w-4" /></button>
-                            {(s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (
-                              <button onClick={() => setRefund(s)} className="btn-ghost-2 rounded-lg p-1.5" title="Refund"><RotateCcw className="h-4 w-4" /></button>
+        <>
+          {/* E-Wallet & Bills Center Filters */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-48">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                value={ewalletSearch}
+                onChange={(e) => setEwalletSearch(e.target.value)}
+                placeholder="Search ref #, customer, phone, biller, notes…"
+                className="input w-full pl-9"
+              />
+            </div>
+            <select
+              value={ewalletFilterChannel}
+              onChange={(e) => setEwalletFilterChannel(e.target.value)}
+              className="input w-40"
+            >
+              <option value="ALL">All Channels</option>
+              <option value="GCASH">GCash</option>
+              <option value="MAYA">Maya</option>
+              <option value="MARIBANK">MariBank</option>
+              <option value="BILLS">Bills &amp; Load Only</option>
+            </select>
+            <select
+              value={ewalletFilterType}
+              onChange={(e) => setEwalletFilterType(e.target.value)}
+              className="input w-40"
+            >
+              <option value="ALL">All Types</option>
+              <option value="CASH_IN">Cash In</option>
+              <option value="CASH_OUT">Cash Out</option>
+              <option value="BILLS">Bills Payment</option>
+            </select>
+            <input
+              type="date"
+              value={ewalletFrom}
+              onChange={(e) => setEwalletFrom(e.target.value)}
+              className="input w-36"
+              title="From date"
+            />
+            <input
+              type="date"
+              value={ewalletTo}
+              onChange={(e) => setEwalletTo(e.target.value)}
+              className="input w-36"
+              title="To date"
+            />
+            <button
+              type="button"
+              onClick={() => void loadEwalletAndBills()}
+              className="btn-ghost-2 flex items-center gap-1.5 px-3 py-2 text-xs font-semibold"
+              title="Refresh records"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </button>
+          </div>
+
+          {/* Quick Metrics */}
+          <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="card p-3 border border-ink-line bg-ink-900/60 flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Records Shown</span>
+              <span className="text-base font-black text-white font-mono mt-0.5">{filteredEwalletItems.length}</span>
+            </div>
+            <div className="card p-3 border border-ink-line bg-ink-900/60 flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-300">Principal Volume</span>
+              <span className="text-base font-black text-brand-400 font-mono mt-0.5">{money(totalEwalletPrincipalC)}</span>
+            </div>
+            <div className="card p-3 border border-ink-line bg-ink-900/60 flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Store Fee Profit</span>
+              <span className="text-base font-black text-emerald-400 font-mono mt-0.5">+{money(totalEwalletFeesC)}</span>
+            </div>
+            <div className="card p-3 border border-ink-line bg-ink-900/60 flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Total Cash Handled</span>
+              <span className="text-base font-black text-white font-mono mt-0.5">{money(totalEwalletCashC)}</span>
+            </div>
+          </div>
+
+          {/* E-Wallet & Bills Table */}
+          {loadingEwallet ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="card h-12 animate-pulse" />
+              ))}
+            </div>
+          ) : filteredEwalletItems.length === 0 ? (
+            <EmptyState
+              title="No E-Wallet or Bills records"
+              message="Processed GCash, Maya, MariBank, and utility bill stubs will appear here."
+              icon={<Zap className="h-7 w-7 text-brand-400" />}
+            />
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="table w-full">
+                  <thead>
+                    <tr>
+                      <th className="w-[18%] py-3 px-2 text-center align-middle whitespace-nowrap">Date &amp; Time</th>
+                      <th className="w-[14%] py-3 px-2 text-center align-middle">Provider</th>
+                      <th className="w-[14%] py-3 px-2 text-center align-middle">Type</th>
+                      <th className="w-[20%] py-3 px-2 text-center align-middle">Customer / Account</th>
+                      <th className="w-[12%] py-3 px-2 text-center align-middle">Principal</th>
+                      <th className="w-[10%] py-3 px-2 text-center align-middle">Fee</th>
+                      <th className="w-[12%] py-3 px-2 text-center align-middle">Total Cash</th>
+                      <th className="w-[10%] py-3 px-2 text-center align-middle">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEwalletItems.map((item) => {
+                      const channelColor =
+                        item.channel === 'GCASH'
+                          ? 'border-sky-500/30 bg-sky-500/10 text-sky-400'
+                          : item.channel === 'MAYA'
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                          : item.channel === 'MARIBANK'
+                          ? 'border-orange-500/30 bg-orange-500/10 text-orange-400'
+                          : 'border-indigo-500/30 bg-indigo-500/10 text-indigo-400'
+
+                      return (
+                        <tr key={item.key} className="transition-colors hover:bg-ink-800/40">
+                          <td className="w-[18%] py-3 px-2 text-center align-middle whitespace-nowrap text-xs text-slate-400 font-mono">
+                            {item.date.replace('T', ' ').slice(0, 19)}
+                          </td>
+                          <td className="w-[14%] py-3 px-2 text-center align-middle">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border ${channelColor}`}>
+                              <Smartphone className="h-3 w-3" />
+                              {item.channel}
+                            </span>
+                          </td>
+                          <td className="w-[14%] py-3 px-2 text-center align-middle">
+                            {item.type === 'CASH_IN' && (
+                              <span className="inline-flex items-center gap-1 text-emerald-400 text-xs font-bold">
+                                <ArrowDownLeft className="h-3.5 w-3.5" /> Cash In
+                              </span>
                             )}
-                            {s.status === 'COMPLETED' && (
-                              <button onClick={() => setVoider(s)} className="btn-ghost-2 rounded-lg p-1.5 text-danger-400" title="Void"><Ban className="h-4 w-4" /></button>
+                            {item.type === 'CASH_OUT' && (
+                              <span className="inline-flex items-center gap-1 text-amber-400 text-xs font-bold">
+                                <ArrowUpRight className="h-3.5 w-3.5" /> Cash Out
+                              </span>
                             )}
-                            <button
-                              onClick={() => setDeleter(s)}
-                              className="btn-ghost-2 rounded-lg p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
-                              title="Delete Transaction"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {isOpen && (
-                        <tr key={`${s.id}-items`} className="bg-ink-800/70 border-b border-ink-line">
-                          <td colSpan={7} className="px-4 pb-3 pt-0">
-                            <div className="rounded-lg border border-ink-line overflow-hidden bg-ink-900/50">
-                              {/* Item rows */}
-                              <table className="w-full table-fixed text-xs">
-                                <thead>
-                                  <tr className="border-b border-ink-line bg-ink-950/70">
-                                    <th className="w-[46%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Product</th>
-                                    <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Qty</th>
-                                    <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Unit Price</th>
-                                    <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Subtotal</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {s.items.map((i) => (
-                                    <tr key={i.id} className="border-b border-ink-line/50 last:border-0 hover:bg-ink-800/40">
-                                      <td className="w-[46%] py-2 px-3 text-center align-middle text-slate-200 truncate" title={i.product_name}>
-                                        <span className="font-medium">{i.product_name}</span>
-                                        {i.refunded_qty_base > 0 && (
-                                          <span className="ml-1.5 text-amber-400 text-[11px] font-normal">(ref {i.refunded_qty_base})</span>
-                                        )}
-                                      </td>
-                                      <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
-                                        {i.qty} <span className="font-sans text-[11px] text-slate-500">{i.unit_name}</span>
-                                      </td>
-                                      <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
-                                        {money(i.unit_price_c)}
-                                      </td>
-                                      <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-semibold text-slate-100">
-                                        {money(i.subtotal_c)}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                                <tfoot>
-                                  {s.discount_c > 0 && (
-                                    <tr className="border-t border-ink-line bg-ink-950/40 text-xs">
-                                      <td colSpan={3} className="py-1.5 px-3 text-center align-middle text-slate-400">
-                                        Discount
-                                      </td>
-                                      <td className="w-[18%] py-1.5 px-3 text-center align-middle font-mono tabular-nums text-amber-400">
-                                        −{money(s.discount_c)}
-                                      </td>
-                                    </tr>
-                                  )}
-                                  <tr className="border-t border-ink-line bg-ink-950/60 text-xs font-semibold">
-                                    <td colSpan={3} className="py-2 px-3 text-center align-middle">
-                                      <div className="flex items-center justify-center gap-2 text-slate-500 font-normal">
-                                        <span className="text-[11px] uppercase tracking-wider text-slate-500">Payment:</span>
-                                        <span className="text-slate-300">
-                                          {s.payments.map((p) => `${p.method} ${money(p.amount_c)}`).join(' · ')}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-bold text-white">
-                                      {money(s.total_c)}
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
+                            {item.type === 'BILLS' && (
+                              <span className="inline-flex items-center gap-1 text-indigo-400 text-xs font-bold">
+                                <Zap className="h-3.5 w-3.5" /> {item.biller || 'Bills'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="w-[20%] py-3 px-2 text-center align-middle text-xs">
+                            <div className="truncate font-medium text-slate-200">
+                              {item.customer_name || 'Walk-in Customer'}
+                            </div>
+                            {(item.customer_phone || item.account_no) && (
+                              <div className="text-[11px] font-mono text-slate-400 truncate">
+                                {item.account_no ? `Acct: ${item.account_no}` : item.customer_phone}
+                              </div>
+                            )}
+                            {item.reference_no && (
+                              <div className="text-[10px] font-mono text-slate-500 truncate" title={item.reference_no}>
+                                Ref: {item.reference_no}
+                              </div>
+                            )}
+                          </td>
+                          <td className="w-[12%] py-3 px-2 text-center align-middle font-mono tabular-nums font-bold text-slate-200 text-xs">
+                            {money(item.amount_c)}
+                          </td>
+                          <td className="w-[10%] py-3 px-2 text-center align-middle font-mono tabular-nums text-xs font-semibold text-emerald-400">
+                            +{money(item.fee_c)}
+                          </td>
+                          <td className="w-[12%] py-3 px-2 text-center align-middle font-mono tabular-nums font-bold text-white text-sm">
+                            {money(item.total_c)}
+                          </td>
+                          <td className="w-[10%] py-3 px-2 text-center align-middle">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => void handlePrintItemSlip(item, false)}
+                                onContextMenu={(e) => {
+                                  e.preventDefault()
+                                  void handlePrintItemSlip(item, true)
+                                }}
+                                className="btn-ghost-2 rounded-lg p-1.5 text-brand-400 hover:text-brand-300"
+                                title="Print Thermal Slip (Right-click for manual dialog)"
+                              >
+                                <Printer className="h-4 w-4" />
+                              </button>
                             </div>
                           </td>
                         </tr>
-                      )}
-                    </Fragment>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {view && <ViewSale sale={view} onClose={() => setView(null)} />}

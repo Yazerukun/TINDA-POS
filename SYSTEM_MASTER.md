@@ -1854,4 +1854,31 @@
 1. **Zero Database Disruption:** No destructive database migrations or schema alter commands. All existing sales, customer credit records, and inventory history remain 100% intact.
 2. **Offline Integrity:** All walkthrough and guide content resides locally in the bundle with zero cloud or internet dependencies.
 
+---
+
+## 84. Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration & Cross-Ledger Sync (v2.1.6 Spec)
+
+### 84.1 Timezone Invariant & Zero-Ghosting Datetime Parsing
+1. **Root Cause Rectification:** Eradicated timezone distortion in `parseRecordLocalDateKey(raw)` where appending `'Z'` to space-separated SQLite local datetime timestamps (`YYYY-MM-DD HH:MM:SS`) falsely converted local store time to UTC. In Asia/Manila (UTC+8), this shifted transactions recorded after 4:00 PM into tomorrow's date, causing them to disappear from the `TODAY` filter.
+2. **Strict Local Date Extraction:** Space-separated SQLite local datetimes and ISO dates are strictly parsed into local store date keys (`YYYY-MM-DD`), guaranteeing 100% visibility of all transactions across daytime, evening, and night operations.
+3. **KPI Date Parity:** Replaced `new Date().toISOString().slice(0, 10)` in `BillsLoadHub.tsx` with local store date matching to ensure KPI metrics accurately reflect daily inflows and fee totals.
+
+### 84.2 Dual-Mode E-Wallet & Bills Architecture
+1. **Mode A: Standalone Express Slip:** Immediate 58mm/80mm thermal slip generation (`printSlip` / `printBillSlip`) for rapid standalone transactions without passing through retail checkout.
+2. **Mode B: Single-Receipt POS Cart Integration:**
+   - 1-Click **"Add to POS Cart"** (`usePosCart.getState().addCustomItem(...)`) and **"Add & Go to POS Cashier"** (`useNav.getState().setPage('pos')`).
+   - Line items represent exact transaction specs:
+     - Bills: `Bills: {Biller} ({AccountNo})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+     - E-Wallet Cash In: `Cash In: {Channel} ({Phone/Ref})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+   - Single Consolidated Receipt: Combined with retail merchandise (groceries, snacks, drinks) on a single official POS thermal receipt at checkout.
+   - Dual-Audit Consistency: Transaction simultaneously records into the E-Wallet ledger with `[POS Cart Item]` tag, keeping shift balances and physical cash counts 100% synchronized.
+
+### 84.3 Unified Transactions & Multi-Ledger Viewer
+1. **Top-Level Multi-Tab Selector in `Transactions.tsx`:**
+   - **Tab 1: 🛒 POS Sales & Receipts:** Complete sales registry with expandable line items, refunds, voids, and reprint capabilities.
+   - **Tab 2: ⚡ E-Wallet & Bills Center:** Cross-channel ledger displaying all standalone and mirrored E-Wallet, Bills Payment, and E-Load records.
+2. **Channel & Type Filtering:** Real-time filtering across Channels (All, GCash, Maya, MariBank, Bills & Load) and Types (Cash In, Cash Out, Bills Payment).
+3. **Instant Reprinting & Manual Dialog Fallback:** Direct 1-click thermal reprinting and system print dialog access directly from the master Transactions ledger.
+
+
 

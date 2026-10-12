@@ -28,6 +28,8 @@ import type {
 } from '@shared/types'
 import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
 import { toastSuccess, toastError } from '../stores/toast'
+import { usePosCart } from './POS'
+import { useNav } from '../stores/nav'
 
 export type EwalletDatePeriod = 'TODAY' | 'YESTERDAY' | 'LAST_7_DAYS' | 'THIS_MONTH' | 'CUSTOM' | 'ALL'
 
@@ -38,10 +40,10 @@ export function formatLocalDateKey(d: Date): string {
 export function parseRecordLocalDateKey(raw: string | undefined | null): string {
   if (!raw) return ''
   const trimmed = raw.trim()
-  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmed)
-    ? `${trimmed.replace(' ', 'T')}Z`
-    : trimmed
-  const parsed = new Date(normalized)
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(trimmed) || /^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed.slice(0, 10)
+  }
+  const parsed = new Date(trimmed)
   if (!Number.isNaN(parsed.getTime())) {
     return formatLocalDateKey(parsed)
   }
@@ -222,6 +224,7 @@ export interface BillRecord {
 }
 
 export function EwalletAudit(): React.JSX.Element {
+  const { setPage } = useNav()
   const [activeTab, setActiveTab] = useState<'register' | 'bills' | 'transactions' | 'audit' | 'history'>('register')
 
   // Daily / Date Period Filter (Defaults strictly to TODAY so yesterday's totals are never mixed in)
@@ -576,6 +579,58 @@ export function EwalletAudit(): React.JSX.Element {
     }
   }
 
+  const handleSendToPosCart = async (autoRedirect: boolean): Promise<void> => {
+    const amountVal = parseFloat(amountStr)
+    if (!amountVal || amountVal <= 0) {
+      toast.error('Please enter a valid amount.')
+      return
+    }
+    const feeVal = parseFloat(feeStr) || 0
+    const costC = Math.round(amountVal * 100)
+    const feeC = Math.round(feeVal * 100)
+    const priceC =
+      type === 'CASH_IN'
+        ? feeCollectedVia === 'CASH'
+          ? costC + feeC
+          : costC
+        : Math.max(0, costC - feeC)
+
+    const identifier = customerPhone.trim() || referenceNo.trim() || 'Walk-in'
+    const itemName = `Cash In: ${channel} (${identifier})`
+
+    usePosCart.getState().addCustomItem(itemName, priceC, 'txn', 1, costC)
+
+    const cartNote = notes.trim() ? `${notes.trim()} [POS Cart Item]` : '[POS Cart Item]'
+    try {
+      await window.api.ewallet.createTransaction({
+        channel,
+        type,
+        amount_c: costC,
+        fee_c: feeC,
+        fee_collected_via: feeCollectedVia,
+        reference_no: referenceNo.trim() || null,
+        customer_name: customerName.trim() || null,
+        customer_phone: customerPhone.trim() || null,
+        notes: cartNote
+      })
+      void loadData()
+    } catch (err) {
+      console.warn('Could not mirror to ewallet table:', err)
+    }
+
+    toast.success('Added to POS Cart', `${itemName} transferred to cashier cart.`)
+
+    setAmountStr('')
+    setReferenceNo('')
+    setCustomerName('')
+    setCustomerPhone('')
+    setNotes('')
+
+    if (autoRedirect) {
+      setPage('pos')
+    }
+  }
+
   // Bills & E-Load Handlers
   const saveBillRecords = (next: BillRecord[]) => {
     setBillRecords(next)
@@ -668,6 +723,78 @@ export function EwalletAudit(): React.JSX.Element {
     setBillCashReceivedStr('')
     setBillReferenceNo('')
     void loadData()
+  }
+
+  const handleSendBillToPosCart = async (autoRedirect: boolean): Promise<void> => {
+    const amt = parseFloat(billAmountStr)
+    if (!amt || amt <= 0) {
+      toast.error('Please enter a valid bill amount.')
+      return
+    }
+    if (!billAccountNo.trim()) {
+      toast.error('Please provide an account number or mobile phone.')
+      return
+    }
+    const fee = parseFloat(billFeeStr) || 0
+    const totalDue = billFeeMode === 'DEDUCT' ? Math.max(0, amt - fee) : amt + fee
+    const priceC = Math.round(totalDue * 100)
+    const costC = Math.round(amt * 100)
+    const itemName = `Bills: ${selectedBiller} (${billAccountNo.trim()})`
+
+    usePosCart.getState().addCustomItem(itemName, priceC, 'txn', 1, costC)
+
+    const newTx: BillRecord = {
+      id: 'BL-' + Date.now().toString(36).toUpperCase(),
+      category: (BILLER_PRESETS.find((b) => b.name === selectedBiller)?.category as any) || 'UTILITIES',
+      biller: selectedBiller,
+      accountNo: billAccountNo.trim(),
+      customerName: billCustomerName.trim() || 'Walk-in Customer',
+      customerPhone: billCustomerPhone.trim(),
+      amount: amt,
+      serviceFee: fee,
+      feeMode: billFeeMode,
+      paidVia: 'CASH',
+      sourceWallet: billSourceWallet,
+      status: 'COMPLETED',
+      createdAt: new Date().toISOString(),
+      referenceNo: billReferenceNo.trim() || 'REF-' + Math.floor(100000 + Math.random() * 900000),
+      cashReceived: undefined,
+      change: undefined
+    }
+
+    try {
+      if (window.api?.ewallet?.createTransaction) {
+        await window.api.ewallet.createTransaction({
+          channel: billSourceWallet,
+          type: 'CASH_IN',
+          amount_c: costC,
+          fee_c: Math.round(fee * 100),
+          fee_collected_via: 'CASH',
+          reference_no: newTx.referenceNo,
+          customer_name: newTx.customerName,
+          customer_phone: newTx.customerPhone || undefined,
+          notes: `Bills/Load: ${selectedBiller} (Acct: ${billAccountNo.trim()}) [POS Cart Item]`
+        })
+      }
+    } catch (err) {
+      console.warn('Could not mirror to ewallet table:', err)
+    }
+
+    const next = [newTx, ...billRecords]
+    saveBillRecords(next)
+    toast.success('Added to POS Cart', `${itemName} transferred to cashier cart.`)
+
+    setBillAccountNo('')
+    setBillCustomerName('')
+    setBillCustomerPhone('')
+    setBillAmountStr('')
+    setBillCashReceivedStr('')
+    setBillReferenceNo('')
+    void loadData()
+
+    if (autoRedirect) {
+      setPage('pos')
+    }
   }
 
   const printBillReceipt = async (tx: BillRecord, manual = false) => {
@@ -1216,24 +1343,44 @@ export function EwalletAudit(): React.JSX.Element {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-2 flex gap-3">
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => void handleSaveTransaction(true)}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition disabled:opacity-50"
-                >
-                  <Printer className="h-4 w-4" />
-                  Record & Print Slip
-                </button>
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => void handleSaveTransaction(false)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-5 py-3 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white active:scale-95 transition disabled:opacity-50"
-                >
-                  Save Only
-                </button>
+              <div className="pt-2 flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void handleSaveTransaction(true)}
+                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-xs font-bold text-white shadow-md hover:bg-brand-500 active:scale-95 transition disabled:opacity-50"
+                  >
+                    <Printer className="h-4 w-4" />
+                    Record &amp; Print Slip
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void handleSaveTransaction(false)}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-ink-line bg-ink-950 px-4 py-3 text-xs font-bold text-slate-300 hover:bg-ink-800 hover:text-white active:scale-95 transition disabled:opacity-50"
+                  >
+                    Save Only
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void handleSendToPosCart(false)}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-brand-500/30 bg-brand-500/10 px-3 py-2.5 text-xs font-bold text-brand-300 hover:bg-brand-500/20 active:scale-95 transition disabled:opacity-50"
+                  >
+                    🛒 Add to POS Cart
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void handleSendToPosCart(true)}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2.5 text-xs font-black shadow-md active:scale-95 transition disabled:opacity-50"
+                  >
+                    ⚡ Add &amp; Go to POS Cashier
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1660,18 +1807,36 @@ export function EwalletAudit(): React.JSX.Element {
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 py-3 text-xs font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95 transition"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    Record &amp; Log Payment (₱
-                    {(billFeeMode === 'DEDUCT'
-                      ? Math.max(0, (parseFloat(billAmountStr) || 0) - (parseFloat(billFeeStr) || 0))
-                      : (parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)
-                    ).toFixed(2)}
-                    )
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 py-3 text-xs font-bold text-white shadow-lg shadow-brand-600/30 active:scale-95 transition"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Record &amp; Log Payment (₱
+                      {(billFeeMode === 'DEDUCT'
+                        ? Math.max(0, (parseFloat(billAmountStr) || 0) - (parseFloat(billFeeStr) || 0))
+                        : (parseFloat(billAmountStr) || 0) + (parseFloat(billFeeStr) || 0)
+                      ).toFixed(2)}
+                      )
+                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void handleSendBillToPosCart(false)}
+                        className="flex items-center justify-center gap-2 rounded-xl border border-brand-500/30 bg-brand-500/10 px-3 py-2.5 text-xs font-bold text-brand-300 hover:bg-brand-500/20 active:scale-95 transition"
+                      >
+                        🛒 Add to POS Cart
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleSendBillToPosCart(true)}
+                        className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-2.5 text-xs font-black shadow-md active:scale-95 transition"
+                      >
+                        ⚡ Add &amp; Go to POS Cashier
+                      </button>
+                    </div>
+                  </div>
                 </form>
               </div>
             </div>

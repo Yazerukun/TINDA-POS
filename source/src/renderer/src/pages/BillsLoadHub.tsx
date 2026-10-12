@@ -20,6 +20,7 @@ import { money } from '@shared/format'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useLicense } from '../stores/license'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
+import { formatLocalDateKey, parseRecordLocalDateKey } from './EwalletAudit'
 
 interface BillTransaction {
   id: string
@@ -262,12 +263,13 @@ export function BillsLoadHub(): React.JSX.Element {
       r.referenceNo.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  const todayKey = formatLocalDateKey(new Date())
   const totalCollectedToday = records
-    .filter((r) => r.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))
+    .filter((r) => parseRecordLocalDateKey(r.createdAt) === todayKey)
     .reduce((s, r) => s + r.amount + r.serviceFee, 0)
 
   const totalFeesEarnedToday = records
-    .filter((r) => r.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))
+    .filter((r) => parseRecordLocalDateKey(r.createdAt) === todayKey)
     .reduce((s, r) => s + r.serviceFee, 0)
 
   return (
