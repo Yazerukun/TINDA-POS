@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Printer, FileText, ClipboardList, CheckSquare, ArrowDownUp, PackageSearch } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Printer, FileText, ClipboardList, CheckSquare, ArrowDownUp, PackageSearch, Search, X } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { money } from '@shared/format'
 import { toastSuccess, toastError } from '../stores/toast'
@@ -22,12 +22,23 @@ export function InventoryPrintModal({
 }: InventoryPrintModalProps): React.JSX.Element | null {
   const [sheetType, setSheetType] = useState<SheetType>('STOCK_ON_HAND')
   const [onlyLowStock, setOnlyLowStock] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   if (!open) return null
 
-  const targetProducts = onlyLowStock
-    ? products.filter((p) => p.stock <= p.low_stock_threshold)
-    : products
+  const q = searchQuery.trim().toLowerCase()
+  const targetProducts = useMemo(() => {
+    return products.filter((p) => {
+      if (onlyLowStock && p.stock > p.low_stock_threshold) return false
+      if (!q) return true
+      const nameMatch = p.name ? p.name.toLowerCase().includes(q) : false
+      const skuMatch = p.sku ? p.sku.toLowerCase().includes(q) : false
+      const barcodeMatch = p.barcode ? p.barcode.toLowerCase().includes(q) : false
+      const catMatch = p.category_name ? p.category_name.toLowerCase().includes(q) : false
+      const descMatch = p.description ? p.description.toLowerCase().includes(q) : false
+      return nameMatch || skuMatch || barcodeMatch || catMatch || descMatch
+    })
+  }, [products, onlyLowStock, q])
 
   const [isPrinting, setIsPrinting] = useState(false)
 
@@ -83,6 +94,11 @@ export function InventoryPrintModal({
 
     const totalVal = targetProducts.reduce((s, p) => s + p.stock * p.purchase_cost_c, 0)
 
+    const activeFilters: string[] = []
+    if (q) activeFilters.push(`Filter: "${searchQuery.trim()}"`)
+    if (onlyLowStock) activeFilters.push('Low Stock Only')
+    const filterSubtitle = activeFilters.join(' • ')
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -112,6 +128,7 @@ export function InventoryPrintModal({
           </div>
           <div class="meta" style="text-align:right;">
             Date: ${new Date().toLocaleDateString('en-PH', { dateStyle: 'long' })}<br>
+            ${filterSubtitle ? `<div style="font-weight:700; color:#111; margin-top:2px;">${filterSubtitle}</div>` : ''}
             Items: ${targetProducts.length} Products
           </div>
         </div>
@@ -156,7 +173,7 @@ export function InventoryPrintModal({
         ${
           sheetType !== 'COUNT_SHEET'
             ? `<div class="summary">
-                 <div>Total Inventory Value: ₱${(totalVal / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                 <div>Total Inventory Value${filterSubtitle ? ' (Filtered)' : ''}: ₱${(totalVal / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
                </div>`
             : ''
         }
@@ -256,6 +273,29 @@ export function InventoryPrintModal({
           ))}
         </div>
 
+        {/* Search & Keyword Filter */}
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search items by name, SKU, or category (e.g. elbow)..."
+            className="w-full rounded-xl border border-ink-line bg-ink-950 py-2.5 pl-10 pr-9 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 transition"
+            autoFocus
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-ink-800 transition"
+              title="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
         {/* Filter Option */}
         <div className="p-3 rounded-xl bg-ink-950 border border-ink-line flex items-center justify-between">
           <div>
@@ -275,9 +315,22 @@ export function InventoryPrintModal({
 
         {/* Product Count Preview */}
         <div className="text-xs text-slate-400 flex items-center justify-between px-1">
-          <span>Ready to print: <strong>{targetProducts.length}</strong> product items</span>
+          <span>
+            Ready to print: <strong className="text-white font-bold">{targetProducts.length}</strong> product items
+            {searchQuery.trim() && (
+              <span className="text-slate-400 ml-1.5">
+                (matching &ldquo;<span className="text-brand-400 font-semibold">{searchQuery.trim()}</span>&rdquo;)
+              </span>
+            )}
+          </span>
           <span>Standard A4 / Letter format</span>
         </div>
+
+        {targetProducts.length === 0 && (
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs text-center">
+            No items match your active search &ldquo;{searchQuery}&rdquo;. Try clearing the search or adjusting keywords.
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-3 border-t border-ink-line">

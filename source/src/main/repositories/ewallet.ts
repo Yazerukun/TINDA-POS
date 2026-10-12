@@ -221,7 +221,7 @@ export function getEwalletShiftSummary(
   db: Database.Database,
   shiftId: number | null
 ): EwalletShiftSummary {
-  const whereParts: string[] = ["date(created_at, 'localtime') = date('now', 'localtime')"]
+  const whereParts: string[] = ["substr(created_at, 1, 10) = date('now', 'localtime')"]
   const params: unknown[] = []
   if (shiftId != null) {
     whereParts.push('shift_id = ?')
