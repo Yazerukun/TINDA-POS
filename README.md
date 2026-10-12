@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.1-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,11 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.1.1](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.1/TindaPOS-Feature-Patch-2.1.1.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.1 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.1/TindaPOS-Setup-2.1.1.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.1/TindaPOS-Portable-2.1.1.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.1.2](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Feature-Patch-2.1.2.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.1.2 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Setup-2.1.2.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.2/TindaPOS-Portable-2.1.2.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.1.1 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
+## ✨ What's New in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
 
 > **Hardware & Cloud Reliability: Industrial ISO 15416 barcode scanability calibration for Chiteng CT221B thermal printers, store ID case-insensitive normalization on Cloudflare D1, and verified live sync backfill counter.**
 

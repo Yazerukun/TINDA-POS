@@ -28,15 +28,19 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.1 (CT221B Barcode Scanability Hotfix Edition)**
+- Current Version: **v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)**
 
-## Key Features in v2.1.1 (CT221B Barcode Scanability Hotfix Edition)
+## Key Features in v2.1.2 (CT221B Barcode Scanability & Cloud Sync Precision Edition)
 1. **CT221B Barcode Scanability Fix (`barcodeSvg.ts`, `PriceTagPrintModal.tsx`, `printing.ts`)**:
    - Root cause: `barWidth` was 1.5–1.8px per module — too thin for CT221B thermal burn head, causing adjacent bars to merge into solid unreadable blocks.
    - Fix: `barWidth` raised to **2.5px** (compact ≤30mm labels) and **2.8px** (standard labels). Global default in `barcodeSvg.ts` raised from 1.8 → 2.5px.
    - `quietZone` raised from 10–12 → **14 modules** (ISO 15416 compliance: ≥10× narrowest bar width as quiet zone).
    - SVG CSS: removed `max-width: 98%` scaling constraint that further compressed bars before printing; now uses `width: auto; overflow: visible`.
    - `printLabelTest` updated to same params (2.8px / 14 modules) for accurate test prints.
+2. **Cloud Sync Verified Push & Store ID Case Normalization (`cloudSync.ts`)**:
+   - Store auto-registration on Cloudflare D1 with ping health verification.
+   - Case-insensitive store ID normalization eliminating multi-store credential mismatches.
+   - Verified push backfill counter for up to 50 recent sales on manual `syncNow`.
 
 ## Key Features in v2.1.0 (Proportional Refund Immunity, Migration 15, Net COGS & Cash Drawer Kick Edition)
 1. **Prorated Refund Discount Invariant (`transaction.ts`)**:

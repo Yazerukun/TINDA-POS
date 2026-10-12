@@ -109,8 +109,8 @@
   - `[Multi-Target Build Inspector]`: Cleanly audits Node, Preload, and Web renderer targets without config collisions.
   - `[GitHub Asset Dispatcher]` *(NEW UNLOCKED)*: Directly deploys verified SHA-256 release artifacts to GitHub Releases.
 - **Quest History:**
-  - Shipped v2.0.8, v2.0.9, and v2.1.0 hot patches directly to production GitHub releases.
-  - Won the v2.1.0 Boss Battle: Successfully generated and dispatched `TindaPOS-Feature-Patch-2.1.0.zip` (SHA-256: `e0915e54...`) to GitHub Releases.
+  - Shipped v2.0.8, v2.0.9, v2.1.0, and v2.1.1 hot patches directly to production GitHub releases.
+  - Won the v2.1.2 Boss Battle: Successfully generated and dispatched `TindaPOS-Feature-Patch-2.1.2.zip` to GitHub Releases.
 
 ---
 
@@ -124,7 +124,7 @@
   - `[Resilient Offline-Safe Pipeline]`: Streams sales, stocks, and shift summaries asynchronously with zero impact on local POS checkout speed.
   - `[Verified Sync Backfill Counter]`: Verifies recent sale batch delivery on manual trigger with transparent UI feedback.
 - **Quest History:**
-  - Won the v2.1.1 Boss Battle: Deployed store auto-registration on Cloudflare D1, normalized case-sensitive store IDs, and integrated verified sale backfill counters in `cloudSync.ts`.
+  - Won the v2.1.2 Boss Battle: Deployed store auto-registration on Cloudflare D1, normalized case-sensitive store IDs, and integrated verified sale backfill counters in `cloudSync.ts`.
 
 ---
 
