@@ -15,19 +15,38 @@ import {
   CreditCard,
   Building,
   RefreshCw,
-  Hash
+  Hash,
+  Percent,
+  Tag,
+  Layers
 } from 'lucide-react'
 import type { Product, Supplier, Purchase, ProductUnit } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
 import { Modal } from './ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { playScanBeep } from '../lib/barcodeScanner'
+import { calculateChainDiscount } from '../utils/supplierDiscount'
 
 interface PurchaseInvoiceModalProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
 }
+
+export const STANDARD_PACKAGING_UNITS: { name: string; label: string; defaultConversion: number }[] = [
+  { name: 'pc', label: 'PCS (Piece)', defaultConversion: 1 },
+  { name: 'pack', label: 'PACK (Pack)', defaultConversion: 10 },
+  { name: 'bundle', label: 'BUNDLE (Bundle)', defaultConversion: 10 },
+  { name: 'roll', label: 'ROLL (Roll)', defaultConversion: 1 },
+  { name: 'box', label: 'BOX (Box)', defaultConversion: 24 },
+  { name: 'case', label: 'CASE (Case)', defaultConversion: 24 },
+  { name: 'dozen', label: 'DOZEN (Dozen)', defaultConversion: 12 },
+  { name: 'sack', label: 'SACK (Sack / Bag)', defaultConversion: 50 },
+  { name: 'can', label: 'CAN (Can / Lata)', defaultConversion: 1 },
+  { name: 'bottle', label: 'BOTTLE (Bottle / Botelya)', defaultConversion: 1 },
+  { name: 'kilo', label: 'KILO (Kilogram)', defaultConversion: 1 },
+  { name: 'custom', label: 'CUSTOM (Other)', defaultConversion: 1 }
+]
 
 interface InvoiceLineItem {
   tempId: string
@@ -39,8 +58,11 @@ interface InvoiceLineItem {
   conversionToBase: number
   qty: number
   qtyBase: number
-  unitCostC: number
-  subtotalC: number
+  unitCostC: number      // gross unit cost
+  discountInput: string  // chain discount formula e.g. "5+5+5"
+  discountC: number      // calculated discount in cents
+  netUnitCostC: number   // effective unit cost after discount
+  subtotalC: number      // net line subtotal in cents
 }
 
 export function PurchaseInvoiceModal({
@@ -69,8 +91,11 @@ export function PurchaseInvoiceModal({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedUnitName, setSelectedUnitName] = useState('')
+  const [unitMultiplierInput, setUnitMultiplierInput] = useState('1')
+  const [customUnitName, setCustomUnitName] = useState('')
   const [qtyInput, setQtyInput] = useState('1')
   const [unitCostPesos, setUnitCostPesos] = useState('0')
+  const [itemDiscountInput, setItemDiscountInput] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [dropdownIndex, setDropdownIndex] = useState(0)
 
@@ -86,6 +111,7 @@ export function PurchaseInvoiceModal({
   const searchInputRef = useRef<HTMLInputElement>(null)
   const qtyInputRef = useRef<HTMLInputElement>(null)
   const costInputRef = useRef<HTMLInputElement>(null)
+  const discountInputRef = useRef<HTMLInputElement>(null)
   const unitSelectRef = useRef<HTMLSelectElement>(null)
 
   // Selected supplier details
@@ -146,19 +172,41 @@ export function PurchaseInvoiceModal({
     }
   }, [open, activeTab])
 
-  // Available units for the selected product
+  // Available units for the selected product: base unit, configured units, and standard packaging units
   const availableUnits = useMemo(() => {
     if (!selectedProduct) return []
-    const units: { name: string; conversionToBase: number }[] = [
-      { name: selectedProduct.base_unit || 'pc', conversionToBase: 1 }
+    const units: { name: string; label: string; conversionToBase: number }[] = [
+      {
+        name: selectedProduct.base_unit || 'pc',
+        label: `${(selectedProduct.base_unit || 'pc').toUpperCase()} (Base Unit)`,
+        conversionToBase: 1
+      }
     ]
+
+    // 1. Existing configured multi-units on this product
     if (selectedProduct.units && selectedProduct.units.length > 0) {
       for (const u of selectedProduct.units) {
         if (!units.some((existing) => existing.name.toLowerCase() === u.name.toLowerCase())) {
-          units.push({ name: u.name, conversionToBase: u.conversion_to_base || 1 })
+          units.push({
+            name: u.name,
+            label: `${u.name.toUpperCase()} (x${u.conversion_to_base || 1} ${selectedProduct.base_unit || 'pc'})`,
+            conversionToBase: u.conversion_to_base || 1
+          })
         }
       }
     }
+
+    // 2. Standard wholesale packaging units (PACK, BUNDLE, ROLL, BOX, CASE, DOZEN, SACK, etc.)
+    for (const std of STANDARD_PACKAGING_UNITS) {
+      if (!units.some((existing) => existing.name.toLowerCase() === std.name.toLowerCase())) {
+        units.push({
+          name: std.name,
+          label: std.label,
+          conversionToBase: std.defaultConversion
+        })
+      }
+    }
+
     return units
   }, [selectedProduct])
 
@@ -186,14 +234,19 @@ export function PurchaseInvoiceModal({
     // Select default unit
     const defaultUnit = product.units?.find((u) => u.is_default)?.name || product.base_unit || 'pc'
     setSelectedUnitName(defaultUnit)
+    setCustomUnitName('')
 
-    // Calculate default cost
+    // Default conversion multiplier
     const unitObj = product.units?.find((u) => u.name.toLowerCase() === defaultUnit.toLowerCase())
     const conversion = unitObj?.conversion_to_base || 1
+    setUnitMultiplierInput(String(conversion))
+
+    // Calculate default cost
     const costInPesos = ((product.purchase_cost_c * conversion) / 100).toFixed(2)
     setUnitCostPesos(costInPesos)
 
     setQtyInput('1')
+    setItemDiscountInput('')
 
     // Ergonomic focus directly to Qty Box!
     setTimeout(() => {
@@ -209,13 +262,41 @@ export function PurchaseInvoiceModal({
     setSelectedUnitName(newUnitName)
     if (!selectedProduct) return
 
-    const unitObj = selectedProduct.units?.find((u) => u.name.toLowerCase() === newUnitName.toLowerCase())
-    const conversion = unitObj?.conversion_to_base || 1
+    let conversion = 1
+    const foundConfig = selectedProduct.units?.find((u) => u.name.toLowerCase() === newUnitName.toLowerCase())
+    if (foundConfig?.conversion_to_base) {
+      conversion = foundConfig.conversion_to_base
+    } else {
+      const std = STANDARD_PACKAGING_UNITS.find((u) => u.name.toLowerCase() === newUnitName.toLowerCase())
+      if (std) conversion = std.defaultConversion
+    }
+
+    setUnitMultiplierInput(String(conversion))
     const costInPesos = ((selectedProduct.purchase_cost_c * conversion) / 100).toFixed(2)
     setUnitCostPesos(costInPesos)
   }
 
-  // COMMIT ITEM TO GRID (F2 or Enter in Qty box)
+  // Multiplier / Conversion Rate Handler (e.g. 10 pcs per bundle)
+  const handleMultiplierChange = (val: string) => {
+    setUnitMultiplierInput(val)
+    if (!selectedProduct) return
+    const mult = Math.max(0.001, parseFloat(val) || 1)
+    const costInPesos = ((selectedProduct.purchase_cost_c * mult) / 100).toFixed(2)
+    setUnitCostPesos(costInPesos)
+  }
+
+  // Live Item Gross & Trade Discount Evaluation
+  const itemGrossC = useMemo(() => {
+    const qty = parseFloat(qtyInput) || 0
+    const cost = parseFloat(unitCostPesos) || 0
+    return Math.round(qty * cost * 100)
+  }, [qtyInput, unitCostPesos])
+
+  const itemDiscountResult = useMemo(() => {
+    return calculateChainDiscount(itemGrossC, itemDiscountInput)
+  }, [itemGrossC, itemDiscountInput])
+
+  // COMMIT ITEM TO GRID (F2 or Enter in Qty/Discount box)
   const handleCommitItem = () => {
     if (!selectedProduct) {
       toastError('Item Required', 'Please choose or scan a product first.')
@@ -237,15 +318,25 @@ export function PurchaseInvoiceModal({
       return
     }
 
-    const unitObj = availableUnits.find((u) => u.name.toLowerCase() === selectedUnitName.toLowerCase())
-    const conversionToBase = unitObj?.conversionToBase || 1
-    const qtyBase = Math.round(qty * conversionToBase * 1000) / 1000
+    const mult = Math.max(0.001, parseFloat(unitMultiplierInput) || 1)
+    const effectiveUnitName =
+      selectedUnitName === 'custom' && customUnitName.trim()
+        ? customUnitName.trim()
+        : selectedUnitName || selectedProduct.base_unit || 'pc'
+
+    const qtyBase = Math.round(qty * mult * 1000) / 1000
     const unitCostC = Math.round(unitCost * 100)
-    const subtotalC = Math.round(qty * unitCostC)
+    const grossSubtotalC = Math.round(qty * unitCostC)
+
+    // Evaluate trade discount on this line (supports "-5%-5%-5%", "10/5", "5+5+5", "₱50", etc.)
+    const lineDiscount = calculateChainDiscount(grossSubtotalC, itemDiscountInput)
+    const discountC = lineDiscount.discountAmountC
+    const subtotalC = Math.max(0, grossSubtotalC - discountC)
+    const netUnitCostC = qty > 0 ? Math.round(subtotalC / qty) : unitCostC
 
     // Check if item with same product & unit already in grid
     const existingIndex = items.findIndex(
-      (it) => it.productId === selectedProduct.id && it.unitName.toLowerCase() === selectedUnitName.toLowerCase()
+      (it) => it.productId === selectedProduct.id && it.unitName.toLowerCase() === effectiveUnitName.toLowerCase()
     )
 
     if (existingIndex >= 0) {
@@ -254,13 +345,19 @@ export function PurchaseInvoiceModal({
       const existing = updated[existingIndex]
       if (existing) {
         const newQty = existing.qty + qty
-        const newQtyBase = Math.round(newQty * conversionToBase * 1000) / 1000
-        const newSubtotal = Math.round(newQty * unitCostC)
+        const newQtyBase = Math.round(newQty * mult * 1000) / 1000
+        const newGrossSubtotal = Math.round(newQty * unitCostC)
+        const combinedFormula = itemDiscountInput.trim() || existing.discountInput
+        const newDiscount = calculateChainDiscount(newGrossSubtotal, combinedFormula)
+        const newSubtotal = Math.max(0, newGrossSubtotal - newDiscount.discountAmountC)
         updated[existingIndex] = {
           ...existing,
           qty: newQty,
           qtyBase: newQtyBase,
           unitCostC,
+          discountInput: combinedFormula,
+          discountC: newDiscount.discountAmountC,
+          netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
           subtotalC: newSubtotal
         }
         setItems(updated)
@@ -273,11 +370,14 @@ export function PurchaseInvoiceModal({
         productName: selectedProduct.name,
         barcode: selectedProduct.barcode || selectedProduct.sku || '—',
         sku: selectedProduct.sku,
-        unitName: selectedUnitName,
-        conversionToBase,
+        unitName: effectiveUnitName,
+        conversionToBase: mult,
         qty,
         qtyBase,
         unitCostC,
+        discountInput: itemDiscountInput.trim(),
+        discountC,
+        netUnitCostC,
         subtotalC
       }
       setItems([...items, newItem])
@@ -291,6 +391,9 @@ export function PurchaseInvoiceModal({
     setQtyInput('1')
     setUnitCostPesos('0')
     setSelectedUnitName('')
+    setUnitMultiplierInput('1')
+    setCustomUnitName('')
+    setItemDiscountInput('')
     setShowDropdown(false)
 
     // Focus back to Item Code / Search input for next item!
@@ -311,15 +414,16 @@ export function PurchaseInvoiceModal({
     }
   }
 
-  // Math Calculations
+  // Math Calculations (including compound invoice trade discount)
   const grossTotalC = useMemo(() => {
     return items.reduce((sum, it) => sum + it.subtotalC, 0)
   }, [items])
 
-  const discountC = useMemo(() => {
-    const val = parseFloat(discountPesos)
-    return isNaN(val) || val < 0 ? 0 : Math.round(val * 100)
-  }, [discountPesos])
+  const invoiceDiscountResult = useMemo(() => {
+    return calculateChainDiscount(grossTotalC, discountPesos)
+  }, [grossTotalC, discountPesos])
+
+  const discountC = invoiceDiscountResult.discountAmountC
 
   const netTotalC = useMemo(() => {
     return Math.max(0, grossTotalC - discountC)
@@ -813,7 +917,7 @@ export function PurchaseInvoiceModal({
 
               <div className="grid grid-cols-1 gap-2 md:grid-cols-12 items-end">
                 {/* Search / Barcode Input (F1) */}
-                <div className="relative md:col-span-5">
+                <div className="relative md:col-span-3">
                   <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
                     <span>Item Code / Barcode / Name</span>
                     <kbd className="rounded bg-ink-800 px-1 text-[10px] font-mono text-slate-400 border border-ink-line">
@@ -851,8 +955,8 @@ export function PurchaseInvoiceModal({
                           setShowDropdown(false)
                         }
                       }}
-                      placeholder="Scan barcode or type item name…"
-                      className="input w-full pl-9 font-medium"
+                      placeholder="Scan barcode or type name…"
+                      className="input w-full pl-9 font-medium text-xs"
                     />
                     {searchQuery && (
                       <button
@@ -897,18 +1001,18 @@ export function PurchaseInvoiceModal({
                   )}
                 </div>
 
-                {/* Unit Selector */}
+                {/* Packaging Unit Selector */}
                 <div className="md:col-span-2">
                   <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
                     <span>Unit</span>
-                    <span className="text-[10px] text-slate-500">Box/Pcs</span>
+                    <span className="text-[10px] text-slate-500">Box/Pack/Roll</span>
                   </label>
                   <select
                     ref={unitSelectRef}
                     disabled={!selectedProduct}
                     value={selectedUnitName}
                     onChange={(e) => handleUnitChange(e.target.value)}
-                    className="input w-full font-medium text-xs"
+                    className="input w-full font-medium text-xs uppercase"
                   >
                     {availableUnits.map((u) => (
                       <option key={u.name} value={u.name}>
@@ -916,6 +1020,34 @@ export function PurchaseInvoiceModal({
                       </option>
                     ))}
                   </select>
+                  {selectedUnitName === 'custom' && (
+                    <input
+                      type="text"
+                      value={customUnitName}
+                      onChange={(e) => setCustomUnitName(e.target.value)}
+                      placeholder="e.g. TIE, TUB"
+                      className="input mt-1 w-full text-[11px] py-0.5 uppercase"
+                    />
+                  )}
+                </div>
+
+                {/* Multiplier (Pcs / Unit Conversion) */}
+                <div className="md:col-span-1">
+                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
+                    <span>Pcs/Unit</span>
+                    <span className="text-[10px] text-emerald-400">Rate</span>
+                  </label>
+                  <input
+                    disabled={!selectedProduct}
+                    type="number"
+                    step="any"
+                    min="0.001"
+                    value={unitMultiplierInput}
+                    onChange={(e) => handleMultiplierChange(e.target.value)}
+                    placeholder="1"
+                    className="input w-full font-mono text-xs text-center font-semibold"
+                    title="Conversion multiplier: how many base pieces are inside this packaging unit"
+                  />
                 </div>
 
                 {/* Cost Price */}
@@ -945,11 +1077,11 @@ export function PurchaseInvoiceModal({
                 </div>
 
                 {/* Quantity Box (THE CORE F2 ERGONOMIC HOTSPOT) */}
-                <div className="md:col-span-2">
+                <div className="md:col-span-1">
                   <label className="mb-1 flex items-center justify-between text-[11px] font-bold text-emerald-300">
                     <span>Qty</span>
-                    <kbd className="rounded bg-emerald-500/20 px-1 text-[10px] font-mono text-emerald-300 border border-emerald-500/30">
-                      F2 / Enter
+                    <kbd className="rounded bg-emerald-500/20 px-1 text-[9px] font-mono text-emerald-300 border border-emerald-500/30">
+                      F2
                     </kbd>
                   </label>
                   <input
@@ -961,7 +1093,11 @@ export function PurchaseInvoiceModal({
                     value={qtyInput}
                     onChange={(e) => setQtyInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === 'F2') {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        discountInputRef.current?.focus()
+                        discountInputRef.current?.select()
+                      } else if (e.key === 'F2') {
                         e.preventDefault()
                         handleCommitItem()
                       }
@@ -971,19 +1107,78 @@ export function PurchaseInvoiceModal({
                   />
                 </div>
 
+                {/* Supplier Trade Discount (Series / Cascading: Less 5 Less 5) */}
+                <div className="md:col-span-2">
+                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-amber-300">
+                    <span>Supplier Disc</span>
+                    <span className="text-[9px] text-amber-400 font-mono">5+5+5 / 10/5</span>
+                  </label>
+                  <input
+                    ref={discountInputRef}
+                    disabled={!selectedProduct}
+                    type="text"
+                    value={itemDiscountInput}
+                    onChange={(e) => setItemDiscountInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleCommitItem()
+                      }
+                    }}
+                    placeholder="0 / 5+5+5 / 10/5"
+                    className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40 focus:border-amber-400 focus:ring-amber-500"
+                    title="Supplier chain discount: enter series like *-5%-5%-5%, 5+5+5, 10/5, or flat ₱50"
+                  />
+                </div>
+
                 {/* Add Item Button */}
                 <div className="md:col-span-1">
                   <button
                     type="button"
                     disabled={!selectedProduct}
                     onClick={handleCommitItem}
-                    title="Add Item to Invoice (F2)"
+                    title="Add Item to Invoice (F2 / Enter)"
                     className="btn-primary w-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center p-2 font-bold shadow-sm"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
                 </div>
               </div>
+
+              {/* Live Calculation Strip: Total Base Stock Addition & Supplier Discount Preview */}
+              {selectedProduct && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-ink-900/90 border border-emerald-500/20 px-3 py-1.5 text-xs">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <span className="font-semibold text-emerald-400">📦 Stock Addition:</span>
+                    <span className="font-mono text-white">
+                      {qtyInput || 0} {selectedUnitName.toUpperCase() || 'UNIT'} × {unitMultiplierInput || 1} ={' '}
+                      <strong className="text-emerald-300 font-bold">
+                        +{Math.round((parseFloat(qtyInput) || 0) * (parseFloat(unitMultiplierInput) || 1) * 1000) / 1000}{' '}
+                        {selectedProduct.base_unit || 'pcs'}
+                      </strong>
+                    </span>
+                    <span className="text-slate-500 text-[11px]">(automatically added to inventory stock on post)</span>
+                  </div>
+
+                  {itemDiscountInput.trim() && itemDiscountResult.discountAmountC > 0 ? (
+                    <div className="flex items-center gap-2 text-xs font-mono">
+                      <span className="text-amber-400 font-bold">
+                        🏷️ Trade Discount ({itemDiscountResult.formula}):
+                      </span>
+                      <span className="text-slate-400 line-through">{money(itemGrossC)}</span>
+                      <span className="text-amber-300 font-semibold">-{money(itemDiscountResult.discountAmountC)}</span>
+                      <span className="text-emerald-400 font-bold">= {money(itemDiscountResult.netAmountC)}</span>
+                      <span className="text-[10px] text-amber-500/90">
+                        (-{itemDiscountResult.effectivePercent.toFixed(2)}% net)
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="font-mono text-slate-300 text-xs">
+                      Line Total: <strong className="text-emerald-400 font-bold">{money(itemGrossC)}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* 3. INVOICE LINE ITEMS GRID (Matching CCTI POS Grid) */}
@@ -1025,7 +1220,7 @@ export function PurchaseInvoiceModal({
                     </p>
                   </div>
                 ) : (
-                  <table className="table min-w-[850px]">
+                  <table className="table min-w-[920px]">
                     <thead>
                       <tr>
                         <th className="w-10 py-2.5 px-3 text-center">#</th>
@@ -1033,9 +1228,11 @@ export function PurchaseInvoiceModal({
                         <th className="py-2.5 px-3 text-left">Description</th>
                         <th className="py-2.5 px-3 text-center">Unit</th>
                         <th className="py-2.5 px-3 text-center">Qty</th>
-                        <th className="py-2.5 px-3 text-center">Base Stock</th>
-                        <th className="py-2.5 px-3 text-right">Price / Cost</th>
-                        <th className="py-2.5 px-3 text-right">Amount</th>
+                        <th className="py-2.5 px-3 text-center">Stock In</th>
+                        <th className="py-2.5 px-3 text-right">Gross Cost</th>
+                        <th className="py-2.5 px-3 text-center">Trade Disc</th>
+                        <th className="py-2.5 px-3 text-right">Net Cost</th>
+                        <th className="py-2.5 px-3 text-right">Net Amount</th>
                         <th className="w-10 py-2.5 px-3 text-center">Action</th>
                       </tr>
                     </thead>
@@ -1048,24 +1245,40 @@ export function PurchaseInvoiceModal({
                           <td className="py-2 px-3 font-mono text-xs text-slate-300">
                             {it.barcode}
                           </td>
-                          <td className="py-2 px-3 font-medium text-white truncate max-w-[260px]">
+                          <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
                             {it.productName}
                           </td>
                           <td className="py-2 px-3 text-center text-xs">
                             <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">
                               {it.unitName.toUpperCase()}
+                              {it.conversionToBase > 1 ? ` (x${it.conversionToBase})` : ''}
                             </span>
                           </td>
                           <td className="py-2 px-3 text-center font-mono font-bold text-white">
                             {it.qty}
                           </td>
-                          <td className="py-2 px-3 text-center font-mono text-xs text-emerald-400">
+                          <td className="py-2 px-3 text-center font-mono text-xs text-emerald-400 font-semibold">
                             +{it.qtyBase}
                           </td>
-                          <td className="py-2 px-3 text-right font-mono text-xs text-slate-200">
+                          <td className="py-2 px-3 text-right font-mono text-xs text-slate-300">
                             {money(it.unitCostC)}
                           </td>
-                          <td className="py-2 px-3 text-right font-mono font-semibold text-emerald-300">
+                          <td className="py-2 px-3 text-center text-xs">
+                            {it.discountC > 0 ? (
+                              <span
+                                className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
+                                title={it.discountInput}
+                              >
+                                {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 font-mono">—</span>
+                            )}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono text-xs font-semibold text-slate-200">
+                            {money(it.netUnitCostC)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
                             {money(it.subtotalC)}
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -1128,16 +1341,28 @@ export function PurchaseInvoiceModal({
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-slate-300">
-                  <span>Discount (₱):</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={discountPesos}
-                    onChange={(e) => setDiscountPesos(e.target.value)}
-                    placeholder="0.00"
-                    className="input w-24 py-0.5 text-right font-mono text-xs"
-                  />
+                  <span title="Supports chain discount: e.g. 5+5+5 or 10/5 or ₱100">
+                    Trade / Series Discount:
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={discountPesos}
+                      onChange={(e) => setDiscountPesos(e.target.value)}
+                      placeholder="0 / 5+5+5 / 10/5"
+                      className="input w-36 py-0.5 text-right font-mono text-xs text-amber-300"
+                    />
+                    {invoiceDiscountResult.discountAmountC > 0 && (
+                      <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                        -{money(invoiceDiscountResult.discountAmountC)}
+                        {invoiceDiscountResult.effectivePercent > 0 && (
+                          <span className="text-[10px] text-amber-500/90 ml-1">
+                            ({invoiceDiscountResult.effectivePercent.toFixed(1)}%)
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 border-t border-ink-line pt-1 text-sm font-bold text-white">

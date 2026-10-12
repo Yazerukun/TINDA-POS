@@ -28,7 +28,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.0.7 (Daily E-Wallet Totals Hub, Loyverse-Style Promo Bundles & Composite Inventory Combiner Edition)**
+- Current Version: **v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts "Less 5 Less 5" Edition)**
+
+## Key Features in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts "Less 5 Less 5" Edition)
+1. **Multi-Packaging Wholesale Units Support (`PurchaseInvoiceModal.tsx`, `STANDARD_PACKAGING_UNITS`)**:
+   - Expanded Purchase Invoice Unit selector to support standard wholesale packaging: `PCS` (x1), `PACK` (x10), `BUNDLE` (x10), `ROLL` (x1), `BOX` (x24), `CASE` (x24), `DOZEN` (x12), `SACK` (x50), `CAN` (x1), `BOTTLE` (x1), `KILO` (x1), and custom units with configurable conversion rates.
+   - Added dedicated `Pcs/Unit` multiplier input: lets merchants customize the exact conversion rate per delivery (e.g. 1 bundle = 10 pcs, 1 box = 24 pcs, 1 sack = 50 kg).
+   - Live visual stock increment strip: displays `5 BOX × 24 = +120 pcs (automatically added to inventory stock on post)`.
+2. **Supplier Cascading / Series Trade Discounts Engine ("Less 5 Less 5") (`supplierDiscount.ts`, `PurchaseInvoiceModal.tsx`)**:
+   - Implemented real-world compounded Philippine FMCG/distributor trade discount calculations matching SAP/NetSuite/distributor ERP systems.
+   - Supports any distributor billing string format: `*-5%-5%-5%`, `5+5+5`, `10+5`, `10/5`, `-10%-5%`, single percent `5%`, and flat pesos `₱50`.
+   - Computes deterministic integer-cent discounts sequentially: $\text{Gross} \times (1 - d_1) \times (1 - d_2) \dots (1 - d_n)$ (e.g. ₱1,000 with `5+5+5` yields ₱142.63 discount, Net ₱857.37).
+   - Live discount breakdown strip in Fast Item Entry: shows gross, discount amount, net amount, and effective percentage.
+   - Line items table displays Gross Cost, Trade Discount formula with amount, Net Cost, and Net Subtotal.
+   - Bottom summary discount accepts cascading formulas and displays real-time calculated deductions.
+   - Automatically computes true Net Unit Cost per piece and updates catalog purchase cost when posting.
 
 ## Key Features in v2.0.7 (Daily E-Wallet Totals Hub, Loyverse-Style Promo Bundles & Composite Inventory Combiner Edition)
 1. **Daily E-Wallet & Bills Reconciliation Totals (`EwalletAudit.tsx`, `ewallet.ts`)**:

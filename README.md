@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.0.7-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.0.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Works-100%25_Offline-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-Passing-10b981?style=for-the-badge" alt="Tests">
@@ -17,11 +17,24 @@
 
 <br />
 
-[⚡ Fast Feature Patch v2.0.7](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Feature-Patch-2.0.7.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.7 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Setup-2.0.7.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.7/TindaPOS-Portable-2.0.7.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
+[⚡ Fast Feature Patch v2.0.8](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Feature-Patch-2.0.8.zip)&nbsp;&nbsp;·&nbsp;&nbsp;[⬇️ Download v2.0.8 Setup](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Setup-2.0.8.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[📦 Portable Edition](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.0.8/TindaPOS-Portable-2.0.8.exe)&nbsp;&nbsp;·&nbsp;&nbsp;[🐛 Report Issue](https://github.com/Yazerukun/TINDA-POS/issues)
 
 </div>
 
-## ✨ What's New in v2.0.7 (Daily E-Wallet Totals Hub & Loyverse-Style Promo Bundles Edition)
+## ✨ What's New in v2.0.8 (Multi-Packaging Units & Supplier Cascading Trade Discounts Edition)
+
+> **Merchant VIP Feedback Edition: Multi-Packaging Wholesale Units (Pack, Bundle, Roll, Box, Case, Sack) with Custom Multipliers and Real-World Supplier Cascading Trade Discounts ("Less 5 Less 5", Compounded Series Math).**
+
+- 📦 **Wholesale Packaging Units & Conversion Multipliers (`PurchaseInvoiceModal.tsx`)**:
+  - Full support for wholesale receiving in `PACK`, `BUNDLE`, `ROLL`, `BOX`, `CASE`, `DOZEN`, `SACK`, `CAN`, `BOTTLE`, `KILO`, and custom units.
+  - Dedicated `Pcs/Unit` multiplier box with live visual inventory increment preview (e.g. `5 BOX × 24 = +120 pcs committed to physical inventory`).
+- 🏷️ **Supplier Cascading / Series Trade Discounts Engine ("Less 5 Less 5") (`supplierDiscount.ts`)**:
+  - Supports Philippine distributor compounded billing formats: `*-5%-5%-5%`, `5+5+5`, `10+5`, `10/5`, `-10%-5%`, single percent `5%`, and flat currency (`₱50`).
+  - Implements sequential integer-cent discount arithmetic: Net = Gross × $(1 - d_1) \times (1 - d_2) \dots (1 - d_n)$ matching distributor ERPs.
+  - Live discount breakdown strip: shows Gross, Discount Amount, Net Payable, and effective discount rate %.
+  - Automatically updates catalog purchase cost per piece with the net discounted price.
+
+## ✨ Previous: What's New in v2.0.7 (Daily E-Wallet Totals Hub & Loyverse-Style Promo Bundles Edition)
 
 > **Merchant Feedback Edition: Daily E-Wallet & Bills Totals Filter (Resets Daily at 12:00 AM) and Loyverse-Style Promo Bundles with Live Component Inventory Monitoring.**
 
