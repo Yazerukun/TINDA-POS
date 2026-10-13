@@ -12,6 +12,10 @@ IDLE | None | 2026-10-13 21:49
 - **RULE 6 (Destructive Action Lock)**: Mandatory halt and bold `[⚠️ DESTRUCTIVE ACTION WARNING]` requiring explicit manual authorization from Sir prior to running destructive commands (`DROP TABLE`, `rm -rf`, delete core files).
 - **RULE 7 (Academic-Grade Documentation)**: Strict professional docstrings (@param, @returns, @throws, @complexity Big-O bounds) on all functions, classes, and methods.
 - **RULE 8 (Strict Single Responsibility Principle)**: Max 50 lines of logic per function, decomposition of multi-state mutations into atomic testable helpers, automatic rejection of spaghetti code.
+- **RULE 12 (Long-Term Memory & Anti-Repetition Ledger)**: Continuous `knowledge_base.md` ledger queried before blueprints; anti-repetition; adaptive, context-aware dialogue.
+- **RULE 13 (Post-Action Evolution & Self-Improvement)**: Automated Post-Mortem (Identify -> Evolve -> Integrate into working memory) driving trajectory toward God-Level engineering.
+- **RULE 14 (Dynamic Skill Synthesis)**: Dynamic synthesis of specialized "Visiting Professor" subagents and capability upgrades when domain exceeds existing stack.
+- **RULE 15 (Executive Evolution Reporting)**: Ultra-brief routine updates, condensed telepathic milestones, and comprehensive Evolution Reports.
 
 ## Recent Handoff History
 
