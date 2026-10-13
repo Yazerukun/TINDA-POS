@@ -20,6 +20,22 @@ IDLE | None | 2026-10-13 22:56
 
 ## Recent Handoff History
 
+### 2026-10-13 23:00 | Jin / SCRIBE & FORGE & SENTINEL (v2.2.2 Official Production Release & Publishing)
+- **Task**: Package and publish TINDA POS `v2.2.2` (Universal Custom Thermal Spacing Studio & Receipt Persistence Edition).
+- **Artifacts Built & Published**:
+  - `TindaPOS-Setup-2.2.2.exe` (111.55 MB, SHA-256: `1df358e38ffa1e7a2e3add6e946fc6bfd0d155ab49d562556a93d2374840ba40`)
+  - `TindaPOS-Portable-2.2.2.exe` (110.66 MB, SHA-256: `76516459af229eb1180e6f4d532fe73cc963f907dfa1c4a977ec9b0f4ebce15b`)
+  - `TindaPOS-Feature-Patch-2.2.2.zip` (0.99 MB, SHA-256: `9724dab530a100c1ec760d77e0e6da08b142f845256d3cbc5f11b861e8cd21d1`)
+  - `latest.yml` & `SHA256SUMS-v2.2.2.txt`
+- **Release Coordinates**:
+  - Git tag `v2.2.2` and master pushed to `https://github.com/Yazerukun/TINDA-POS-Source.git`.
+  - Production release published live on `https://github.com/Yazerukun/TINDA-POS/releases/tag/v2.2.2`.
+- **Quality Gates**:
+  - TypeScript: 0 errors across Node & Web targets.
+  - Vitest: 536/536 tests passing across 82 test suites (100% green).
+  - Master Invariants: 100% passed.
+- **System State**: Version 1.4.0. Working tree 100% clean.
+
 ### 2026-10-13 22:20 | Jin / ARCHITECT & BUILDER & SENTINEL (Universal Thermal Spacing Studio — 1:1 Live Preview & Physical Print Persistence)
 - **Task**: Add custom spacing controls to TINDA Printer Alignment & Customization Studio (`PrinterStudioModal.tsx`). When saved, ensure configurations persist across ALL receipts (checkout, reprint, express slip, ewallet slip, bills receipt, X/Z-read) and are 100% visible on printed thermal paper (`@media print` physical output) and live 1:1 preview.
 - **Key Modules Modified**:
