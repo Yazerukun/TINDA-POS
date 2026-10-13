@@ -306,6 +306,7 @@ const api: TindaApi = {
     pair: (masterIp, pin, deviceName) => invoke<{ ok: boolean; error?: string; storeName?: string }>('lan:pair', masterIp, pin, deviceName),
     testVps: (url, token) => invoke<{ ok: boolean; message: string }>('lan:testVps', url, token),
     triggerVpsSync: () => invoke<{ ok: boolean; syncedCount: number; message: string }>('lan:triggerVpsSync'),
+    discover: () => invoke<import('@shared/types').DiscoveredMaster[]>('lan:discover'),
     onStatus: (cb) => {
       const listener = (_e: IpcRendererEvent, data: import('@shared/types').LanStatus): void => cb(data)
       ipcRenderer.on('lan:status', listener)

@@ -30,7 +30,24 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)**
+- Current Version: **v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)**
+
+## Key Features in v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)
+1. **Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)**:
+   - Master Server broadcasts background discovery beacons on UDP port 3112 (`255.255.255.255`) announcing local IP, store name, and RPC port every 3 seconds.
+   - Cashier Satellite terminals auto-discover active Master servers within 0ms without requiring cashiers to type IP addresses.
+   - Electron `powerSaveBlocker` (`prevent-app-suspension`) keeps Master operational throughout business hours.
+2. **Floating VIP Pro Lease (Proof-of-Possession Token)**:
+   - Secondary Cashier terminals inherit VIP Pro privileges automatically over LAN via Master lease verification (`isSatelliteVip`).
+   - Single master license covers all connected store lanes—zero extra license fees for cashier terminals.
+3. **Centralized Master Auth & Cashier Roaming**:
+   - Satellites fetch users and shifts directly from Master SQLite via `auth:publicUsers` and `auth:loginPin`.
+   - Cashiers can log into any lane terminal with their 4-digit PIN with zero duplicate account creation.
+4. **Decoupled Local Thermal Printing & Concurrency Armor**:
+   - Satellite checkout commits to Master SQLite with `skipPhysicalPrint: true` while printing locally to the satellite's attached USB thermal printer.
+   - Switched checkout transactions to `BEGIN IMMEDIATE` to prevent `SQLITE_BUSY` database lock collisions across simultaneous cashiers.
+5. **1-Click Satellite Onboarding (`FirstRun.tsx`)**:
+   - FirstRun setup wizard features dual choice (`[ Main Server / Solo ]` vs `[ Connect as Cashier ]`) with instant auto-scan and 6-digit PIN pairing.
 
 ## Key Features in v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)
 1. **Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**:

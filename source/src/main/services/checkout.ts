@@ -249,7 +249,7 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
 
     auditRepo.audit(db, { action: 'CHECKOUT', user_id: u.id, entity_type: 'SALE', entity_id: saleId, new_value: String(total) })
     return saleId
-  })()
+  }).immediate()
 
   const sale = salesRepo.getSale(db, saleId)
   try {
@@ -335,7 +335,7 @@ export function holdSale(payload: CheckoutPayload): import('@shared/types').Held
       stmtItem.run(id, it.product_id, it.name, it.unit_name, it.qty, it.qty_base, it.unit_price_c, it.subtotal_c, it.cost_base_c ?? 0)
     }
     return id
-  })()
+  }).immediate()
   return heldRepo.getHeldSale(db, heldId)
 }
 

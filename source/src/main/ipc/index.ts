@@ -54,7 +54,28 @@ function handle(channel: string, fn: Handler): void {
   ipcMain.handle(channel, async (_e: IpcMainInvokeEvent, ...args: unknown[]) => {
     if (lanHubSvc.isSatellite() && lanHubSvc.shouldProxyChannel(channel)) {
       try {
-        return await lanHubSvc.callRemoteRpc(channel, args)
+        if (channel === 'pos:checkout' && args[0] && typeof args[0] === 'object') {
+          (args[0] as Record<string, unknown>).skipPhysicalPrint = true
+        }
+        const result = await lanHubSvc.callRemoteRpc(channel, args)
+
+        if (channel === 'pos:checkout' && result && typeof result === 'object' && 'sale' in result) {
+          try {
+            const settings = settingRepo.getSettings(db())
+            const printResult = await printingSvc.autoPrintAfterCheckout(settings, (result as { sale: import('@shared/types').Sale }).sale)
+            return { ...(result as Record<string, unknown>), print: printResult }
+          } catch {
+            return result
+          }
+        }
+
+        if ((channel === 'auth:loginPin' || channel === 'auth:login') && result && typeof result === 'object' && 'user' in result) {
+          try {
+            sessionSvc.setSession((result as { user: import('@shared/types').SessionUser }).user)
+          } catch {}
+        }
+
+        return result
       } catch (err) {
         throw new Error((err as Error).message || String(err))
       }
@@ -609,7 +630,12 @@ handle('pos:checkout', async (_e: IpcMainInvokeEvent, payload: unknown) => {
     emitInventoryChanged({ reason: 'SALE', product_ids: completed.sale.items.flatMap((item) => item.product_id ? [item.product_id] : []) })
     emitTransactionsChanged({ reason: 'SALE', sale_id: completed.sale.id })
     const settings = settingRepo.getSettings(db())
-    return { ...completed, print: await printingSvc.autoPrintAfterCheckout(settings, completed.sale) }
+    const skipPhysicalPrint = Boolean(payload && typeof payload === 'object' && (payload as Record<string, unknown>).skipPhysicalPrint)
+    let printResult = null
+    if (!skipPhysicalPrint) {
+      printResult = await printingSvc.autoPrintAfterCheckout(settings, completed.sale)
+    }
+    return { ...completed, print: printResult }
   } finally {
     release()
   }
@@ -1151,11 +1177,12 @@ handle('phoneScanner:getCfdUrl', () => {
 
 // ---- LAN Hub & VPS Sync ----
 handle('lan:getStatus', () => lanHubSvc.getLanStatus())
+handle('lan:discover', () => lanHubSvc.discoverMasters())
 handle('lan:setMode', (_e: IpcMainInvokeEvent, mode: import('@shared/types').LanRole, config?: { masterIp?: string; masterPort?: number; pin?: string }) => {
   sessionSvc.requirePermission('settings:manage')
   const isVip = licenseService.getStatus().isVip
-  if (mode !== 'standalone' && !isVip && process.env.NODE_ENV !== 'test') {
-    throw new Error('Multi-PC LAN Hub is an exclusive VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to connect multiple cashiers on one database.')
+  if (mode === 'master' && !isVip && process.env.NODE_ENV !== 'test') {
+    throw new Error('Multi-PC LAN Master Hub is an exclusive VIP Pro feature. Upgrade to VIP Pro (₱500 Lifetime) to host multiple cashiers on one database.')
   }
   return lanHubSvc.setLanMode(mode, config)
 })
@@ -1164,7 +1191,6 @@ handle('lan:generatePin', () => {
   return lanHubSvc.generatePin()
 })
 handle('lan:pair', (_e: IpcMainInvokeEvent, masterIp: string, pin: string, deviceName?: string) => {
-  sessionSvc.requirePermission('settings:manage')
   return lanHubSvc.pairWithMaster(masterIp, pin, deviceName)
 })
 handle('lan:testVps', (_e: IpcMainInvokeEvent, url: string, token: string) => {

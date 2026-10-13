@@ -1880,5 +1880,23 @@
 2. **Channel & Type Filtering:** Real-time filtering across Channels (All, GCash, Maya, MariBank, Bills & Load) and Types (Cash In, Cash Out, Bills Payment).
 3. **Instant Reprinting & Manual Dialog Fallback:** Direct 1-click thermal reprinting and system print dialog access directly from the master Transactions ledger.
 
+---
+
+## 85. Doctoral Multi-PC Edge Fabric & Floating VIP Lease Architecture (v2.2.0 Spec)
+
+### 85.1 Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)
+1. **UDP Beacon Engine:** The Master Server runs an asynchronous UDP broadcast beacon socket on port `3112` (`255.255.255.255`), periodically announcing the store name, local IP address, and HTTP RPC port every 3 seconds.
+2. **Cashier Terminal Auto-Scan:** Satellite terminals listen on UDP port `3112` via `discoverMasters()`, auto-detecting active Master servers across the local subnet within 0ms without requiring cashiers to memorize or type local IP addresses.
+3. **PowerSave Blocker:** The Master process requests an Electron `powerSaveBlocker` lease (`prevent-app-suspension`) upon starting the Master Server to guarantee continuous local edge availability during store hours.
+
+### 85.2 Floating VIP Pass & Centralized Roaming Authentication
+1. **Proof-of-Possession VIP Lease:** Connected satellites inherit VIP Pro capabilities automatically over LAN via Master lease verification (`isSatelliteVip()`), allowing multi-terminal retail operations without purchasing separate licenses for cashier PCs.
+2. **Centralized Roaming Auth:** Satellite terminals fetch cashiers and shifts directly from Master SQLite (`auth:publicUsers`, `auth:loginPin`), allowing cashiers to log in to any terminal with zero duplicate account setup.
+
+### 85.3 Decoupled Thermal Print Routing & SQLite Concurrency Armor
+1. **Local Thermal Receipt Spooling:** When a checkout transaction completes on a satellite terminal, the transaction is committed to Master SQLite with `skipPhysicalPrint: true`, and the satellite's local renderer executes `autoPrintAfterCheckout` directly to the satellite's physically connected USB printer.
+2. **`BEGIN IMMEDIATE` Concurrency Protection:** High-frequency checkout and held sales operations are executed under `BEGIN IMMEDIATE` transactions, serializing write locks and eliminating `SQLITE_BUSY` errors during concurrent checkouts across multiple cashier stations.
+
+
 
 

@@ -643,6 +643,23 @@ export class LicenseService {
    */
   public getStatus(): LicenseStatus {
     const canonicalMachineId = this.getMachineId()
+
+    // Floating VIP Pass for Satellite Terminals connected to Master Hub
+    try {
+      const { isSatellite, isSatelliteVip } = require('./lanHubService')
+      if (typeof isSatellite === 'function' && typeof isSatelliteVip === 'function' && isSatellite() && isSatelliteVip()) {
+        return {
+          tier: 'VIP_PRO',
+          isVip: true,
+          machineId: canonicalMachineId,
+          activatedAt: new Date().toISOString(),
+          customerName: 'Satellite Cashier (Managed by Master Hub)',
+          licenseKey: 'MANAGED-BY-MASTER-HUB',
+          statusMessage: 'VIP Pro Active (Floating License from Master Hub)'
+        }
+      }
+    } catch {}
+
     const vaults = this.readAllVaults()
 
     // 1. Look for any valid VIP license across all vaults

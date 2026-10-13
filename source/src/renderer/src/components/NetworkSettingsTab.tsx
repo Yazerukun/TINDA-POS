@@ -30,6 +30,23 @@ export function NetworkSettingsTab(): React.JSX.Element {
   const [pairingStatus, setPairingStatus] = useState<{ loading: boolean; error?: string; success?: string }>({
     loading: false
   })
+  const [scanning, setScanning] = useState(false)
+  const [discovered, setDiscovered] = useState<import('@shared/types').DiscoveredMaster[]>([])
+
+  const handleScanMasters = async (): Promise<void> => {
+    setScanning(true)
+    try {
+      const list = await window.api.lan.discover()
+      setDiscovered(list)
+      if (list.length > 0 && list[0]) {
+        setMasterIp(list[0].ip)
+      }
+    } catch (err) {
+      console.error('Scan error:', err)
+    } finally {
+      setScanning(false)
+    }
+  }
 
   // VPS configuration inputs
   const [vpsEnabled, setVpsEnabled] = useState(false)
@@ -385,7 +402,18 @@ export function NetworkSettingsTab(): React.JSX.Element {
           <form onSubmit={(e) => void handlePairSatellite(e)} className="mt-5 space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="text-xs font-semibold uppercase text-slate-400">Master Server IP</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase text-slate-400">Master Server IP</label>
+                  <button
+                    type="button"
+                    onClick={() => void handleScanMasters()}
+                    disabled={scanning}
+                    className="text-[11px] text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${scanning ? 'animate-spin' : ''}`} />
+                    {scanning ? 'Scanning...' : 'Auto-Detect'}
+                  </button>
+                </div>
                 <input
                   type="text"
                   required
@@ -394,6 +422,29 @@ export function NetworkSettingsTab(): React.JSX.Element {
                   onChange={(e) => setMasterIp(e.target.value)}
                   className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-sky-500"
                 />
+                {discovered.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <span className="text-[10px] text-slate-400">Found on LAN:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {discovered.map((m) => (
+                        <button
+                          key={`${m.ip}:${m.port}`}
+                          type="button"
+                          onClick={() => setMasterIp(m.ip)}
+                          className={`px-2 py-0.5 rounded text-[11px] border transition flex items-center gap-1 ${
+                            masterIp === m.ip
+                              ? 'border-sky-500 bg-sky-500/20 text-sky-300'
+                              : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-600'
+                          }`}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>{m.storeName}</span>
+                          <span className="font-mono text-[9px] text-slate-400">({m.ip})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

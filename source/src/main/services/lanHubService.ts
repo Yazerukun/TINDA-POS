@@ -1,8 +1,9 @@
 import http from 'node:http'
 import crypto from 'node:crypto'
 import os from 'node:os'
-import { BrowserWindow } from 'electron'
-import type { LanRole, LanStatus, LanDevice, StoreSettings, InventoryChangedEvent } from '@shared/types'
+import dgram from 'node:dgram'
+import { BrowserWindow, powerSaveBlocker } from 'electron'
+import type { LanRole, LanStatus, LanDevice, StoreSettings, InventoryChangedEvent, DiscoveredMaster } from '@shared/types'
 import { getSettings, updateSettings } from '../repositories/settings'
 import { getDb } from '../database/connection'
 
@@ -14,11 +15,20 @@ let serverSecret = crypto.randomBytes(32).toString('hex')
 const pairedClients = new Map<string, LanDevice & { token: string }>()
 const sseConnections = new Set<http.ServerResponse>()
 
+// PowerSave blocker handle to prevent Windows Sleep during business hours
+let powerBlockerId: number | null = null
+
+// UDP Auto-Discovery Beacon state
+const UDP_BEACON_PORT = 3112
+let udpBeaconInterval: NodeJS.Timeout | null = null
+let udpBeaconSocket: dgram.Socket | null = null
+
 // Satellite client state
 let satelliteToken = ''
 let satelliteMasterIp = ''
 let satelliteMasterPort = 3111
 let satelliteConnected = false
+let satelliteIsVip = false
 let sseClientReq: http.ClientRequest | null = null
 
 // VPS Sync state
@@ -30,6 +40,111 @@ import { getLocalIpAddress } from './phoneScannerService'
 
 export function getLocalIp(): string {
   return getLocalIpAddress()
+}
+
+export function isSatelliteVip(): boolean {
+  return satelliteConnected && satelliteIsVip
+}
+
+export function setSatelliteVip(val: boolean): void {
+  satelliteIsVip = val
+}
+
+export function startUdpBeacon(port: number): void {
+  stopUdpBeacon()
+  try {
+    const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+    socket.bind(() => {
+      try {
+        socket.setBroadcast(true)
+      } catch (err) {
+        console.warn('[UDP Beacon] setBroadcast error:', err)
+      }
+    })
+
+    udpBeaconSocket = socket
+
+    const broadcast = (): void => {
+      try {
+        let storeName = 'TINDA Store'
+        try { storeName = getSettings(getDb()).store_name || storeName } catch {}
+        const payload = Buffer.from(
+          JSON.stringify({
+            cmd: 'TINDA_BEACON',
+            storeName,
+            ip: getLocalIp(),
+            port,
+            version: '2.2.0'
+          })
+        )
+        socket.send(payload, 0, payload.length, UDP_BEACON_PORT, '255.255.255.255')
+      } catch {
+        // Non-fatal if broadcast temporarily fails
+      }
+    }
+
+    broadcast()
+    udpBeaconInterval = setInterval(broadcast, 3000)
+  } catch (err) {
+    console.warn('[UDP Beacon] Failed to start UDP beacon:', err)
+  }
+}
+
+export function stopUdpBeacon(): void {
+  if (udpBeaconInterval) {
+    clearInterval(udpBeaconInterval)
+    udpBeaconInterval = null
+  }
+  if (udpBeaconSocket) {
+    try { udpBeaconSocket.close() } catch {}
+    udpBeaconSocket = null
+  }
+}
+
+export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaster[]> {
+  return new Promise((resolve) => {
+    const discovered = new Map<string, DiscoveredMaster>()
+    let socket: dgram.Socket | null = null
+
+    try {
+      socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+      socket.on('message', (msg, rinfo) => {
+        try {
+          const parsed = JSON.parse(msg.toString())
+          if (parsed && parsed.cmd === 'TINDA_BEACON') {
+            const ip = parsed.ip || rinfo.address
+            const port = parsed.port || 3111
+            const key = `${ip}:${port}`
+            discovered.set(key, {
+              ip,
+              port,
+              storeName: parsed.storeName || 'TINDA Store',
+              version: parsed.version || '2.2.0'
+            })
+          }
+        } catch {}
+      })
+
+      socket.on('error', () => {
+        // Suppress transient port collisions
+      })
+
+      socket.bind(UDP_BEACON_PORT, '0.0.0.0', () => {
+        try {
+          socket?.setBroadcast(true)
+          const probe = Buffer.from(JSON.stringify({ cmd: 'TINDA_PROBE' }))
+          socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, '255.255.255.255')
+        } catch {}
+      })
+    } catch {
+      // Fallback
+    }
+
+    setTimeout(() => {
+      try { socket?.close() } catch {}
+      resolve(Array.from(discovered.values()))
+    }, timeoutMs)
+  })
 }
 
 export function generatePin(): string {
@@ -80,7 +195,8 @@ export function getLanStatus(): LanStatus {
       lastSyncAt: lastVpsSyncAt,
       syncStatus: vpsSyncStatus,
       lastError: lastVpsError
-    }
+    },
+    isVipManaged: isSatelliteVip()
   }
 }
 
@@ -232,6 +348,7 @@ const PROXIED_CHANNELS = new Set([
   'users:create',
   'users:update',
   'users:roles',
+  'auth:publicUsers',
   'auth:status',
   'auth:login',
   'auth:loginPin',
@@ -279,8 +396,13 @@ function handleLanRequest(req: http.IncomingMessage, res: http.ServerResponse): 
 
   // 1. Status Ping
   if (pathname === '/api/lan/status' && req.method === 'GET') {
+    let isVip = false
+    try {
+      const { licenseService } = require('./licenseService')
+      isVip = !!licenseService.getStatus()?.isVip
+    } catch {}
     res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ ok: true, status: getLanStatus() }))
+    res.end(JSON.stringify({ ok: true, status: getLanStatus(), isVip }))
     return
   }
 
@@ -318,8 +440,14 @@ function handleLanRequest(req: http.IncomingMessage, res: http.ServerResponse): 
         let storeName = 'TINDA Store'
         try { storeName = getSettings(getDb()).store_name || storeName } catch { /* default */ }
 
+        let isVip = false
+        try {
+          const { licenseService } = require('./licenseService')
+          isVip = !!licenseService.getStatus()?.isVip
+        } catch {}
+
         res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ ok: true, token, storeName, deviceId }))
+        res.end(JSON.stringify({ ok: true, token, storeName, deviceId, isVip }))
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ ok: false, error: 'Bad request: ' + (err as Error).message }))
@@ -448,6 +576,12 @@ export function startMasterServer(port = 3111, attempts = 0): Promise<number> {
     lanServer.listen(currentPort, '0.0.0.0', () => {
       console.log(`[LAN Hub] Master Server listening on 0.0.0.0:${currentPort}`)
       if (!activePairingPin) generatePin()
+      startUdpBeacon(currentPort)
+      if (typeof powerSaveBlocker?.start === 'function' && powerBlockerId === null) {
+        try {
+          powerBlockerId = powerSaveBlocker.start('prevent-app-suspension')
+        } catch {}
+      }
       notifyStatus()
       resolve(currentPort)
     })
@@ -455,6 +589,13 @@ export function startMasterServer(port = 3111, attempts = 0): Promise<number> {
 }
 
 export function stopMasterServer(): void {
+  stopUdpBeacon()
+  if (powerBlockerId !== null && typeof powerSaveBlocker?.stop === 'function') {
+    try {
+      powerSaveBlocker.stop(powerBlockerId)
+    } catch {}
+    powerBlockerId = null
+  }
   for (const res of sseConnections) {
     try { res.end() } catch { /* ignore */ }
   }
@@ -491,7 +632,7 @@ export async function pairWithMaster(
       body: JSON.stringify({ pin: cleanPin, deviceName })
     })
 
-    const data = (await res.json()) as { ok?: boolean; error?: string; token?: string; storeName?: string }
+    const data = (await res.json()) as { ok?: boolean; error?: string; token?: string; storeName?: string; isVip?: boolean }
     if (!res.ok || !data.ok) {
       return { ok: false, error: data.error || `HTTP ${res.status} connection failed` }
     }
@@ -499,6 +640,7 @@ export async function pairWithMaster(
     satelliteToken = data.token || ''
     satelliteMasterIp = cleanIp
     satelliteConnected = true
+    satelliteIsVip = !!data.isVip
 
     // Save connection configuration to settings
     const database = getDb()

@@ -5,7 +5,9 @@ import {
   getLanStatus,
   generatePin,
   setMasterDispatcher,
-  getLocalIp
+  getLocalIp,
+  isSatelliteVip,
+  setSatelliteVip
 } from '../lanHubService'
 import http from 'node:http'
 
@@ -192,6 +194,15 @@ describe('LanHubService', () => {
     expect(res.status).toBe(200)
     expect(res.body.ok).toBe(true)
     expect(res.body.data.rows[0]?.name).toBe('Coke Sakto')
+  })
+
+  it('handles floating VIP lease status for satellites', () => {
+    expect(isSatelliteVip()).toBe(false)
+    setSatelliteVip(true)
+    // isSatelliteVip checks both satelliteConnected && satelliteIsVip
+    // satelliteConnected is false in standalone unit test, so isSatelliteVip is false
+    expect(isSatelliteVip()).toBe(false)
+    setSatelliteVip(false)
   })
 
   it('stops Master Server cleanly', () => {

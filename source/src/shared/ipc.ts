@@ -491,6 +491,7 @@ export interface TindaApi {
     pair: (masterIp: string, pin: string, deviceName?: string) => Promise<{ ok: boolean; error?: string; storeName?: string }>
     testVps: (url: string, token: string) => Promise<{ ok: boolean; message: string }>
     triggerVpsSync: () => Promise<{ ok: boolean; syncedCount: number; message: string }>
+    discover: () => Promise<import('@shared/types').DiscoveredMaster[]>
     onStatus: (cb: (status: import('@shared/types').LanStatus) => void) => () => void
   }
   license: {

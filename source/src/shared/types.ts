@@ -555,6 +555,14 @@ export interface LanStatus {
     syncStatus: 'idle' | 'syncing' | 'error' | 'ok'
     lastError?: string
   }
+  isVipManaged?: boolean
+}
+
+export interface DiscoveredMaster {
+  ip: string
+  port: number
+  storeName: string
+  version: string
 }
 
 export interface InventoryChangedEvent {

@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.11-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.0-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-531%2F531_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-532%2F532_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.11_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.11/TindaPOS-Feature-Patch-2.1.11.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.0_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,11 +31,11 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.11 Live Patch / v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.2.0 Live Patch / v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.1.11.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.11/TindaPOS-Feature-Patch-2.1.11.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.11)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**TindaPOS-Feature-Patch-2.2.0.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip) | `~0.98 MB` | **In-App Live Hot Patch (v2.2.0)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
 | [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
@@ -206,6 +206,23 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition) · Oct 13, 2026
+- **🌐 Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)**:
+  - Master Server broadcasts background discovery beacons on UDP port 3112 (`255.255.255.255`) announcing local IP, store name, and RPC port every 3 seconds.
+  - Cashier Satellite terminals auto-discover active Master servers within 0ms without requiring cashiers to type IP addresses.
+  - Added Electron `powerSaveBlocker` (`prevent-app-suspension`) on Master to eliminate Windows sleep disconnects during business hours.
+- **👑 Floating VIP Pro Lease (Proof-of-Possession Token)**:
+  - Secondary Cashier terminals inherit VIP Pro privileges automatically over LAN via Master lease verification (`isSatelliteVip`).
+  - Cashier PCs do not require separate VIP license keys—single master license covers all connected store lanes.
+- **🔐 Centralized Master Auth & Cashier Roaming**:
+  - Satellites fetch users and shifts directly from Master SQLite via `auth:publicUsers` and `auth:loginPin`.
+  - Cashiers can log into any lane terminal with their 4-digit PIN with zero duplicate account creation.
+- **🖨️ Decoupled Local Thermal Printing & Concurrency Armor**:
+  - Satellite checkout commits to Master SQLite with `skipPhysicalPrint: true` while printing locally to the satellite's attached USB thermal printer.
+  - Switched checkout transactions to `BEGIN IMMEDIATE` to prevent `SQLITE_BUSY` database lock collisions across simultaneous cashiers.
+- **🚀 1-Click Satellite Onboarding (`FirstRun.tsx`)**:
+  - FirstRun setup wizard features dual choice (`[ Main Server / Solo ]` vs `[ Connect as Cashier ]`) with instant auto-scan and 6-digit PIN pairing.
 
 ### 🏷️ v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition) · Oct 13, 2026
 - **🏢 Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**:
