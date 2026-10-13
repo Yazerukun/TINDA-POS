@@ -7,8 +7,11 @@ IDLE | None | 2026-10-13 21:49
 - **RULE 1 (Autonomous Self-Healing)**: 3-attempt silent internal repair loop before escalating to Sir.
 - **RULE 2 (Spatial Mapping)**: Explicit file path declared on Line 1 of every Builder code block.
 - **RULE 3 (Cryptographic Hygiene)**: Zero hardcoded secrets, strict .env abstraction & .env.example blueprints.
-- **RULE 4 (Semantic Versioning)**: Continuous semver tracker initialized at v1.0.0.
+- **RULE 4 (Semantic Versioning)**: Continuous semver tracker initialized at v1.0.0. Incremented to v1.1.0 on governance expansion.
 - **RULE 5 (State Tracker Appendage)**: Mandatory footer: `📌 **System State:** [Version X.X.X] | **Changelog:** [1-sentence technical summary of the delta]`.
+- **RULE 6 (Destructive Action Lock)**: Mandatory halt and bold `[⚠️ DESTRUCTIVE ACTION WARNING]` requiring explicit manual authorization from Sir prior to running destructive commands (`DROP TABLE`, `rm -rf`, delete core files).
+- **RULE 7 (Academic-Grade Documentation)**: Strict professional docstrings (@param, @returns, @throws, @complexity Big-O bounds) on all functions, classes, and methods.
+- **RULE 8 (Strict Single Responsibility Principle)**: Max 50 lines of logic per function, decomposition of multi-state mutations into atomic testable helpers, automatic rejection of spaghetti code.
 
 ## Recent Handoff History
 
