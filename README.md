@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.0-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.1-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-532%2F532_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.0_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Setup-2.2.0.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.0_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Portable-2.2.0.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.0_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.1_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Setup-2.2.1.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.1_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Portable-2.2.1.exe)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.1_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Feature-Patch-2.2.1.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,15 +31,15 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.0 Full Release)
+## ⚡ Quick Download & Release Assets (v2.2.1 Full Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.0.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Setup-2.2.0.exe) | `111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.2.0.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Portable-2.2.0.exe) | `110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.2.0.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.0)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.0.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/SHA256SUMS-v2.2.0.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Setup-2.2.1.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
+| [**TindaPOS-Portable-2.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Portable-2.2.1.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-Feature-Patch-2.2.1.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Feature-Patch-2.2.1.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.1)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.1.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/SHA256SUMS-v2.2.1.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
@@ -205,6 +205,20 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition) · Oct 13, 2026
+- **📥 In-App Full Build Downloader & 1-Click Auto-Restart (`updateService.ts`, `UnifiedUpdateCapsule.tsx`)**:
+  - Cashiers and store owners can now download full NSIS installers (`TindaPOS-Setup-*.exe`) directly within the app without ever needing to open a web browser.
+  - 1-Click "Restart & Install Now" button triggers seamless automated installer handoff and immediate relaunch with zero data loss.
+- **⚡ Tesla Cyber-Emerald Telemetry Progress Bar (`UnifiedUpdateCapsule.tsx`)**:
+  - Real-time animated neon emerald telemetry indicator featuring live download speed smoothing via Exponential Moving Average (EMA, $\alpha = 0.25$).
+  - High-precision ETA countdown timer with non-zero division safety guards (`smoothedSpeed > 50 ? Math.round(remainingBytes / smoothedSpeed) : null`).
+  - Active 4-phase pipeline status badges: `🛡️ Pre-Update SQLite Safety Snapshot` -> `📥 Streaming signed package via HTTPS` -> `🔒 Verifying cryptographic checksum` -> `✅ Package verified! Ready to apply`.
+- **🎛️ Dual-Choice Update Card (`UnifiedUpdateCapsule.tsx`)**:
+  - `[ ⚡ Express Patch ]` (~1 MB): Instant 0.3-second live code reload with zero restart required—ideal during busy store hours.
+  - `[ 💿 Full Setup.exe ]` (~111 MB): Complete NSIS installer with automatic SQLite safety backup, full desktop asset re-registration, and automatic restart.
+- **🛡️ Pre-Download SQLite Safety Snapshot Invariant (`updateService.ts`)**:
+  - Enforces atomic synchronous SQLite database backup (`createBackupSync(db, 'BEFORE_UPDATE')`) before executing any full installer payload stream.
 
 ### 🏷️ v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition) · Oct 13, 2026
 - **🌐 Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)**:
