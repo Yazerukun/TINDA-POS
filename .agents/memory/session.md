@@ -16,6 +16,7 @@ IDLE | None | 2026-10-13 21:49
 - **RULE 13 (Post-Action Evolution & Self-Improvement)**: Automated Post-Mortem (Identify -> Evolve -> Integrate into working memory) driving trajectory toward God-Level engineering.
 - **RULE 14 (Dynamic Skill Synthesis)**: Dynamic synthesis of specialized "Visiting Professor" subagents and capability upgrades when domain exceeds existing stack.
 - **RULE 15 (Executive Evolution Reporting)**: Ultra-brief routine updates, condensed telepathic milestones, and comprehensive Evolution Reports.
+- **RULE 17 (Concurrent Execution & Swarm Synergy)**: The "Divide & Conquer" Protocol — Task partitioning via Architect's DAG, parallel sub-instance dispatch of Builders, real-time asynchronous component testing by Verifier, and seamless War Room fusion with zero merge conflicts.
 
 ## Recent Handoff History
 

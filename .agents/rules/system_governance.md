@@ -46,3 +46,11 @@ As the swarm gets smarter, Yujin's reports to Sir must become more highly-conden
 1. The new skills acquired during the task.
 2. The architectural optimizations discovered.
 3. How these improvements will speed up Sir's future projects.
+
+## RULE 17: CONCURRENT EXECUTION & SWARM SYNERGY (The "Divide & Conquer" Protocol)
+To achieve extreme speed and efficiency, the swarm must not be bottlenecked by strictly sequential workflows if tasks can be parallelized.
+- **Task Partitioning:** Upon receiving the Task DAG from the Architect, Yujin must identify independent modules (e.g., Frontend UI, Backend API, Database Schema).
+- **Parallel Dispatch:** Yujin will dynamically spawn and dispatch multiple sub-instances of the Builder agent to work on these independent modules SIMULTANEOUSLY.
+- **Asynchronous Collaboration:** The agents must actively collaborate. While Builders are coding different modules in parallel, the Verifier must test completed atomic components in real-time, rather than waiting for the entire monolithic codebase to be finished.
+- **Seamless Fusion:** Inside the War Room, Yujin will stitch all parallel branches together, ensuring zero integration conflicts before presenting the hyper-accelerated, finalized project to Sir.
+

@@ -2,9 +2,9 @@
 /**
  * @file governanceState.ts
  * @description Advanced PhD-grade multi-agent governance contracts, invariant checks,
- * evolutionary self-improvement protocols, and anti-repetition memory schemas.
+ * evolutionary self-improvement protocols, and concurrent swarm synergy (Rule 17 Divide & Conquer).
  * @author Station 1: Lead Systems Architect & Station 2: Principal Builder
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 /**
@@ -17,8 +17,44 @@ export interface SemanticVersion {
   minor: number
   /** The patch version component, incremented for backward-compatible bug fixes. */
   patch: number
-  /** The normalized string representation (e.g., '1.2.0'). */
+  /** The normalized string representation (e.g., '1.3.0'). */
   raw: string
+}
+
+/**
+ * Represents a single atomic task node within an Architect Directed Acyclic Graph (DAG).
+ */
+export interface DagTaskNode {
+  /** Unique task identifier (e.g., 'TASK-UI-01'). */
+  id: string
+  /** Subsystem domain category (e.g., 'FRONTEND', 'BACKEND', 'DATABASE', 'SCHEMA'). */
+  domain: 'FRONTEND' | 'BACKEND' | 'DATABASE' | 'SECURITY' | 'SCHEMA'
+  /** Array of parent task IDs that must complete before this task can execute. */
+  dependencies: string[]
+  /** Target relative or absolute file path allocated for spatial mapping. */
+  targetFilePath: string
+}
+
+/**
+ * Partitioned execution batch grouping independent tasks for concurrent sub-agent execution.
+ */
+export interface SwarmPartition {
+  /** Distinct partition layer index in topological order. */
+  layerIndex: number
+  /** List of independent task nodes that can be executed simultaneously by parallel Builders. */
+  independentTasks: DagTaskNode[]
+}
+
+/**
+ * Synthesis report resulting from War Room branch reconciliation.
+ */
+export interface WarRoomFusionResult {
+  /** Total number of concurrent modules merged. */
+  modulesMerged: number
+  /** Flag verifying whether all parallel branches synthesized without conflict. */
+  hasConflict: boolean
+  /** Timestamp ISO string when fusion was validated. */
+  fusedAt: string
 }
 
 /**
@@ -61,6 +97,7 @@ export interface GovernanceState {
     postActionEvolution: boolean
     dynamicSkillSynthesis: boolean
     executiveEvolutionReporting: boolean
+    concurrentExecutionSwarmSynergy: boolean
   }
 }
 
@@ -76,14 +113,14 @@ const DESTRUCTIVE_COMMAND_REGEX =
 export const INITIAL_GOVERNANCE_STATE: GovernanceState = {
   version: {
     major: 1,
-    minor: 2,
+    minor: 3,
     patch: 0,
-    raw: '1.2.0'
+    raw: '1.3.0'
   },
   selfHealingRetries: 0,
   maxAllowedRetries: 3,
   lastChangelog:
-    'Activated Evolutionary Rules 12 (Knowledge Base Ledger), 13 (Post-Mortem Self-Improvement), 14 (Dynamic Skill Synthesis), and 15 (Evolution Reporting).',
+    'Activated Rule 17: Concurrent Execution & Swarm Synergy (Divide & Conquer DAG Task Partitioning & War Room Fusion).',
   activeRuleSet: {
     autonomousSelfHealing: true,
     spatialMapping: true,
@@ -96,7 +133,8 @@ export const INITIAL_GOVERNANCE_STATE: GovernanceState = {
     longTermMemoryLedger: true,
     postActionEvolution: true,
     dynamicSkillSynthesis: true,
-    executiveEvolutionReporting: true
+    executiveEvolutionReporting: true,
+    concurrentExecutionSwarmSynergy: true
   }
 }
 
@@ -109,7 +147,7 @@ export const INITIAL_GOVERNANCE_STATE: GovernanceState = {
  * @complexity Time: O(1) constant time string interpolation. Space: O(1) auxiliary space.
  */
 export function formatSystemStateFooter(state: GovernanceState): string {
-  const versionStr = state?.version?.raw ?? '1.2.0'
+  const versionStr = state?.version?.raw ?? '1.3.0'
   const logStr = state?.lastChangelog ?? 'System state initialized.'
   return `📌 **System State:** [Version ${versionStr}] | **Changelog:** ${logStr}`
 }
@@ -171,24 +209,57 @@ export function validateFunctionSrp(functionBody: string, maxLogicalLines = 50):
 }
 
 /**
- * Synthesizes a structured Executive Evolution Report summarizing team capability advances.
+ * Partitions a DAG of tasks into parallel execution layers based on dependency resolution (Rule 17).
  *
- * @param report - Evolution report data payload.
- * @returns Formatted markdown string ready for presentation to Sir.
- * @throws Does not throw.
- * @complexity Time: O(S + O) where S is new skills count and O is optimizations count. Space: O(1) auxiliary space.
+ * @param tasks - Array of task nodes from the Architect's specification DAG.
+ * @returns Array of partitions where each layer contains mutually independent tasks.
+ * @throws Does not throw; returns empty partitions on empty input.
+ * @complexity Time: O(V + E) where V is number of tasks and E is dependency count. Space: O(V) auxiliary.
  */
-export function formatEvolutionReport(report: EvolutionReport): string {
-  const skillsList = report.newSkillsAcquired.map((s) => `  - 🎓 ${s}`).join('\n')
-  const optList = report.architecturalOptimizations.map((o) => `  - ⚡ ${o}`).join('\n')
+export function partitionDagTasks(tasks: DagTaskNode[]): SwarmPartition[] {
+  if (!Array.isArray(tasks) || tasks.length === 0) {
+    return []
+  }
+  const resolved = new Set<string>()
+  const remaining = [...tasks]
+  const partitions: SwarmPartition[] = []
+  let layer = 0
 
-  return [
-    `### 🧬 Swarm Evolution Report [${report.version}]`,
-    `**1. New Skills & Capabilities Acquired:**`,
-    skillsList || '  - None',
-    `**2. Architectural Optimizations Discovered:**`,
-    optList || '  - None',
-    `**3. Acceleration & Future Impact:**`,
-    `  ${report.futureImpactSummary}`
-  ].join('\n')
+  while (remaining.length > 0) {
+    const independent = remaining.filter((t) => t.dependencies.every((dep) => resolved.has(dep)))
+    if (independent.length === 0) {
+      // Cycle detection fallback: group remaining to prevent infinite loop
+      partitions.push({ layerIndex: layer, independentTasks: remaining })
+      break
+    }
+    independent.forEach((t) => resolved.add(t.id))
+    partitions.push({ layerIndex: layer, independentTasks: independent })
+    independent.forEach((t) => {
+      const idx = remaining.findIndex((r) => r.id === t.id)
+      if (idx !== -1) remaining.splice(idx, 1)
+    })
+    layer++
+  }
+  return partitions
+}
+
+/**
+ * Reconciles and validates the fusion of concurrently generated module outputs in the War Room (Rule 17).
+ *
+ * @param moduleFiles - Array of target file paths generated across parallel Builder sub-agents.
+ * @returns Summary verification confirming zero duplicate target path collisions.
+ * @throws Does not throw.
+ * @complexity Time: O(N) where N is the number of module files. Space: O(N) for set deduplication.
+ */
+export function fuseSwarmBranches(moduleFiles: string[]): WarRoomFusionResult {
+  if (!Array.isArray(moduleFiles)) {
+    return { modulesMerged: 0, hasConflict: false, fusedAt: new Date().toISOString() }
+  }
+  const uniquePaths = new Set(moduleFiles)
+  const hasCollision = uniquePaths.size !== moduleFiles.length
+  return {
+    modulesMerged: uniquePaths.size,
+    hasConflict: hasCollision,
+    fusedAt: new Date().toISOString()
+  }
 }
