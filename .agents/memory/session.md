@@ -1,13 +1,13 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IDLE | None | 2026-10-13 07:55
+IDLE | None | 2026-10-13 12:15
 
 ## Recent Handoff History
 
-### 2026-10-13 11:35 | agy / SCRIBE & KRAKEN (v2.1.7 Notification Bell & Bilingual AI Store Advisor Edition)
-- **Task**: Bump version to v2.1.7, synchronize documentation across all manifests, commit, push, and publish live in-app hot patch to GitHub Releases.
-- **Key Modules in v2.1.7**:
+### 2026-10-13 12:15 | agy / SCRIBE & KRAKEN & VIPER (v2.1.8 Notification Bell & Bilingual AI Store Advisor Edition)
+- **Task**: Bump version to v2.1.8 per Boss directive ("v2.1.8 man dapat ni"), synchronize documentation across all manifests, commit, push, and publish live in-app hot patch to GitHub Releases (`v2.1.8`).
+- **Key Modules in v2.1.8**:
   - **Interactive Notification Bell & Cupertino Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**: Real-time unread counter badge, glassmorphism sliding drawer with category filters (All, Unread, AI Advisor, Stock Alerts, System), mark all read, individual dismiss, and direct deep-link action buttons.
   - **Deterministic Bilingual AI Store Advisor (`aiStoreAdvisor.ts`)**: Offline heuristics evaluating inventory velocity, low-stock out-of-stock threats, shift reconciliation variances, overdue utang risks, and revenue milestones. Supports English and Bisaya / Taglish native store modes.
   - **High-Performance SQLite Store Telemetry Service (`storeTelemetry.ts`, `ipc/index.ts`, `preload/index.ts`)**: Fast single atomic aggregation query fetching store-wide inventory health, expiring products, active shifts, and daily metrics across ContextBridge.
@@ -15,7 +15,7 @@ IDLE | None | 2026-10-13 07:55
   - 527/527 Vitest unit tests passing across 82 test files (100% green).
   - TypeScript typecheck passed with 0 errors across Node & Web targets.
   - Master invariants 100% verified (`node tools/check_master_invariants.mjs`).
-  - Live in-app hot patch published to GitHub Releases (`v2.1.7`).
+  - Live in-app hot patch published to GitHub Releases (`v2.1.8`).
 - **Files Touched**:
   - `source/package.json`
   - `source/src/renderer/src/components/PosToolsModal.tsx`

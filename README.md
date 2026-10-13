@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.7-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-527%2F527_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.7_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.7/TindaPOS-Feature-Patch-2.1.7.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.8_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.8/TindaPOS-Feature-Patch-2.1.8.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,11 +31,11 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.7 Live Patch / v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.1.8 Live Patch / v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.1.7.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.7/TindaPOS-Feature-Patch-2.1.7.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.7)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**TindaPOS-Feature-Patch-2.1.8.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.8/TindaPOS-Feature-Patch-2.1.8.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.8)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
 | [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
@@ -207,7 +207,7 @@ npm run publish:patch
 
 ## ✨ Release Changelog
 
-### 🔔 v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition) · Oct 13, 2026
+### 🔔 v2.1.8 (Notification Bell & Bilingual AI Store Advisor Edition) · Oct 13, 2026
 - **🔔 Interactive Notification Bell & Glassmorphism Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**:
   - Modern notification bell icon integrated into top-level Sidebar with dynamic glowing unread badge count.
   - Slide-out Apple Cupertino glassmorphism drawer accessible from anywhere in the app with category filtering (All, Unread, AI Advisor, Stock Alerts, System).

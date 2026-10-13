@@ -30,9 +30,9 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition)**
+- Current Version: **v2.1.8 (Notification Bell & Bilingual AI Store Advisor Edition)**
 
-## Key Features in v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition)
+## Key Features in v2.1.8 (Notification Bell & Bilingual AI Store Advisor Edition)
 1. **Interactive Notification Bell & Glassmorphism Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**:
    - Modern notification bell icon integrated into the top-level Sidebar with real-time dynamic unread badge count (`bg-brand-500` glowing indicator).
    - Fluid slide-out Apple Cupertino glassmorphism drawer (`NotificationDrawer.tsx`) accessible from anywhere in the application.
