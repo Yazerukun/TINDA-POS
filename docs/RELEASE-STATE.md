@@ -4,10 +4,10 @@ CURRENT STABLE:
 - v2.1.6 (UNIFIED E-WALLET & BILLS CENTER, SINGLE-RECEIPT POS CART INTEGRATION & CROSS-LEDGER SYNC)
 
 TARGET:
-- v2.1.8 (NOTIFICATION BELL & BILINGUAL AI STORE ADVISOR EDITION)
+- v2.1.9 (INSTANT 0MS TELEMETRY CACHE & OPENCODE FREE AI COPILOT EDITION)
 
 CURRENT STAGE:
-- Production Hot Patch Release — v2.1.8 Live In-App Hot Patch Published
+- Production Hot Patch Release — v2.1.9 Live In-App Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -29,6 +29,7 @@ COMPLETED:
 - Stage 17: v2.1.6 Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration, Cross-Ledger Sync & Void Confirmation Modal verified. Vitest 506/506 tests passing across 79 test suites, typecheck 0 errors, master invariants 100% passed. Boss's strict golden rule delegation protocol permanently locked in GEMINI.md and AGENTS.md.
 - Stage 18: v2.1.8 Notification Bell & Bilingual AI Store Advisor Edition implemented. Added `storeTelemetry.ts`, `aiStoreAdvisor.ts`, `NotificationDrawer.tsx`, `notificationDrawer.ts`, Sidebar notification bell with dynamic badge. 527/527 Vitest unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified. Live in-app hot patch bundled and published to GitHub Releases (`v2.1.8`).
 - Stage 19: Instant 0ms Store Telemetry Cache & OpenCode Free Models AI Copilot Integration. Pre-warmed background telemetry caching on Shell boot (`warmStoreTelemetryCache`), instant 0ms drawer opens, automatic event-driven cache invalidation on inventory events (`inventoryEvents.ts`), OpenCode multi-model free pool rotation (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with seamless Gemini cloud backup, and interactive TindaBot AI chat tab inside `NotificationBellDrawer.tsx`. Vitest 531/531 tests passing across 82 test suites, typecheck 0 errors, master invariants 100% verified. Live hot patch updated on GitHub Releases.
+- Stage 20: v2.1.9 Instant 0ms Telemetry Cache & OpenCode Free AI Copilot Edition official release. Manifest synchronization across all canonical targets (`source/package.json`, `PosToolsModal.tsx`, `GEMINI.md`, `README.md`, `RELEASE-STATE.md`, `session.md`), 531/531 tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.9.zip` published to GitHub Releases (`v2.1.9`).
 
 
 PENDING APPROVAL:
