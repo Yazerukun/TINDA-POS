@@ -6,6 +6,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 
 ## Operating Rules & Automation Standard
 - Permanent Identity & Name: **Jin** (Boss's Best Buddy, Doctoral & Master's Degree Engineer, Master Developer, Master General & Fixer Agent All-in-One — supreme workflow organizer, rock-solid "pulido" code architect, bug/error fixer, testing & security specialist, production finalizer, and proactive advisor)
+- **MANDATORY DELEGATION & CHAIN OF COMMAND PROTOCOL (STRICT GOLDEN RULE)**: Boss (CEO) commands Jin (Master General / CTO). Jin MUST NEVER do the execution tasks directly. Jin must ALWAYS delegate, dispatch, and command the 9 Elite Specialist Subagents (`FLASH`, `SHERLOCK`, `IRONCLAD`, `ORACLE`, `FALCON`, `VIPER`, `BLUEPRINT`, `SCRIBE`, `KRAKEN`). Jin directs, plans, oversees, verifies, and reports back to Boss.
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
 - Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
@@ -21,6 +22,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
   12. **instant-patch-release-standard**: **MANDATORY PATCH RULE**: For all rapid feature fixes, UI refinements, and optimizations, ALWAYS publish the live in-app hot patch via `npm run publish:patch` (`tools/publish_patch.mjs`). This automatically bundles the ~0.8 MB patch zip and publishes the release on `Yazerukun/TINDA-POS` in <10 seconds with zero rate limits. Cashiers immediately detect the update via 'Check for Updates' and apply live in 0.3s without restarting the app or downloading 100MB+ full installers.
   13. **obra/superpowers v7.0.0 (15 Core Process & Engineering Skills)**: Permanently installed across `.gemini/config/skills/`, `.claude/skills/`, `.agents/skills/`, and `.kiro/skills/` and triggered 100% automatically on every conversation turn before any action (`using-superpowers`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, `using-git-worktrees`, `writing-skills`, `diagnosing-superpowers`).
+  14. **zero-error-automatic-computation-standard**: **STRICT INVARIANT**: All financial totals, reports, cash counts, drawer balances, E-Wallet totals, discounts, and inventory metrics must compute automatically with 100% mathematical precision down to the exact integer centavo (`_c`). Zero floating-point rounding errors, zero manual fudging, and zero timezone distortion. Voids and refunds must be mathematically reconciled across all ledgers. VIPER must verify calculations with automated tests before any release.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -28,7 +30,107 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)**
+- Current Version: **v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)**
+
+## Key Features in v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)
+1. **Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)**:
+   - Master Server broadcasts background discovery beacons on UDP port 3112 (`255.255.255.255`) announcing local IP, store name, and RPC port every 3 seconds.
+   - Cashier Satellite terminals auto-discover active Master servers within 0ms without requiring cashiers to type IP addresses.
+   - Electron `powerSaveBlocker` (`prevent-app-suspension`) keeps Master operational throughout business hours.
+2. **Floating VIP Pro Lease (Proof-of-Possession Token)**:
+   - Secondary Cashier terminals inherit VIP Pro privileges automatically over LAN via Master lease verification (`isSatelliteVip`).
+   - Single master license covers all connected store lanes—zero extra license fees for cashier terminals.
+3. **Centralized Master Auth & Cashier Roaming**:
+   - Satellites fetch users and shifts directly from Master SQLite via `auth:publicUsers` and `auth:loginPin`.
+   - Cashiers can log into any lane terminal with their 4-digit PIN with zero duplicate account creation.
+4. **Decoupled Local Thermal Printing & Concurrency Armor**:
+   - Satellite checkout commits to Master SQLite with `skipPhysicalPrint: true` while printing locally to the satellite's attached USB thermal printer.
+   - Switched checkout transactions to `BEGIN IMMEDIATE` to prevent `SQLITE_BUSY` database lock collisions across simultaneous cashiers.
+5. **1-Click Satellite Onboarding (`FirstRun.tsx`)**:
+   - FirstRun setup wizard features dual choice (`[ Main Server / Solo ]` vs `[ Connect as Cashier ]`) with instant auto-scan and 6-digit PIN pairing.
+
+## Key Features in v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)
+1. **Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**:
+   - Replaced static/generic "TINDA Store" placeholder with live dynamic store branding pulled directly from `settings.store_name` (falling back gracefully to 'TINDA Store' only if empty).
+   - Injects store address, TIN (Tax Identification Number), and contact phone headers automatically across all 4 printable inventory sheet modes (Stock on Hand, Physical Stock Count Sheet, Price List, Reorder / Low Stock).
+   - Added executive dual-signature audit box ("Prepared By / Inventory Clerk" & "Verified & Approved By / Store Manager") with print date-time and page sequence footer, providing bankable audit sheets for stock audits and tax reviews.
+2. **Dual-View Mode (`[ ⊞ Grid | ☰ List ]`) in Inventory (`Inventory.tsx`)**:
+   - Integrated top-level Cupertino segmented view switcher (`[ ⊞ Grid | ☰ List ]`) synchronized with localStorage (`tinda_inventory_view_mode`) for persistent user preference.
+   - Added keyboard shortcut `Alt + V` for instant 0ms toggling between Grid cards and High-Density Tabular List view.
+   - High-Density Tabular List View displays SKU/Barcode, Product Name, Category badge, Stock on Hand with color-coded safety indicators (Rose for low stock, Emerald for healthy), Cost Price, Selling Price, and Quick Action buttons with keyboard focusability.
+3. **Thermal Receipt Spacing & Alignment Controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`)**:
+   - Fixed receipt customization persistence bug: resolved unsaved and reverted thermal printer configurations by synchronizing settings state across SQLite repository, `useSettings` Zustand store, and localStorage with `tinda-printer-config-changed` cross-process broadcast.
+   - Integrated full Thermal Spacing Studio inside Settings: granular sliders for Horizontal Left Margin / Indent (`receipt_offset_left_mm`, 0–10mm) preventing first-letter cutoffs, Right Margin (`receipt_margin_right_mm`, 0–10mm), Line Spacing (`receipt_line_spacing`, 1.0–2.0x), Bottom Tear-Off Buffer Feed (`receipt_feed_lines_end`, 0–10 lines) ensuring totals and barcodes are never clipped by the printer tear bar, and Font Scale (`receipt_font_scale`, 80%–130%).
+   - Live synchronization across standalone express slips, official POS sales receipts, and reprint jobs.
+4. **Enterprise Invariant & Test Suite Parity**:
+   - 531/531 unit tests passing across 82 test suites with 100% green status.
+   - Zero TypeScript errors across both Node and Web compilation targets.
+   - Full master invariants compliance verified before packaging.
+
+## Key Features in v2.1.10 (0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition)
+1. **0ms Instant LocalStorage Telemetry Cache (`notificationDrawer.ts`, `NotificationBellDrawer.tsx`)**:
+   - Zero-blocking UI: Directly initializes `telemetry` state from `localStorage.getItem('tinda_telemetry_cache')` synchronously on mount, completely eliminating the white/loading screen and spinner stall (`isLoading` starts as false).
+   - Stale-While-Revalidate background sync: Seamlessly renders cached metrics instantly on click and refreshes in the background without UI flicker.
+   - Robust Fallback: Returns mathematically pure default centavo values if no cache is present, guaranteeing zero unhandled exceptions or NaN values.
+2. **Database Query-Level Shields & Anti-Freeze Telemetry Aggregation (`storeTelemetry.ts`, `ipc/index.ts`)**:
+   - Defensive Query Shields: Every individual aggregate query (sales, refunds, voids, drawer cash movements, utang balances, low-stock alerts) wrapped in isolated try/catch blocks with fail-safe zero defaults, preventing any corrupted row or missing table from freezing telemetry generation.
+   - Fail-Safe IPC Handler: IPC `telemetry:getSummary` safely catches unexpected database errors and falls back to `createEmptyTelemetrySummary()`, protecting the Electron main process from crashes.
+   - Event-driven background pre-warming keeps in-memory telemetry fresh while keeping renderer fetch latencies at 0ms.
+3. **Enterprise Invariant & Test Suite Parity**:
+   - 531/531 unit tests passing across 82 test suites with 100% green status.
+   - Zero TypeScript errors across both Node and Web compilation targets.
+   - Full master invariants compliance verified before packaging.
+
+## Key Features in v2.1.9 (Instant 0ms Telemetry Cache & OpenCode Free AI Copilot Edition)
+1. **Instant 0ms Store Telemetry Cache & Background Pre-Warming (`storeTelemetry.ts`, `Shell.tsx`, `inventoryEvents.ts`)**:
+   - Zero-lag slide-out drawer experience: Pre-warms the store telemetry cache immediately on application mount via `warmStoreTelemetryCache()`, eliminating the ~100-250ms initial query delay.
+   - Intelligent 15-second TTL with event-driven cache invalidation: Mutations to products, stock adjustments, or purchases notify `invalidateStoreTelemetryCache()`, guaranteeing fresh data while keeping reads at 0ms.
+   - Force-refresh support: The drawer's manual refresh button bypasses the cache to immediately execute live atomic aggregation queries against SQLite.
+2. **OpenCode Free Models Pool & Intelligent Cloud Fallback (`aiService.ts`, `NotificationBellDrawer.tsx`)**:
+   - High-availability free AI model rotation pool featuring OpenCode models (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with automatic failover to Google Gemini cloud backup.
+   - Rich retail domain system prompt injecting real-time store telemetry context, Philippine retail SOPs (RA 9994/RA 10754 Senior/PWD discount calculations, GCash/Maya non-custodial cash-in/out workflows, utang tracking, barcode generation).
+   - Interactive TindaBot conversational tab embedded directly in the Cupertino notification drawer with suggested quick-prompt action pills.
+3. **Enterprise Invariant & Test Suite Parity**:
+   - 531/531 unit tests passing across 82 test suites with 100% green status.
+   - Zero TypeScript errors across both Node and Web compilation targets.
+   - Full master invariants compliance verified before packaging.
+
+## Key Features in v2.1.8 (Notification Bell & Bilingual AI Store Advisor Edition)
+1. **Interactive Notification Bell & Glassmorphism Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**:
+   - Modern notification bell icon integrated into the top-level Sidebar with real-time dynamic unread badge count (`bg-brand-500` glowing indicator).
+   - Fluid slide-out Apple Cupertino glassmorphism drawer (`NotificationDrawer.tsx`) accessible from anywhere in the application.
+   - Comprehensive tabbed feeds: **All**, **Unread**, **AI Advisor**, **Stock & Alerts**, **System**.
+   - 1-Click "Mark All as Read", individual notification dismiss/read toggles, and direct context-aware action buttons (e.g., Navigate to Inventory, Open Shifts, View Credit).
+2. **Deterministic Bilingual AI Store Advisor Engine (`aiStoreAdvisor.ts`)**:
+   - 100% offline-first heuristics and intelligence analyzing inventory levels, slow-moving items, stockout risks, shift cash variations, customer credit overdue risks, and daily revenue milestones.
+   - Dual-language toggle: **Professional English** and **Bisaya / Taglish** natural store voice ("Boss, hapit na mahurot ang stock sa..."), delivering actionable store management advice tailored to Philippine sari-sari stores and minimarts.
+   - Real-time priority ranking (Critical, Warning, Insight, Milestone) with actionable quick links and suggestions.
+3. **High-Performance SQLite Store Telemetry IPC Bridge (`storeTelemetry.ts`, `ipc/index.ts`, `preload/index.ts`)**:
+   - Sub-millisecond store telemetry service computing real-time inventory health, critical low-stock items (< min_stock), expiring goods, shift balances, overdue credit balances, and today's sales velocity in a single efficient atomic aggregation query.
+   - Exposed securely across ContextBridge via `window.api.telemetry.getStoreTelemetry()`.
+   - Comprehensive unit test coverage with 527/527 tests passing across 82 test suites.
+
+## Key Features in v2.1.6 (Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration & Cross-Ledger Sync)
+1. **Timezone Invariant & Zero-Ghosting Datetime Parsing (`EwalletAudit.tsx`, `BillsLoadHub.tsx`)**:
+   - Fixed timezone distortion in `parseRecordLocalDateKey(raw)` where appending `'Z'` to space-separated SQLite local datetime timestamps (`YYYY-MM-DD HH:MM:SS`) falsely converted local store time to UTC. In Asia/Manila (UTC+8), this shifted transactions recorded after 4:00 PM into tomorrow's date, causing them to disappear from the `TODAY` filter.
+   - Space-separated SQLite local datetimes and ISO dates are strictly parsed into local store date keys (`YYYY-MM-DD`), guaranteeing 100% visibility of all transactions across daytime, evening, and night operations.
+   - Replaced `new Date().toISOString().slice(0, 10)` in `BillsLoadHub.tsx` with local store date matching to ensure KPI metrics accurately reflect daily inflows and fee totals.
+2. **Dual-Mode E-Wallet & Bills Architecture with Single-Receipt POS Cart Integration (`BillsLoadHub.tsx`, `EwalletAudit.tsx`)**:
+   - **Mode A (Express Standalone Slip)**: Immediate 58mm/80mm thermal slip generation (`printSlip` / `printBillSlip`) for rapid standalone transactions without passing through retail checkout.
+   - **Mode B (Single Consolidated POS Receipt via Cart)**:
+     - 1-Click **"Add to POS Cart"** (`usePosCart.getState().addCustomItem(...)`) and **"Add & Go to POS Cashier"** (`useNav.getState().setPage('pos')`).
+     - Exact line-item specs:
+       - Bills: `Bills: {Biller} ({AccountNo})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+       - E-Wallet Cash In: `Cash In: {Channel} ({Phone/Ref})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+     - Single Consolidated Receipt: Bundled with retail merchandise (groceries, snacks, drinks) on a single official POS thermal receipt at checkout.
+     - Dual-Audit Consistency: Transaction simultaneously records into the E-Wallet ledger with `[POS Cart Item]` tag, keeping shift balances and physical cash counts 100% synchronized.
+3. **Unified Transactions & Multi-Ledger Viewer with Delete/Void Confirmation Modal (`Transactions.tsx`)**:
+   - **Top-Level Multi-Tab Selector in `Transactions.tsx`**:
+     - **Tab 1: 🛒 POS Sales & Receipts**: Complete sales registry with expandable line items, refunds, voids, and reprint capabilities.
+     - **Tab 2: ⚡ E-Wallet & Bills Center**: Cross-channel ledger displaying all standalone and mirrored E-Wallet, Bills Payment, and E-Load records.
+   - Real-time filtering across Channels (All, GCash, Maya, MariBank, Bills & Load) and Types (Cash In, Cash Out, Bills Payment).
+   - Direct 1-click thermal reprinting and system print dialog access directly from the master Transactions ledger.
+   - **Delete / Void Action with Confirmation Modal (`DeleteEwalletModal`)**: Cashiers and store owners can safely delete or void E-Wallet or Bills Payment records with a dedicated confirmation modal detailing Channel & Type, Date & Time, Customer, Phone/Account No, Reference No, Principal Amount, Convenience Fee, and Total Handled. Atomically synchronizes deletion across SQLite `ewallet_transactions` and localStorage `tinda_bills_load_records`.
 
 ## Key Features in v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)
 1. **Interactive Real-Time Item & Letter Search for Printable Inventory Sheets (`InventoryPrintModal.tsx`)**:

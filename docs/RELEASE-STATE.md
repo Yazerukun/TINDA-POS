@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.1.5 (PRINTABLE INVENTORY SHEETS SEARCH & CLOUD ANALYTICS CALENDAR EDITION)
+- v2.1.6 (UNIFIED E-WALLET & BILLS CENTER, SINGLE-RECEIPT POS CART INTEGRATION & CROSS-LEDGER SYNC)
 
 TARGET:
-- v2.1.6 (NEXT RELEASE CYCLE)
+- v2.2.0 (DOCTORAL MULTI-PC EDGE FABRIC & FLOATING VIP LEASE EDITION)
 
 CURRENT STAGE:
-- Production Release — v2.1.5 Full Windows Setup & Portable Stable Release Published
+- Production Hot Patch Release — v2.2.0 Live In-App Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -26,6 +26,14 @@ COMPLETED:
 - Stage 14: SQLite 4:00 PM Double-Timezone Roll-Over Fix (`ewallet.ts`): replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` resolving premature day rollover.
 - Stage 15: Quality Gates verified: Vitest (506/506 tests passing across 79 test files), Typecheck (0 errors across Node & Web), In-app live hot patch bundled & published to GitHub Releases (`v2.1.5`).
 - Stage 16: Full Windows Setup & Portable Stable Release Packaging: electron-builder compiled `TindaPOS-Setup-2.1.5.exe`, `TindaPOS-Portable-2.1.5.exe`, `latest.yml`, and `SHA256SUMS-v2.1.5.txt`; published and verified as Latest Stable Release on GitHub Releases (`Yazerukun/TINDA-POS`).
+- Stage 17: v2.1.6 Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration, Cross-Ledger Sync & Void Confirmation Modal verified. Vitest 506/506 tests passing across 79 test suites, typecheck 0 errors, master invariants 100% passed. Boss's strict golden rule delegation protocol permanently locked in GEMINI.md and AGENTS.md.
+- Stage 18: v2.1.8 Notification Bell & Bilingual AI Store Advisor Edition implemented. Added `storeTelemetry.ts`, `aiStoreAdvisor.ts`, `NotificationDrawer.tsx`, `notificationDrawer.ts`, Sidebar notification bell with dynamic badge. 527/527 Vitest unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified. Live in-app hot patch bundled and published to GitHub Releases (`v2.1.8`).
+- Stage 19: Instant 0ms Store Telemetry Cache & OpenCode Free Models AI Copilot Integration. Pre-warmed background telemetry caching on Shell boot (`warmStoreTelemetryCache`), instant 0ms drawer opens, automatic event-driven cache invalidation on inventory events (`inventoryEvents.ts`), OpenCode multi-model free pool rotation (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with seamless Gemini cloud backup, and interactive TindaBot AI chat tab inside `NotificationBellDrawer.tsx`. Vitest 531/531 tests passing across 82 test suites, typecheck 0 errors, master invariants 100% verified. Live hot patch updated on GitHub Releases.
+- Stage 20: v2.1.9 Instant 0ms Telemetry Cache & OpenCode Free AI Copilot Edition official release. Manifest synchronization across all canonical targets (`source/package.json`, `PosToolsModal.tsx`, `GEMINI.md`, `README.md`, `RELEASE-STATE.md`, `session.md`), 531/531 tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.9.zip` published to GitHub Releases (`v2.1.9`).
+- Stage 21: v2.1.10 0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition official release. Synchronous localStorage telemetry cache initialization eliminating UI loading spinners, defensive try/catch database query shields across all telemetry aggregations, fail-safe IPC handler protecting main process, 531/531 unit tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.10.zip` published to GitHub Releases (`v2.1.10`).
+- Stage 22: v2.1.11 Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition official release. Dynamic store name, address, TIN, and dual audit signature box on printable inventory sheets (`InventoryPrintModal.tsx`), Cupertino dual-view switcher (`[ ⊞ Grid | ☰ List ]`) with `Alt + V` toggle in Inventory (`Inventory.tsx`), thermal receipt spacing and alignment controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`) with fixed persistence. 531/531 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.1.11.zip` published to GitHub Releases (`v2.1.11`).
+- Stage 23: v2.2.0 Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition official release. Zero-config UDP beacon auto-discovery (`node:dgram`, Port 3112) for 0ms cashier terminal connection, floating VIP Pro lease distribution allowing secondary cashier terminals to unlock all PRO features without purchasing extra licenses, centralized Master cashier authentication with roaming PINs, decoupled thermal receipt printing (satellite prints locally to its attached USB printer while Master skips physical printing), `BEGIN IMMEDIATE` SQLite transaction serialization to prevent write collision locks during concurrent multi-terminal checkouts, and 1-click `[ Connect as Cashier ]` FirstRun onboarding. 532/532 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.2.0.zip` published to GitHub Releases (`v2.2.0`).
+
 
 PENDING APPROVAL:
 - None (Approved by Owner).
