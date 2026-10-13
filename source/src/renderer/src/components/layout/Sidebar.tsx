@@ -36,6 +36,7 @@ import { hasPermission, type Permission } from '@shared/roles'
 import { ConnectionStatus } from '../ConnectionStatus'
 import { AppLogo } from '../AppLogo'
 import { PrinterStudioModal } from '../PrinterStudioModal'
+import { NotificationBellButton } from '../notifications/NotificationBellDrawer'
 
 interface NavItem {
   key: PageKey | 'updates' | 'printerStudio'
@@ -130,6 +131,7 @@ export function Sidebar(): React.JSX.Element {
             {settings?.store_name || 'Sari-Sari Store'}
           </p>
         </div>
+        <NotificationBellButton />
       </div>
 
       {/* Network / Offline Indicator */}

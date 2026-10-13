@@ -942,3 +942,70 @@ export interface EwalletShiftSummary {
   net_cash_drawer_delta_c: number
 }
 
+export interface TelemetryTopProduct {
+  product_id: number | null
+  name: string
+  qty_sold: number
+  revenue_c: number
+}
+
+export interface TelemetryLowStockItem {
+  id: number
+  name: string
+  stock: number
+  reorder_level: number
+  unit: string
+}
+
+export interface TelemetryExpiringItem {
+  product_id: number
+  name: string
+  expiration_date: string
+  quantity: number
+  days_until_expiration: number
+  unit: string
+}
+
+export interface TelemetryUtangCustomer {
+  customer_id: number
+  name: string
+  balance_c: number
+  credit_limit_c: number
+  is_over_limit: boolean
+}
+
+export interface TelemetryUtangSummary {
+  total_outstanding_c: number
+  customer_count: number
+  over_limit_count: number
+  top_debtors: TelemetryUtangCustomer[]
+}
+
+export interface StoreTelemetrySummary {
+  business_date: string
+  generated_at: string
+  net_sales_c: number
+  gross_sales_c: number
+  discount_c: number
+  refund_total_c: number
+  void_count: number
+  void_total_c: number
+  transaction_count: number
+  cash_c: number
+  gcash_c: number
+  maya_c: number
+  maribank_c: number
+  utang_c: number
+  expected_drawer_cash_c: number
+  opening_float_c: number
+  cash_in_c: number
+  cash_out_c: number
+  cash_expenses_c: number
+  cash_refunds_c: number
+  top_products: TelemetryTopProduct[]
+  critically_low_stock: TelemetryLowStockItem[]
+  expiring_products: TelemetryExpiringItem[]
+  unpaid_utang_due: TelemetryUtangSummary
+  last_sync_at: string | null
+}
+

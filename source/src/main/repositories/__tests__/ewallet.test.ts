@@ -254,7 +254,7 @@ describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
       INSERT INTO ewallet_transactions (
         shift_id, user_id, channel, type, amount_c, fee_c, fee_collected_via, created_at
       ) VALUES (
-        1, 1, 'GCASH', 'CASH_IN', 50000, 1000, 'CASH', datetime('now', '-1 day')
+        1, 1, 'GCASH', 'CASH_IN', 50000, 1000, 'CASH', datetime('now', 'localtime', '-1 day')
       )
     `).run()
 
@@ -263,7 +263,7 @@ describe('ewallet repository (GCash, Maya & 3-Way Audit)', () => {
       INSERT INTO ewallet_transactions (
         shift_id, user_id, channel, type, amount_c, fee_c, fee_collected_via, created_at
       ) VALUES (
-        1, 1, 'GCASH', 'CASH_IN', 100000, 1500, 'CASH', datetime('now')
+        1, 1, 'GCASH', 'CASH_IN', 100000, 1500, 'CASH', datetime('now', 'localtime')
       )
     `).run()
 

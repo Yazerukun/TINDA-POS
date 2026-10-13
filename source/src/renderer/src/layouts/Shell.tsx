@@ -26,6 +26,7 @@ import { HelpGuideModal } from '../components/HelpGuideModal'
 import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
 import { TindaAiAssistantModal } from '../components/ai/TindaAiAssistantModal'
 import { FloatingWidgetsDock } from '../components/common/FloatingWidgetsDock'
+import { NotificationBellDrawer } from '../components/notifications/NotificationBellDrawer'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -114,6 +115,7 @@ export function Shell(): React.JSX.Element {
       <FloatingWidgetsDock />
       <TindaCommunityChat />
       <TindaAiAssistantModal />
+      <NotificationBellDrawer />
     </div>
   )
 }

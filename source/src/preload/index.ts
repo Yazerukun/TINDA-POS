@@ -348,6 +348,9 @@ const api: TindaApi = {
   },
   ai: {
     ask: (question: string) => invoke<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>('ai:ask', question)
+  },
+  telemetry: {
+    getSummary: () => invoke<import('@shared/types').StoreTelemetrySummary>('telemetry:getSummary')
   }
 }
 

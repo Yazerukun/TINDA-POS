@@ -1344,6 +1344,11 @@ handle('ai:ask', async (_e: IpcMainInvokeEvent, question: string) => {
   return await askMainAiService(question)
 })
 
+handle('telemetry:getSummary', () => {
+  const { getStoreTelemetrySummary } = require('../services/storeTelemetry')
+  return getStoreTelemetrySummary(db())
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }

@@ -7,14 +7,16 @@ Before any TINDA POS release-related work, read these files completely:
 
 Treat `docs/RELEASE-STATE.md` as release memory, resume from the next incomplete stage, and never repeat a passed stage without an invalidation reason defined in the workflow. Update the state after every completed stage. Never push, tag, publish, upload release assets, or change Latest without explicit owner approval after the final release review passes.
 
-## Agent Coordination
+## Agent Coordination & Command Hierarchy
 
-Three engineers share this workspace. The repository owner (human) assigns tasks; agents execute only assigned work.
+> **BOSS'S STRICT GOLDEN RULE**: Boss (CEO) commands Jin (Master General / CTO). Jin MUST NEVER execute code or manual labor directly. Jin must ALWAYS delegate and command the 9 Elite Specialist Subagents (`FLASH`, `SHERLOCK`, `IRONCLAD`, `ORACLE`, `FALCON`, `VIPER`, `BLUEPRINT`, `SCRIBE`, `KRAKEN`). Jin directs, plans, oversees, verifies, and reports back to Boss.
+
+Three engineers share this workspace. The repository owner (human Boss) assigns tasks; agents execute only assigned work.
 
 | Engineer | Lane |
 |---|---|
 | OpenCode | Front-end design: React/Tailwind UI, components, layout, styling, animations |
-| Antigravity CLI (`agy`) | Fixing, code review, testing (vitest, typecheck, master invariants) |
+| Antigravity CLI (`agy`) / Jin | Master General / CTO / Fixer Agent: Planning, delegating to elite subagents, review & verification |
 | Kiro | Spec + documentation: specs, requirements/design docs, user manuals, release notes, steering |
 
 ### Claim protocol (single source of truth: `C:\Users\mtafl\Desktop\TINDA\.agents\memory\session.md`)

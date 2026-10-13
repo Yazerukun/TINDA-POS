@@ -1,9 +1,60 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IDLE | None | 2026-10-10 11:41
+IDLE | None | 2026-10-13 07:55
 
 ## Recent Handoff History
+
+### 2026-10-13 11:35 | agy / SCRIBE & KRAKEN (v2.1.7 Notification Bell & Bilingual AI Store Advisor Edition)
+- **Task**: Bump version to v2.1.7, synchronize documentation across all manifests, commit, push, and publish live in-app hot patch to GitHub Releases.
+- **Key Modules in v2.1.7**:
+  - **Interactive Notification Bell & Cupertino Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**: Real-time unread counter badge, glassmorphism sliding drawer with category filters (All, Unread, AI Advisor, Stock Alerts, System), mark all read, individual dismiss, and direct deep-link action buttons.
+  - **Deterministic Bilingual AI Store Advisor (`aiStoreAdvisor.ts`)**: Offline heuristics evaluating inventory velocity, low-stock out-of-stock threats, shift reconciliation variances, overdue utang risks, and revenue milestones. Supports English and Bisaya / Taglish native store modes.
+  - **High-Performance SQLite Store Telemetry Service (`storeTelemetry.ts`, `ipc/index.ts`, `preload/index.ts`)**: Fast single atomic aggregation query fetching store-wide inventory health, expiring products, active shifts, and daily metrics across ContextBridge.
+- **QA Verification Gate (VIPER)**:
+  - 527/527 Vitest unit tests passing across 82 test files (100% green).
+  - TypeScript typecheck passed with 0 errors across Node & Web targets.
+  - Master invariants 100% verified (`node tools/check_master_invariants.mjs`).
+  - Live in-app hot patch published to GitHub Releases (`v2.1.7`).
+- **Files Touched**:
+  - `source/package.json`
+  - `source/src/renderer/src/components/PosToolsModal.tsx`
+  - `GEMINI.md`
+  - `README.md`
+  - `docs/RELEASE-STATE.md`
+  - `.agents/memory/session.md`
+  - `source/src/main/ipc/index.ts`
+  - `source/src/main/services/storeTelemetry.ts`
+  - `source/src/main/services/__tests__/storeTelemetry.test.ts`
+  - `source/src/preload/index.ts`
+  - `source/src/renderer/src/components/layout/Sidebar.tsx`
+  - `source/src/renderer/src/layouts/Shell.tsx`
+  - `source/src/renderer/src/components/notifications/NotificationDrawer.tsx`
+  - `source/src/renderer/src/stores/notificationDrawer.ts`
+  - `source/src/renderer/src/services/aiStoreAdvisor.ts`
+  - `source/src/renderer/src/services/__tests__/aiStoreAdvisor.test.ts`
+  - `source/src/shared/ipc.ts`
+  - `source/src/shared/types.ts`
+
+### 2026-10-13 07:55 | agy / SCRIBE (v2.1.6 Sync & 100% Green QA Gate Verification)
+- **Task**: Synchronize local workspace to v2.1.6 (Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration & Cross-Ledger Sync, and delete/void action with confirmation modal), preserve Boss's strict golden rule delegation protocol, verify all QA gates, and update documentation.
+- **Key Modules in v2.1.6**:
+  - **Timezone Invariant & Zero-Ghosting Datetime Parsing (`EwalletAudit.tsx`, `BillsLoadHub.tsx`)**: Space-separated SQLite local timestamps strictly parsed without `'Z'` suffix distortion, ensuring 100% visibility for evening/night transactions after 4:00 PM in `Asia/Manila`.
+  - **Single-Receipt POS Cart Integration (`BillsLoadHub.tsx`, `POS.tsx`)**: Utility bills and cash-in custom items seamlessly added to active POS cart and bundled with grocery items on one official thermal receipt with dual ledger auditing.
+  - **Master Transactions E-Wallet & Bills Center Tab (`Transactions.tsx`)**: Top-level 2-tab view separating POS Sales & Receipts from E-Wallet & Bills Center with channel and type filtering.
+  - **Delete/Void Action with Confirmation Modal (`Transactions.tsx`)**: Cashiers and store owners can safely delete or void E-Wallet or Bills Payment transactions via `DeleteEwalletModal`, atomically cleaning up SQLite and localStorage records.
+- **QA Verification Gate (VIPER)**:
+  - 506/506 Vitest tests passing across 79 test suites (100% green).
+  - `npm run typecheck` passed with 0 errors across Node and Web targets.
+  - `node tools/check_master_invariants.mjs` passed with 100% compliance.
+  - Boss's strict golden rule delegation protocol permanently locked in `GEMINI.md` and `AGENTS.md`.
+- **Files Touched**:
+  - `GEMINI.md`
+  - `.agents/memory/session.md`
+  - `AGENTS.md`
+  - `source/src/main/repositories/__tests__/ewallet.test.ts`
+  - `source/src/main/services/__tests__/refund-profit.test.ts`
+
 
 ### 2026-10-10 11:41 | agy (v2.0.1 Major Release: Full Desktop Compilation, Carousel Banner & Printing Checkout Immunity)
 - **Task**: Implement Apple Cupertino Feature Showcase Carousel Banner, completely resolve Printing Hub checkout failure by sanitizing IPC product IDs, bump to v2.0.1, compile full Windows desktop installers (Setup + Portable), bundle patch, and publish to GitHub Releases.

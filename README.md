@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.7-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-506%2F506_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-527%2F527_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.5_(0.94MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.7_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.7/TindaPOS-Feature-Patch-2.1.7.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,13 +31,14 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.1.7 Live Patch / v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
+| [**TindaPOS-Feature-Patch-2.1.7.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.7/TindaPOS-Feature-Patch-2.1.7.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.7)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch** | Applied automatically in `0.3s` via "Check for Updates" without restarting or redownloading. |
+| [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
 | [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
 | [**SHA256SUMS-v2.1.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/SHA256SUMS-v2.1.5.txt) | `0.4 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
@@ -205,6 +206,27 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🔔 v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition) · Oct 13, 2026
+- **🔔 Interactive Notification Bell & Glassmorphism Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**:
+  - Modern notification bell icon integrated into top-level Sidebar with dynamic glowing unread badge count.
+  - Slide-out Apple Cupertino glassmorphism drawer accessible from anywhere in the app with category filtering (All, Unread, AI Advisor, Stock Alerts, System).
+  - 1-Click "Mark All as Read", notification dismissal, and deep-linking action buttons directly navigating to relevant POS modules.
+- **🧠 Deterministic Bilingual AI Store Advisor Engine (`aiStoreAdvisor.ts`)**:
+  - 100% offline-first heuristics analyzing inventory velocity, stockouts, shift variances, and overdue customer credit.
+  - Dual-language toggle: Professional English and Bisaya / Taglish natural store advisory voice tailored for Philippine retail stores.
+  - Priority ranking (Critical, Warning, Insight, Milestone) with actionable recommendations.
+- **⚡ Atomic Store Telemetry Service & IPC Bridge (`storeTelemetry.ts`, `ipc/index.ts`, `preload/index.ts`)**:
+  - Sub-millisecond SQLite aggregation gathering inventory health, expiring batches, active shifts, and sales KPIs in a single atomic query.
+  - Complete test coverage with 527/527 passing tests across 82 suites.
+
+### 💳 v2.1.6 (Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration & Cross-Ledger Sync) · Oct 13, 2026
+- **⚡ Timezone Invariant & Zero-Ghosting Datetime Parsing (`EwalletAudit.tsx`, `BillsLoadHub.tsx`)**:
+  - Fixed SQLite space-separated local timestamps (`YYYY-MM-DD HH:MM:SS`) falsely converted via `'Z'` suffix, ensuring 100% visibility for evening/night transactions after 4:00 PM in `Asia/Manila`.
+- **🛒 Single-Receipt POS Cart Integration (`BillsLoadHub.tsx`, `POS.tsx`)**:
+  - 1-Click "Add to POS Cart" and "Add & Go to POS Cashier" bundling bills payment and cash-in with groceries on one official thermal receipt with dual ledger auditing.
+- **📊 Master Transactions E-Wallet & Bills Center Tab (`Transactions.tsx`)**:
+  - Top-level 2-tab view separating POS Sales from E-Wallet & Bills Center with channel and type filtering, thermal reprinting, and safe delete/void confirmation modal.
 
 ### 🔍 v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition) · Oct 12, 2026
 - **🔍 Real-Time Item & Letter Search for Printable Sheets (`InventoryPrintModal.tsx`)**:

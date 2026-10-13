@@ -59,7 +59,7 @@ describe('Refunds reduce estimated profit (Refund -> Profit fix)', () => {
       items: [{ sale_item_id: saleItem.id, product_id: p.id, qty_base: 2, unit_name: 'sachet' }]
     })
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     const { summary } = salesReport({ from: today, to: today })
     expect(summary.profit_c).toBe(0)
     expect(dashboardStats().today_profit_c).toBe(0)
@@ -111,7 +111,7 @@ describe('Refunds reduce estimated profit (Refund -> Profit fix)', () => {
     })
     expect(refund.total_c).toBe(750) // Net prorated refund (1500 / 1800 * 900)
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     const { summary } = salesReport({ from: today, to: today })
     // (1500 - 750) - (1200 - 600) = 150 --- remaining 1 sachet sold at net 750 with 600 cost
     expect(summary.profit_c).toBe(150)

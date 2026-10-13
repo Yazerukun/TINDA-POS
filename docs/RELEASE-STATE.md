@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.1.5 (PRINTABLE INVENTORY SHEETS SEARCH & CLOUD ANALYTICS CALENDAR EDITION)
+- v2.1.6 (UNIFIED E-WALLET & BILLS CENTER, SINGLE-RECEIPT POS CART INTEGRATION & CROSS-LEDGER SYNC)
 
 TARGET:
-- v2.1.6 (NEXT RELEASE CYCLE)
+- v2.1.7 (NOTIFICATION BELL & BILINGUAL AI STORE ADVISOR EDITION)
 
 CURRENT STAGE:
-- Production Release — v2.1.5 Full Windows Setup & Portable Stable Release Published
+- Production Hot Patch Release — v2.1.7 Live In-App Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -26,6 +26,8 @@ COMPLETED:
 - Stage 14: SQLite 4:00 PM Double-Timezone Roll-Over Fix (`ewallet.ts`): replaced `date(created_at, 'localtime')` with `substr(created_at, 1, 10)` resolving premature day rollover.
 - Stage 15: Quality Gates verified: Vitest (506/506 tests passing across 79 test files), Typecheck (0 errors across Node & Web), In-app live hot patch bundled & published to GitHub Releases (`v2.1.5`).
 - Stage 16: Full Windows Setup & Portable Stable Release Packaging: electron-builder compiled `TindaPOS-Setup-2.1.5.exe`, `TindaPOS-Portable-2.1.5.exe`, `latest.yml`, and `SHA256SUMS-v2.1.5.txt`; published and verified as Latest Stable Release on GitHub Releases (`Yazerukun/TINDA-POS`).
+- Stage 17: v2.1.6 Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration, Cross-Ledger Sync & Void Confirmation Modal verified. Vitest 506/506 tests passing across 79 test suites, typecheck 0 errors, master invariants 100% passed. Boss's strict golden rule delegation protocol permanently locked in GEMINI.md and AGENTS.md.
+- Stage 18: v2.1.7 Notification Bell & Bilingual AI Store Advisor Edition implemented. Added `storeTelemetry.ts`, `aiStoreAdvisor.ts`, `NotificationDrawer.tsx`, `notificationDrawer.ts`, Sidebar notification bell with dynamic badge. 527/527 Vitest unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified. Live in-app hot patch bundled and published to GitHub Releases (`v2.1.7`).
 
 PENDING APPROVAL:
 - None (Approved by Owner).

@@ -6,6 +6,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 
 ## Operating Rules & Automation Standard
 - Permanent Identity & Name: **Jin** (Boss's Best Buddy, Doctoral & Master's Degree Engineer, Master Developer, Master General & Fixer Agent All-in-One — supreme workflow organizer, rock-solid "pulido" code architect, bug/error fixer, testing & security specialist, production finalizer, and proactive advisor)
+- **MANDATORY DELEGATION & CHAIN OF COMMAND PROTOCOL (STRICT GOLDEN RULE)**: Boss (CEO) commands Jin (Master General / CTO). Jin MUST NEVER do the execution tasks directly. Jin must ALWAYS delegate, dispatch, and command the 9 Elite Specialist Subagents (`FLASH`, `SHERLOCK`, `IRONCLAD`, `ORACLE`, `FALCON`, `VIPER`, `BLUEPRINT`, `SCRIBE`, `KRAKEN`). Jin directs, plans, oversees, verifies, and reports back to Boss.
 - Mode: **FULL YOLO MODE** (Proactive, autonomous execution of commands, edits, refactoring, and fixes without waiting for manual confirmation)
 - Execution: **100% AUTOMATIC POWERHOUSE**:
   1. **apple-design**: Fluid animations, natural springs, translucent Cupertino materials, and clean hierarchy.
@@ -21,6 +22,7 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
   11. **mandatory-auto-version-bump**: **STRICT RULE**: Every single time the project is built or released (`build:win`, release publishing), the version MUST ALWAYS auto-increment (`v1.0.66` -> `v1.0.67` -> `v1.0.68` and so forth). NEVER build on the same version twice. Always synchronize version bumps across `source/package.json`, `GEMINI.md`, `README.md`, `PosToolsModal.tsx`, and `docs/RELEASE-STATE.md`.
   12. **instant-patch-release-standard**: **MANDATORY PATCH RULE**: For all rapid feature fixes, UI refinements, and optimizations, ALWAYS publish the live in-app hot patch via `npm run publish:patch` (`tools/publish_patch.mjs`). This automatically bundles the ~0.8 MB patch zip and publishes the release on `Yazerukun/TINDA-POS` in <10 seconds with zero rate limits. Cashiers immediately detect the update via 'Check for Updates' and apply live in 0.3s without restarting the app or downloading 100MB+ full installers.
   13. **obra/superpowers v7.0.0 (15 Core Process & Engineering Skills)**: Permanently installed across `.gemini/config/skills/`, `.claude/skills/`, `.agents/skills/`, and `.kiro/skills/` and triggered 100% automatically on every conversation turn before any action (`using-superpowers`, `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, `using-git-worktrees`, `writing-skills`, `diagnosing-superpowers`).
+  14. **zero-error-automatic-computation-standard**: **STRICT INVARIANT**: All financial totals, reports, cash counts, drawer balances, E-Wallet totals, discounts, and inventory metrics must compute automatically with 100% mathematical precision down to the exact integer centavo (`_c`). Zero floating-point rounding errors, zero manual fudging, and zero timezone distortion. Voids and refunds must be mathematically reconciled across all ledgers. VIPER must verify calculations with automated tests before any release.
 
 ## Release & Repository Status
 - Workspace Directory: `D:\TINDA-POS-Desktop\`
@@ -28,7 +30,44 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)**
+- Current Version: **v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition)**
+
+## Key Features in v2.1.7 (Notification Bell & Bilingual AI Store Advisor Edition)
+1. **Interactive Notification Bell & Glassmorphism Drawer (`Sidebar.tsx`, `NotificationDrawer.tsx`, `notificationDrawer.ts`)**:
+   - Modern notification bell icon integrated into the top-level Sidebar with real-time dynamic unread badge count (`bg-brand-500` glowing indicator).
+   - Fluid slide-out Apple Cupertino glassmorphism drawer (`NotificationDrawer.tsx`) accessible from anywhere in the application.
+   - Comprehensive tabbed feeds: **All**, **Unread**, **AI Advisor**, **Stock & Alerts**, **System**.
+   - 1-Click "Mark All as Read", individual notification dismiss/read toggles, and direct context-aware action buttons (e.g., Navigate to Inventory, Open Shifts, View Credit).
+2. **Deterministic Bilingual AI Store Advisor Engine (`aiStoreAdvisor.ts`)**:
+   - 100% offline-first heuristics and intelligence analyzing inventory levels, slow-moving items, stockout risks, shift cash variations, customer credit overdue risks, and daily revenue milestones.
+   - Dual-language toggle: **Professional English** and **Bisaya / Taglish** natural store voice ("Boss, hapit na mahurot ang stock sa..."), delivering actionable store management advice tailored to Philippine sari-sari stores and minimarts.
+   - Real-time priority ranking (Critical, Warning, Insight, Milestone) with actionable quick links and suggestions.
+3. **High-Performance SQLite Store Telemetry IPC Bridge (`storeTelemetry.ts`, `ipc/index.ts`, `preload/index.ts`)**:
+   - Sub-millisecond store telemetry service computing real-time inventory health, critical low-stock items (< min_stock), expiring goods, shift balances, overdue credit balances, and today's sales velocity in a single efficient atomic aggregation query.
+   - Exposed securely across ContextBridge via `window.api.telemetry.getStoreTelemetry()`.
+   - Comprehensive unit test coverage with 527/527 tests passing across 82 test suites.
+
+## Key Features in v2.1.6 (Unified E-Wallet & Bills Center, Single-Receipt POS Cart Integration & Cross-Ledger Sync)
+1. **Timezone Invariant & Zero-Ghosting Datetime Parsing (`EwalletAudit.tsx`, `BillsLoadHub.tsx`)**:
+   - Fixed timezone distortion in `parseRecordLocalDateKey(raw)` where appending `'Z'` to space-separated SQLite local datetime timestamps (`YYYY-MM-DD HH:MM:SS`) falsely converted local store time to UTC. In Asia/Manila (UTC+8), this shifted transactions recorded after 4:00 PM into tomorrow's date, causing them to disappear from the `TODAY` filter.
+   - Space-separated SQLite local datetimes and ISO dates are strictly parsed into local store date keys (`YYYY-MM-DD`), guaranteeing 100% visibility of all transactions across daytime, evening, and night operations.
+   - Replaced `new Date().toISOString().slice(0, 10)` in `BillsLoadHub.tsx` with local store date matching to ensure KPI metrics accurately reflect daily inflows and fee totals.
+2. **Dual-Mode E-Wallet & Bills Architecture with Single-Receipt POS Cart Integration (`BillsLoadHub.tsx`, `EwalletAudit.tsx`)**:
+   - **Mode A (Express Standalone Slip)**: Immediate 58mm/80mm thermal slip generation (`printSlip` / `printBillSlip`) for rapid standalone transactions without passing through retail checkout.
+   - **Mode B (Single Consolidated POS Receipt via Cart)**:
+     - 1-Click **"Add to POS Cart"** (`usePosCart.getState().addCustomItem(...)`) and **"Add & Go to POS Cashier"** (`useNav.getState().setPage('pos')`).
+     - Exact line-item specs:
+       - Bills: `Bills: {Biller} ({AccountNo})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+       - E-Wallet Cash In: `Cash In: {Channel} ({Phone/Ref})`, Price: `Amount + Fee`, Cost: `Amount`, Profit: `Fee`.
+     - Single Consolidated Receipt: Bundled with retail merchandise (groceries, snacks, drinks) on a single official POS thermal receipt at checkout.
+     - Dual-Audit Consistency: Transaction simultaneously records into the E-Wallet ledger with `[POS Cart Item]` tag, keeping shift balances and physical cash counts 100% synchronized.
+3. **Unified Transactions & Multi-Ledger Viewer with Delete/Void Confirmation Modal (`Transactions.tsx`)**:
+   - **Top-Level Multi-Tab Selector in `Transactions.tsx`**:
+     - **Tab 1: 🛒 POS Sales & Receipts**: Complete sales registry with expandable line items, refunds, voids, and reprint capabilities.
+     - **Tab 2: ⚡ E-Wallet & Bills Center**: Cross-channel ledger displaying all standalone and mirrored E-Wallet, Bills Payment, and E-Load records.
+   - Real-time filtering across Channels (All, GCash, Maya, MariBank, Bills & Load) and Types (Cash In, Cash Out, Bills Payment).
+   - Direct 1-click thermal reprinting and system print dialog access directly from the master Transactions ledger.
+   - **Delete / Void Action with Confirmation Modal (`DeleteEwalletModal`)**: Cashiers and store owners can safely delete or void E-Wallet or Bills Payment records with a dedicated confirmation modal detailing Channel & Type, Date & Time, Customer, Phone/Account No, Reference No, Principal Amount, Convenience Fee, and Total Handled. Atomically synchronizes deletion across SQLite `ewallet_transactions` and localStorage `tinda_bills_load_records`.
 
 ## Key Features in v2.1.5 (Printable Inventory Sheets Search & Cloud Analytics Calendar Edition)
 1. **Interactive Real-Time Item & Letter Search for Printable Inventory Sheets (`InventoryPrintModal.tsx`)**:

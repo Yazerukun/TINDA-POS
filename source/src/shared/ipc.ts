@@ -555,6 +555,9 @@ export interface TindaApi {
   ai: {
     ask: (question: string) => Promise<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>
   }
+  telemetry: {
+    getSummary: () => Promise<import('./types').StoreTelemetrySummary>
+  }
 }
 
 export type SupplierInput = {
