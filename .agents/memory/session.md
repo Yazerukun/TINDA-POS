@@ -20,6 +20,24 @@ IDLE | None | 2026-10-13 21:49
 
 ## Recent Handoff History
 
+### 2026-10-13 22:20 | Jin / ARCHITECT & BUILDER & SENTINEL (Universal Thermal Spacing Studio — 1:1 Live Preview & Physical Print Persistence)
+- **Task**: Add custom spacing controls to TINDA Printer Alignment & Customization Studio (`PrinterStudioModal.tsx`). When saved, ensure configurations persist across ALL receipts (checkout, reprint, express slip, ewallet slip, bills receipt, X/Z-read) and are 100% visible on printed thermal paper (`@media print` physical output) and live 1:1 preview.
+- **Key Modules Modified**:
+  - `source/src/shared/receiptHtml.ts`: Extended `ReceiptLayoutOptions` with `offsetTopMm`, `lineHeightMultiplier`, `itemSpacingPx`, `separatorSpacingPx`. Dynamically styled `@media print` and screen `.tp-sheet`, `.tp-item`, `.tp-sep`, and `.tp-total`.
+  - `source/src/shared/types.ts`: Added `receipt_offset_top_mm`, `receipt_line_height_multiplier`, `receipt_item_spacing_px`, and `receipt_separator_spacing_px` to `StoreSettings`.
+  - `source/src/main/repositories/settings.ts`: Synchronized `defaultSettings` defaults (`top: 2.0mm`, `line: 1.15x`, `item: 1.0px`, `sep: 2.0px`) with SQLite upsert persistence.
+  - `source/src/renderer/src/utils/printerCustomization.ts`: Extended `PrinterCustomizationSettings`, `DEFAULT_PRINTER_CUSTOMIZATION`, and `reconcilePrinterCustomization` with persistent localStorage fallback.
+  - `source/src/main/services/printing.ts`: Forwarded all custom spacing options into `receiptHtml()` in `printLines()` and `testPrintLines()`.
+  - `source/src/renderer/src/components/ReceiptPaper.tsx`: Bound live custom options into effective options for on-screen approximation.
+  - `source/src/renderer/src/components/PrinterStudioModal.tsx`: Integrated full "Custom Spacing Studio" card (Top Margin Y-Offset 0-15mm, Cart Item Row Gap 0-8px, Divider & Line Gap 0-8px, Global Line Height Multiplier 1.00-2.00x), wired to `<ReceiptPaper>` in 1:1 Live Preview column and alignment test pattern.
+  - `source/src/renderer/src/lib/printerStudio.test.ts`: Added unit tests verifying top margin, line height multiplier, item spacing, separator spacing, and reconciler defaults.
+  - `source/src/shared/governanceState.ts`: Bumped system state to `v1.4.0`.
+- **QA Verification Gate (Sentinel)**:
+  - TypeScript typecheck: 0 errors across Node & Web targets.
+  - Vitest: 536/536 tests passing across 82 test suites (100% green).
+  - Master Invariants: 100% verified.
+  - Electron-Vite production build: Completed in 3.80s with 0 errors.
+
 ### 2026-10-13 21:28 | agy / SCRIBE & FORGE & VIPER & BLUEPRINT (v2.2.1 Official Release — In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)
 - **Task**: Implement in-app download and 1-click auto-restart for full Windows installer (`TindaPOS-Setup-*.exe`), Tesla Cyber-Emerald Telemetry progress bar (real-time EMA speed calculation, non-zero division safe ETA, byte counter, 4-phase status), dual-choice update card (`[ ⚡ Express Patch ]` vs `[ 💿 Full Setup.exe ]`), pre-update SQLite safety snapshot, full Windows packaging, verify QA gates (532/532 tests passing, 0 TS errors, master invariants), tag v2.2.1, and publish release.
 - **Key Modules in v2.2.1**:

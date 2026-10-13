@@ -1,3 +1,4 @@
+// File: src/main/repositories/settings.ts
 import type Database from 'better-sqlite3'
 import type { StoreSettings } from '@shared/types'
 
@@ -48,9 +49,13 @@ export const defaultSettings: StoreSettings = {
   // Printer Alignment & Studio Customization Defaults
   receipt_offset_left_mm: 3.5,
   receipt_offset_right_mm: 2.0,
+  receipt_offset_top_mm: 2.0,
   receipt_feed_lines_end: 3,
   receipt_font_scale: 100,
   receipt_line_spacing: 'balanced',
+  receipt_line_height_multiplier: 1.15,
+  receipt_item_spacing_px: 1.0,
+  receipt_separator_spacing_px: 2.0,
   receipt_ultra_black: true,
   receipt_custom_header: '',
   receipt_custom_footer: '',

@@ -113,14 +113,14 @@ const DESTRUCTIVE_COMMAND_REGEX =
 export const INITIAL_GOVERNANCE_STATE: GovernanceState = {
   version: {
     major: 1,
-    minor: 3,
+    minor: 4,
     patch: 0,
-    raw: '1.3.0'
+    raw: '1.4.0'
   },
   selfHealingRetries: 0,
   maxAllowedRetries: 3,
   lastChangelog:
-    'Activated Rule 17: Concurrent Execution & Swarm Synergy (Divide & Conquer DAG Task Partitioning & War Room Fusion).',
+    'Implemented Custom Thermal Spacing Studio with top margin offset, line height multiplier, item row gap, and separator spacing persisted across all receipts and physical paper output.',
   activeRuleSet: {
     autonomousSelfHealing: true,
     spatialMapping: true,

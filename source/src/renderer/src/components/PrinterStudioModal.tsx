@@ -1,3 +1,4 @@
+// File: src/renderer/src/components/PrinterStudioModal.tsx
 import React, { useState, useEffect } from 'react'
 import {
   Printer,
@@ -18,6 +19,7 @@ import {
   HelpCircle
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
+import { ReceiptPaper } from './ReceiptPaper'
 import { useSettings } from '../stores/settings'
 import { toastSuccess, toastError } from '../stores/toast'
 import { generateBarcodeSvg } from '@shared/barcodeSvg'
@@ -54,9 +56,13 @@ export function PrinterStudioModal({
   const [receiptWidth, setReceiptWidth] = useState<'58mm' | '80mm'>('58mm')
   const [receiptLeftMargin, setReceiptLeftMargin] = useState(3.5)
   const [receiptRightMargin, setReceiptRightMargin] = useState(2.0)
+  const [receiptTopMargin, setReceiptTopMargin] = useState(2.0)
   const [receiptFeedLines, setReceiptFeedLines] = useState(3)
   const [receiptFontScale, setReceiptFontScale] = useState(100)
   const [receiptLineSpacing, setReceiptLineSpacing] = useState<'compact' | 'balanced' | 'spacious'>('balanced')
+  const [receiptLineHeightMultiplier, setReceiptLineHeightMultiplier] = useState(1.15)
+  const [receiptItemSpacing, setReceiptItemSpacing] = useState(1.0)
+  const [receiptSeparatorSpacing, setReceiptSeparatorSpacing] = useState(2.0)
   const [receiptUltraBlack, setReceiptUltraBlack] = useState(true)
   const [receiptCustomHeader, setReceiptCustomHeader] = useState('')
   const [receiptCustomFooter, setReceiptCustomFooter] = useState('')
@@ -90,9 +96,13 @@ export function PrinterStudioModal({
       setReceiptWidth(reconciled.receipt_paper_width || '58mm')
       setReceiptLeftMargin(reconciled.receipt_offset_left_mm)
       setReceiptRightMargin(reconciled.receipt_offset_right_mm)
+      setReceiptTopMargin(reconciled.receipt_offset_top_mm)
       setReceiptFeedLines(reconciled.receipt_feed_lines_end)
       setReceiptFontScale(reconciled.receipt_font_scale)
       setReceiptLineSpacing(reconciled.receipt_line_spacing)
+      setReceiptLineHeightMultiplier(reconciled.receipt_line_height_multiplier)
+      setReceiptItemSpacing(reconciled.receipt_item_spacing_px)
+      setReceiptSeparatorSpacing(reconciled.receipt_separator_spacing_px)
       setReceiptUltraBlack(reconciled.receipt_ultra_black)
       setReceiptCustomHeader(reconciled.receipt_custom_header || settings?.receipt_header || '')
       setReceiptCustomFooter(reconciled.receipt_custom_footer || settings?.receipt_footer || '')
@@ -190,9 +200,13 @@ export function PrinterStudioModal({
         receipt_paper_width: receiptWidth,
         receipt_offset_left_mm: receiptLeftMargin,
         receipt_offset_right_mm: receiptRightMargin,
+        receipt_offset_top_mm: receiptTopMargin,
         receipt_feed_lines_end: receiptFeedLines,
         receipt_font_scale: receiptFontScale,
         receipt_line_spacing: receiptLineSpacing,
+        receipt_line_height_multiplier: receiptLineHeightMultiplier,
+        receipt_item_spacing_px: receiptItemSpacing,
+        receipt_separator_spacing_px: receiptSeparatorSpacing,
         receipt_ultra_black: receiptUltraBlack,
         receipt_custom_header: receiptCustomHeader,
         receipt_custom_footer: receiptCustomFooter,
@@ -242,9 +256,13 @@ export function PrinterStudioModal({
       const defaultLeft = receiptWidth === '58mm' ? 3.5 : 4.5
       setReceiptLeftMargin(defaultLeft)
       setReceiptRightMargin(2.0)
+      setReceiptTopMargin(2.0)
       setReceiptFeedLines(3)
       setReceiptFontScale(100)
       setReceiptLineSpacing('balanced')
+      setReceiptLineHeightMultiplier(1.15)
+      setReceiptItemSpacing(1.0)
+      setReceiptSeparatorSpacing(2.0)
       setReceiptUltraBlack(true)
       setReceiptCustomHeader('')
       setReceiptCustomFooter('')
@@ -256,9 +274,13 @@ export function PrinterStudioModal({
         receipt_paper_width: receiptWidth,
         receipt_offset_left_mm: defaultLeft,
         receipt_offset_right_mm: 2.0,
+        receipt_offset_top_mm: 2.0,
         receipt_feed_lines_end: 3,
         receipt_font_scale: 100,
         receipt_line_spacing: 'balanced',
+        receipt_line_height_multiplier: 1.15,
+        receipt_item_spacing_px: 1.0,
+        receipt_separator_spacing_px: 2.0,
         receipt_ultra_black: true,
         receipt_custom_header: '',
         receipt_custom_footer: '',
@@ -304,7 +326,9 @@ export function PrinterStudioModal({
         const testLines = [
           settings?.store_name || 'TINDA POS',
           '=== ALIGNMENT TEST PATTERN ===',
-          `Width: ${receiptWidth} | Indent: ${receiptLeftMargin}mm`,
+          `Width: ${receiptWidth} | L:${receiptLeftMargin}mm R:${receiptRightMargin}mm`,
+          `Top: ${receiptTopMargin}mm | Line:${receiptLineHeightMultiplier}x`,
+          `Item Gap: ${receiptItemSpacing}px | Sep:${receiptSeparatorSpacing}px`,
           '--------------------------------',
           '01234567890123456789012345678901',
           '|<- Left Edge        Right Edge->|',
@@ -620,7 +644,276 @@ export function PrinterStudioModal({
                   </div>
                 </div>
 
-                {/* 2. Optical Typography & Density */}
+                {/* 2. Custom Thermal Spacing Studio (Vertical Margins & Density) */}
+                <div className="card p-3.5 space-y-3 bg-ink-900/60 border-ink-line">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Sliders className="h-3.5 w-3.5 text-amber-400" />
+                      Custom Spacing Studio (Vertical Margins &amp; Density)
+                    </span>
+                    <span className="text-[10px] text-amber-400/90 font-mono">
+                      Physical Paper Calibration
+                    </span>
+                  </div>
+
+                  {/* Top Margin / Header Offset Stepper */}
+                  <div className="bg-ink-850 p-2.5 rounded-lg border border-ink-line space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-200">Top Header Margin (Y-Offset)</span>
+                        <p className="text-[10px] text-slate-400">
+                          Adds top padding to prevent the physical cutter/tear-bar from clipping the header.
+                        </p>
+                      </div>
+                      <span className="font-mono text-sm font-bold text-amber-400">
+                        {receiptTopMargin.toFixed(1)} mm
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReceiptTopMargin((v) => Math.max(0, +(v - 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        - 0.5
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="15"
+                        step="0.5"
+                        value={receiptTopMargin}
+                        onChange={(e) => setReceiptTopMargin(parseFloat(e.target.value))}
+                        className="flex-1 accent-amber-500 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setReceiptTopMargin((v) => Math.min(15, +(v + 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        + 0.5
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 pt-0.5">
+                      {[
+                        { label: '0mm (Flush)', val: 0.0 },
+                        { label: '2mm (Standard)', val: 2.0 },
+                        { label: '5mm (Safe)', val: 5.0 },
+                        { label: '8mm (Deep)', val: 8.0 }
+                      ].map((p) => (
+                        <button
+                          key={p.val}
+                          type="button"
+                          onClick={() => setReceiptTopMargin(p.val)}
+                          className={`px-2 py-0.5 text-[10px] rounded border font-semibold transition ${
+                            receiptTopMargin === p.val
+                              ? 'border-amber-500 bg-amber-500/20 text-amber-300'
+                              : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Item-to-Item Row Gap */}
+                  <div className="bg-ink-850 p-2.5 rounded-lg border border-ink-line space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-200">Cart Item Row Gap</span>
+                        <p className="text-[10px] text-slate-400">
+                          Vertical space between each product row (tighten to save paper, loosen for clarity).
+                        </p>
+                      </div>
+                      <span className="font-mono text-sm font-bold text-teal-400">
+                        {receiptItemSpacing.toFixed(1)} px
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReceiptItemSpacing((v) => Math.max(0, +(v - 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        - 0.5
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="8"
+                        step="0.5"
+                        value={receiptItemSpacing}
+                        onChange={(e) => setReceiptItemSpacing(parseFloat(e.target.value))}
+                        className="flex-1 accent-teal-500 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setReceiptItemSpacing((v) => Math.min(8, +(v + 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        + 0.5
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 pt-0.5">
+                      {[
+                        { label: '0px (Dense)', val: 0.0 },
+                        { label: '1px (Normal)', val: 1.0 },
+                        { label: '2.5px (Relaxed)', val: 2.5 },
+                        { label: '4px (Spacious)', val: 4.0 }
+                      ].map((p) => (
+                        <button
+                          key={p.val}
+                          type="button"
+                          onClick={() => setReceiptItemSpacing(p.val)}
+                          className={`px-2 py-0.5 text-[10px] rounded border font-semibold transition ${
+                            receiptItemSpacing === p.val
+                              ? 'border-teal-500 bg-teal-500/20 text-teal-300'
+                              : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Divider / Separator Margin */}
+                  <div className="bg-ink-850 p-2.5 rounded-lg border border-ink-line space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-200">Divider &amp; Line Gap</span>
+                        <p className="text-[10px] text-slate-400">
+                          Margin above and below dashed and double separator dividers.
+                        </p>
+                      </div>
+                      <span className="font-mono text-sm font-bold text-indigo-400">
+                        {receiptSeparatorSpacing.toFixed(1)} px
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReceiptSeparatorSpacing((v) => Math.max(0, +(v - 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        - 0.5
+                      </button>
+                      <input
+                        type="range"
+                        min="0"
+                        max="8"
+                        step="0.5"
+                        value={receiptSeparatorSpacing}
+                        onChange={(e) => setReceiptSeparatorSpacing(parseFloat(e.target.value))}
+                        className="flex-1 accent-indigo-500 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setReceiptSeparatorSpacing((v) => Math.min(8, +(v + 0.5).toFixed(1)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        + 0.5
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 pt-0.5">
+                      {[
+                        { label: '1px (Compact)', val: 1.0 },
+                        { label: '2px (Balanced)', val: 2.0 },
+                        { label: '3.5px (Airy)', val: 3.5 }
+                      ].map((p) => (
+                        <button
+                          key={p.val}
+                          type="button"
+                          onClick={() => setReceiptSeparatorSpacing(p.val)}
+                          className={`px-2 py-0.5 text-[10px] rounded border font-semibold transition ${
+                            receiptSeparatorSpacing === p.val
+                              ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+                              : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Granular Line Height Multiplier */}
+                  <div className="bg-ink-850 p-2.5 rounded-lg border border-ink-line space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-200">Global Line Height Multiplier</span>
+                        <p className="text-[10px] text-slate-400">
+                          Continuous vertical height stretching for high legibility thermal printing.
+                        </p>
+                      </div>
+                      <span className="font-mono text-sm font-bold text-fuchsia-400">
+                        {receiptLineHeightMultiplier.toFixed(2)}x
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setReceiptLineHeightMultiplier((v) => Math.max(1.0, +(v - 0.05).toFixed(2)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        - 0.05
+                      </button>
+                      <input
+                        type="range"
+                        min="1.00"
+                        max="2.00"
+                        step="0.05"
+                        value={receiptLineHeightMultiplier}
+                        onChange={(e) => setReceiptLineHeightMultiplier(parseFloat(e.target.value))}
+                        className="flex-1 accent-fuchsia-500 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setReceiptLineHeightMultiplier((v) => Math.min(2.0, +(v + 0.05).toFixed(2)))}
+                        className="btn-ghost px-2.5 py-1 text-xs font-bold"
+                      >
+                        + 0.05
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 pt-0.5">
+                      {[
+                        { label: '1.08x (Compact)', val: 1.08 },
+                        { label: '1.15x (Standard)', val: 1.15 },
+                        { label: '1.25x (Spacious)', val: 1.25 },
+                        { label: '1.40x (Airy)', val: 1.40 }
+                      ].map((p) => (
+                        <button
+                          key={p.val}
+                          type="button"
+                          onClick={() => {
+                            setReceiptLineHeightMultiplier(p.val)
+                            if (p.val === 1.08) setReceiptLineSpacing('compact')
+                            else if (p.val === 1.15) setReceiptLineSpacing('balanced')
+                            else if (p.val === 1.25) setReceiptLineSpacing('spacious')
+                          }}
+                          className={`px-2 py-0.5 text-[10px] rounded border font-semibold transition ${
+                            receiptLineHeightMultiplier === p.val
+                              ? 'border-fuchsia-500 bg-fuchsia-500/20 text-fuchsia-300'
+                              : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Optical Typography & Density */}
                 <div className="card p-3.5 space-y-3 bg-ink-900/60 border-ink-line">
                   <span className="text-xs font-bold text-white flex items-center gap-1.5">
                     <Layers className="h-3.5 w-3.5 text-purple-400" />
@@ -1098,99 +1391,23 @@ export function PrinterStudioModal({
             {/* PREVIEW CONTAINER */}
             <div className="flex-1 flex items-center justify-center w-full py-2 overflow-hidden">
               {activeTab === 'receipt' ? (
-                /* ----------------- RECEIPT PREVIEW ----------------- */
-                <div
-                  className="bg-white text-black shadow-2xl rounded-sm transition-all overflow-hidden relative font-mono select-none"
-                  style={{
-                    width: receiptWidth === '58mm' ? '210px' : '260px',
-                    padding: `8px ${receiptRightMargin * 2.8}px 12px ${receiptLeftMargin * 2.8}px`,
-                    fontSize: `${(receiptFontScale / 100) * 9.5}px`,
-                    lineHeight: receiptLineSpacing === 'compact' ? '1.1' : receiptLineSpacing === 'spacious' ? '1.3' : '1.18',
-                    borderTop: '3px dashed #bbb',
-                    borderBottom: '3px dashed #bbb'
-                  }}
-                >
-                  {/* Left edge ruler visual cue */}
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-[2px] bg-brand-500/40"
-                    title={`Left Indent: ${receiptLeftMargin}mm`}
-                  />
-
-                  {/* Receipt Header */}
-                  <div className="text-center font-black text-[11px] uppercase tracking-tight">
-                    {settings?.store_name || 'TINDA POS STORE'}
-                  </div>
-                  {receiptCustomHeader && (
-                    <div className="text-center font-bold text-[8.5px] uppercase text-slate-700">
-                      {receiptCustomHeader}
-                    </div>
-                  )}
-                  <div className="border-t border-dashed border-black my-1" />
-
-                  {/* Metadata */}
-                  <div className="text-[8px] space-y-0.5 text-slate-800">
-                    <div>Date: 10/10/2026 08:45 AM</div>
-                    {receiptShowCashier && <div>Cashier: Cashier 1</div>}
-                    {receiptShowCustomer && <div>Customer: Suki Regular</div>}
-                  </div>
-                  <div className="border-t border-dashed border-black my-1" />
-
-                  {/* Line Items */}
-                  <div className="space-y-1 font-bold text-[8.5px]">
-                    <div>
-                      <div>Lucky Me Pancit Canton</div>
-                      <div className="flex justify-between text-[8px] text-slate-700">
-                        <span>2 x 18.00</span>
-                        <span className="font-black text-black">36.00</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div>Coca-Cola Swakto 200ml</div>
-                      <div className="flex justify-between text-[8px] text-slate-700">
-                        <span>3 x 15.00</span>
-                        <span className="font-black text-black">45.00</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t-2 border-double border-black my-1" />
-
-                  {/* Totals */}
-                  <div className="space-y-0.5 font-bold text-[8.5px]">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>₱81.00</span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-black border-y border-double border-black py-0.5 my-0.5">
-                      <span>TOTAL</span>
-                      <span>₱81.00</span>
-                    </div>
-                    {receiptShowChange && (
-                      <>
-                        <div className="flex justify-between">
-                          <span>Cash Tendered</span>
-                          <span>₱100.00</span>
-                        </div>
-                        <div className="flex justify-between font-black text-black">
-                          <span>SUKLI</span>
-                          <span>₱19.00</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div className="border-t border-dashed border-black my-1" />
-
-                  {/* Footer message */}
-                  <div className="text-center text-[7.5px] font-bold text-slate-800 mt-1">
-                    {receiptCustomFooter || settings?.receipt_footer || 'Salamat sa pagpalit! Balik-balik!'}
-                  </div>
-
-                  {/* Feed Lines Spacer representation */}
-                  <div
-                    style={{ height: `${receiptFeedLines * 4}px` }}
-                    className="border-b border-dotted border-slate-300 mt-1"
-                    title={`Cutter feed gap: ${receiptFeedLines} lines`}
+                /* ----------------- RECEIPT PREVIEW (Exact 1:1 Engine) ----------------- */
+                <div className="w-full flex justify-center max-h-[56vh] overflow-y-auto px-2">
+                  <ReceiptPaper
+                    lines={sampleReceiptLines}
+                    width={receiptWidth}
+                    customOptions={{
+                      offsetLeftMm: receiptLeftMargin,
+                      offsetRightMm: receiptRightMargin,
+                      offsetTopMm: receiptTopMargin,
+                      feedLinesEnd: receiptFeedLines,
+                      fontScale: receiptFontScale,
+                      lineSpacing: receiptLineSpacing,
+                      lineHeightMultiplier: receiptLineHeightMultiplier,
+                      itemSpacingPx: receiptItemSpacing,
+                      separatorSpacingPx: receiptSeparatorSpacing,
+                      ultraBlack: receiptUltraBlack
+                    }}
                   />
                 </div>
               ) : (

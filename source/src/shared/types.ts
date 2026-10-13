@@ -1,3 +1,4 @@
+// File: src/shared/types.ts
 // Domain types shared between main, preload and renderer.
 // Money is stored as INTEGER centavos (`_c`) — no floating-point money.
 // Stock is stored as INTEGER base units.
@@ -503,9 +504,13 @@ export interface StoreSettings {
   // Printer Alignment & Studio Customization
   receipt_offset_left_mm?: number
   receipt_offset_right_mm?: number
+  receipt_offset_top_mm?: number
   receipt_feed_lines_end?: number
   receipt_font_scale?: number
   receipt_line_spacing?: 'compact' | 'balanced' | 'spacious'
+  receipt_line_height_multiplier?: number
+  receipt_item_spacing_px?: number
+  receipt_separator_spacing_px?: number
   receipt_ultra_black?: boolean
   receipt_custom_header?: string
   receipt_custom_footer?: string

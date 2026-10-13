@@ -1,3 +1,4 @@
+// File: src/shared/receiptHtml.ts
 // Pure, dependency-free receipt HTML builder shared by:
 //  - src/main/services/printing.ts (silent webContents.print path)
 //  - the renderer ReceiptPaper preview (Settings / POS / Transactions)
@@ -238,12 +239,25 @@ const baseCss = `
 export interface ReceiptLayoutOptions {
   offsetLeftMm?: number
   offsetRightMm?: number
+  offsetTopMm?: number
   feedLinesEnd?: number
   fontScale?: number
   lineSpacing?: 'compact' | 'balanced' | 'spacious'
+  lineHeightMultiplier?: number
+  itemSpacingPx?: number
+  separatorSpacingPx?: number
   ultraBlack?: boolean
 }
 
+/**
+ * Generates thermal receipt CSS stylesheet for print and screen preview.
+ *
+ * @param width - Thermal paper width ('58mm' | '80mm').
+ * @param options - Custom spacing, margins, typography, and density options.
+ * @returns Serialized CSS stylesheet string.
+ * @throws Never throws error.
+ * @complexity O(1) constant time formatting.
+ */
 export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions): string {
   const is58 = width !== '80mm'
   const paperWidth = is58 ? '58mm' : '80mm'
@@ -256,6 +270,9 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
   const padRight = typeof options?.offsetRightMm === 'number' && !isNaN(options.offsetRightMm)
     ? `${Number(Math.max(0, options.offsetRightMm))}mm`
     : (is58 ? '3.5mm' : '4mm')
+  const padTop = typeof options?.offsetTopMm === 'number' && !isNaN(options.offsetTopMm)
+    ? `${Number(Math.max(0, options.offsetTopMm))}mm`
+    : '2mm'
   
   const scale = typeof options?.fontScale === 'number' && options.fontScale > 0
     ? options.fontScale / 100
@@ -269,9 +286,15 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
   const totalAmtSize = scale === 1 ? '12.5px' : `${Number((12.5 * scale).toFixed(1))}px`
   const denomSize = scale === 1 ? '10px' : `${Number((10 * scale).toFixed(1))}px`
   
-  const lineHt = options?.lineSpacing === 'compact' ? '1.08' : options?.lineSpacing === 'spacious' ? '1.25' : '1.15'
-  const itemPadding = options?.lineSpacing === 'compact' ? '0.2px 0' : options?.lineSpacing === 'spacious' ? '2.5px 0' : '0.8px 0'
-  const sepMargin = options?.lineSpacing === 'compact' ? '1px 0' : options?.lineSpacing === 'spacious' ? '3px 0' : '2px 0'
+  const lineHt = typeof options?.lineHeightMultiplier === 'number' && options.lineHeightMultiplier > 0
+    ? `${options.lineHeightMultiplier.toFixed(2)}`
+    : (options?.lineSpacing === 'compact' ? '1.08' : options?.lineSpacing === 'spacious' ? '1.25' : '1.15')
+  const itemPadding = typeof options?.itemSpacingPx === 'number' && !isNaN(options.itemSpacingPx)
+    ? `${Number(Math.max(0, options.itemSpacingPx))}px 0`
+    : (options?.lineSpacing === 'compact' ? '0.2px 0' : options?.lineSpacing === 'spacious' ? '2.5px 0' : '0.8px 0')
+  const sepMargin = typeof options?.separatorSpacingPx === 'number' && !isNaN(options.separatorSpacingPx)
+    ? `${Number(Math.max(0, options.separatorSpacingPx))}px 0`
+    : (options?.lineSpacing === 'compact' ? '1px 0' : options?.lineSpacing === 'spacious' ? '3px 0' : '2px 0')
   const strokeW = options?.ultraBlack === true ? '0.18px' : '0.05px'
 
   return `
@@ -301,7 +324,7 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
         width: 100% !important;
         max-width: ${printWidth} !important;
         margin: 0 auto !important;
-        padding: 2mm ${padRight} 2mm ${padLeft} !important;
+        padding: ${padTop} ${padRight} 2mm ${padLeft} !important;
         font-size: ${scaledSize} !important;
         font-weight: 800 !important;
         letter-spacing: -0.01em !important;
@@ -380,7 +403,7 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
         overflow: hidden !important;
       }
     }
-    .tp-sheet { width: ${contentWidth}; padding: 2mm ${padRight} 2mm ${padLeft}; font-size: ${scaledSize}; line-height: ${lineHt}; }
+    .tp-sheet { width: ${contentWidth}; padding: ${padTop} ${padRight} 2mm ${padLeft}; font-size: ${scaledSize}; line-height: ${lineHt}; }
     .tp-row, .tp-item, .tp-item .tp-name, .tp-itemline, .tp-qty, .tp-sum, .tp-sukli, .tp-section-head {
       font-size: ${scaledSize};
       line-height: ${lineHt};

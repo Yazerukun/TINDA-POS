@@ -1,3 +1,4 @@
+// File: src/renderer/src/components/ReceiptPaper.tsx
 import { useMemo } from 'react'
 import type { ReceiptWidth, ReceiptLayoutOptions } from '@shared/receiptHtml'
 import { receiptBodyHtml, receiptCss } from '@shared/receiptHtml'
@@ -24,9 +25,13 @@ export function ReceiptPaper({ lines, width, customOptions }: ReceiptPaperProps)
   const effectiveOptions: ReceiptLayoutOptions = useMemo(() => ({
     offsetLeftMm: customOptions?.offsetLeftMm ?? custom.receipt_offset_left_mm,
     offsetRightMm: customOptions?.offsetRightMm ?? custom.receipt_offset_right_mm,
+    offsetTopMm: customOptions?.offsetTopMm ?? custom.receipt_offset_top_mm,
     feedLinesEnd: customOptions?.feedLinesEnd ?? custom.receipt_feed_lines_end,
     fontScale: customOptions?.fontScale ?? custom.receipt_font_scale,
     lineSpacing: customOptions?.lineSpacing ?? custom.receipt_line_spacing,
+    lineHeightMultiplier: customOptions?.lineHeightMultiplier ?? custom.receipt_line_height_multiplier,
+    itemSpacingPx: customOptions?.itemSpacingPx ?? custom.receipt_item_spacing_px,
+    separatorSpacingPx: customOptions?.separatorSpacingPx ?? custom.receipt_separator_spacing_px,
     ultraBlack: customOptions?.ultraBlack ?? custom.receipt_ultra_black
   }), [custom, customOptions])
 

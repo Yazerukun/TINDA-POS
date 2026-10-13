@@ -1,3 +1,4 @@
+// File: src/main/services/printing.ts
 import { BrowserWindow, shell, app } from 'electron'
 import type { PrinterInfo, WebContents } from 'electron'
 import { join } from 'node:path'
@@ -22,6 +23,16 @@ export interface PrintOptions {
   deviceName?: string
 }
 
+/**
+ * Assembles calibration test pattern lines with detailed margin, spacing, and printer metadata.
+ *
+ * @param settings - Current store and printer configuration.
+ * @param printer - Name of the active target printer.
+ * @param now - Reference timestamp for print issuance.
+ * @returns Array of receipt lines formatted for thermal printing.
+ * @throws Never throws error.
+ * @complexity O(N) where N is number of receipt lines.
+ */
 export function testPrintLines(settings: StoreSettings, printer: string, now = new Date()): string[] {
   const header = (settings.receipt_header || settings.receipt_custom_header || '').trim()
   const footer = (settings.receipt_footer || settings.receipt_custom_footer || '').trim()
@@ -29,7 +40,11 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
   const scale = settings.receipt_font_scale || 100
   const padL = settings.receipt_offset_left_mm ?? 3.5
   const padR = settings.receipt_offset_right_mm ?? 2.0
-  const feed = settings.receipt_feed_lines_end ?? 4
+  const padT = settings.receipt_offset_top_mm ?? 2.0
+  const lineHt = settings.receipt_line_height_multiplier ?? 1.15
+  const itemSp = settings.receipt_item_spacing_px ?? 1.0
+  const sepSp = settings.receipt_separator_spacing_px ?? 2.0
+  const feed = settings.receipt_feed_lines_end ?? 3
 
   const lines: string[] = [
     'TINDA POS',
@@ -48,8 +63,9 @@ export function testPrintLines(settings: StoreSettings, printer: string, now = n
     `Store: ${settings.store_name}`,
     `Printer: ${printer}`,
     `Paper: ${settings.receipt_paper_width}`,
-    `Spacing: ${spacing} | Font: ${scale}%`,
-    `Margins: L: ${padL}mm | R: ${padR}mm`,
+    `Margins: L:${padL} R:${padR} T:${padT}mm`,
+    `Height: ${lineHt}x | Scale: ${scale}%`,
+    `Spacing: Item ${itemSp}px | Sep ${sepSp}px`,
     `Feed: ${feed} lines buffer`,
     `Date: ${formatReceiptDate(now)}`,
     '--------------------------------',
@@ -191,9 +207,13 @@ export async function printLines(
     const htmlPayload = receiptHtml(lines, effectiveWidth, settings.currency, {
       offsetLeftMm: settings.receipt_offset_left_mm,
       offsetRightMm: settings.receipt_offset_right_mm,
+      offsetTopMm: settings.receipt_offset_top_mm,
       feedLinesEnd: settings.receipt_feed_lines_end,
       fontScale: settings.receipt_font_scale,
       lineSpacing: settings.receipt_line_spacing,
+      lineHeightMultiplier: settings.receipt_line_height_multiplier,
+      itemSpacingPx: settings.receipt_item_spacing_px,
+      separatorSpacingPx: settings.receipt_separator_spacing_px,
       ultraBlack: settings.receipt_ultra_black
     })
     await window.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlPayload)}`)

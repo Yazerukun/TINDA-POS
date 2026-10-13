@@ -1,3 +1,4 @@
+// File: src/renderer/src/utils/printerCustomization.ts
 import type { StoreSettings } from '@shared/types'
 
 export const PRINTER_CUSTOMIZATION_STORAGE_KEY = 'tinda_printer_customization_v1'
@@ -8,9 +9,13 @@ export interface PrinterCustomizationSettings {
   receipt_paper_width: '58mm' | '80mm'
   receipt_offset_left_mm: number
   receipt_offset_right_mm: number
+  receipt_offset_top_mm: number
   receipt_feed_lines_end: number
   receipt_font_scale: number
   receipt_line_spacing: 'compact' | 'balanced' | 'spacious'
+  receipt_line_height_multiplier: number
+  receipt_item_spacing_px: number
+  receipt_separator_spacing_px: number
   receipt_ultra_black: boolean
   receipt_custom_header: string
   receipt_custom_footer: string
@@ -39,9 +44,13 @@ export const DEFAULT_PRINTER_CUSTOMIZATION: PrinterCustomizationSettings = {
   receipt_paper_width: '58mm',
   receipt_offset_left_mm: 3.5,
   receipt_offset_right_mm: 2.0,
+  receipt_offset_top_mm: 2.0,
   receipt_feed_lines_end: 3,
   receipt_font_scale: 100,
   receipt_line_spacing: 'balanced',
+  receipt_line_height_multiplier: 1.15,
+  receipt_item_spacing_px: 1.0,
+  receipt_separator_spacing_px: 2.0,
   receipt_ultra_black: true,
   receipt_custom_header: '',
   receipt_custom_footer: '',
@@ -139,9 +148,13 @@ export function reconcilePrinterCustomization(
     receipt_paper_width: resolveVal('receipt_paper_width', DEFAULT_PRINTER_CUSTOMIZATION.receipt_paper_width),
     receipt_offset_left_mm: Number(resolveVal('receipt_offset_left_mm', DEFAULT_PRINTER_CUSTOMIZATION.receipt_offset_left_mm)),
     receipt_offset_right_mm: Number(resolveVal('receipt_offset_right_mm', DEFAULT_PRINTER_CUSTOMIZATION.receipt_offset_right_mm)),
+    receipt_offset_top_mm: Number(resolveVal('receipt_offset_top_mm', DEFAULT_PRINTER_CUSTOMIZATION.receipt_offset_top_mm)),
     receipt_feed_lines_end: Number(resolveVal('receipt_feed_lines_end', DEFAULT_PRINTER_CUSTOMIZATION.receipt_feed_lines_end)),
     receipt_font_scale: Number(resolveVal('receipt_font_scale', DEFAULT_PRINTER_CUSTOMIZATION.receipt_font_scale)),
     receipt_line_spacing: resolveVal('receipt_line_spacing', DEFAULT_PRINTER_CUSTOMIZATION.receipt_line_spacing),
+    receipt_line_height_multiplier: Number(resolveVal('receipt_line_height_multiplier', DEFAULT_PRINTER_CUSTOMIZATION.receipt_line_height_multiplier)),
+    receipt_item_spacing_px: Number(resolveVal('receipt_item_spacing_px', DEFAULT_PRINTER_CUSTOMIZATION.receipt_item_spacing_px)),
+    receipt_separator_spacing_px: Number(resolveVal('receipt_separator_spacing_px', DEFAULT_PRINTER_CUSTOMIZATION.receipt_separator_spacing_px)),
     receipt_ultra_black: Boolean(resolveVal('receipt_ultra_black', DEFAULT_PRINTER_CUSTOMIZATION.receipt_ultra_black)),
     receipt_custom_header: String(resolveVal('receipt_custom_header', DEFAULT_PRINTER_CUSTOMIZATION.receipt_custom_header)),
     receipt_custom_footer: String(resolveVal('receipt_custom_footer', DEFAULT_PRINTER_CUSTOMIZATION.receipt_custom_footer)),
