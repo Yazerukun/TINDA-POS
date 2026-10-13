@@ -6,7 +6,8 @@ import {
 } from '../../../stores/notificationDrawer'
 import {
   generateStoreBriefing,
-  askAdvisorQuestion
+  askAdvisorQuestion,
+  askAdvisorWithAi
 } from '../../../services/aiStoreAdvisor'
 
 describe('Notification Drawer & AI Advisor Integration', () => {
@@ -152,5 +153,69 @@ describe('Notification Drawer & AI Advisor Integration', () => {
     const resUtang = askAdvisorQuestion('May overdue utang ba?', sampleTelemetry, 'en')
     expect(resUtang.intent).toBe('UTANG')
     expect(resUtang.action?.page).toBe('utang')
+  })
+
+  it('delegates to window.api.ai.askAdvisor when available and flags opencode / gemini source', async () => {
+    const askAdvisorMock = vi.fn().mockResolvedValue({
+      reply: 'Boss, maganda ang benta natin pero mauubos na ang Coke 1.5L. Mag-reorder na agad sa supplier.',
+      source: 'opencode',
+      action: { label: 'Pumunta sa Inventory ↗', page: 'inventory' }
+    })
+    const win: any = (globalThis as any).window || {}
+    win.api = {
+      ...(win.api || {}),
+      ai: {
+        askAdvisor: askAdvisorMock
+      }
+    }
+    ;(globalThis as any).window = win
+
+    const res = await askAdvisorWithAi('Anong diskarte sa Coke?', sampleTelemetry, 'tl')
+
+    expect(askAdvisorMock).toHaveBeenCalledWith('Anong diskarte sa Coke?', sampleTelemetry, 'tl')
+    expect(res.source).toBe('opencode')
+    expect(res.answer).toContain('mauubos na ang Coke 1.5L')
+    expect(res.action?.page).toBe('inventory')
+  })
+
+  it('gracefully falls back to local rules engine when window.api.ai.askAdvisor errors out', async () => {
+    const askAdvisorMock = vi.fn().mockRejectedValue(new Error('Network offline'))
+    const win: any = (globalThis as any).window || {}
+    win.api = {
+      ...(win.api || {}),
+      ai: {
+        askAdvisor: askAdvisorMock
+      }
+    }
+    ;(globalThis as any).window = win
+
+    const res = await askAdvisorWithAi('Magkano ang pera sa kaha?', sampleTelemetry, 'tl')
+
+    expect(res.source).toBe('local_rules')
+    expect(res.answer).toContain('₱4,000.00')
+  })
+
+  it('preserves cached telemetry without flashing isLoading spinner during background revalidation', async () => {
+    const store = useNotificationDrawer.getState()
+    // Pre-seed telemetry
+    useNotificationDrawer.setState({ telemetry: sampleTelemetry, isLoading: false, lastFetchedAt: Date.now() - 20_000 })
+
+    const updatedTelemetry = { ...sampleTelemetry, net_sales_c: 600000 }
+    const getSummaryMock = vi.fn().mockResolvedValue(updatedTelemetry)
+    const win: any = (globalThis as any).window || {}
+    win.api = {
+      ...(win.api || {}),
+      telemetry: {
+        getSummary: getSummaryMock
+      }
+    }
+    ;(globalThis as any).window = win
+
+    // Open drawer triggers background refresh, but does NOT reset telemetry or toggle isLoading
+    expect(useNotificationDrawer.getState().isLoading).toBe(false)
+    await store.fetchTelemetry(false)
+
+    expect(useNotificationDrawer.getState().telemetry?.net_sales_c).toBe(600000)
+    expect(useNotificationDrawer.getState().isLoading).toBe(false)
   })
 })

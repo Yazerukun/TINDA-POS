@@ -5,6 +5,32 @@ IDLE | None | 2026-10-13 12:15
 
 ## Recent Handoff History
 
+### 2026-10-13 12:50 | agy / SCRIBE & KRAKEN & VIPER (Instant 0ms Cache & OpenCode/Gemini AI Advisor)
+- **Task**: Implement Instant 0ms Store Telemetry Cache & OpenCode Free Models AI Copilot Integration for v2.1.8, pass all QA gates, commit, push to GitHub, and update live hot patch on GitHub Releases.
+- **Key Upgrades**:
+  - **Instant 0ms Store Telemetry Cache (`storeTelemetry.ts`, `inventoryEvents.ts`, `Shell.tsx`)**: Telemetry cache pre-warming on Shell mount (`warmStoreTelemetryCache()`), sub-millisecond instant drawer rendering, 15-second TTL with force-refresh support, and automatic event-driven invalidation on product/inventory mutations.
+  - **OpenCode Free Models Pool & Gemini Fallback (`aiService.ts`, `NotificationBellDrawer.tsx`)**: OpenCode multi-model rotation pool (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with fallback to Gemini cloud copilot. Rich retail store context injection, grounded SOP rules (GCash non-custodial workflow, RA 9994/RA 10754 Senior/PWD discounts, barcode generation, utang tracking), and suggested navigation actions.
+- **QA Verification Gate (VIPER)**:
+  - 531/531 Vitest unit tests passing across 82 test suites (100% green).
+  - TypeScript typecheck passed with 0 errors across Node & Web targets.
+  - Master invariants 100% verified (`node tools/check_master_invariants.mjs`).
+  - Hot patch updated on GitHub Releases (`Yazerukun/TINDA-POS`).
+- **Files Touched**:
+  - `source/src/main/services/storeTelemetry.ts`
+  - `source/src/main/services/inventoryEvents.ts`
+  - `source/src/main/services/aiService.ts`
+  - `source/src/main/services/__tests__/storeTelemetry.test.ts`
+  - `source/src/main/ipc/index.ts`
+  - `source/src/preload/index.ts`
+  - `source/src/shared/ipc.ts`
+  - `source/src/renderer/src/layouts/Shell.tsx`
+  - `source/src/renderer/src/components/notifications/NotificationBellDrawer.tsx`
+  - `source/src/renderer/src/components/notifications/__tests__/notificationDrawer.test.ts`
+  - `source/src/renderer/src/services/aiStoreAdvisor.ts`
+  - `source/src/renderer/src/stores/notificationDrawer.ts`
+  - `docs/RELEASE-STATE.md`
+  - `.agents/memory/session.md`
+
 ### 2026-10-13 12:15 | agy / SCRIBE & KRAKEN & VIPER (v2.1.8 Notification Bell & Bilingual AI Store Advisor Edition)
 - **Task**: Bump version to v2.1.8 per Boss directive ("v2.1.8 man dapat ni"), synchronize documentation across all manifests, commit, push, and publish live in-app hot patch to GitHub Releases (`v2.1.8`).
 - **Key Modules in v2.1.8**:

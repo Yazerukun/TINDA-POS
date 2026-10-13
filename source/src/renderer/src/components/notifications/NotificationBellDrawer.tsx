@@ -31,6 +31,7 @@ import { useNav, type PageKey } from '../../stores/nav'
 import {
   generateStoreBriefing,
   askAdvisorQuestion,
+  askAdvisorWithAi,
   speakAdvisorBriefing,
   stopAdvisorSpeech,
   isAdvisorSpeaking,
@@ -219,19 +220,21 @@ export function NotificationBellDrawer(): React.JSX.Element | null {
     })
   }, [briefing, isSpeaking, language])
 
-  // Question submission handler
+  // Question submission handler using OpenCode Free / Gemini Engine with instant local fallback
   const handleAskQuestion = useCallback(
-    (questionText: string) => {
+    async (questionText: string) => {
       if (!telemetry || !questionText.trim()) return
       stopAdvisorSpeech()
       setIsSpeaking(false)
       setIsAsking(true)
 
       try {
-        const response = askAdvisorQuestion(questionText.trim(), telemetry, language)
+        const response = await askAdvisorWithAi(questionText.trim(), telemetry, language)
         setActiveQA(response)
       } catch (err) {
         console.error('[AI Advisor] QA Error:', err)
+        const fallback = askAdvisorQuestion(questionText.trim(), telemetry, language)
+        setActiveQA(fallback)
       } finally {
         setIsAsking(false)
         setQuestionInput('')
@@ -636,13 +639,53 @@ export function NotificationBellDrawer(): React.JSX.Element | null {
                   </button>
                 </form>
 
+                {/* Live Thinking Status while OpenCode / Gemini generates */}
+                {isAsking && (
+                  <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 shadow-lg space-y-2.5 animate-pulse">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-emerald-400 animate-spin" />
+                        <span className="text-xs font-bold text-emerald-300">
+                          {language === 'tl'
+                            ? 'Kinukwenta ng AI ang mga datos ng tindahan...'
+                            : 'TINDA AI is analyzing real-time store telemetry...'}
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        ⚡ OpenCode / Gemini
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 pt-1">
+                      <div className="h-2 w-4/5 bg-emerald-500/20 rounded-full animate-pulse" />
+                      <div className="h-2 w-3/5 bg-emerald-500/10 rounded-full animate-pulse" />
+                    </div>
+                  </div>
+                )}
+
                 {/* Conversational QA Response Card */}
                 {activeQA && (
                   <div className="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 space-y-2.5 shadow-lg animate-fadeInUp">
                     <div className="flex items-center justify-between pb-1.5 border-b border-emerald-500/20">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-emerald-400" />
                         <h4 className="text-xs font-bold text-white">{activeQA.headline}</h4>
+                        {activeQA.source && (
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                              activeQA.source === 'opencode'
+                                ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300'
+                                : activeQA.source === 'gemini'
+                                  ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-300'
+                                  : 'border-slate-700 bg-slate-800 text-slate-300'
+                            }`}
+                          >
+                            {activeQA.source === 'opencode'
+                              ? '⚡ OpenCode Free'
+                              : activeQA.source === 'gemini'
+                                ? '✨ Gemini 2.5 Flash'
+                                : '🛡️ Offline Rules'}
+                          </span>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -655,10 +698,12 @@ export function NotificationBellDrawer(): React.JSX.Element | null {
                       </button>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-slate-200">{activeQA.answer}</p>
+                    <div className="text-xs leading-relaxed text-slate-200 whitespace-pre-line space-y-1">
+                      {activeQA.answer}
+                    </div>
 
                     {activeQA.bullets.length > 0 && (
-                      <ul className="space-y-1 text-[11px] text-slate-300 pl-1">
+                      <ul className="space-y-1 text-[11px] text-slate-300 pl-1 pt-1">
                         {activeQA.bullets.map((b, i) => (
                           <li key={i} className="flex items-start gap-1.5">
                             <span className="text-emerald-400 mt-0.5">•</span>

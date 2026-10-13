@@ -16,7 +16,7 @@ interface NotificationDrawerState {
   toggleDrawer: () => void
   setActiveTab: (tab: DrawerTab) => void
   setLanguage: (lang: AdvisorLanguage) => void
-  fetchTelemetry: () => Promise<void>
+  fetchTelemetry: (forceRefresh?: boolean) => Promise<void>
 }
 
 function getStoredLanguage(): AdvisorLanguage {
@@ -42,11 +42,11 @@ export const useNotificationDrawer = create<NotificationDrawerState>((set, get) 
       isOpen: true,
       activeTab: tab || s.activeTab
     }))
-    // Auto-refresh telemetry if older than 15 seconds or not loaded
+    // 0ms instant display with silent background refresh if older than 15 seconds
     const now = Date.now()
     const { lastFetchedAt, isLoading } = get()
     if (!isLoading && (!lastFetchedAt || now - lastFetchedAt > 15_000)) {
-      void get().fetchTelemetry()
+      void get().fetchTelemetry(false)
     }
   },
 
@@ -70,11 +70,15 @@ export const useNotificationDrawer = create<NotificationDrawerState>((set, get) 
     set({ language: lang })
   },
 
-  fetchTelemetry: async () => {
-    set({ isLoading: true })
+  fetchTelemetry: async (forceRefresh = false) => {
+    // Stale-while-revalidate: only show spinner if we have NO data yet!
+    const hasData = get().telemetry !== null
+    if (!hasData) {
+      set({ isLoading: true })
+    }
     try {
       if (typeof window !== 'undefined' && window.api?.telemetry?.getSummary) {
-        const summary = await window.api.telemetry.getSummary()
+        const summary = await window.api.telemetry.getSummary(forceRefresh ? { forceRefresh: true } : undefined)
         set({ telemetry: summary, isLoading: false, lastFetchedAt: Date.now() })
       } else {
         set({ isLoading: false })

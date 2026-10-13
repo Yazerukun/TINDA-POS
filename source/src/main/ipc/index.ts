@@ -1344,9 +1344,27 @@ handle('ai:ask', async (_e: IpcMainInvokeEvent, question: string) => {
   return await askMainAiService(question)
 })
 
-handle('telemetry:getSummary', () => {
+handle(
+  'ai:askAdvisor',
+  async (
+    _e: IpcMainInvokeEvent,
+    question: string,
+    telemetry: import('@shared/types').StoreTelemetrySummary,
+    language?: 'en' | 'tl'
+  ) => {
+    const { askStoreAdvisorWithTelemetry } = require('../services/aiService')
+    let storeName = 'TINDA Store'
+    try {
+      const s = settingRepo.getSettings(db())
+      storeName = s.store_name || storeName
+    } catch {}
+    return await askStoreAdvisorWithTelemetry(question, telemetry, language || 'en', storeName)
+  }
+)
+
+handle('telemetry:getSummary', (_e: IpcMainInvokeEvent, options?: { forceRefresh?: boolean }) => {
   const { getStoreTelemetrySummary } = require('../services/storeTelemetry')
-  return getStoreTelemetrySummary(db())
+  return getStoreTelemetrySummary(undefined, options)
 })
 
 export function registerIpcHandlers(): void {

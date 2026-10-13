@@ -27,6 +27,7 @@ import { TindaCommunityChat } from '../components/community/TindaCommunityChat'
 import { TindaAiAssistantModal } from '../components/ai/TindaAiAssistantModal'
 import { FloatingWidgetsDock } from '../components/common/FloatingWidgetsDock'
 import { NotificationBellDrawer } from '../components/notifications/NotificationBellDrawer'
+import { useNotificationDrawer } from '../stores/notificationDrawer'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -34,6 +35,9 @@ export function Shell(): React.JSX.Element {
   const { page } = useNav()
 
   useEffect(() => {
+    // Pre-warm store telemetry cache immediately in background for 0ms instant drawer response
+    void useNotificationDrawer.getState().fetchTelemetry()
+
     load().catch(() => console.error('settings load failed'))
 
     // Initialize update store and run silent background check after mount (3 seconds)

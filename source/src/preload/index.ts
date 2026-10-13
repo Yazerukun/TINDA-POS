@@ -347,10 +347,21 @@ const api: TindaApi = {
     printBillSlip: (payload, options) => invoke<{ ok: boolean; message: string }>('ewallet:printBillSlip', payload, options)
   },
   ai: {
-    ask: (question: string) => invoke<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>('ai:ask', question)
+    ask: (question: string) => invoke<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>('ai:ask', question),
+    askAdvisor: (
+      question: string,
+      telemetry: import('@shared/types').StoreTelemetrySummary,
+      language?: 'en' | 'tl'
+    ) =>
+      invoke<{
+        reply: string
+        source: 'opencode' | 'gemini' | 'local_rules'
+        action?: { label: string; page: string; tab?: string; description?: string }
+      }>('ai:askAdvisor', question, telemetry, language)
   },
   telemetry: {
-    getSummary: () => invoke<import('@shared/types').StoreTelemetrySummary>('telemetry:getSummary')
+    getSummary: (options?: { forceRefresh?: boolean }) =>
+      invoke<import('@shared/types').StoreTelemetrySummary>('telemetry:getSummary', options)
   }
 }
 

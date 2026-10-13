@@ -43,6 +43,7 @@ export interface AdvisorQAResponse {
     description?: string
   }
   speechText: string
+  source?: 'opencode' | 'gemini' | 'local_rules'
 }
 
 export interface SpeechOptions {
@@ -1030,5 +1031,46 @@ export function askAdvisorQuestion(
   preferredLang?: AdvisorLanguage
 ): AdvisorQAResponse {
   return answerStoreQuestion(telemetry, question, preferredLang)
+}
+
+/**
+ * Asks the AI Advisor using Boss's OpenCode Free Models pool & Gemini engine,
+ * falling back automatically to the offline deterministic rules engine.
+ */
+export async function askAdvisorWithAi(
+  question: string,
+  telemetry: StoreTelemetrySummary,
+  lang: AdvisorLanguage = 'en'
+): Promise<AdvisorQAResponse> {
+  if (typeof window !== 'undefined' && window.api?.ai?.askAdvisor) {
+    try {
+      const res = await window.api.ai.askAdvisor(question, telemetry, lang)
+      if (res && res.reply) {
+        return {
+          intent: 'AI_COPILOT',
+          matchedQuestion: question,
+          language: lang,
+          headline:
+            lang === 'tl'
+              ? 'TINDA AI Advisor Pagsusuri'
+              : 'TINDA AI Store Analysis',
+          answer: res.reply,
+          bullets: [],
+          action: res.action,
+          speechText: res.reply,
+          source: res.source
+        }
+      }
+    } catch (err) {
+      console.warn('[AI Store Advisor] AI IPC askAdvisor error, falling back to local heuristics:', err)
+    }
+  }
+
+  // Instant deterministic local engine fallback
+  const localRes = answerStoreQuestion(telemetry, question, lang)
+  return {
+    ...localRes,
+    source: 'local_rules'
+  }
 }
 

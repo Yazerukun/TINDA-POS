@@ -554,9 +554,18 @@ export interface TindaApi {
   }
   ai: {
     ask: (question: string) => Promise<{ reply: string; action?: { label: string; page: string; tab?: string; description?: string } }>
+    askAdvisor: (
+      question: string,
+      telemetry: import('./types').StoreTelemetrySummary,
+      language?: 'en' | 'tl'
+    ) => Promise<{
+      reply: string
+      source: 'opencode' | 'gemini' | 'local_rules'
+      action?: { label: string; page: string; tab?: string; description?: string }
+    }>
   }
   telemetry: {
-    getSummary: () => Promise<import('./types').StoreTelemetrySummary>
+    getSummary: (options?: { forceRefresh?: boolean }) => Promise<import('./types').StoreTelemetrySummary>
   }
 }
 

@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3'
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { runMigrations } from '../../database/migrations'
-import { getStoreTelemetrySummary } from '../storeTelemetry'
+import { getStoreTelemetrySummary, invalidateStoreTelemetryCache } from '../storeTelemetry'
 import { localDate } from '@shared/expiration'
 
 describe('Store Telemetry Service', () => {
@@ -171,5 +171,27 @@ describe('Store Telemetry Service', () => {
     expect(summary.unpaid_utang_due.over_limit_count).toBe(1) // Aling Nena is 60000 > 50000 limit
     expect(summary.unpaid_utang_due.top_debtors[0]?.name).toBe('Aling Nena')
     expect(summary.unpaid_utang_due.top_debtors[0]?.is_over_limit).toBe(true)
+  })
+
+  it('serves cached telemetry instantly when useCache is enabled and invalidates cleanly', () => {
+    invalidateStoreTelemetryCache()
+
+    // First call computes fresh and populates cache
+    const first = getStoreTelemetrySummary(db, { useCache: true })
+    expect(first.business_date).toBe(today)
+
+    // Second call returns cached reference in <0.1ms
+    const second = getStoreTelemetrySummary(db, { useCache: true })
+    expect(second).toBe(first)
+
+    // forceRefresh bypasses cache
+    const third = getStoreTelemetrySummary(db, { useCache: true, forceRefresh: true })
+    expect(third).not.toBe(first)
+    expect(third.business_date).toBe(today)
+
+    // Invalidation clears cache
+    invalidateStoreTelemetryCache()
+    const fourth = getStoreTelemetrySummary(db, { useCache: true })
+    expect(fourth).not.toBe(third)
   })
 })

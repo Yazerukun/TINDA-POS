@@ -12,15 +12,42 @@ import type {
   TelemetryUtangCustomer
 } from '@shared/types'
 
+interface TelemetryCacheEntry {
+  data: StoreTelemetrySummary
+  timestamp: number
+}
+
+let cachedTelemetry: TelemetryCacheEntry | null = null
+const TELEMETRY_CACHE_TTL_MS = 10_000 // 10 seconds TTL
+
+/**
+ * Invalidates the in-memory telemetry cache so next call computes fresh.
+ */
+export function invalidateStoreTelemetryCache(): void {
+  cachedTelemetry = null
+}
+
 /**
  * Computes today's exact store metrics from the SQLite database.
+ * Supports in-memory caching with 10s TTL for instant 0ms responses.
  *
  * STRICT INVARIANT (Rule #14 Zero-Error standard):
  * - All financial totals are strictly represented as exact integer centavos (`_c`).
  * - Zero floating-point drift.
  * - Timezone matching adheres strictly to store local calendar boundaries (`localDate()`).
  */
-export function getStoreTelemetrySummary(db?: Database.Database): StoreTelemetrySummary {
+export function getStoreTelemetrySummary(
+  db?: Database.Database,
+  options?: { forceRefresh?: boolean; useCache?: boolean }
+): StoreTelemetrySummary {
+  const isCustomDb = db !== undefined
+  const shouldCheckCache = (!isCustomDb || options?.useCache) && !options?.forceRefresh
+  const now = Date.now()
+
+  if (shouldCheckCache && cachedTelemetry && (now - cachedTelemetry.timestamp < TELEMETRY_CACHE_TTL_MS)) {
+    return cachedTelemetry.data
+  }
+
   const database = db ?? getDb()
   const today = localDate()
   const from = `${today} 00:00:00`
@@ -275,7 +302,7 @@ export function getStoreTelemetrySummary(db?: Database.Database): StoreTelemetry
     last_sync_at = settings.cloud_last_synced_at ?? null
   } catch {}
 
-  return {
+  const result: StoreTelemetrySummary = {
     business_date: today,
     generated_at,
     net_sales_c,
@@ -302,4 +329,10 @@ export function getStoreTelemetrySummary(db?: Database.Database): StoreTelemetry
     unpaid_utang_due,
     last_sync_at
   }
+
+  if (!isCustomDb || options?.useCache) {
+    cachedTelemetry = { data: result, timestamp: Date.now() }
+  }
+
+  return result
 }
