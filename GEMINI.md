@@ -30,7 +30,20 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)**
+- Current Version: **v2.2.2 (Universal Thermal Custom Spacing Studio & Receipt Persistence Edition)**
+
+## Key Features in v2.2.2 (Universal Thermal Custom Spacing Studio & Receipt Persistence Edition)
+1. **Universal Thermal Custom Spacing Studio (`receiptHtml.ts`, `PrinterStudioModal.tsx`)**:
+   - Continuous fine-grained controls for physical thermal printing margins and vertical layout density.
+   - Top Header Offset / Margin (0 to 15mm) eliminating printer cutter blade or tear bar clipping on physical paper rolls.
+   - Row Item-to-Item Gap (0 to 8px) allowing cashiers to stretch or compact product lines to conserve thermal roll paper.
+   - Divider / Separator Gap (0 to 8px) controlling vertical margins around dashed and double separator lines.
+   - Global Line Height Multiplier (1.00x to 2.00x) providing continuous height stretching for maximum text legibility on low-contrast thermal print heads.
+2. **Cross-Receipt System-Wide Persistence Architecture (`types.ts`, `settings.ts`, `printerCustomization.ts`, `printing.ts`)**:
+   - Custom spacing options persist seamlessly across all receipt generation paths: checkout sales, reprints, express slips, e-wallet transactions, bill payments, and cash count reports.
+   - Three-tier reconciliation priority: SQLite StoreSettings -> localStorage persistent fallback -> factory defaults.
+3. **1:1 Live Engine Preview (`ReceiptPaper.tsx`, `PrinterStudioModal.tsx`)**:
+   - The studio live preview now embeds `ReceiptPaper` directly, mathematically guaranteeing that the on-screen preview renders the exact HTML and CSS sent to the physical thermal print spooler.
 
 ## Key Features in v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)
 1. **In-App Full Build Downloader & 1-Click Auto-Restart (`updateService.ts`, `UnifiedUpdateCapsule.tsx`)**:

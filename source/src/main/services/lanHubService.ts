@@ -1,3 +1,4 @@
+// File: src/main/services/lanHubService.ts
 import http from 'node:http'
 import crypto from 'node:crypto'
 import os from 'node:os'
@@ -74,7 +75,7 @@ export function startUdpBeacon(port: number): void {
             storeName,
             ip: getLocalIp(),
             port,
-            version: '2.2.1'
+            version: '2.2.2'
           })
         )
         socket.send(payload, 0, payload.length, UDP_BEACON_PORT, '255.255.255.255')
@@ -119,7 +120,7 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
               ip,
               port,
               storeName: parsed.storeName || 'TINDA Store',
-              version: parsed.version || '2.2.1'
+              version: parsed.version || '2.2.2'
             })
           }
         } catch {}

@@ -43,7 +43,7 @@ const setupFile = `TindaPOS-Setup-${version}.exe`
 const setupPath = path.join(BUILDS_DIR, setupFile)
 const hasFullBuild = fs.existsSync(setupPath)
 const RELEASE_NAME = hasFullBuild
-  ? `TINDA POS ${TAG} — In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition`
+  ? `TINDA POS ${TAG} — Universal Custom Thermal Spacing Studio & Receipt Persistence Edition`
   : `TINDA POS ${TAG} — Live Feature Patch`
 
 const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
