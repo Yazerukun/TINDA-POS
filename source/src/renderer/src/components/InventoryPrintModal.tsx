@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Printer, FileText, ClipboardList, CheckSquare, ArrowDownUp, PackageSearch, Search, X } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { money } from '@shared/format'
 import { toastSuccess, toastError } from '../stores/toast'
+import { useSettings } from '../stores/settings'
 import type { Product } from '@shared/types'
 
 interface InventoryPrintModalProps {
@@ -18,8 +19,22 @@ export function InventoryPrintModal({
   open,
   onClose,
   products,
-  storeName = 'TINDA STORE'
+  storeName: storeNameProp
 }: InventoryPrintModalProps): React.JSX.Element | null {
+  const { settings, load: loadSettings } = useSettings()
+
+  useEffect(() => {
+    if (open && !settings) {
+      void loadSettings()
+    }
+  }, [open, settings, loadSettings])
+
+  const effectiveStoreName = (storeNameProp && storeNameProp !== 'TINDA STORE' ? storeNameProp : settings?.store_name) || 'TINDA STORE'
+  const storeAddress = settings?.address || ''
+  const storePhone = settings?.phone || ''
+  const storeTin = settings?.tin || ''
+  const storeOwner = settings?.owner_name || 'Store Owner'
+
   const [sheetType, setSheetType] = useState<SheetType>('STOCK_ON_HAND')
   const [onlyLowStock, setOnlyLowStock] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -117,19 +132,21 @@ export function InventoryPrintModal({
           td { border: 1px solid #ccc; padding: 5px 8px; vertical-align: middle; }
           .summary { margin-top: 16px; display: flex; justify-content: flex-end; font-size: 12px; font-weight: 800; }
           .sign-area { margin-top: 40px; display: flex; justify-content: space-between; font-size: 10px; }
-          .sign-box { width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 4px; }
+          .sign-box { width: 220px; border-top: 1px solid #000; text-align: center; padding-top: 4px; line-height: 1.4; }
         </style>
       </head>
       <body>
         <div class="header">
           <div>
-            <div style="font-size:13px; font-weight:800;">${storeName}</div>
-            <div class="title">${titleMap[sheetType]}</div>
+            <div style="font-size:16px; font-weight:900; letter-spacing:0.5px; text-transform:uppercase;">${effectiveStoreName.toUpperCase()}</div>
+            ${storeAddress ? `<div style="font-size:10px; color:#555; margin-top:2px;">${storeAddress}</div>` : ''}
+            ${storePhone || storeTin ? `<div style="font-size:10px; color:#555;">${[storePhone ? `Tel: ${storePhone}` : '', storeTin ? `TIN: ${storeTin}` : ''].filter(Boolean).join(' • ')}</div>` : ''}
+            <div class="title" style="margin-top:4px;">${titleMap[sheetType]}</div>
           </div>
           <div class="meta" style="text-align:right;">
-            Date: ${new Date().toLocaleDateString('en-PH', { dateStyle: 'long' })}<br>
-            ${filterSubtitle ? `<div style="font-weight:700; color:#111; margin-top:2px;">${filterSubtitle}</div>` : ''}
-            Items: ${targetProducts.length} Products
+            <div><strong>Date:</strong> ${new Date().toLocaleDateString('en-PH', { dateStyle: 'long' })}</div>
+            ${filterSubtitle ? `<div style="font-weight:700; color:#111; margin-top:2px; background:#f0f0f0; padding:2px 6px; border-radius:4px; display:inline-block;">${filterSubtitle}</div>` : ''}
+            <div style="margin-top:2px;"><strong>Total Items:</strong> ${targetProducts.length} Products</div>
           </div>
         </div>
 
@@ -179,8 +196,8 @@ export function InventoryPrintModal({
         }
 
         <div class="sign-area">
-          <div class="sign-box">Prepared / Counted By</div>
-          <div class="sign-box">Audited / Approved By (Owner)</div>
+          <div class="sign-box">Prepared &amp; Counted By<br><small style="color:#666; font-size:9px;">(Auditor / Staff Signature)</small></div>
+          <div class="sign-box">Verified &amp; Approved By<br><strong>${storeOwner}</strong> <small style="color:#666; font-size:9px;">(Owner)</small></div>
         </div>
       </body>
       </html>

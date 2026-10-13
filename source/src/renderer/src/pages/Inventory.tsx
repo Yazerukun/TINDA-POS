@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift, LayoutGrid, LayoutList } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -7,6 +7,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
+import { useSettings } from '../stores/settings'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import { expirationStatus, productExpirationStatus } from '@shared/expiration'
 import { ProductImage } from '../components/ui/ProductImage'
@@ -55,6 +56,21 @@ export function Inventory(): React.JSX.Element {
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const [purchaseInvoiceOpen, setPurchaseInvoiceOpen] = useState(false)
   const [promoModalOpen, setPromoModalOpen] = useState(false)
+  const { settings } = useSettings()
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    return (localStorage.getItem('tinda_inventory_view_mode') as 'grid' | 'list') || 'grid'
+  })
+  const setAndSaveViewMode = (mode: 'grid' | 'list') => {
+    setViewMode(mode)
+    localStorage.setItem('tinda_inventory_view_mode', mode)
+  }
+  const toggleViewMode = useCallback(() => {
+    setViewMode((prev) => {
+      const next = prev === 'grid' ? 'list' : 'grid'
+      localStorage.setItem('tinda_inventory_view_mode', next)
+      return next
+    })
+  }, [])
   const filterMenuRef = useRef<HTMLDivElement>(null)
   const loadState = useRef({ sequence: 0 })
 
@@ -213,6 +229,9 @@ export function Inventory(): React.JSX.Element {
       if (e.key === 'F2') {
         e.preventDefault()
         setPurchaseInvoiceOpen(true)
+      } else if (e.altKey && (e.key === 'v' || e.key === 'V')) {
+        e.preventDefault()
+        toggleViewMode()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -256,7 +275,7 @@ export function Inventory(): React.JSX.Element {
       window.removeEventListener('keydown', scannerListener)
       cleanupPhoneScan?.()
     }
-  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, purchaseInvoiceOpen, products, defaultThreshold])
+  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, purchaseInvoiceOpen, promoModalOpen, products, defaultThreshold, toggleViewMode])
 
   return (
     <div className="p-6">
@@ -370,6 +389,35 @@ export function Inventory(): React.JSX.Element {
             </div>
           )}
         </div>
+        {/* Apple Cupertino Segmented Control: Grid vs. List */}
+        <div className="inline-flex items-center rounded-xl border border-ink-line bg-ink-900/80 p-0.5 backdrop-blur-sm shadow-inner shrink-0" role="radiogroup" aria-label="View layout mode">
+          <button
+            type="button"
+            onClick={() => setAndSaveViewMode('grid')}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${
+              viewMode === 'grid'
+                ? 'bg-brand-500 text-ink-950 font-bold shadow-md shadow-brand-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-ink-800/60'
+            }`}
+            title="Card Grid View (Alt+V)"
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Grid</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAndSaveViewMode('list')}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 ${
+              viewMode === 'list'
+                ? 'bg-brand-500 text-ink-950 font-bold shadow-md shadow-brand-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-ink-800/60'
+            }`}
+            title="High-Density Tabular List View (Alt+V)"
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">List</span>
+          </button>
+        </div>
         <button onClick={() => setManagingCategories(true)} className="btn-ghost flex items-center gap-2"><Tags className="h-4 w-4" /> Categories</button>
         <button onClick={() => void load()} className="btn-ghost flex items-center gap-2"><RefreshCw className="h-4 w-4" /> Refresh</button>
       </div>
@@ -448,6 +496,160 @@ export function Inventory(): React.JSX.Element {
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState title="No products" message="Add your first product to start tracking stock." action={<button onClick={() => setEditing(newProductForm(defaultThreshold))} className="btn-primary">New Product</button>} icon={<Boxes className="h-7 w-7" />} />
+      ) : viewMode === 'list' ? (
+        <div className="overflow-hidden rounded-xl border border-ink-line bg-ink-900/60 backdrop-blur shadow-card">
+          <div className="overflow-x-auto max-h-[calc(100vh-270px)] scrollbar-thin">
+            <table className="w-full border-collapse text-left text-xs min-w-[960px]">
+              <thead className="sticky top-0 z-10 bg-ink-950/95 backdrop-blur border-b border-ink-line text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <tr>
+                  <th className="py-3 px-3">Product</th>
+                  <th className="py-3 px-3">Category</th>
+                  <th className="py-3 px-3 text-center">Stock &amp; Unit</th>
+                  <th className="py-3 px-3 text-right">Cost</th>
+                  <th className="py-3 px-3 text-right">Price (SRP)</th>
+                  <th className="py-3 px-3 text-right">Margin %</th>
+                  <th className="py-3 px-3 text-right">Valuation</th>
+                  <th className="py-3 px-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-line/50">
+                {filtered.map((p) => {
+                  const margin = p.default_price_c > 0
+                    ? ((p.default_price_c - p.purchase_cost_c) / p.default_price_c) * 100
+                    : 0
+                  const marginColor = margin >= 25 ? 'text-emerald-400' : margin >= 0 ? 'text-amber-400' : 'text-danger-400'
+                  return (
+                    <tr key={p.id} className="hover:bg-ink-800/40 transition-colors">
+                      {/* 1. Product */}
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <ProductImage src={p.image_path} alt={p.name} className="h-8 w-8 rounded-md shrink-0 object-cover border border-ink-line" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-white truncate max-w-xs block" title={p.name}>{p.name}</span>
+                              {p.item_type === 'COMPOSITE' && (
+                                <span className="badge border border-purple-500/30 bg-purple-500/15 text-purple-300 text-[10px] px-1 py-0.2">BOM</span>
+                              )}
+                              {p.item_type === 'SERVICE' && (
+                                <span className="badge border border-sky-500/30 bg-sky-500/15 text-sky-300 text-[10px] px-1 py-0.2">Service</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 text-[11px] text-slate-400 font-mono mt-0.5">
+                              <span>{p.sku}</span>
+                              {p.barcode && <span>· {p.barcode}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 2. Category */}
+                      <td className="py-2.5 px-3">
+                        <span className="inline-flex items-center rounded-md border border-ink-line bg-ink-850 px-2 py-0.5 text-[11px] text-slate-300 font-medium">
+                          {p.category_name ?? 'Uncategorized'}
+                        </span>
+                      </td>
+
+                      {/* 3. Stock & Unit */}
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-white text-sm">
+                              {p.item_type === 'SERVICE' ? '—' : p.stock}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              {p.item_type === 'SERVICE' ? 'service' : p.item_type === 'COMPOSITE' ? 'yield' : p.base_unit}
+                            </span>
+                            <StockBadge status={p.stock_status} />
+                          </div>
+                          <ProductExpiry product={p} />
+                        </div>
+                      </td>
+
+                      {/* 4. Cost */}
+                      <td className="py-2.5 px-3 text-right">
+                        <span className="font-mono text-slate-300">{money(p.purchase_cost_c)}</span>
+                      </td>
+
+                      {/* 5. Price (SRP) */}
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="font-bold text-brand-400 font-mono">{money(p.default_price_c)}</span>
+                          {p.srp_c != null && (
+                            <span className="text-[10px] text-slate-400" title="Suggested Retail Price">
+                              SRP: {money(p.srp_c)}
+                            </span>
+                          )}
+                          {p.wholesale_price_c != null && p.wholesale_min_qty != null && (
+                            <span className="text-[10px] text-emerald-400 font-medium" title="Wholesale Volume Discount">
+                              WS: {money(p.wholesale_price_c)} (≥{p.wholesale_min_qty})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 6. Margin % */}
+                      <td className="py-2.5 px-3 text-right">
+                        <span className={`font-mono font-bold ${marginColor}`}>
+                          {margin.toFixed(1)}%
+                        </span>
+                      </td>
+
+                      {/* 7. Valuation */}
+                      <td className="py-2.5 px-3 text-right">
+                        <span className="font-mono font-semibold text-slate-200">
+                          {money(p.stock > 0 ? p.stock * p.purchase_cost_c : 0)}
+                        </span>
+                      </td>
+
+                      {/* 8. Actions */}
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          {p.item_type === 'COMPOSITE' && (
+                            <button
+                              onClick={() => setRecipeProduct(p)}
+                              className="btn-ghost-2 rounded-lg p-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                              title="Manage Recipe / BOM"
+                            >
+                              <Layers className="h-4 w-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => { setSelectedTagProduct(p); setPrintPriceTagsOpen(true) }}
+                            className="btn-ghost-2 rounded-lg p-1.5 text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
+                            title="Print Shelf Price Tag"
+                          >
+                            <Tag className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setRestocking(p)}
+                            className="btn-ghost-2 rounded-lg p-1.5 text-brand-400 hover:text-brand-300 hover:bg-brand-500/10"
+                            title="Restock"
+                          >
+                            <PackagePlus className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setEditing(editProductForm(p))}
+                            className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-ink-700"
+                            title="Edit"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => void archive(p.id)}
+                            className="btn-ghost-2 rounded-lg p-1.5 text-danger-400 hover:text-danger-300 hover:bg-danger-500/10"
+                            title="Archive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((p) => (
@@ -554,6 +756,7 @@ export function Inventory(): React.JSX.Element {
         <InventoryPrintModal
           open={printInventoryOpen}
           products={products}
+          storeName={settings?.store_name}
           onClose={() => setPrintInventoryOpen(false)}
         />
       )}

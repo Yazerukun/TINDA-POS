@@ -4,10 +4,10 @@ CURRENT STABLE:
 - v2.1.6 (UNIFIED E-WALLET & BILLS CENTER, SINGLE-RECEIPT POS CART INTEGRATION & CROSS-LEDGER SYNC)
 
 TARGET:
-- v2.1.10 (0MS INSTANT TELEMETRY CACHE & ANTI-FREEZE NOTIFICATION BELL EDITION)
+- v2.1.11 (DYNAMIC STORE BRANDING, DUAL-VIEW INVENTORY & THERMAL SPACING STUDIO EDITION)
 
 CURRENT STAGE:
-- Production Hot Patch Release — v2.1.10 Live In-App Hot Patch Published
+- Production Hot Patch Release — v2.1.11 Live In-App Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -31,6 +31,7 @@ COMPLETED:
 - Stage 19: Instant 0ms Store Telemetry Cache & OpenCode Free Models AI Copilot Integration. Pre-warmed background telemetry caching on Shell boot (`warmStoreTelemetryCache`), instant 0ms drawer opens, automatic event-driven cache invalidation on inventory events (`inventoryEvents.ts`), OpenCode multi-model free pool rotation (`nemotron-3.5-lightning-free`, `mimo-v2.6-flash-free`, `exo-free`, `space-bunny-free`, `step-5-preview-free`) with seamless Gemini cloud backup, and interactive TindaBot AI chat tab inside `NotificationBellDrawer.tsx`. Vitest 531/531 tests passing across 82 test suites, typecheck 0 errors, master invariants 100% verified. Live hot patch updated on GitHub Releases.
 - Stage 20: v2.1.9 Instant 0ms Telemetry Cache & OpenCode Free AI Copilot Edition official release. Manifest synchronization across all canonical targets (`source/package.json`, `PosToolsModal.tsx`, `GEMINI.md`, `README.md`, `RELEASE-STATE.md`, `session.md`), 531/531 tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.9.zip` published to GitHub Releases (`v2.1.9`).
 - Stage 21: v2.1.10 0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition official release. Synchronous localStorage telemetry cache initialization eliminating UI loading spinners, defensive try/catch database query shields across all telemetry aggregations, fail-safe IPC handler protecting main process, 531/531 unit tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.10.zip` published to GitHub Releases (`v2.1.10`).
+- Stage 22: v2.1.11 Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition official release. Dynamic store name, address, TIN, and dual audit signature box on printable inventory sheets (`InventoryPrintModal.tsx`), Cupertino dual-view switcher (`[ ⊞ Grid | ☰ List ]`) with `Alt + V` toggle in Inventory (`Inventory.tsx`), thermal receipt spacing and alignment controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`) with fixed persistence. 531/531 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.1.11.zip` published to GitHub Releases (`v2.1.11`).
 
 
 PENDING APPROVAL:

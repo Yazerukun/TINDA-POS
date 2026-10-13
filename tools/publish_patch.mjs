@@ -153,7 +153,7 @@ async function main() {
     for (const rPath of readmePaths) {
       if (fs.existsSync(rPath)) {
         const text = fs.readFileSync(rPath, 'utf8')
-        const regex = new RegExp(`## ✨ What's New in ${TAG}[^\\n]*\\n([\\s\\S]*?)(?=\\n## ✨|\\n<details|$)`, 'i')
+        const regex = new RegExp(`(?:## (?:✨ What's New in|Key Features in)|### [^\\n]*?) ${TAG}[^\\n]*\\n([\\s\\S]*?)(?=\\n## |\\n### |\\n<details|$)`, 'i')
         const match = text.match(regex)
         if (match && match[1].trim()) {
           releaseNotes = match[1].trim()

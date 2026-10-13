@@ -23,19 +23,49 @@ export interface PrintOptions {
 }
 
 export function testPrintLines(settings: StoreSettings, printer: string, now = new Date()): string[] {
-  return [
+  const header = (settings.receipt_header || settings.receipt_custom_header || '').trim()
+  const footer = (settings.receipt_footer || settings.receipt_custom_footer || '').trim()
+  const spacing = settings.receipt_line_spacing || 'balanced'
+  const scale = settings.receipt_font_scale || 100
+  const padL = settings.receipt_offset_left_mm ?? 3.5
+  const padR = settings.receipt_offset_right_mm ?? 2.0
+  const feed = settings.receipt_feed_lines_end ?? 4
+
+  const lines: string[] = [
     'TINDA POS',
-    'PRINTER TEST',
+    'PRINTER TEST'
+  ]
+
+  if (settings.receipt_title && settings.receipt_title.trim().toUpperCase() !== 'TINDA POS') {
+    lines.push(settings.receipt_title.trim())
+  }
+  if (header) {
+    lines.push(...header.split(/\r?\n/).filter(Boolean))
+  }
+
+  lines.push(
     '',
     `Store: ${settings.store_name}`,
     `Printer: ${printer}`,
     `Paper: ${settings.receipt_paper_width}`,
+    `Spacing: ${spacing} | Font: ${scale}%`,
+    `Margins: L: ${padL}mm | R: ${padR}mm`,
+    `Feed: ${feed} lines buffer`,
     `Date: ${formatReceiptDate(now)}`,
     '--------------------------------',
     'Printer configuration successful',
     '--------------------------------',
-    'Thank you!'
-  ]
+    '01234567890123456789012345678901',
+    '|<- Left Edge        Right Edge->|',
+    '--------------------------------'
+  )
+
+  if (footer) {
+    lines.push(...footer.split(/\r?\n/).filter(Boolean))
+  }
+  lines.push('Thank you!')
+
+  return lines
 }
 
 export async function resolvePrinterTarget(webContents: WebContents, settings: StoreSettings): Promise<{
@@ -207,7 +237,7 @@ export async function printSale(
   options?: PrintOptions
 ): Promise<PrintResult> {
   const lines = buildReceiptLines({
-    header: settings.receipt_custom_header || settings.receipt_header,
+    header: settings.receipt_header || settings.receipt_custom_header || '',
     title: settings.receipt_title,
     show_app_name: settings.receipt_show_app_name,
     store_name: settings.store_name,
@@ -216,7 +246,7 @@ export async function printSale(
     phone: settings.phone,
     tin: settings.tin,
     currency: settings.currency,
-    footer: settings.receipt_custom_footer || settings.receipt_footer,
+    footer: settings.receipt_footer || settings.receipt_custom_footer || '',
     show_cashier: settings.receipt_show_cashier,
     show_customer: settings.receipt_show_customer,
     show_change_breakdown: settings.receipt_show_change_breakdown

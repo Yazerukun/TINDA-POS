@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { ReceiptWidth } from '@shared/receiptHtml'
+import type { ReceiptWidth, ReceiptLayoutOptions } from '@shared/receiptHtml'
 import { receiptBodyHtml, receiptCss } from '@shared/receiptHtml'
 import { useSettings } from '../stores/settings'
 import { reconcilePrinterCustomization } from '../utils/printerCustomization'
@@ -7,6 +7,7 @@ import { reconcilePrinterCustomization } from '../utils/printerCustomization'
 interface ReceiptPaperProps {
   lines: string[]
   width?: ReceiptWidth
+  customOptions?: Partial<ReceiptLayoutOptions>
 }
 
 /**
@@ -15,30 +16,29 @@ interface ReceiptPaperProps {
  * what you see here is what the printer receives. User text is escaped by the
  * builder before reaching this innerHTML.
  */
-export function ReceiptPaper({ lines, width }: ReceiptPaperProps): React.JSX.Element {
+export function ReceiptPaper({ lines, width, customOptions }: ReceiptPaperProps): React.JSX.Element {
   const { settings } = useSettings()
   const custom = useMemo(() => reconcilePrinterCustomization(settings), [settings])
   const paper: ReceiptWidth = width ?? custom.receipt_paper_width ?? '80mm'
 
+  const effectiveOptions: ReceiptLayoutOptions = useMemo(() => ({
+    offsetLeftMm: customOptions?.offsetLeftMm ?? custom.receipt_offset_left_mm,
+    offsetRightMm: customOptions?.offsetRightMm ?? custom.receipt_offset_right_mm,
+    feedLinesEnd: customOptions?.feedLinesEnd ?? custom.receipt_feed_lines_end,
+    fontScale: customOptions?.fontScale ?? custom.receipt_font_scale,
+    lineSpacing: customOptions?.lineSpacing ?? custom.receipt_line_spacing,
+    ultraBlack: customOptions?.ultraBlack ?? custom.receipt_ultra_black
+  }), [custom, customOptions])
+
   const css = useMemo(
-    () =>
-      receiptCss(paper, {
-        offsetLeftMm: custom.receipt_offset_left_mm,
-        offsetRightMm: custom.receipt_offset_right_mm,
-        feedLinesEnd: custom.receipt_feed_lines_end,
-        fontScale: custom.receipt_font_scale,
-        lineSpacing: custom.receipt_line_spacing,
-        ultraBlack: custom.receipt_ultra_black
-      }),
-    [paper, custom]
+    () => receiptCss(paper, effectiveOptions),
+    [paper, effectiveOptions]
   )
 
   const body = useMemo(
     () =>
-      receiptBodyHtml(lines, paper, settings?.currency, {
-        feedLinesEnd: custom.receipt_feed_lines_end
-      }),
-    [lines, paper, settings?.currency, custom.receipt_feed_lines_end]
+      receiptBodyHtml(lines, paper, settings?.currency, effectiveOptions),
+    [lines, paper, settings?.currency, effectiveOptions]
   )
 
   return (
@@ -49,4 +49,5 @@ export function ReceiptPaper({ lines, width }: ReceiptPaperProps): React.JSX.Ele
     </div>
   )
 }
+
 

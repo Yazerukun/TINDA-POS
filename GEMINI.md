@@ -30,7 +30,25 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.1.10 (0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition)**
+- Current Version: **v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)**
+
+## Key Features in v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)
+1. **Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**:
+   - Replaced static/generic "TINDA Store" placeholder with live dynamic store branding pulled directly from `settings.store_name` (falling back gracefully to 'TINDA Store' only if empty).
+   - Injects store address, TIN (Tax Identification Number), and contact phone headers automatically across all 4 printable inventory sheet modes (Stock on Hand, Physical Stock Count Sheet, Price List, Reorder / Low Stock).
+   - Added executive dual-signature audit box ("Prepared By / Inventory Clerk" & "Verified & Approved By / Store Manager") with print date-time and page sequence footer, providing bankable audit sheets for stock audits and tax reviews.
+2. **Dual-View Mode (`[ ⊞ Grid | ☰ List ]`) in Inventory (`Inventory.tsx`)**:
+   - Integrated top-level Cupertino segmented view switcher (`[ ⊞ Grid | ☰ List ]`) synchronized with localStorage (`tinda_inventory_view_mode`) for persistent user preference.
+   - Added keyboard shortcut `Alt + V` for instant 0ms toggling between Grid cards and High-Density Tabular List view.
+   - High-Density Tabular List View displays SKU/Barcode, Product Name, Category badge, Stock on Hand with color-coded safety indicators (Rose for low stock, Emerald for healthy), Cost Price, Selling Price, and Quick Action buttons with keyboard focusability.
+3. **Thermal Receipt Spacing & Alignment Controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`)**:
+   - Fixed receipt customization persistence bug: resolved unsaved and reverted thermal printer configurations by synchronizing settings state across SQLite repository, `useSettings` Zustand store, and localStorage with `tinda-printer-config-changed` cross-process broadcast.
+   - Integrated full Thermal Spacing Studio inside Settings: granular sliders for Horizontal Left Margin / Indent (`receipt_offset_left_mm`, 0–10mm) preventing first-letter cutoffs, Right Margin (`receipt_margin_right_mm`, 0–10mm), Line Spacing (`receipt_line_spacing`, 1.0–2.0x), Bottom Tear-Off Buffer Feed (`receipt_feed_lines_end`, 0–10 lines) ensuring totals and barcodes are never clipped by the printer tear bar, and Font Scale (`receipt_font_scale`, 80%–130%).
+   - Live synchronization across standalone express slips, official POS sales receipts, and reprint jobs.
+4. **Enterprise Invariant & Test Suite Parity**:
+   - 531/531 unit tests passing across 82 test suites with 100% green status.
+   - Zero TypeScript errors across both Node and Web compilation targets.
+   - Full master invariants compliance verified before packaging.
 
 ## Key Features in v2.1.10 (0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition)
 1. **0ms Instant LocalStorage Telemetry Cache (`notificationDrawer.ts`, `NotificationBellDrawer.tsx`)**:

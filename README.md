@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.10-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.11-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-531%2F531_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.10_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.10/TindaPOS-Feature-Patch-2.1.10.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.11_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.11/TindaPOS-Feature-Patch-2.1.11.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,11 +31,11 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.10 Live Patch / v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.1.11 Live Patch / v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.1.10.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.10/TindaPOS-Feature-Patch-2.1.10.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.10)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**TindaPOS-Feature-Patch-2.1.11.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.11/TindaPOS-Feature-Patch-2.1.11.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.11)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
 | [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
@@ -206,6 +206,23 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.1.11 (Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition) · Oct 13, 2026
+- **🏢 Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**:
+  - Replaces generic "TINDA Store" placeholder with real store name from `settings.store_name` (falling back gracefully only if empty), including physical store address, TIN (Tax Identification Number), and contact phone headers across all 4 printable inventory sheet types.
+  - Adds executive dual-signature audit box ("Prepared By / Inventory Clerk" & "Verified & Approved By / Store Manager") with print date-time and page sequence footer, providing bankable audit sheets for stock audits and tax reviews.
+- **⊞ Dual-View Mode (`[ ⊞ Grid | ☰ List ]`) in Inventory (`Inventory.tsx`)**:
+  - Integrated Cupertino segmented view switcher (`[ ⊞ Grid | ☰ List ]`) with `localStorage` persistence (`tinda_inventory_view_mode`).
+  - Added global keyboard shortcut `Alt + V` for instant 0ms toggling between visual product cards and High-Density Tabular List view.
+  - High-Density Tabular List view displays SKU/Barcode, Product Name, Category badge, Stock on Hand with safety color indicators (Rose for low stock, Emerald for healthy), Cost Price, Selling Price, and Quick Action buttons.
+- **🖨️ Thermal Receipt Spacing & Alignment Controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`)**:
+  - Fixed thermal printer customization persistence: resolved unsaved and reverted configuration bugs by unifying state across SQLite, Zustand store, and localStorage with `tinda-printer-config-changed` cross-process broadcast.
+  - Added granular sliders in Settings for Left Margin / Indent (`receipt_offset_left_mm`, 0–10mm) preventing first-letter cutoffs, Right Margin (`receipt_margin_right_mm`, 0–10mm), Line Spacing (`receipt_line_spacing`, 1.0–2.0x), Bottom Tear-Off Buffer Feed (`receipt_feed_lines_end`, 0–10 lines) ensuring totals and barcodes are never clipped, and Font Scale (`receipt_font_scale`, 80%–130%).
+  - Live synchronization across express slips, official POS sales receipts, and reprint jobs.
+- **🧪 Enterprise Invariant & Test Suite Parity**:
+  - 531/531 unit tests passing across 82 test suites (100% green).
+  - 0 TypeScript errors across Node and Web compilation targets.
+  - Full master invariants compliance verified before packaging.
 
 ### ⚡ v2.1.10 (0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition) · Oct 13, 2026
 - **⚡ 0ms Instant LocalStorage Telemetry Cache (`notificationDrawer.ts`, `NotificationBellDrawer.tsx`)**:

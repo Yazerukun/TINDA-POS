@@ -94,8 +94,8 @@ export function PrinterStudioModal({
       setReceiptFontScale(reconciled.receipt_font_scale)
       setReceiptLineSpacing(reconciled.receipt_line_spacing)
       setReceiptUltraBlack(reconciled.receipt_ultra_black)
-      setReceiptCustomHeader(reconciled.receipt_custom_header)
-      setReceiptCustomFooter(reconciled.receipt_custom_footer)
+      setReceiptCustomHeader(reconciled.receipt_custom_header || settings?.receipt_header || '')
+      setReceiptCustomFooter(reconciled.receipt_custom_footer || settings?.receipt_footer || '')
       setReceiptShowCashier(reconciled.receipt_show_cashier)
       setReceiptShowCustomer(reconciled.receipt_show_customer)
       setReceiptShowChange(reconciled.receipt_show_change_breakdown)
@@ -220,7 +220,11 @@ export function PrinterStudioModal({
       saveStoredPrinterCustomization(payload)
 
       // Persist to backend settings
-      await updateSettings(payload)
+      await updateSettings({
+        ...payload,
+        receipt_header: receiptCustomHeader,
+        receipt_footer: receiptCustomFooter
+      })
 
       toastSuccess('Printer Studio Saved', 'Alignment and customization settings have been applied.')
       onSaved?.()

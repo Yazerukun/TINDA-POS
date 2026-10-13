@@ -251,23 +251,28 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
   const printWidth = is58 ? '48mm' : '72mm'
   
   const padLeft = typeof options?.offsetLeftMm === 'number' && !isNaN(options.offsetLeftMm)
-    ? `${Math.max(0, options.offsetLeftMm)}mm`
+    ? `${Number(Math.max(0, options.offsetLeftMm))}mm`
     : (is58 ? '4.5mm' : '5mm')
   const padRight = typeof options?.offsetRightMm === 'number' && !isNaN(options.offsetRightMm)
-    ? `${Math.max(0, options.offsetRightMm)}mm`
+    ? `${Number(Math.max(0, options.offsetRightMm))}mm`
     : (is58 ? '3.5mm' : '4mm')
   
   const scale = typeof options?.fontScale === 'number' && options.fontScale > 0
     ? options.fontScale / 100
     : 1
   const baseSizeNum = is58 ? 11 : 12
-  const scaledSize = scale === 1 ? `${baseSizeNum}px` : `${(baseSizeNum * scale).toFixed(1)}px`
-  const headingSize = scale === 1 ? '13px' : `${(13 * scale).toFixed(1)}px`
-  const totalSize = scale === 1 ? '12px' : `${(12 * scale).toFixed(1)}px`
-  const totalAmtSize = scale === 1 ? '12.5px' : `${(12.5 * scale).toFixed(1)}px`
+  const scaledSize = scale === 1 ? `${baseSizeNum}px` : `${Number((baseSizeNum * scale).toFixed(1))}px`
+  const headingSize = scale === 1 ? '13px' : `${Number((13 * scale).toFixed(1))}px`
+  const subheaderSize = scale === 1 ? '10px' : `${Number((10 * scale).toFixed(1))}px`
+  const smallSize = scale === 1 ? '9.5px' : `${Number((9.5 * scale).toFixed(1))}px`
+  const totalSize = scale === 1 ? '12px' : `${Number((12 * scale).toFixed(1))}px`
+  const totalAmtSize = scale === 1 ? '12.5px' : `${Number((12.5 * scale).toFixed(1))}px`
+  const denomSize = scale === 1 ? '10px' : `${Number((10 * scale).toFixed(1))}px`
   
   const lineHt = options?.lineSpacing === 'compact' ? '1.08' : options?.lineSpacing === 'spacious' ? '1.25' : '1.15'
-  const strokeW = options?.ultraBlack === false ? '0.05px' : '0.18px'
+  const itemPadding = options?.lineSpacing === 'compact' ? '0.2px 0' : options?.lineSpacing === 'spacious' ? '2.5px 0' : '0.8px 0'
+  const sepMargin = options?.lineSpacing === 'compact' ? '1px 0' : options?.lineSpacing === 'spacious' ? '3px 0' : '2px 0'
+  const strokeW = options?.ultraBlack === true ? '0.18px' : '0.05px'
 
   return `
     ${baseCss}
@@ -297,20 +302,59 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
         max-width: ${printWidth} !important;
         margin: 0 auto !important;
         padding: 2mm ${padRight} 2mm ${padLeft} !important;
+        font-size: ${scaledSize} !important;
         font-weight: 800 !important;
         letter-spacing: -0.01em !important;
         line-height: ${lineHt} !important;
         box-sizing: border-box !important;
+      }
+      .tp-row, .tp-item, .tp-sum, .tp-sukli, .tp-section-head {
+        font-size: ${scaledSize} !important;
+        line-height: ${lineHt} !important;
+        margin: 0 !important;
+      }
+      .tp-item {
+        padding: ${itemPadding} !important;
+      }
+      .tp-item .tp-name {
+        font-size: ${scaledSize} !important;
+        line-height: ${lineHt} !important;
+        margin: 0 !important;
+      }
+      .tp-itemline {
+        font-size: ${scaledSize} !important;
+        line-height: ${lineHt} !important;
+        margin: 0 !important;
+      }
+      .tp-qty {
+        font-size: ${scaledSize} !important;
+        line-height: ${lineHt} !important;
       }
       .tp-heading {
         font-size: ${headingSize} !important;
         font-weight: 900 !important;
         line-height: ${lineHt} !important;
       }
+      .tp-subheader {
+        font-size: ${subheaderSize} !important;
+        line-height: ${lineHt} !important;
+      }
+      .tp-small, .tp-footer {
+        font-size: ${smallSize} !important;
+        line-height: ${lineHt} !important;
+      }
+      .tp-community-tag {
+        font-size: ${scale === 1 ? '8.5px' : `${Number((8.5 * scale).toFixed(1))}px`} !important;
+        line-height: ${lineHt} !important;
+      }
+      .tp-denomline {
+        font-size: ${denomSize} !important;
+        line-height: ${lineHt} !important;
+      }
       .tp-total {
         font-size: ${totalSize} !important;
         font-weight: 900 !important;
-        margin: 2px 0 !important;
+        margin: ${sepMargin} !important;
         line-height: 1.2 !important;
       }
       .tp-total .tp-amt {
@@ -320,23 +364,37 @@ export function receiptCss(width: ReceiptWidth, options?: ReceiptLayoutOptions):
       }
       .tp-sep {
         border-top: 1.5px dashed #000000 !important;
-        margin: 2px 0 !important;
+        margin: ${sepMargin} !important;
         height: 0 !important;
       }
       .tp-sep-double {
         border-top: 3.5px double #000000 !important;
-        margin: 2px 0 !important;
+        margin: ${sepMargin} !important;
         height: 0 !important;
-      }
-      .tp-row, .tp-item, .tp-sum, .tp-sukli {
-        line-height: ${lineHt} !important;
-        margin: 0 !important;
       }
       .tp-amt {
         padding-right: 3px !important;
       }
+      .tp-feed-spacer {
+        display: block !important;
+        overflow: hidden !important;
+      }
     }
     .tp-sheet { width: ${contentWidth}; padding: 2mm ${padRight} 2mm ${padLeft}; font-size: ${scaledSize}; line-height: ${lineHt}; }
+    .tp-row, .tp-item, .tp-item .tp-name, .tp-itemline, .tp-qty, .tp-sum, .tp-sukli, .tp-section-head {
+      font-size: ${scaledSize};
+      line-height: ${lineHt};
+    }
+    .tp-item { padding: ${itemPadding}; }
+    .tp-heading { font-size: ${headingSize}; line-height: ${lineHt}; }
+    .tp-subheader { font-size: ${subheaderSize}; line-height: ${lineHt}; }
+    .tp-small, .tp-footer { font-size: ${smallSize}; line-height: ${lineHt}; }
+    .tp-community-tag { font-size: ${scale === 1 ? '8.5px' : `${Number((8.5 * scale).toFixed(1))}px`}; line-height: ${lineHt}; }
+    .tp-denomline { font-size: ${denomSize}; line-height: ${lineHt}; }
+    .tp-total { font-size: ${totalSize}; margin: ${sepMargin}; }
+    .tp-total .tp-amt { font-size: ${totalAmtSize}; }
+    .tp-sep { margin: ${sepMargin}; }
+    .tp-sep-double { margin: ${sepMargin}; }
   `
 }
 
@@ -344,7 +402,8 @@ export function receiptBodyHtml(lines: string[], width: ReceiptWidth, currency =
   const feedLines = typeof options?.feedLinesEnd === 'number' && options.feedLinesEnd > 0
     ? options.feedLinesEnd
     : 5
-  const feedSpacer = `<div style="height: ${feedLines * 3.8}mm;" class="tp-feed-spacer"></div>`
+  const feedHeightMm = feedLines * 3.8
+  const feedSpacer = `<div style="height: ${feedHeightMm}mm;" class="tp-feed-spacer"></div>`
   return `<div class="tp-sheet">${rowsToHtml(lines, currency)}${feedSpacer}</div>`
 }
 

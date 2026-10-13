@@ -49,6 +49,7 @@ import { Modal } from '../components/ui/Modal'
 import { AppLogo } from '../components/AppLogo'
 import { useSettings } from '../stores/settings'
 import { PrinterStudioModal } from '../components/PrinterStudioModal'
+import { saveStoredPrinterCustomization } from '../utils/printerCustomization'
 
 import { toastSuccess, toastError } from '../stores/toast'
 import { ReceiptPaper } from '../components/ReceiptPaper'
@@ -1107,7 +1108,12 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     receipt_copies: settings?.receipt_copies ?? 1,
     manual_print_dialog: settings?.manual_print_dialog ?? false,
     label_printer: settings?.label_printer ?? '',
-    label_paper_size: settings?.label_paper_size ?? '40x30'
+    label_paper_size: settings?.label_paper_size ?? '40x30',
+    receipt_line_spacing: (settings?.receipt_line_spacing ?? 'balanced') as 'compact' | 'balanced' | 'spacious',
+    receipt_offset_left_mm: typeof settings?.receipt_offset_left_mm === 'number' ? settings.receipt_offset_left_mm : 3.5,
+    receipt_offset_right_mm: typeof settings?.receipt_offset_right_mm === 'number' ? settings.receipt_offset_right_mm : 2.0,
+    receipt_feed_lines_end: typeof settings?.receipt_feed_lines_end === 'number' ? settings.receipt_feed_lines_end : 4,
+    receipt_font_scale: typeof settings?.receipt_font_scale === 'number' ? settings.receipt_font_scale : 100
   })
   const set = (patch: Partial<typeof f>) => setF((p) => ({ ...p, ...patch }))
   const [saving, setSaving] = useState(false)
@@ -1119,17 +1125,22 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
   useEffect(() => {
     if (settings) {
       setF({
-        receipt_header: settings.receipt_header,
-        receipt_title: settings.receipt_title,
-        receipt_show_app_name: settings.receipt_show_app_name,
-        receipt_footer: settings.receipt_footer,
-        receipt_printer: settings.receipt_printer,
-        auto_print_after_sale: settings.auto_print_after_sale,
-        receipt_paper_width: settings.receipt_paper_width,
-        receipt_copies: settings.receipt_copies,
+        receipt_header: settings.receipt_header ?? '',
+        receipt_title: settings.receipt_title ?? '',
+        receipt_show_app_name: settings.receipt_show_app_name ?? true,
+        receipt_footer: settings.receipt_footer ?? '',
+        receipt_printer: settings.receipt_printer ?? '',
+        auto_print_after_sale: settings.auto_print_after_sale ?? false,
+        receipt_paper_width: settings.receipt_paper_width ?? '80mm',
+        receipt_copies: settings.receipt_copies ?? 1,
         manual_print_dialog: settings.manual_print_dialog ?? false,
         label_printer: settings.label_printer || '',
-        label_paper_size: settings.label_paper_size || '40x30'
+        label_paper_size: settings.label_paper_size || '40x30',
+        receipt_line_spacing: (settings.receipt_line_spacing ?? 'balanced') as 'compact' | 'balanced' | 'spacious',
+        receipt_offset_left_mm: typeof settings.receipt_offset_left_mm === 'number' ? settings.receipt_offset_left_mm : 3.5,
+        receipt_offset_right_mm: typeof settings.receipt_offset_right_mm === 'number' ? settings.receipt_offset_right_mm : 2.0,
+        receipt_feed_lines_end: typeof settings.receipt_feed_lines_end === 'number' ? settings.receipt_feed_lines_end : 4,
+        receipt_font_scale: typeof settings.receipt_font_scale === 'number' ? settings.receipt_font_scale : 100
       })
     }
   }, [settings])
@@ -1168,12 +1179,21 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
     try {
       await update({
         receipt_header: f.receipt_header,
+        receipt_custom_header: f.receipt_header,
         receipt_title: f.receipt_title,
         receipt_show_app_name: f.receipt_show_app_name,
         receipt_footer: f.receipt_footer,
+        receipt_custom_footer: f.receipt_footer,
         manual_print_dialog: f.manual_print_dialog,
         label_printer: f.label_printer,
-        label_paper_size: f.label_paper_size
+        label_paper_size: f.label_paper_size,
+        receipt_line_spacing: f.receipt_line_spacing,
+        receipt_offset_left_mm: f.receipt_offset_left_mm,
+        receipt_offset_right_mm: f.receipt_offset_right_mm,
+        receipt_feed_lines_end: f.receipt_feed_lines_end,
+        receipt_font_scale: f.receipt_font_scale,
+        receipt_paper_width: f.receipt_paper_width,
+        receipt_printer: f.receipt_printer
       })
       await window.api.printer.save({
         name: f.receipt_printer,
@@ -1181,6 +1201,16 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         paperWidth: f.receipt_paper_width,
         copies: f.receipt_copies,
         manualPrintDialog: f.manual_print_dialog
+      })
+      saveStoredPrinterCustomization({
+        receipt_paper_width: f.receipt_paper_width,
+        receipt_offset_left_mm: f.receipt_offset_left_mm,
+        receipt_offset_right_mm: f.receipt_offset_right_mm,
+        receipt_feed_lines_end: f.receipt_feed_lines_end,
+        receipt_font_scale: f.receipt_font_scale,
+        receipt_line_spacing: f.receipt_line_spacing,
+        receipt_custom_header: f.receipt_header,
+        receipt_custom_footer: f.receipt_footer
       })
       if (window.api?.printer?.saveLabel) {
         await window.api.printer.saveLabel({
@@ -1188,18 +1218,45 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
           paperSize: f.label_paper_size
         })
       }
-      toastSuccess('Printer settings saved')
+      toastSuccess('Printer settings saved', 'Receipt formatting, spacing, and hardware options updated.')
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) } finally { setSaving(false) }
   }
 
   const testPrint = async (manual = false) => {
     try {
+      // First synchronize current form fields so test print tests the active settings immediately
+      await update({
+        receipt_header: f.receipt_header,
+        receipt_custom_header: f.receipt_header,
+        receipt_title: f.receipt_title,
+        receipt_show_app_name: f.receipt_show_app_name,
+        receipt_footer: f.receipt_footer,
+        receipt_custom_footer: f.receipt_footer,
+        manual_print_dialog: f.manual_print_dialog,
+        receipt_line_spacing: f.receipt_line_spacing,
+        receipt_offset_left_mm: f.receipt_offset_left_mm,
+        receipt_offset_right_mm: f.receipt_offset_right_mm,
+        receipt_feed_lines_end: f.receipt_feed_lines_end,
+        receipt_font_scale: f.receipt_font_scale,
+        receipt_paper_width: f.receipt_paper_width,
+        receipt_printer: f.receipt_printer
+      })
       await window.api.printer.save({
         name: f.receipt_printer,
         autoPrint: f.auto_print_after_sale,
         paperWidth: f.receipt_paper_width,
         copies: f.receipt_copies,
         manualPrintDialog: f.manual_print_dialog
+      })
+      saveStoredPrinterCustomization({
+        receipt_paper_width: f.receipt_paper_width,
+        receipt_offset_left_mm: f.receipt_offset_left_mm,
+        receipt_offset_right_mm: f.receipt_offset_right_mm,
+        receipt_feed_lines_end: f.receipt_feed_lines_end,
+        receipt_font_scale: f.receipt_font_scale,
+        receipt_line_spacing: f.receipt_line_spacing,
+        receipt_custom_header: f.receipt_header,
+        receipt_custom_footer: f.receipt_footer
       })
       const result = await window.api.printer.testPrint({ manual })
       if (result.ok) toastSuccess(manual ? 'Manual print dialog opened' : 'Test print sent', result.message)
@@ -1265,10 +1322,122 @@ function ReceiptSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgr
         <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Auto Print After Sale</p><p className="text-xs text-slate-500">One silent print job, sent automatically after checkout commits.</p></div><Toggle on={f.auto_print_after_sale} onClick={() => set({ auto_print_after_sale: !f.auto_print_after_sale })} /></div>
         <div className="flex items-center justify-between rounded-lg border border-ink-line px-3 py-2"><div><p className="text-sm text-slate-200">Always Open Manual Print Dialog</p><p className="text-xs text-slate-500">Opens the Windows System Print Dialog on checkout so you can manually select the printer and verify settings.</p></div><Toggle on={f.manual_print_dialog} onClick={() => set({ manual_print_dialog: !f.manual_print_dialog })} /></div>
         <div className="grid grid-cols-2 gap-3"><div><label className="label">Paper Width</label><select value={f.receipt_paper_width} onChange={(e) => set({ receipt_paper_width: e.target.value as '58mm' | '80mm' })} className="input w-full"><option value="58mm">58mm</option><option value="80mm">80mm (default)</option></select></div><div><label className="label">Copies</label><input type="number" min={1} max={3} value={f.receipt_copies} onChange={(e) => set({ receipt_copies: Math.max(1, Math.min(3, Math.trunc(Number(e.target.value) || 1))) })} className="input w-full" /></div></div>
+
+        {/* Customizable Spacing, Margins & Cutter Feed (Hardware Alignment) */}
+        <div className="rounded-xl border border-brand-500/30 bg-ink-950/70 p-4 space-y-4">
+          <div className="flex items-center justify-between border-b border-ink-line/60 pb-2.5">
+            <div className="flex items-center gap-2 font-bold text-slate-100 text-sm">
+              <Sliders className="h-4 w-4 text-brand-400" />
+              <span>Thermal Spacing &amp; Alignment Controls</span>
+            </div>
+            <span className="text-[11px] text-slate-400">Customizable for 58mm &amp; 80mm rollers</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* Spacing / Line Height */}
+            <div>
+              <label className="label">Line Spacing / Row Height</label>
+              <select
+                value={f.receipt_line_spacing}
+                onChange={(e) => set({ receipt_line_spacing: e.target.value as 'compact' | 'balanced' | 'spacious' })}
+                className="input w-full"
+              >
+                <option value="compact">Compact / Tight (Paper Saver)</option>
+                <option value="balanced">Standard / Balanced (Recommended)</option>
+                <option value="spacious">Relaxed / Spacious (High Readability)</option>
+              </select>
+              <p className="mt-1 text-[11px] text-slate-500">Controls line height and row gaps between products.</p>
+            </div>
+
+            {/* Font Size Scale */}
+            <div>
+              <label className="label">Font Size Scale</label>
+              <select
+                value={f.receipt_font_scale}
+                onChange={(e) => set({ receipt_font_scale: Number(e.target.value) })}
+                className="input w-full"
+              >
+                <option value={90}>Small / Dense (90% - Extra Compact)</option>
+                <option value={100}>Standard (100% - Recommended)</option>
+                <option value={110}>Large / High-Contrast (110% - Bold &amp; Crisp)</option>
+                <option value={120}>Extra Large (120% - Senior/PWD Friendly)</option>
+              </select>
+              <p className="mt-1 text-[11px] text-slate-500">Scales all item names, prices, and totals across the receipt.</p>
+            </div>
+
+            {/* Horizontal Margins (Side Padding) */}
+            <div>
+              <label className="label">Left Margin / Side Indent (mm)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="12"
+                  value={f.receipt_offset_left_mm}
+                  onChange={(e) => set({ receipt_offset_left_mm: Math.max(0, Math.min(12, Number(e.target.value) || 0)) })}
+                  className="input w-full"
+                />
+                <span className="text-xs text-slate-400 font-mono flex-shrink-0">mm</span>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-500">Prevents characters from being clipped on left roller edge.</p>
+            </div>
+
+            <div>
+              <label className="label">Right Margin / Side Padding (mm)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="12"
+                  value={f.receipt_offset_right_mm}
+                  onChange={(e) => set({ receipt_offset_right_mm: Math.max(0, Math.min(12, Number(e.target.value) || 0)) })}
+                  className="input w-full"
+                />
+                <span className="text-xs text-slate-400 font-mono flex-shrink-0">mm</span>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-500">Prevents price amounts from overflowing on right roller edge.</p>
+            </div>
+
+            {/* Tear-off Bottom Feed Lines */}
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <label className="label mb-0">Tear-Off Cutter Feed Lines (Bottom Spacer)</label>
+                <span className="badge border border-brand-500/40 bg-brand-500/20 text-brand-300 font-mono text-xs px-2 py-0.5">
+                  {f.receipt_feed_lines_end} lines ({Math.round(f.receipt_feed_lines_end * 3.8)}mm buffer)
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                step="1"
+                value={f.receipt_feed_lines_end}
+                onChange={(e) => set({ receipt_feed_lines_end: Number(e.target.value) })}
+                className="w-full accent-brand-500 cursor-pointer"
+              />
+              <p className="mt-1 text-[11px] text-slate-500">Feeds blank paper after receipt so your bottom footer is never cut by the physical tear-bar.</p>
+            </div>
+          </div>
+        </div>
+
         <div>
-          <p className="label">Live Receipt Preview</p>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="label mb-0">Live Receipt Preview (Real-Time Rendering)</p>
+            <span className="text-[11px] text-slate-500 font-mono">
+              {f.receipt_paper_width} · Spacing: {f.receipt_line_spacing} · Font: {f.receipt_font_scale}% · L:{f.receipt_offset_left_mm}mm R:{f.receipt_offset_right_mm}mm
+            </span>
+          </div>
           <ReceiptPaper
             width={f.receipt_paper_width}
+            customOptions={{
+              offsetLeftMm: f.receipt_offset_left_mm,
+              offsetRightMm: f.receipt_offset_right_mm,
+              feedLinesEnd: f.receipt_feed_lines_end,
+              fontScale: f.receipt_font_scale,
+              lineSpacing: f.receipt_line_spacing
+            }}
             lines={[
               ...(isVip ? f.receipt_header.trim().split(/\r?\n/).filter(Boolean) : []),
               ...(f.receipt_title.trim() ? [f.receipt_title.trim()] : []),

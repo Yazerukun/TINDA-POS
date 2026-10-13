@@ -291,7 +291,21 @@ export function checkout(payload: CheckoutPayload): { sale: Sale; receipt: strin
   } catch {}
   const settings = getSettings(db)
   const receipt = buildReceiptLines(
-    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    {
+      header: settings.receipt_header || settings.receipt_custom_header || '',
+      title: settings.receipt_title,
+      show_app_name: settings.receipt_show_app_name,
+      store_name: settings.store_name,
+      owner_name: settings.owner_name,
+      address: settings.address,
+      phone: settings.phone,
+      tin: settings.tin,
+      currency: settings.currency,
+      footer: settings.receipt_footer || settings.receipt_custom_footer || '',
+      show_cashier: settings.receipt_show_cashier,
+      show_customer: settings.receipt_show_customer,
+      show_change_breakdown: settings.receipt_show_change_breakdown
+    },
     sale
   )
   return { sale, receipt }
@@ -330,7 +344,21 @@ export function reprint(saleId: number): string[] {
   const sale = salesRepo.getSale(db, saleId)
   const settings = getSettings(db)
   return buildReceiptLines(
-    { header: settings.receipt_header, title: settings.receipt_title, show_app_name: settings.receipt_show_app_name, store_name: settings.store_name, owner_name: settings.owner_name, address: settings.address, phone: settings.phone, tin: settings.tin, currency: settings.currency, footer: settings.receipt_footer },
+    {
+      header: settings.receipt_header || settings.receipt_custom_header || '',
+      title: settings.receipt_title,
+      show_app_name: settings.receipt_show_app_name,
+      store_name: settings.store_name,
+      owner_name: settings.owner_name,
+      address: settings.address,
+      phone: settings.phone,
+      tin: settings.tin,
+      currency: settings.currency,
+      footer: settings.receipt_footer || settings.receipt_custom_footer || '',
+      show_cashier: settings.receipt_show_cashier,
+      show_customer: settings.receipt_show_customer,
+      show_change_breakdown: settings.receipt_show_change_breakdown
+    },
     sale
   )
 }
