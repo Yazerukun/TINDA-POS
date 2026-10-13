@@ -1,7 +1,14 @@
 # TINDA POS Agent Session Memory
 
 ## Active Claim
-IDLE | None | 2026-10-13 16:55
+IDLE | None | 2026-10-13 21:49
+
+## System Governance & Swarm Protocols (PhD-Level)
+- **RULE 1 (Autonomous Self-Healing)**: 3-attempt silent internal repair loop before escalating to Sir.
+- **RULE 2 (Spatial Mapping)**: Explicit file path declared on Line 1 of every Builder code block.
+- **RULE 3 (Cryptographic Hygiene)**: Zero hardcoded secrets, strict .env abstraction & .env.example blueprints.
+- **RULE 4 (Semantic Versioning)**: Continuous semver tracker initialized at v1.0.0.
+- **RULE 5 (State Tracker Appendage)**: Mandatory footer: `📌 **System State:** [Version X.X.X] | **Changelog:** [1-sentence technical summary of the delta]`.
 
 ## Recent Handoff History
 
