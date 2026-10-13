@@ -24,7 +24,7 @@ export interface UpdateStorage {
   save(state: UpdateStorageState): void
 }
 
-export type UpdateProgressHandler = (downloaded: number, total: number) => void
+export type UpdateProgressHandler = (downloaded: number, total: number, bytesPerSecond?: number) => void
 
 /**
  * Real I/O boundary injected by main. Tests provide fakes: no network, no
@@ -154,6 +154,7 @@ export class UpdateService {
     try {
       const wantFull = targetType === 'FULL' || (!available.hasPatch && targetType !== 'PATCH')
       if (!this.deps.transport.isPortable() && wantFull && this.backupCreatedForVersion !== available.version) {
+        this.set({ status: 'DOWNLOADING', phase: 'SNAPSHOT', message: 'Creating database safety backup before download...' })
         let backup: { path: string } | null = null
         try {
           backup = this.deps.transport.safetyBackup()
@@ -167,19 +168,59 @@ export class UpdateService {
         this.backupCreatedForVersion = available.version
       }
 
-      this.set({ status: 'DOWNLOADING', message: null, progress: { downloaded: 0, total: 0, percent: 0 } })
-      const onProgress: UpdateProgressHandler = (downloaded, total) => {
+      this.set({
+        status: 'DOWNLOADING',
+        phase: 'DOWNLOADING',
+        message: null,
+        updateType: wantFull ? 'FULL' : 'PATCH',
+        progress: { phase: 'DOWNLOADING', downloaded: 0, total: 0, percent: 0, bytesPerSecond: 0, etaSeconds: null }
+      })
+
+      let lastTs = Date.now()
+      let lastDownloaded = 0
+      let smoothedSpeed = 0
+
+      const onProgress: UpdateProgressHandler = (downloaded, total, rawSpeed) => {
         const percent = total > 0 ? Math.round((downloaded / total) * 100) : 0
-        this.set({ progress: { downloaded, total, percent } })
+        const now = Date.now()
+        const elapsed = (now - lastTs) / 1000
+
+        let speed = rawSpeed
+        if (!speed && elapsed >= 0.2) {
+          const delta = downloaded - lastDownloaded
+          speed = delta / elapsed
+          lastTs = now
+          lastDownloaded = downloaded
+        }
+
+        if (speed && speed > 0) {
+          smoothedSpeed = smoothedSpeed > 0 ? 0.25 * speed + 0.75 * smoothedSpeed : speed
+        }
+
+        const remainingBytes = Math.max(0, total - downloaded)
+        const etaSeconds = smoothedSpeed > 50 ? Math.round(remainingBytes / smoothedSpeed) : null
+
+        this.set({
+          progress: {
+            phase: 'DOWNLOADING',
+            downloaded,
+            total,
+            percent,
+            bytesPerSecond: Math.round(smoothedSpeed),
+            etaSeconds
+          }
+        })
       }
       try {
         let patchApplied = false
         if (!wantFull && available.hasPatch && this.deps.transport.downloadPatch && this.deps.transport.applyPatch) {
           try {
             const { filePath } = await this.deps.transport.downloadPatch(available, onProgress)
+            this.set({ phase: 'VERIFYING', message: 'Applying and verifying in-app patch...' })
             await this.deps.transport.applyPatch(filePath, available.version)
             this.set({
               status: 'READY_TO_INSTALL',
+              phase: 'READY',
               message: `Feature patch v${available.version} downloaded. Zero system restart required.`,
               progress: null,
               updateType: 'PATCH'
@@ -196,6 +237,7 @@ export class UpdateService {
             this.downloadedPath = filePath
             this.set({
               status: 'DOWNLOADED',
+              phase: 'READY',
               message:
                 process.platform === 'linux'
                   ? `Full Linux package downloaded: ${filePath}. Saved in Downloads.`
@@ -205,7 +247,13 @@ export class UpdateService {
             })
           } else {
             await this.deps.transport.downloadSetup(available, onProgress)
-            this.set({ status: 'READY_TO_INSTALL', message: 'Update downloaded. Restart & Install to finish.', progress: null, updateType: 'FULL' })
+            this.set({
+              status: 'READY_TO_INSTALL',
+              phase: 'READY',
+              message: 'Update downloaded and verified. Restart & Install to finish.',
+              progress: null,
+              updateType: 'FULL'
+            })
           }
         }
       } catch (err) {

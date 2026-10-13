@@ -5,7 +5,22 @@ IDLE | None | 2026-10-13 16:55
 
 ## Recent Handoff History
 
-### 2026-10-13 16:55 | agy / SCRIBE & KRAKEN & VIPER (v2.1.11 Official Release — Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition)
+### 2026-10-13 21:28 | agy / SCRIBE & FORGE & VIPER & BLUEPRINT (v2.2.1 Official Release — In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)
+- **Task**: Implement in-app download and 1-click auto-restart for full Windows installer (`TindaPOS-Setup-*.exe`), Tesla Cyber-Emerald Telemetry progress bar (real-time EMA speed calculation, non-zero division safe ETA, byte counter, 4-phase status), dual-choice update card (`[ ⚡ Express Patch ]` vs `[ 💿 Full Setup.exe ]`), pre-update SQLite safety snapshot, full Windows packaging, verify QA gates (532/532 tests passing, 0 TS errors, master invariants), tag v2.2.1, and publish release.
+- **Key Modules in v2.2.1**:
+  - `source/src/shared/update.ts`: `UpdatePhase` and telemetry progress contracts (`bytesPerSecond`, `etaSeconds`).
+  - `source/src/main/services/updateService.ts`: Pre-update snapshot, EMA speed smoothing ($\alpha = 0.25$), division-safe ETA, 4-phase transitions.
+  - `source/src/main/services/updateTransport.ts`: Real-time electron-updater progress streaming.
+  - `source/src/renderer/src/components/update/UnifiedUpdateCapsule.tsx`: Dual-choice card + Tesla Cyber-Emerald progress bar + 1-click auto-restart button.
+- **Manifests Synchronized**:
+  - `source/package.json` (version: "2.2.1")
+  - `source/src/main/services/lanHubService.ts` (beacon & fallback version: "2.2.1")
+  - `source/src/renderer/src/components/PosToolsModal.tsx` (version: "2.2.1")
+  - `GEMINI.md`, `README.md`, `docs/RELEASE-STATE.md`, `.agents/memory/session.md`
+- **QA Verification Gate**:
+  - Vitest: 532/532 tests passing across 82 test suites (100% green).
+  - TypeScript: 0 errors across Node & Web targets.
+  - Master invariants: 100% verified.
 - **Task**: Synchronize version bump from 2.1.10 to 2.1.11 across all 6 canonical manifests per Boss directive (Dynamic Store Name on printable reports, Dual-View Mode in Inventory `[ ⊞ Grid | ☰ List ]`, Thermal receipt spacing/alignment controls in Settings & persistence bug fix, Rule #11 Mandatory Auto Version Bump), verify QA gates, git tag v2.1.11, push to GitHub, bundle and publish live hot patch `TindaPOS-Feature-Patch-2.1.11.zip` to GitHub Releases.
 - **Key Modules in v2.1.11**:
   - **Dynamic Store Branding on Printable Reports (`InventoryPrintModal.tsx`)**: Dynamic store name from `settings.store_name` with store address, TIN, contact phone, and executive dual-signature audit box ("Prepared By" & "Verified & Approved By") across all 4 printable inventory sheet types.

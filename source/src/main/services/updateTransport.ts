@@ -383,7 +383,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
         updater.autoInstallOnAppQuit = false
         updater.on('download-progress', (p) => {
           if (this.progressHandler) {
-            this.progressHandler(toBytes(p.transferred), toBytes(p.total))
+            this.progressHandler(toBytes(p.transferred), toBytes(p.total), toBytes(p.bytesPerSecond))
           }
         })
         return updater

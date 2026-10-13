@@ -43,10 +43,15 @@ export interface ReleaseInfo {
   fullAsset?: ReleaseAsset | null
 }
 
+export type UpdatePhase = 'IDLE' | 'SNAPSHOT' | 'DOWNLOADING' | 'VERIFYING' | 'READY'
+
 export interface UpdateProgress {
+  phase?: UpdatePhase
   downloaded: number
   total: number
   percent: number
+  bytesPerSecond?: number
+  etaSeconds?: number | null
 }
 
 export interface UpdateStatusEvent {
@@ -58,6 +63,7 @@ export interface UpdateStatusEvent {
   message: string | null
   lastCheckedAt: string | null
   updateType?: 'PATCH' | 'FULL'
+  phase?: UpdatePhase
 }
 
 export const UPDATE_CHECK_THROTTLE_MS = 10 * 1000 // 10 seconds (near real-time fast updates)

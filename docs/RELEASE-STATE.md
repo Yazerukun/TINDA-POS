@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.1.6 (UNIFIED E-WALLET & BILLS CENTER, SINGLE-RECEIPT POS CART INTEGRATION & CROSS-LEDGER SYNC)
-
-TARGET:
 - v2.2.0 (DOCTORAL MULTI-PC EDGE FABRIC & FLOATING VIP LEASE EDITION)
 
+TARGET:
+- v2.2.1 (IN-APP FULL SETUP DOWNLOADER & TESLA CYBER-EMERALD TELEMETRY EDITION)
+
 CURRENT STAGE:
-- Production Hot Patch Release — v2.2.0 Live In-App Hot Patch Published
+- Production Release — v2.2.1 Full Windows Setup & Live In-App Hot Patch
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -33,6 +33,7 @@ COMPLETED:
 - Stage 21: v2.1.10 0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition official release. Synchronous localStorage telemetry cache initialization eliminating UI loading spinners, defensive try/catch database query shields across all telemetry aggregations, fail-safe IPC handler protecting main process, 531/531 unit tests passing, typecheck verified, live hot patch `TindaPOS-Feature-Patch-2.1.10.zip` published to GitHub Releases (`v2.1.10`).
 - Stage 22: v2.1.11 Dynamic Store Branding, Dual-View Inventory & Thermal Spacing Studio Edition official release. Dynamic store name, address, TIN, and dual audit signature box on printable inventory sheets (`InventoryPrintModal.tsx`), Cupertino dual-view switcher (`[ ⊞ Grid | ☰ List ]`) with `Alt + V` toggle in Inventory (`Inventory.tsx`), thermal receipt spacing and alignment controls in Settings (`Settings.tsx`, `printing.ts`, `receiptHtml.ts`) with fixed persistence. 531/531 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.1.11.zip` published to GitHub Releases (`v2.1.11`).
 - Stage 23: v2.2.0 Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition official release. Zero-config UDP beacon auto-discovery (`node:dgram`, Port 3112) for 0ms cashier terminal connection, floating VIP Pro lease distribution allowing secondary cashier terminals to unlock all PRO features without purchasing extra licenses, centralized Master cashier authentication with roaming PINs, decoupled thermal receipt printing (satellite prints locally to its attached USB printer while Master skips physical printing), `BEGIN IMMEDIATE` SQLite transaction serialization to prevent write collision locks during concurrent multi-terminal checkouts, and 1-click `[ Connect as Cashier ]` FirstRun onboarding. 532/532 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.2.0.zip` published to GitHub Releases (`v2.2.0`).
+- Stage 24: v2.2.1 In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition official release. In-app download and 1-click auto-restart capability for full Windows installers (`TindaPOS-Setup-*.exe`), Tesla Cyber-Emerald telemetry progress bar with real-time exponential moving average (EMA) speed calculation, safe ETA estimation, byte transfer counter, and 4-phase pipeline status (`SNAPSHOT` -> `DOWNLOADING` -> `VERIFYING` -> `READY`). Dual-choice update card offering cashiers instant 0.3s Express Hot Patch (~1 MB) vs full Setup.exe (~111 MB). Automatic SQLite safety snapshot prior to update execution. 532/532 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified.
 
 
 PENDING APPROVAL:

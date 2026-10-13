@@ -12,7 +12,10 @@ import {
   ShieldCheck,
   Moon,
   Clock,
-  FolderOpen
+  FolderOpen,
+  Zap,
+  Disc,
+  CheckCircle2
 } from 'lucide-react'
 import type { UpdateStatusEvent } from '@shared/update'
 import { useUpdate } from '../../stores/update'
@@ -88,11 +91,11 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
   const version = event.available?.version ?? ''
   const percent = event.progress?.percent ?? 0
 
-  const handleDownload = async () => {
+  const handleDownload = async (type?: 'PATCH' | 'FULL') => {
     setInstallError(null)
     setBusy(true)
     try {
-      await download()
+      await download(type)
     } finally {
       setBusy(false)
     }
@@ -190,7 +193,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
           <button
             type="button"
             disabled={busy}
-            onClick={handleDownload}
+            onClick={() => void handleDownload()}
             className="flex items-center gap-1 rounded-full bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/40 px-2 py-0.5 text-[11px] font-bold text-brand-300 active:scale-95 transition"
             title="Download update in background"
           >
@@ -270,20 +273,105 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
             <span>Store transactions, inventory, and utang credits are 100% protected.</span>
           </div>
 
-          {/* Download Progress */}
+          {/* Dual-Choice Mode Selection when Update Available */}
+          {s === 'UPDATE_AVAILABLE' && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handleDownload('PATCH')}
+                className="group flex flex-col text-left rounded-xl border border-ink-800 bg-ink-900/60 p-2.5 hover:border-brand-500/60 hover:bg-brand-500/10 transition active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100 group-hover:text-brand-300">
+                  <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                  <span>Express Patch</span>
+                </div>
+                <p className="mt-1 text-[10px] text-slate-400 leading-tight">
+                  ~1 MB · 0.3s live reload with zero restart. Ideal during store hours.
+                </p>
+                <span className="mt-2.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-400 group-hover:underline">
+                  <Download className="h-2.5 w-2.5" /> Get Patch →
+                </span>
+              </button>
+
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handleDownload('FULL')}
+                className="group flex flex-col text-left rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2.5 hover:border-emerald-400 hover:bg-emerald-950/40 transition shadow-[0_0_15px_rgba(16,185,129,0.08)] active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100 group-hover:text-emerald-300">
+                  <Disc className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                  <span>Full Setup.exe</span>
+                </div>
+                <p className="mt-1 text-[10px] text-slate-400 leading-tight">
+                  ~111 MB · Complete NSIS installer with DB safety backup &amp; auto-restart.
+                </p>
+                <span className="mt-2.5 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 group-hover:underline">
+                  <Download className="h-2.5 w-2.5" /> Get Full Build →
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* Tesla Cyber-Emerald Telemetry Progress Bar */}
           {s === 'DOWNLOADING' && event.progress && (
-            <div className="mt-3 space-y-1.5 rounded-xl border border-ink-800 bg-ink-900/60 p-3">
-              <div className="flex justify-between text-xs text-slate-300">
-                <span>Downloading update package…</span>
-                <span className="font-mono font-bold text-brand-400">{event.progress.percent}%</span>
+            <div className="mt-3 space-y-2 rounded-xl border border-emerald-500/25 bg-ink-900/80 p-3 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              {/* Telemetry Header */}
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 min-w-0 pr-2">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-bold text-slate-100 truncate text-[11px]">
+                    {event.updateType === 'FULL'
+                      ? `TindaPOS-Setup-${version}.exe`
+                      : `TindaPOS-Feature-Patch-${version}.zip`}
+                  </span>
+                </div>
+                <span className="font-mono font-extrabold text-emerald-400 shrink-0">
+                  {event.progress.percent}%
+                </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-ink-950">
+
+              {/* Phase status text */}
+              <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                {event.phase === 'SNAPSHOT' && '🛡️ Step 1: Pre-Update SQLite Safety Snapshot...'}
+                {(!event.phase || event.phase === 'DOWNLOADING') && '📥 Step 2: Streaming signed package via HTTPS...'}
+                {event.phase === 'VERIFYING' && '🔒 Step 3: Verifying cryptographic checksum...'}
+                {event.phase === 'READY' && '✅ Step 4: Package verified! Ready to apply.'}
+              </div>
+
+              {/* Progress Bar Track */}
+              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-ink-950 border border-ink-800 p-0.5">
                 <div
-                  className="h-full rounded-full bg-brand-500 transition-all duration-300"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 shadow-[0_0_10px_rgba(52,211,153,0.6)] transition-all duration-300 ease-out"
                   style={{ width: `${event.progress.percent}%` }}
                 />
               </div>
-              <p className="text-[10px] text-slate-400">You can keep using the POS smoothly while downloading.</p>
+
+              {/* Live Metric Triad */}
+              <div className="grid grid-cols-3 gap-1 pt-1 border-t border-ink-800/60 text-[10px] font-mono">
+                <div>
+                  <span className="text-slate-400 block text-[9px] font-sans">Speed</span>
+                  <span className="font-bold text-emerald-300 truncate block">
+                    ⚡ {event.progress.bytesPerSecond ? `${(event.progress.bytesPerSecond / 1024 / 1024).toFixed(1)} MB/s` : '—'}
+                  </span>
+                </div>
+                <div className="text-center">
+                  <span className="text-slate-400 block text-[9px] font-sans">ETA</span>
+                  <span className="font-bold text-slate-200 truncate block">
+                    ⏱️ {event.progress.etaSeconds !== undefined ? `${event.progress.etaSeconds}s left` : 'calculating'}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-400 block text-[9px] font-sans">Downloaded</span>
+                  <span className="text-slate-300 truncate block">
+                    {(event.progress.downloaded / 1024 / 1024).toFixed(1)} / {(event.progress.total / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -348,7 +436,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={handleDownload}
+                  onClick={() => void handleDownload()}
                   className="btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold"
                 >
                   {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
@@ -371,10 +459,10 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
                   type="button"
                   disabled={busy}
                   onClick={handleInstall}
-                  className="btn-primary flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold"
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] transition active:scale-95"
                 >
-                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
-                  Restart &amp; Install
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                  <span>Restart &amp; Install Now</span>
                 </button>
               )}
 
@@ -382,7 +470,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={handleDownload}
+                  onClick={() => void handleDownload()}
                   className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
                 >
                   {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}

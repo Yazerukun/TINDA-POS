@@ -30,7 +30,21 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)**
+- Current Version: **v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)**
+
+## Key Features in v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition)
+1. **In-App Full Build Downloader & 1-Click Auto-Restart (`updateService.ts`, `UnifiedUpdateCapsule.tsx`)**:
+   - Cashiers and store owners can now download full NSIS installers (`TindaPOS-Setup-*.exe`) directly within the app without ever needing to open a web browser.
+   - 1-Click "Restart & Install Now" button triggers seamless automated installer handoff and immediate relaunch with zero data loss.
+2. **Tesla Cyber-Emerald Telemetry Progress Bar (`UnifiedUpdateCapsule.tsx`)**:
+   - Real-time animated neon emerald telemetry indicator featuring live download speed smoothing via Exponential Moving Average (EMA, $\alpha = 0.25$).
+   - High-precision ETA countdown timer with non-zero division safety guards (`smoothedSpeed > 50 ? Math.round(remainingBytes / smoothedSpeed) : null`).
+   - Active 4-phase pipeline status badges: `🛡️ Pre-Update SQLite Safety Snapshot` -> `📥 Streaming signed package via HTTPS` -> `🔒 Verifying cryptographic checksum` -> `✅ Package verified! Ready to apply`.
+3. **Dual-Choice Update Card (`UnifiedUpdateCapsule.tsx`)**:
+   - `[ ⚡ Express Patch ]` (~1 MB): Instant 0.3-second live code reload with zero restart required—ideal during busy store hours.
+   - `[ 💿 Full Setup.exe ]` (~111 MB): Complete NSIS installer with automatic SQLite safety backup, full desktop asset re-registration, and automatic restart.
+4. **Pre-Download SQLite Safety Snapshot Invariant (`updateService.ts`)**:
+   - Enforces atomic synchronous SQLite database backup (`createBackupSync(db, 'BEFORE_UPDATE')`) before executing any full installer payload stream.
 
 ## Key Features in v2.2.0 (Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition)
 1. **Zero-Config UDP Auto-Discovery (`node:dgram`, Port 3112)**:
