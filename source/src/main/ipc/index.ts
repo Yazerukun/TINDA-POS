@@ -1363,8 +1363,14 @@ handle(
 )
 
 handle('telemetry:getSummary', (_e: IpcMainInvokeEvent, options?: { forceRefresh?: boolean }) => {
-  const { getStoreTelemetrySummary } = require('../services/storeTelemetry')
-  return getStoreTelemetrySummary(undefined, options)
+  try {
+    const { getStoreTelemetrySummary } = require('../services/storeTelemetry')
+    return getStoreTelemetrySummary(undefined, options)
+  } catch (err) {
+    console.error('[IPC telemetry:getSummary] Error:', err)
+    const { createEmptyTelemetrySummary } = require('../services/storeTelemetry')
+    return createEmptyTelemetrySummary()
+  }
 })
 
 export function registerIpcHandlers(): void {

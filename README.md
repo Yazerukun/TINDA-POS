@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.1.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.1.10-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-531%2F531_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.9_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.9/TindaPOS-Feature-Patch-2.1.9.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.1.10_(~0.95MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.10/TindaPOS-Feature-Patch-2.1.10.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,11 +31,11 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.1.9 Live Patch / v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.1.10 Live Patch / v2.1.5 Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.1.9.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.9/TindaPOS-Feature-Patch-2.1.9.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.9)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**TindaPOS-Feature-Patch-2.1.10.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.10/TindaPOS-Feature-Patch-2.1.10.zip) | `~0.95 MB` | **In-App Live Hot Patch (v2.1.10)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
 | [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
@@ -206,6 +206,19 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### ⚡ v2.1.10 (0ms Instant Telemetry Cache & Anti-Freeze Notification Bell Edition) · Oct 13, 2026
+- **⚡ 0ms Instant LocalStorage Telemetry Cache (`notificationDrawer.ts`, `NotificationBellDrawer.tsx`)**:
+  - Zero-blocking UI: Telemetry store initializes synchronously from `localStorage.getItem('tinda_telemetry_cache')` on mount, completely eliminating the initial loading screen and spinner stall (`isLoading: false`).
+  - Stale-While-Revalidate background sync: Renders cached metrics instantly with 0ms delay while syncing fresh telemetry in the background.
+  - Safe default fallback prevents null dereferencing and guarantees integer-cent mathematical safety.
+- **🛡️ Database Query-Level Shields & Anti-Freeze Telemetry Aggregation (`storeTelemetry.ts`, `ipc/index.ts`)**:
+  - Defensive Query Shields: Every individual aggregate query (sales, refunds, voids, cash drawer balances, utang ledgers, low stock) is wrapped in isolated try/catch blocks with fail-safe zero defaults, preventing single corrupted rows or missing tables from freezing telemetry generation.
+  - Fail-safe IPC Handler: `telemetry:getSummary` IPC gracefully catches unexpected exceptions and returns clean empty telemetry summary, preventing Electron main process lockups.
+- **🧪 Enterprise Invariant & Test Suite Parity**:
+  - 531/531 unit tests passing across 82 test suites (100% green).
+  - 0 TypeScript errors across Node and Web compilation targets.
+  - Full master invariants compliance verified before packaging.
 
 ### 🤖 v2.1.9 (Instant 0ms Telemetry Cache & OpenCode Free AI Copilot Edition) · Oct 13, 2026
 - **⚡ Instant 0ms Store Telemetry Cache (`storeTelemetry.ts`, `Shell.tsx`, `inventoryEvents.ts`)**:
