@@ -34,11 +34,18 @@ const pkgPath = fs.existsSync(path.resolve('package.json')) && !fs.existsSync(pa
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'))
 const version = process.argv[2] || pkg.version || '1.0.86'
 const TAG = `v${version}`
-const RELEASE_NAME = `TINDA POS ${TAG} — Live Feature Patch`
 
 const BUILDS_DIR = fs.existsSync(path.resolve('builds')) && !fs.existsSync(path.resolve('source'))
   ? path.resolve('builds')
   : path.resolve('source', 'builds')
+
+const setupFile = `TindaPOS-Setup-${version}.exe`
+const setupPath = path.join(BUILDS_DIR, setupFile)
+const hasFullBuild = fs.existsSync(setupPath)
+const RELEASE_NAME = hasFullBuild
+  ? `TINDA POS ${TAG} — Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition`
+  : `TINDA POS ${TAG} — Live Feature Patch`
+
 const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
 const patchPath = path.join(BUILDS_DIR, patchFile)
 const shaFile = `${patchFile}.sha256`
@@ -168,19 +175,39 @@ async function main() {
   }
 
   const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-  const body = `## ⚡ TINDA POS ${TAG} — Live Feature Hot Patch
+  const portableFile = `TindaPOS-Portable-${version}.exe`
+  const portablePath = path.join(BUILDS_DIR, portableFile)
+  const blockmapFile = `TindaPOS-Setup-${version}.exe.blockmap`
+  const blockmapPath = path.join(BUILDS_DIR, blockmapFile)
+  const latestYmlFile = `latest.yml`
+  const latestYmlPath = path.join(BUILDS_DIR, latestYmlFile)
+  const sumsFile = `SHA256SUMS-${TAG}.txt`
+  const sumsPath = path.join(BUILDS_DIR, sumsFile)
 
-> **Official Fast Feature Patch Release · ${todayStr}**  
-> *Cashiers can apply this update live in 0.3 seconds via **'Check for Updates'** with zero downtime or restart.*
+  if (hasFullBuild) {
+    const filesToHash = [setupPath, portablePath, blockmapPath, patchPath, latestYmlPath].filter(fs.existsSync)
+    const checksumLines = filesToHash.map((f) => {
+      const h = crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')
+      return `${h}  ${path.basename(f)}`
+    }).join('\n') + '\n'
+    fs.writeFileSync(sumsPath, checksumLines, 'utf8')
+  }
+
+  const setupSizeMb = hasFullBuild ? (fs.statSync(setupPath).size / 1024 / 1024).toFixed(1) : ''
+  const portableSizeMb = fs.existsSync(portablePath) ? (fs.statSync(portablePath).size / 1024 / 1024).toFixed(1) : ''
+
+  const body = `## 🚀 TINDA POS ${TAG} — ${hasFullBuild ? 'Full Windows Standalone & Live Feature Patch Edition' : 'Live Feature Hot Patch'}
+
+> **Official Stable Release · ${todayStr}**  
+> *Full Windows Installer (NSIS), Standalone Portable executable, and fast 0.3-second in-app live hot patch for TINDA POS ${TAG}.*
 
 ---
 
 ### 📦 Quick Download Assets
 | Asset | Size | Type | Download Link |
 |---|---|---|---|
-| ⚡ **${patchFile}** | ${patchSizeMb} MB | In-App Live Hot Patch | [Download Patch](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${patchFile}) |
-| 🛡️ **SHA-256 Checksum** | 64 B | Verification Hash | \`${shaContent.split(' ')[0]}\` |
-
+${hasFullBuild ? `| 💿 **${setupFile}** | ${setupSizeMb} MB | Official Windows Setup (NSIS) | [Download Setup](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${setupFile}) |\n| 🚀 **${portableFile}** | ${portableSizeMb} MB | Standalone Zero-Install Executable | [Download Portable](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${portableFile}) |\n` : ''}| ⚡ **${patchFile}** | ${patchSizeMb} MB | In-App Live Hot Patch | [Download Patch](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${patchFile}) |
+${hasFullBuild ? `| 📄 **latest.yml** | ~360 B | Auto-Updater Manifest | [Download latest.yml](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/latest.yml) |\n| 🛡️ **${sumsFile}** | ~320 B | Cryptographic SHA-256 Hashes | [Download Hashes](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${sumsFile}) |\n` : `| 🛡️ **SHA-256 Checksum** | 64 B | Verification Hash | \`${shaContent.split(' ')[0]}\` |\n`}
 ---
 
 ### 🌟 What's New in ${TAG}:
@@ -190,7 +217,7 @@ ${releaseNotes}
 
 ### 🔒 Cryptographic Verification
 \`\`\`text
-${shaContent}
+${hasFullBuild && fs.existsSync(sumsPath) ? fs.readFileSync(sumsPath, 'utf8').trim() : shaContent}
 \`\`\`
 
 🌐 **Cloud Owner Dashboard**: [https://tinda-owner-dashboard.pages.dev/](https://tinda-owner-dashboard.pages.dev/)  
@@ -225,23 +252,27 @@ ${shaContent}
     }))
   }
 
-  console.log(`✅ Release ready! Uploading patch assets...`)
+  console.log(`✅ Release ready! Uploading release assets...`)
 
   const assetsToUpload = [
     { file: patchFile, path: patchPath, type: 'application/zip' },
     { file: shaFile, path: shaPath, type: 'text/plain' }
   ]
 
-  const setupFile = `TindaPOS-Setup-${version}.exe`
-  const setupPath = path.join(BUILDS_DIR, setupFile)
-  if (fs.existsSync(setupPath)) {
+  if (hasFullBuild) {
     assetsToUpload.push({ file: setupFile, path: setupPath, type: 'application/vnd.microsoft.portable-executable' })
-  }
-
-  const portableFile = `TindaPOS-Portable-${version}.exe`
-  const portablePath = path.join(BUILDS_DIR, portableFile)
-  if (fs.existsSync(portablePath)) {
-    assetsToUpload.push({ file: portableFile, path: portablePath, type: 'application/vnd.microsoft.portable-executable' })
+    if (fs.existsSync(portablePath)) {
+      assetsToUpload.push({ file: portableFile, path: portablePath, type: 'application/vnd.microsoft.portable-executable' })
+    }
+    if (fs.existsSync(blockmapPath)) {
+      assetsToUpload.push({ file: blockmapFile, path: blockmapPath, type: 'application/octet-stream' })
+    }
+    if (fs.existsSync(latestYmlPath)) {
+      assetsToUpload.push({ file: latestYmlFile, path: latestYmlPath, type: 'text/yaml' })
+    }
+    if (fs.existsSync(sumsPath)) {
+      assetsToUpload.push({ file: sumsFile, path: sumsPath, type: 'text/plain' })
+    }
   }
 
   for (const item of assetsToUpload) {
