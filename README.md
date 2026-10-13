@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.1.5_NSIS_(~116.8MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.1.5_Standalone_(~115.8MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.0_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Setup-2.2.0.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.0_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Portable-2.2.0.exe)
 [![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.0_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
@@ -31,16 +31,15 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.0 Live Patch / v2.1.5 Stable)
+## ⚡ Quick Download & Release Assets (v2.2.0 Full Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.2.0.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip) | `~0.98 MB` | **In-App Live Hot Patch (v2.2.0)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**TindaPOS-Setup-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Setup-2.1.5.exe) | `116.8 MB` | **Windows Setup Installer** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Portable-2.1.5.exe) | `115.8 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.1.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/TindaPOS-Feature-Patch-2.1.5.zip) | `0.94 MB` | **In-App Live Hot Patch (v2.1.5)** | Previous stable release hot patch. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.1.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.1.5/SHA256SUMS-v2.1.5.txt) | `0.4 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.0.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Setup-2.2.0.exe) | `111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
+| [**TindaPOS-Portable-2.2.0.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Portable-2.2.0.exe) | `110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-Feature-Patch-2.2.0.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/TindaPOS-Feature-Patch-2.2.0.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.0)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.0.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.0/SHA256SUMS-v2.2.0.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
