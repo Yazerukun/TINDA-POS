@@ -910,6 +910,7 @@ handle('reports:xRead', () => {
   return readSvc.calculateRead(db(), shift.id, 'X')
 })
 handle('reports:cashCountExpected', () => { sessionSvc.requirePermission('reports:view'); const s=shiftRepo.currentShiftFor(db(),user().id); if(!s) throw new Error('No open shift.'); return cashCountRepo.getExpected(db(),s.id) })
+handle('reports:dailyCashExpected', (_e: IpcMainInvokeEvent, dateStr?: string) => { sessionSvc.requirePermission('reports:view'); const u=user(); return cashCountRepo.getDailyExpected(db(), dateStr, u.id) })
 handle('reports:cashCount', (_e: IpcMainInvokeEvent, input: cashCountRepo.CashCountInput) => { const u=user(); sessionSvc.requirePermission('reports:view'); return cashCountRepo.save(db(),u.id,input) })
 handle('reports:cashCounts', (_e: IpcMainInvokeEvent, opts?: unknown) => { sessionSvc.requirePermission('reports:view'); const u=user(); const o=(opts??{}) as {business_date?:string;user_id?:number;status?:string}; if(!u.roles.some(r=>r==='ADMIN'||r==='MANAGER')) o.user_id=u.id; return cashCountRepo.list(db(),o) })
 handle('reports:cashCountPrint', async (_e: IpcMainInvokeEvent, id: number) => {

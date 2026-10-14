@@ -24,7 +24,8 @@ import type {
   EwalletAuditRecord,
   EwalletShiftSummary,
   EwalletChannel,
-  EwalletTransactionType
+  EwalletTransactionType,
+  DailyCashExpectedReport
 } from '@shared/types'
 import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
 import { toastSuccess, toastError } from '../stores/toast'
@@ -275,6 +276,7 @@ export function EwalletAudit(): React.JSX.Element {
   const [isDeletingAudit, setIsDeletingAudit] = useState(false)
   const [isClearAuditsModalOpen, setIsClearAuditsModalOpen] = useState(false)
   const [posShiftExpectedCashStr, setPosShiftExpectedCashStr] = useState('0')
+  const [dailyExpected, setDailyExpected] = useState<DailyCashExpectedReport | null>(null)
 
   // Transactions & Summary Data
   const [transactions, setTransactions] = useState<EwalletTransactionRecord[]>([])
@@ -294,28 +296,54 @@ export function EwalletAudit(): React.JSX.Element {
   const [actualMaribankStr, setActualMaribankStr] = useState('0')
   const [auditNotes, setAuditNotes] = useState('')
 
-  // Load transactions and summary
+  // Load transactions, shift reports, and today's daily expected cash
   const loadData = useCallback(async () => {
     try {
-      const [txList, shiftSummary, auditList] = await Promise.all([
+      const [txList, shiftSummary, auditList, dailyExp] = await Promise.all([
         window.api.ewallet.listTransactions({ limit: 500 }),
         window.api.ewallet.getShiftSummary(),
-        window.api.ewallet.listAudits({ limit: 30 })
+        window.api.ewallet.listAudits({ limit: 30 }),
+        window.api.reports?.dailyCashExpected
+          ? window.api.reports.dailyCashExpected().catch(() => null)
+          : null
       ])
       setTransactions(txList)
       setSummary(shiftSummary)
       setAudits(auditList)
+      if (dailyExp) {
+        setDailyExpected(dailyExp)
+      }
 
       // Also get expected cash in drawer from shift
       try {
         const expected = await window.api.reports.cashCountExpected()
         if (expected && expected.expected_cash_c != null) {
-          const valStr = (expected.expected_cash_c / 100).toFixed(2)
-          setPosShiftExpectedCashStr(valStr)
-          setExpectedCashDrawerStr((prev) => (prev === '0' || prev === '' ? valStr : prev))
+          const shiftValStr = (expected.expected_cash_c / 100).toFixed(2)
+          setPosShiftExpectedCashStr(shiftValStr)
+
+          // Intelligent initial target selection:
+          // If the open shift is multi-day (spanning across previous calendar days), default
+          // to TODAY's reconciliation target to avoid false-alarm drawer shortages.
+          setExpectedCashDrawerStr((prev) => {
+            if (prev !== '0' && prev !== '') return prev
+            if (dailyExp && dailyExp.is_multi_day) {
+              const netEwallet = shiftSummary?.net_cash_drawer_delta_c || 0
+              const todayTargetC = dailyExp.today_expected_cash_c + netEwallet
+              return (Math.max(0, todayTargetC) / 100).toFixed(2)
+            }
+            return shiftValStr
+          })
         }
       } catch {
-        // Ignored if no shift
+        // Fallback when no shift is currently open
+        if (dailyExp) {
+          setExpectedCashDrawerStr((prev) => {
+            if (prev !== '0' && prev !== '') return prev
+            const netEwallet = shiftSummary?.net_cash_drawer_delta_c || 0
+            const todayTargetC = dailyExp.today_expected_cash_c + netEwallet
+            return (Math.max(0, todayTargetC) / 100).toFixed(2)
+          })
+        }
       }
     } catch {
       // Non-blocking catch
@@ -476,6 +504,16 @@ export function EwalletAudit(): React.JSX.Element {
       return true
     })
   }, [periodTransactions, txFilterChannel, txFilterType, txSearch])
+
+  const isMultiDayShift = Boolean(dailyExpected?.is_multi_day)
+  const daysOpen = dailyExpected?.days_open || 1
+  const todayStartingFloatC = dailyExpected?.today_starting_float_c || 0
+  const todayPosSalesC = dailyExpected?.today_sales_cash_c || 0
+  const todayPosNetC = dailyExpected?.today_pos_net_cash_c || 0
+  const todayExpectedPosC = dailyExpected?.today_expected_cash_c || 0
+  const netEwalletDeltaC = summary?.net_cash_drawer_delta_c || 0
+  const todayCombinedExpectedC = Math.max(0, todayExpectedPosC + netEwalletDeltaC)
+  const todayCombinedExpectedStr = (todayCombinedExpectedC / 100).toFixed(2)
 
   const expectedCashC = Math.round((parseFloat(expectedCashDrawerStr) || 0) * 100)
   const cashDifferenceC = actualCashC - expectedCashC
@@ -900,7 +938,10 @@ export function EwalletAudit(): React.JSX.Element {
 
   const handleResetAuditSheet = (): void => {
     setDenominations(new Array(CASH_COUNT_DENOMINATIONS.length).fill(0))
-    setExpectedCashDrawerStr(posShiftExpectedCashStr !== '0' ? posShiftExpectedCashStr : '0.00')
+    const defaultResetExpected = isMultiDayShift
+      ? todayCombinedExpectedStr
+      : (posShiftExpectedCashStr !== '0' ? posShiftExpectedCashStr : todayCombinedExpectedStr)
+    setExpectedCashDrawerStr(defaultResetExpected)
     setStartingGcashStr('0')
     setActualGcashStr('0')
     setStartingMayaStr('0')
@@ -2295,6 +2336,22 @@ export function EwalletAudit(): React.JSX.Element {
               </h3>
 
               <div className="space-y-3">
+                {/* Multi-Day Shift Warning Banner */}
+                {isMultiDayShift && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+                      <span>Multi-Day Open Shift Detected ({daysOpen} Days Open)</span>
+                    </div>
+                    <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                      Shift #{dailyExpected?.shift_no || 1} was opened on{' '}
+                      <span className="font-semibold text-white">{dailyExpected?.shift_opened_at?.slice(0, 10)}</span> without a Z-Read.
+                      Full Shift expected (₱{posShiftExpectedCashStr}) sums previous days. Tap{' '}
+                      <span className="font-semibold text-emerald-300">&quot;Today Only&quot;</span> below for clean daily reconciliation.
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] text-slate-300 font-semibold">Expected Drawer Cash (₱)</label>
@@ -2313,39 +2370,107 @@ export function EwalletAudit(): React.JSX.Element {
                   </div>
 
                   {/* Quick Action Presets */}
-                  <div className="flex flex-wrap gap-1.5 pt-2">
+                  <div className="flex flex-wrap items-center gap-1.5 pt-2">
                     <button
                       type="button"
                       onClick={() => setExpectedCashDrawerStr('0.00')}
-                      className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition"
-                      title="Set expected cash to 0 (If store has separate e-wallet cash pouch or no onhand cash)"
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 active:scale-95 transition"
+                      title="Set expected cash to 0 (If store has separate e-wallet cash pouch or zero float)"
                     >
                       ₱0.00 (Zero Float)
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setExpectedCashDrawerStr(todayCombinedExpectedStr)}
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 active:scale-95 transition flex items-center gap-1 shadow-sm"
+                      title={`Today's Isolated Target: Float (₱${(todayStartingFloatC / 100).toFixed(2)}) + Today's POS Sales/Net (₱${(todayPosNetC / 100).toFixed(2)}) + Today's E-Wallet Net (${netEwalletDeltaC >= 0 ? '+' : ''}₱${(netEwalletDeltaC / 100).toFixed(2)})`}
+                    >
+                      <Sparkles className="h-3 w-3 text-emerald-400" />
+                      Today Only (₱{todayCombinedExpectedStr})
+                    </button>
+
                     {posShiftExpectedCashStr !== '0' && (
                       <button
                         type="button"
                         onClick={() => setExpectedCashDrawerStr(posShiftExpectedCashStr)}
-                        className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 transition"
-                        title="Sync with current POS register cash balance"
+                        className={`px-2 py-0.5 text-[10px] font-bold rounded-lg border transition active:scale-95 ${
+                          isMultiDayShift
+                            ? 'border-slate-700 bg-slate-800/80 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                            : 'border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20'
+                        }`}
+                        title={
+                          isMultiDayShift
+                            ? `Warning: Sums all sales and movements across ${daysOpen} unclosed days (₱${posShiftExpectedCashStr})`
+                            : 'Sync with current POS register cash balance'
+                        }
                       >
-                        POS Shift (₱{posShiftExpectedCashStr})
+                        {isMultiDayShift ? `Full Shift (${daysOpen}d): ₱${posShiftExpectedCashStr}` : `Current Shift (₱${posShiftExpectedCashStr})`}
                       </button>
                     )}
-                    {summary?.net_cash_drawer_delta_c !== 0 && (
+
+                    {netEwalletDeltaC !== 0 && (
                       <button
                         type="button"
-                        onClick={() => setExpectedCashDrawerStr(((summary?.net_cash_drawer_delta_c || 0) / 100).toFixed(2))}
-                        className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition"
-                        title="Set expected cash to net e-wallet impact"
+                        onClick={() => setExpectedCashDrawerStr(((netEwalletDeltaC) / 100).toFixed(2))}
+                        className="px-2 py-0.5 text-[10px] font-bold rounded-lg border border-teal-500/30 bg-teal-500/10 text-teal-300 hover:bg-teal-500/20 active:scale-95 transition"
+                        title="Set expected cash strictly to net e-wallet impact"
                       >
-                        E-Wallet Net ({summary?.net_cash_drawer_delta_c! >= 0 ? '+' : ''}₱{((summary?.net_cash_drawer_delta_c || 0) / 100).toFixed(2)})
+                        E-Wallet Net ({netEwalletDeltaC >= 0 ? '+' : ''}₱{((netEwalletDeltaC) / 100).toFixed(2)})
                       </button>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    💡 Missing ₱{posShiftExpectedCashStr} cash on hand? Tap <span className="text-amber-400 font-semibold">&quot;₱0.00 (Zero Float)&quot;</span> or enter your drawer count.
-                  </p>
+
+                  {/* Centavo-Accurate Daily Metrics Breakdown */}
+                  <div className="rounded-xl border border-ink-line/80 bg-ink-950/70 p-2.5 text-[11px] space-y-1 mt-2.5">
+                    <div className="flex justify-between items-center text-slate-400 font-semibold text-[10px] uppercase pb-1 border-b border-ink-line/60">
+                      <span>Today&apos;s Daily Cash Metrics</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${isMultiDayShift ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                        {isMultiDayShift ? `${daysOpen}d Multi-Day Isolated` : 'Single-Day Shift'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                      <span className="font-sans text-slate-400">Starting Float:</span>
+                      <span>₱{(todayStartingFloatC / 100).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                      <span className="font-sans text-slate-400">Today POS Cash Sales:</span>
+                      <span className="text-emerald-400">+₱{(todayPosSalesC / 100).toFixed(2)}</span>
+                    </div>
+                    {(dailyExpected?.today_cash_refunds_c || 0) > 0 && (
+                      <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                        <span className="font-sans text-slate-400">Today Cash Refunds:</span>
+                        <span className="text-rose-400">-₱{((dailyExpected!.today_cash_refunds_c) / 100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {(dailyExpected?.today_expenses_c || 0) > 0 && (
+                      <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                        <span className="font-sans text-slate-400">Today Drawer Expenses:</span>
+                        <span className="text-amber-400">-₱{((dailyExpected!.today_expenses_c) / 100).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {((dailyExpected?.today_cash_in_c || 0) - (dailyExpected?.today_cash_out_c || 0)) !== 0 && (
+                      <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                        <span className="font-sans text-slate-400">Cash In/Out Movements:</span>
+                        <span>
+                          {((dailyExpected?.today_cash_in_c || 0) - (dailyExpected?.today_cash_out_c || 0)) >= 0 ? '+' : ''}
+                          ₱{(((dailyExpected?.today_cash_in_c || 0) - (dailyExpected?.today_cash_out_c || 0)) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    {netEwalletDeltaC !== 0 && (
+                      <div className="flex justify-between text-slate-300 font-mono text-[11px]">
+                        <span className="font-sans text-slate-400">Today E-Wallet Net Impact:</span>
+                        <span className={netEwalletDeltaC >= 0 ? 'text-emerald-400' : 'text-amber-400'}>
+                          {netEwalletDeltaC >= 0 ? '+' : ''}₱{(netEwalletDeltaC / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center text-white font-bold border-t border-ink-line/60 pt-1 text-xs">
+                      <span className="font-sans text-slate-200">Today Target Expected:</span>
+                      <span className="font-mono text-emerald-300 font-black">₱{todayCombinedExpectedStr}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-between text-xs pt-1">

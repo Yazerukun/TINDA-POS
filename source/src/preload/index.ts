@@ -218,6 +218,8 @@ const api: TindaApi = {
     cashCount: (input) => invoke<import('@shared/types').CashCountRecord>('reports:cashCount', input),
     cashCounts: (opts) => invoke<import('@shared/types').CashCountRecord[]>('reports:cashCounts', opts),
     cashCountExpected: () => invoke<import('@shared/types').ReadReport>('reports:cashCountExpected'),
+    dailyCashExpected: (dateStr?: string) =>
+      invoke<import('@shared/types').DailyCashExpectedReport>('reports:dailyCashExpected', dateStr),
     cashCountPrint: (id) => invoke<import('@shared/ipc').PrintResult>('reports:cashCountPrint', id),
     sales: (opts) => invoke<{ rows: import('@shared/types').SalesReportRow[]; summary: import('@shared/types').ReportSummary; chart: { label: string; total_c: number; profit_c: number }[] }>('reports:sales', opts),
     itemSales: (opts) => invoke<import('@shared/types').ItemSalesReport>('reports:itemSales', opts),

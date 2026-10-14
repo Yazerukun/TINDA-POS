@@ -324,6 +324,7 @@ const PROXIED_CHANNELS = new Set([
   'reports:exportCsv',
   'reports:xRead',
   'reports:cashCountExpected',
+  'reports:dailyCashExpected',
   'reports:cashCount',
   'reports:cashCounts',
   'reports:cashCountPrint',

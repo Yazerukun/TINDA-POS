@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.2 (UNIVERSAL CUSTOM THERMAL SPACING STUDIO & RECEIPT PERSISTENCE EDITION)
+- v2.2.3 (DEDICATED POS F9 CASH CHECKOUT & MULTI-DAY SHIFT ISOLATION EDITION)
 
 TARGET:
-- v2.2.3 (NEXT CYCLE)
+- v2.2.4 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.2 Full Windows Setup & Live In-App Hot Patch
+- Production Release Completed — v2.2.3 Live In-App Hot Patch
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -35,6 +35,7 @@ COMPLETED:
 - Stage 23: v2.2.0 Doctoral Multi-PC Edge Fabric & Floating VIP Lease Edition official release. Zero-config UDP beacon auto-discovery (`node:dgram`, Port 3112) for 0ms cashier terminal connection, floating VIP Pro lease distribution allowing secondary cashier terminals to unlock all PRO features without purchasing extra licenses, centralized Master cashier authentication with roaming PINs, decoupled thermal receipt printing (satellite prints locally to its attached USB printer while Master skips physical printing), `BEGIN IMMEDIATE` SQLite transaction serialization to prevent write collision locks during concurrent multi-terminal checkouts, and 1-click `[ Connect as Cashier ]` FirstRun onboarding. 532/532 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified, live hot patch `TindaPOS-Feature-Patch-2.2.0.zip` published to GitHub Releases (`v2.2.0`).
 - Stage 24: v2.2.1 In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition official release. In-app download and 1-click auto-restart capability for full Windows installers (`TindaPOS-Setup-*.exe`), Tesla Cyber-Emerald telemetry progress bar with real-time exponential moving average (EMA) speed calculation, safe ETA estimation, byte transfer counter, and 4-phase pipeline status (`SNAPSHOT` -> `DOWNLOADING` -> `VERIFYING` -> `READY`). Dual-choice update card offering cashiers instant 0.3s Express Hot Patch (~1 MB) vs full Setup.exe (~111 MB). Automatic SQLite safety snapshot prior to update execution. 532/532 unit tests passing across 82 test suites, typecheck 0 errors, master invariants verified.
 - Stage 25: v2.2.2 Universal Custom Thermal Spacing Studio & Receipt Persistence Edition official release. Continuous fine-grained controls for physical thermal printing margins and vertical layout density (`receiptHtml.ts`, `PrinterStudioModal.tsx`). Top Header Offset (0-15mm), Row Item-to-Item Gap (0-8px), Divider Margin (0-8px), and Line Height Multiplier (1.00x-2.00x). Cross-receipt persistence across SQLite, localStorage, and @media print spooler. 536/536 unit tests passing across 82 test suites, 0 TypeScript errors.
+- Stage 26: v2.2.3 Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition official release. F9 shortcut collision elimination: removed global F9 listener in `NotificationBellDrawer.tsx`, permanently dedicating F9 100% exclusively to retail Cash Checkout and Cash Tendered input refocus in `POS.tsx`. Multi-day shift isolation: engineered `calculateDailyExpected` in `readReports.ts` and `reports:dailyCashExpected` IPC handler to isolate today's retail cash sales, refunds, expenses, and movements. Added multi-day shift amber warning banner and 1-click Quick Presets in `EwalletAudit.tsx`. 539/539 unit tests passing across 83 test suites, 0 TypeScript errors. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.3`).
 
 
 PENDING APPROVAL:

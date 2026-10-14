@@ -631,6 +631,25 @@ export interface CashCountRecord {
   created_at: string
 }
 
+export interface DailyCashExpectedReport {
+  business_date: string
+  today_sales_cash_c: number
+  today_cash_refunds_c: number
+  today_expenses_c: number
+  today_cash_in_c: number
+  today_cash_out_c: number
+  today_pos_net_cash_c: number
+  today_starting_float_c: number
+  today_expected_cash_c: number
+  shift_id: number | null
+  shift_no: number | null
+  shift_opened_at: string | null
+  shift_starting_cash_c: number | null
+  shift_expected_cash_c: number | null
+  is_multi_day: boolean
+  days_open: number
+}
+
 export interface BackupInfo {
   filename: string
   path: string

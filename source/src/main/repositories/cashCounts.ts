@@ -1,7 +1,7 @@
 import type Database from 'better-sqlite3'
-import type { CashCountRecord } from '@shared/types'
+import type { CashCountRecord, DailyCashExpectedReport } from '@shared/types'
 import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
-import { calculateRead } from '../services/readReports'
+import { calculateRead, calculateDailyExpected } from '../services/readReports'
 
 export const DENOMINATIONS = CASH_COUNT_DENOMINATIONS.map((d) => d.cents)
 export type CashCountInput = { shift_id?: number; quantities: number[]; notes?: string | null }
@@ -26,6 +26,9 @@ function toRow(r: Record<string, unknown>): CashCountRecord {
   }
 }
 export function getExpected(db: Database.Database, shiftId: number) { return calculateRead(db, shiftId, 'X') }
+export function getDailyExpected(db: Database.Database, dateStr?: string, userId?: number): DailyCashExpectedReport {
+  return calculateDailyExpected(db, dateStr, userId)
+}
 export function save(db: Database.Database, userId: number, input: CashCountInput) {
   const shiftId = input.shift_id ?? (() => { const s = db.prepare("SELECT id FROM shifts WHERE user_id=? AND status='OPENED' ORDER BY id DESC LIMIT 1").get(userId) as {id:number}|undefined; if (!s) throw new Error('No open shift.'); return s.id })()
   const shift = db.prepare('SELECT * FROM shifts WHERE id=?').get(shiftId) as {id:number;user_id:number;status:string;starting_cash_c:number}|undefined

@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-536%2F536_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-539%2F539_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.2_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Setup-2.2.2.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.2_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Portable-2.2.2.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.2_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Feature-Patch-2.2.2.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.3_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.3_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.3_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Feature-Patch-2.2.3.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,15 +31,15 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.2 Full Release)
+## ⚡ Quick Download & Release Assets (v2.2.3 Full Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Setup-2.2.2.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.2.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Portable-2.2.2.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.2.2.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/TindaPOS-Feature-Patch-2.2.2.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.2)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.2.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.2/SHA256SUMS-v2.2.2.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
+| [**TindaPOS-Portable-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-Feature-Patch-2.2.3.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Feature-Patch-2.2.3.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.3)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/SHA256SUMS-v2.2.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
@@ -205,6 +205,29 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition) · Oct 14, 2026
+- **⚡ F9 Shortcut Collision Elimination & Dedicated Cash Checkout (`NotificationBellDrawer.tsx`, `POS.tsx`)**:
+  - Removed conflicting global F9 listener in `NotificationBellDrawer.tsx`, isolating the notification drawer hotkey exclusively to `Ctrl+B / Cmd+B`.
+  - Dedicated F9 100% exclusively to retail Cash Checkout and Cash Tendered input refocus in `POS.tsx`, allowing cashiers to checkout instantly with zero key collisions or drawer interference.
+- **🛡️ Multi-Day Shift Isolation & Daily Cash Reconciliation (`readReports.ts`, `cashCounts.ts`, `EwalletAudit.tsx`)**:
+  - Engineered `calculateDailyExpected` in `readReports.ts` and exposed via IPC `reports:dailyCashExpected` to isolate today's retail cash sales, refunds, expenses, and movements.
+  - Multi-Day Shift Safety Shield: Prevents shifts left unclosed from previous days from inflating or distorting today's cash count balancing.
+  - Added Multi-Day Shift amber warning banner and 1-click Quick Presets (`[ ₱0.00 (Zero Float) ]`, `[ Today Only ]`, `[ Full Shift ]`, `[ E-Wallet Net ]`) in `EwalletAudit.tsx`.
+  - Verified with 3 comprehensive unit tests in `dailyCashExpected.test.ts`.
+
+### 🏷️ v2.2.2 (Universal Custom Thermal Spacing Studio & Receipt Persistence Edition) · Oct 14, 2026
+- **🖨️ Universal Thermal Custom Spacing Studio (`receiptHtml.ts`, `PrinterStudioModal.tsx`)**:
+  - Continuous fine-grained controls for physical thermal printing margins and vertical layout density.
+  - Top Header Offset / Margin (0 to 15mm) eliminating cutter blade or tear bar clipping on physical paper rolls.
+  - Row Item-to-Item Gap (0 to 8px) allowing cashiers to stretch or compact product lines to conserve thermal roll paper.
+  - Divider / Separator Gap (0 to 8px) controlling vertical margins around dashed and double separator lines.
+  - Global Line Height Multiplier (1.00x to 2.00x) providing continuous height stretching for maximum text legibility on low-contrast thermal print heads.
+- **🔄 Cross-Receipt System-Wide Persistence Architecture (`types.ts`, `settings.ts`, `printerCustomization.ts`, `printing.ts`)**:
+  - Custom spacing options persist seamlessly across all receipt generation paths: checkout sales, reprints, express slips, e-wallet transactions, bill payments, and cash count reports.
+  - Three-tier reconciliation priority: SQLite StoreSettings -> localStorage persistent fallback -> factory defaults.
+- **👁️ 1:1 Live Engine Preview (`ReceiptPaper.tsx`, `PrinterStudioModal.tsx`)**:
+  - Embeds `ReceiptPaper` directly in the studio live preview, guaranteeing that on-screen preview renders the exact HTML and CSS sent to the physical print spooler.
 
 ### 🏷️ v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition) · Oct 13, 2026
 - **📥 In-App Full Build Downloader & 1-Click Auto-Restart (`updateService.ts`, `UnifiedUpdateCapsule.tsx`)**:

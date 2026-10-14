@@ -30,7 +30,17 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.2.2 (Universal Thermal Custom Spacing Studio & Receipt Persistence Edition)**
+- Current Version: **v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)**
+
+## Key Features in v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)
+1. **F9 Shortcut Collision Elimination & Dedicated Cash Checkout (`NotificationBellDrawer.tsx`, `POS.tsx`)**:
+   - Removed conflicting global F9 listener in `NotificationBellDrawer.tsx`, permanently reserving drawer toggle exclusively to `Ctrl+B / Cmd+B`.
+   - Dedicated F9 100% exclusively to retail Cash Checkout and Cash Tendered input refocus in `POS.tsx`, giving cashiers instant, muscle-memory rapid cash finalization with zero collisions.
+2. **Multi-Day Shift Isolation & Daily Cash Reconciliation (`readReports.ts`, `cashCounts.ts`, `EwalletAudit.tsx`)**:
+   - Engineered `calculateDailyExpected` in `readReports.ts` and exposed via IPC `reports:dailyCashExpected`.
+   - Isolates today's retail cash sales, refunds, expenses, and movements, preventing past unclosed shifts from distorting today's cash count.
+   - Added Multi-Day Shift amber warning banner and 1-click Quick Presets (`[ ₱0.00 (Zero Float) ]`, `[ Today Only ]`, `[ Full Shift ]`, `[ E-Wallet Net ]`) in `EwalletAudit.tsx`.
+   - Verified with unit tests in `dailyCashExpected.test.ts`.
 
 ## Key Features in v2.2.2 (Universal Thermal Custom Spacing Studio & Receipt Persistence Edition)
 1. **Universal Thermal Custom Spacing Studio (`receiptHtml.ts`, `PrinterStudioModal.tsx`)**:

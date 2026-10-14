@@ -395,6 +395,7 @@ export interface TindaApi {
     cashCount: (input: { shift_id?: number; quantities: number[]; notes?: string | null }) => Promise<import('./types').CashCountRecord>
     cashCounts: (opts?: { business_date?: string; user_id?: number; status?: string }) => Promise<import('./types').CashCountRecord[]>
     cashCountExpected: () => Promise<import('./types').ReadReport>
+    dailyCashExpected: (dateStr?: string) => Promise<import('./types').DailyCashExpectedReport>
     cashCountPrint: (id: number) => Promise<PrintResult>
     sales: (opts: { from: string; to: string; groupBy?: 'DAILY' | 'WEEKLY' | 'MONTHLY' }) => Promise<{
       rows: SalesReportRow[]

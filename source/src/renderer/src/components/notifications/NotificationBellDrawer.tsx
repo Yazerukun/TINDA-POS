@@ -64,7 +64,7 @@ function AudioWaveformIndicator({ isSpeaking }: { isSpeaking: boolean }): React.
 
 /**
  * Notification Bell Trigger Button.
- * Online-Reactive with emerald pulse beacon, alert count badge, and F9 / Ctrl+B shortcut.
+ * Online-Reactive with emerald pulse beacon, alert count badge, and Ctrl+B / Cmd+B shortcut.
  */
 export function NotificationBellButton({ className = '' }: { className?: string }): React.JSX.Element {
   const { isOpen, toggleDrawer, telemetry, fetchTelemetry } = useNotificationDrawer()
@@ -87,8 +87,8 @@ export function NotificationBellButton({ className = '' }: { className?: string 
       aria-label="Store Notifications & AI Advisor"
       title={
         online
-          ? `Store Alerts & AI Advisor (Online) • ${criticalCount} Alert${criticalCount === 1 ? '' : 's'} (F9 / Ctrl+B)`
-          : `Store Alerts & AI Advisor (Offline Ready) • ${criticalCount} Alert${criticalCount === 1 ? '' : 's'} (F9 / Ctrl+B)`
+          ? `Store Alerts & AI Advisor (Online) • ${criticalCount} Alert${criticalCount === 1 ? '' : 's'} (Ctrl+B / Cmd+B)`
+          : `Store Alerts & AI Advisor (Offline Ready) • ${criticalCount} Alert${criticalCount === 1 ? '' : 's'} (Ctrl+B / Cmd+B)`
       }
       className={`group relative flex h-9 w-9 items-center justify-center rounded-xl border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 active:scale-95 ${
         isOpen
@@ -159,10 +159,10 @@ export function NotificationBellDrawer(): React.JSX.Element | null {
     return () => clearInterval(clockTimer)
   }, [])
 
-  // Global Keyboard Shortcuts: F9 and Ctrl+B / Cmd+B to toggle; Escape to close
+  // Global Keyboard Shortcuts: Ctrl+B / Cmd+B to toggle; Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'F9' || ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B'))) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
         e.preventDefault()
         toggleDrawer()
       } else if (e.key === 'Escape' && isOpen) {
