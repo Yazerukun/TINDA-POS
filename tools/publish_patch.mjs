@@ -43,8 +43,8 @@ const setupFile = `TindaPOS-Setup-${version}.exe`
 const setupPath = path.join(BUILDS_DIR, setupFile)
 const hasFullBuild = fs.existsSync(setupPath)
 const RELEASE_NAME = hasFullBuild
-  ? `TINDA POS ${TAG} — Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition`
-  : `TINDA POS ${TAG} — Live Feature Patch`
+  ? `TINDA POS ${TAG} — Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition`
+  : `TINDA POS ${TAG} — Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition (Live Hot Patch)`
 
 const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
 const patchPath = path.join(BUILDS_DIR, patchFile)

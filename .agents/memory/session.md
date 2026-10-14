@@ -20,6 +20,25 @@ IDLE | None | 2026-10-13 22:56
 
 ## Recent Handoff History
 
+### 2026-10-14 14:24 | Jin / FALCON 🚀 (v2.2.4 Official Release — Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition)
+- **Task**: Package and publish TINDA POS `v2.2.4` live in-app hot patch with strictly daily cash drawer reconciliation and clean formula breakdown.
+- **Key Enhancements**:
+  - Permanently locked Expected Drawer Cash default initialization strictly to Today's Daily Target: Float + POS Net Cash + E-Wallet Net Delta.
+  - Reset button resets strictly to Today's Daily Target.
+  - Re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge.
+  - Set "[ 🎯 Today's Daily Target (₱X.XX) ]" as primary glowing emerald preset button.
+  - Replaced multi-day confusion with expandable disclaimer for past unclosed shifts, eliminating cashier shortage panics.
+  - Added clean transparent formula breakdown card under the input field.
+  - Updated thermal audit slip title to "DAILY E-WALLET & CASH AUDIT REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)".
+- **Artifacts Built & Published**:
+  - `TindaPOS-Feature-Patch-2.2.4.zip` (0.98 MB, SHA-256: `613264263533614bc4f6b6731e5174b8816ff55c7674dd8afea7bf26d513dbf8`).
+- **Release Coordinates**:
+  - GitHub Release: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v2.2.4`
+- **Quality Gates**:
+  - TypeScript: 0 errors across Node & Web targets (`npm run typecheck`).
+  - Vitest: 539/539 tests passing across 83 test suites (100% green).
+  - Master Invariants: 100% passed (`check_master_invariants.mjs`).
+
 ### 2026-10-14 13:25 | Jin / FALCON & SHERLOCK & ORACLE (v2.2.3 Official Release — Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)
 - **Task**: Eliminate F9 shortcut collision in `NotificationBellDrawer.tsx` vs `POS.tsx` and fix multi-day unclosed shift cash distortion in `EwalletAudit.tsx`.
 - **Specialists Deployed**:

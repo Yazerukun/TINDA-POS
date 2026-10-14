@@ -30,7 +30,18 @@ Features 100% offline-first reliability, weighable decimal quantity checkout, li
 - Git Remote: `https://github.com/Yazerukun/TINDA-POS-Source.git`
 - Releases & Updater Repo: `https://github.com/Yazerukun/TINDA-POS.git`
 - Cloud Owner Dashboard: `https://tinda-owner-dashboard.pages.dev/`
-- Current Version: **v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)**
+- Current Version: **v2.2.4 (Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition)**
+
+## Key Features in v2.2.4 (Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition)
+1. **Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`)**:
+   - Permanently locked Expected Drawer Cash default initialization strictly to Today's Daily Target: Float + POS Net Cash + E-Wallet Net Delta.
+   - Guaranteed reset handler resets strictly to Today's Daily Target.
+   - Re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge.
+   - Made "[ 🎯 Today's Daily Target (₱X.XX) ]" the primary glowing emerald preset button.
+   - Replaced multi-day confusion with an expandable disclaimer for past unclosed shifts, completely eliminating cashier shortage panics.
+   - Added clean, transparent formula breakdown card directly under the input field.
+2. **Thermal Print Audit Report (`receiptHtml.ts`)**:
+   - Updated audit slip title to "DAILY E-WALLET & CASH AUDIT REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)".
 
 ## Key Features in v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)
 1. **F9 Shortcut Collision Elimination & Dedicated Cash Checkout (`NotificationBellDrawer.tsx`, `POS.tsx`)**:

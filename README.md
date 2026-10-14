@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-539%2F539_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -20,7 +20,7 @@
 
 [![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.3_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe)
 [![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.3_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.3_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Feature-Patch-2.2.3.zip)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.4_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.4/TindaPOS-Feature-Patch-2.2.4.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,13 +31,13 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.3 Full Release)
+## ⚡ Quick Download & Release Assets (v2.2.4 Live Patch / v2.2.3 Full Stable)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
+| [**TindaPOS-Feature-Patch-2.2.4.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.4/TindaPOS-Feature-Patch-2.2.4.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.4)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**TindaPOS-Setup-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
 | [**TindaPOS-Portable-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.2.3.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Feature-Patch-2.2.3.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.3)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
 | [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
 | [**SHA256SUMS-v2.2.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/SHA256SUMS-v2.2.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
@@ -205,6 +205,17 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.4 (Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition) · Oct 14, 2026
+- **🛡️ Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`)**:
+  - Permanently locked Expected Drawer Cash default initialization strictly to Today's Daily Target: Float + POS Net Cash + E-Wallet Net Delta.
+  - Guaranteed reset handler resets strictly to Today's Daily Target.
+  - Re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge.
+  - Made "[ 🎯 Today's Daily Target (₱X.XX) ]" the primary glowing emerald preset button.
+  - Replaced multi-day confusion with an expandable disclaimer for past unclosed shifts, completely eliminating cashier shortage panics.
+  - Added clean, transparent formula breakdown card directly under the input field.
+- **🖨️ Thermal Print Audit Report (`receiptHtml.ts`)**:
+  - Updated audit slip title to "DAILY E-WALLET & CASH AUDIT REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)".
 
 ### 🏷️ v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition) · Oct 14, 2026
 - **⚡ F9 Shortcut Collision Elimination & Dedicated Cash Checkout (`NotificationBellDrawer.tsx`, `POS.tsx`)**:

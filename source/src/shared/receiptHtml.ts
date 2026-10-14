@@ -502,14 +502,14 @@ export function formatEwalletAuditLines(
   const money = (cents: number): string => (cents / 100).toFixed(2)
   const lines: string[] = [
     storeName || 'TINDA POS',
-    'E-WALLET & CASH AUDIT REPORT',
+    'DAILY E-WALLET & CASH AUDIT REPORT',
     '--------------------------------',
     `Date: ${formatReceiptDate(a.business_date || a.created_at)}`,
     `Shift: ${a.shift_id ?? 'N/A'}`,
     `Cashier: ${a.cashier_name || 'Store Cashier'}`,
     '--------------------------------',
-    'PHYSICAL CASH DRAWER',
-    `Expected Cash  ${money(a.expected_cash_c)}`,
+    'PHYSICAL CASH DRAWER (DAILY RECON)',
+    `Today Expected Cash ${money(a.expected_cash_c)}`,
     `Actual Cash    ${money(a.actual_cash_c)}`,
     `Difference     ${money(a.cash_difference_c)}`,
     `Status         ${a.cash_status}`,
