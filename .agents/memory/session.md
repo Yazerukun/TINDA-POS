@@ -20,7 +20,20 @@ IDLE | None | 2026-10-13 22:56
 
 ## Recent Handoff History
 
-### 2026-10-13 23:00 | Jin / SCRIBE & FORGE & SENTINEL (v2.2.2 Official Production Release & Publishing)
+### 2026-10-14 13:25 | Jin / FALCON & SHERLOCK & ORACLE (v2.2.3 Official Release — Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition)
+- **Task**: Eliminate F9 shortcut collision in `NotificationBellDrawer.tsx` vs `POS.tsx` and fix multi-day unclosed shift cash distortion in `EwalletAudit.tsx`.
+- **Specialists Deployed**:
+  - `SHERLOCK 🔬`: Investigated F9 global key interceptor, removed `e.key === 'F9'` from `NotificationBellDrawer.tsx`, restored F9 100% exclusively to retail Cash Checkout and cash tender refocus in `POS.tsx`, leaving `Ctrl+B / Cmd+B` exclusively for notification drawer.
+  - `ORACLE 📊`: Engineered `calculateDailyExpected` in `readReports.ts` and exposed via IPC `reports:dailyCashExpected`. Decoupled multi-day unclosed shifts from daily cash reconciliation in `EwalletAudit.tsx`. Added multi-day shift amber warning banner, 1-click Quick Presets (`[ ₱0.00 (Zero Float) ]`, `[ Today Only ]`, `[ Full Shift ]`, `[ E-Wallet Net ]`), and centavo-pure breakdown card. Unit tests added in `dailyCashExpected.test.ts`.
+  - `FALCON 🚀`: Synchronized version bump to `v2.2.3` across `source/package.json`, `PosToolsModal.tsx`, `publish_patch.mjs`, `README.md`, `GEMINI.md`, and `docs/RELEASE-STATE.md`. Built `TindaPOS-Feature-Patch-2.2.3.zip` (0.98 MB, SHA-256: `66473ba68047db714b01bb110db47f4da3bb0a95c77c6b02c853ddc4d8a2d4ff`), published release tag `v2.2.3` to GitHub Releases (`Yazerukun/TINDA-POS`), and committed with git prefix `[agy]`.
+- **Quality Gates**:
+  - TypeScript: 0 errors across Node & Web targets (`npm run typecheck`).
+  - Vitest: 539/539 tests passing across 83 test suites (100% green).
+  - Master Invariants: 100% passed (`check_master_invariants.mjs`).
+- **Release Coordinates**:
+  - GitHub Release: `https://github.com/Yazerukun/TINDA-POS/releases/tag/v2.2.3`
+  - Hot Patch: `TindaPOS-Feature-Patch-2.2.3.zip` live for instant 0.3s in-app update.
+
 - **Task**: Package and publish TINDA POS `v2.2.2` (Universal Custom Thermal Spacing Studio & Receipt Persistence Edition).
 - **Artifacts Built & Published**:
   - `TindaPOS-Setup-2.2.2.exe` (111.55 MB, SHA-256: `1df358e38ffa1e7a2e3add6e946fc6bfd0d155ab49d562556a93d2374840ba40`)
