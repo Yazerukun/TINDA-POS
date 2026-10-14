@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift, LayoutGrid, LayoutList } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift, LayoutGrid, LayoutList, Store } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -20,6 +20,7 @@ import { InventoryPrintModal } from '../components/InventoryPrintModal'
 import { RecipeModal } from '../components/RecipeModal'
 import { PromoBundlesModal } from '../components/PromoBundlesModal'
 import { PurchaseInvoiceModal } from '../components/PurchaseInvoiceModal'
+import { StoreUseModal } from '../components/inventory/StoreUseModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
   createProductInput,
@@ -45,6 +46,7 @@ export function Inventory(): React.JSX.Element {
   const [restocking, setRestocking] = useState<Product | true | null>(null)
   const [viewingReceiving, setViewingReceiving] = useState(false)
   const [withdrawing, setWithdrawing] = useState<Product | true | null>(null)
+  const [storeUseProduct, setStoreUseProduct] = useState<Product | true | null>(null)
   const [viewingMovements, setViewingMovements] = useState(false)
   const [defaultThreshold, setDefaultThreshold] = useState(5)
   const [expirationOpen, setExpirationOpen] = useState(false)
@@ -303,6 +305,7 @@ export function Inventory(): React.JSX.Element {
           </button>
           <button onClick={() => setRestocking(true)} className="btn-primary flex items-center gap-2"><PackagePlus className="h-4 w-4" /> Restock</button>
           <button onClick={() => setWithdrawing(true)} className="btn-primary flex items-center gap-2"><PackageMinus className="h-4 w-4" /> Withdraw</button>
+          <button onClick={() => setStoreUseProduct(true)} className="btn-secondary flex items-center gap-2" title="Deduct Stock for Store Use and Record Operating Expense"><Store className="h-4 w-4 text-amber-400" /> Store Use</button>
           <button onClick={() => setEditing(newProductForm(defaultThreshold))} className="btn-primary flex items-center gap-2">
             <Plus className="h-4 w-4" /> New Product
           </button>
@@ -628,6 +631,13 @@ export function Inventory(): React.JSX.Element {
                             <PackagePlus className="h-4 w-4" />
                           </button>
                           <button
+                            onClick={() => setStoreUseProduct(p)}
+                            className="btn-ghost-2 rounded-lg p-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+                            title="Store Use (Operating Expense)"
+                          >
+                            <Store className="h-4 w-4" />
+                          </button>
+                          <button
                             onClick={() => setEditing(editProductForm(p))}
                             className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-ink-700"
                             title="Edit"
@@ -710,6 +720,7 @@ export function Inventory(): React.JSX.Element {
                   )}
                   <button onClick={() => { setSelectedTagProduct(p); setPrintPriceTagsOpen(true) }} className="btn-ghost-2 rounded-lg p-2 text-sky-400" title="Print Shelf Price Tag"><Tag className="h-4 w-4" /></button>
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
+                  <button onClick={() => setStoreUseProduct(p)} className="btn-ghost-2 rounded-lg p-2 text-amber-400 hover:text-amber-300" title="Store Use (Operating Expense)"><Store className="h-4 w-4" /></button>
                   <button onClick={() => setEditing(editProductForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
                 </div>
@@ -764,6 +775,14 @@ export function Inventory(): React.JSX.Element {
       {importing && <CsvImportModal onDone={() => { setImporting(false); void load() }} onClose={() => setImporting(false)} />}
       {restocking && <RestockModal products={products} initial={restocking === true ? null : restocking} onDone={() => { setRestocking(null); void load() }} onClose={() => setRestocking(null)} />}
       {withdrawing && <WithdrawModal products={products} initial={withdrawing === true ? null : withdrawing} onDone={() => { setWithdrawing(null); void load() }} onClose={() => setWithdrawing(null)} />}
+      {storeUseProduct && (
+        <StoreUseModal
+          products={products}
+          initial={storeUseProduct === true ? null : storeUseProduct}
+          onDone={() => { setStoreUseProduct(null); void load() }}
+          onClose={() => setStoreUseProduct(null)}
+        />
+      )}
       {viewingMovements && <StockHistoryView products={products} onClose={() => setViewingMovements(false)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
       {purchaseInvoiceOpen && (
@@ -1211,7 +1230,7 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
   useEffect(() => { void load() }, [load])
   useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
   const productName = (id: number) => products.find((p) => p.id === id)?.name ?? `#${id}`
-  const typeLabels: Partial<Record<InventoryMovement['movement_type'], string>> = { PURCHASE: 'Purchase', SALE: 'Sale', REFUND: 'Refund', RETURN: 'Return', DAMAGE: 'Damage', EXPIRATION: 'Expiration', LOSS: 'Loss', ADJUSTMENT: 'Adjustment', INITIAL_STOCK: 'Initial Stock', WITHDRAWAL: 'Withdrawal' }
+  const typeLabels: Partial<Record<InventoryMovement['movement_type'], string>> = { PURCHASE: 'Purchase', SALE: 'Sale', REFUND: 'Refund', RETURN: 'Return', DAMAGE: 'Damage', EXPIRATION: 'Expiration', LOSS: 'Loss', ADJUSTMENT: 'Adjustment', INITIAL_STOCK: 'Initial Stock', WITHDRAWAL: 'Withdrawal', STORE_USE: 'Store Use' }
   return <Modal open onClose={onClose} title="Stock History" maxWidth="max-w-6xl" footer={<button className="btn-ghost" onClick={onClose}>Close</button>}>
     <div className="space-y-4">
       <div className="grid gap-2 md:grid-cols-2">
@@ -1236,7 +1255,17 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
               <tr key={row.id}>
                 <td className="w-[18%] text-center align-middle text-xs text-slate-400">{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
                 <td className="w-[22%] text-center align-middle font-medium text-white truncate" title={productName(row.product_id)}>{productName(row.product_id)}</td>
-                <td className="w-[12%] text-center align-middle"><span className={`badge border inline-flex items-center justify-center ${row.movement_type === 'WITHDRAWAL' ? 'border-danger-500/30 bg-danger-500/10 text-danger-300' : 'border-slate-500/30 bg-slate-500/10 text-slate-300'}`}>{typeLabels[row.movement_type] ?? row.movement_type}</span></td>
+                <td className="w-[12%] text-center align-middle">
+                  <span className={`badge border inline-flex items-center justify-center ${
+                    row.movement_type === 'WITHDRAWAL'
+                      ? 'border-danger-500/30 bg-danger-500/10 text-danger-300'
+                      : row.movement_type === 'STORE_USE'
+                        ? 'border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold'
+                        : 'border-slate-500/30 bg-slate-500/10 text-slate-300'
+                  }`}>
+                    {typeLabels[row.movement_type] ?? row.movement_type}
+                  </span>
+                </td>
                 <td className={`w-[11%] text-center align-middle font-mono tabular-nums ${row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'}`}>{row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}</td>
                 <td className="w-[11%] text-center align-middle font-mono tabular-nums">{row.quantity_after} {row.unit}</td>
                 <td className="w-[16%] text-center align-middle truncate" title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}>{row.reason || '—'}{row.reference ? <span className="text-slate-500"> — {row.reference}</span> : null}</td>

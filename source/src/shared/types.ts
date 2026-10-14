@@ -159,8 +159,29 @@ export type InventoryMovementType =
   | 'ADJUSTMENT'
   | 'INITIAL_STOCK'
   | 'WITHDRAWAL'
+  | 'STORE_USE'
 
 export type WithdrawalReason = 'TAKEN' | 'DAMAGED' | 'EXPIRED' | 'FORWARD'
+
+export interface StoreUseRecord {
+  success: boolean
+  reference: string
+  product_id: number
+  product_name: string
+  quantity: number
+  unit: string
+  quantity_base: number
+  unit_cost_c: number
+  total_amount_c: number
+  expense_id: number
+  movement_id: number
+  stock_before: number
+  stock_after: number
+  reason: string
+  notes?: string | null
+  cashier_name?: string | null
+  created_at: string
+}
 
 export interface InventoryMovement {
   id: number

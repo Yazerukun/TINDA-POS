@@ -286,6 +286,7 @@ export interface TindaApi {
     count: (input: { product_id: number; actual_base: number; notes?: string }) => Promise<InventoryMovement>
     restock: (input: { product_id: number; quantity: number; unit_name: string; supplier_id?: number | null; cost_c: number; reference?: string; notes?: string; expiration_date?: string; batch_label?: string }) => Promise<InventoryMovement>
     withdraw: (input: { product_id: number; quantity: number; unit_name: string; reason: import('./types').WithdrawalReason; notes?: string; batch_id?: number }) => Promise<InventoryMovement>
+    storeUse: (input: { product_id: number; quantity: number; unit_name?: string; conversion_to_base?: number; cost_c?: number; reason: string; notes?: string; manager_pin?: string }) => Promise<import('./types').StoreUseRecord>
   }
 
   suppliers: {

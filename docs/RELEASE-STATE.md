@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.4 (STRICTLY DAILY E-WALLET & CASH DRAWER RECONCILIATION EDITION)
+- v2.2.5 (VIP STORE USE & OPERATING EXPENSE EDITION)
 
 TARGET:
-- v2.2.5 (NEXT CYCLE)
+- v2.2.6 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.4 Full Windows Standalone Executables & In-App Live Hot Patch Published
+- Production Release Completed — v2.2.5 Full Windows Standalone Executables & In-App Live Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -39,6 +39,8 @@ COMPLETED:
 - Stage 27: Full Windows Executables (`TindaPOS-Setup-2.2.3.exe` + `TindaPOS-Portable-2.2.3.exe`) compiled and published to official GitHub Release `v2.2.3` alongside `latest.yml`, `SHA256SUMS-v2.2.3.txt`, and in-app hot patch with verified cryptographic checksums.
 - Stage 28: v2.2.4 Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition official release. Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`): locked Expected Drawer Cash default initialization strictly to Today's Daily Target (Float + POS Net Cash + E-Wallet Net Delta), guaranteed reset handler resets strictly to Today's Daily Target, re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge, set "[ 🎯 Today's Daily Target ]" as primary glowing emerald preset, replaced multi-day confusion with expandable disclaimer for past unclosed shifts, and added clean transparent formula breakdown card. Thermal print audit report slip titled "DAILY E-WALLET & CASH RECONCILIATION REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)". 539/539 unit tests passing across 83 test suites, 0 TypeScript errors. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.4`).
 - Stage 29: Full Windows Executables (`TindaPOS-Setup-2.2.4.exe` + `TindaPOS-Portable-2.2.4.exe`) compiled and published to official GitHub Release `v2.2.4` alongside `latest.yml`, `SHA256SUMS-v2.2.4.txt`, blockmap, and in-app hot patch with verified cryptographic checksums.
+- Stage 30: v2.2.5 VIP Store Use & Operating Expense Edition official release. Double-entry inventory-to-expense deduction ledger (`inventory:storeUse`), Landed Cost valuation (`purchase_cost_c`), `StoreUseModal.tsx` with auto-focus barcode scanner, quick purpose chips, anti-kupit Manager PIN authorization check, `STORE_USE` badge in `StockHistoryView`, `formatStoreUseSlipLines` 58mm/80mm thermal voucher formatter with audit sign-off blanks, and Web Audio deduction confirmation chime. 542/542 unit tests passing across 84 test suites, 0 TypeScript errors.
+- Stage 31: Full Windows Executables (`TindaPOS-Setup-2.2.5.exe` + `TindaPOS-Portable-2.2.5.exe`) compiled and published to official GitHub Release `v2.2.5` alongside `latest.yml`, `SHA256SUMS-v2.2.5.txt`, blockmap, and in-app hot patch with verified cryptographic checksums.
 
 
 PENDING APPROVAL:

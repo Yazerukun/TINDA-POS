@@ -609,3 +609,38 @@ export function formatBillSlipLines(
   lines.push('Thank you! Please come again.')
   return lines
 }
+
+export function formatStoreUseSlipLines(
+  data: import('./types').StoreUseRecord,
+  storeName?: string | null
+): string[] {
+  const money = (cents: number): string => (cents / 100).toFixed(2)
+  const lines: string[] = [
+    storeName || 'TINDA POS',
+    'STORE USE EXPENSE VOUCHER',
+    'INTERNAL CONSUMPTION',
+    '--------------------------------',
+    `Voucher Ref: ${data.reference}`,
+    `Date: ${formatReceiptDate(data.created_at || new Date().toISOString())}`,
+    `Staff: ${data.cashier_name || 'Staff'}`
+  ]
+  lines.push('--------------------------------')
+  lines.push(`Item: ${data.product_name}`)
+  lines.push(`Qty: ${data.quantity} ${data.unit}`)
+  lines.push(`Unit Cost: P${money(data.unit_cost_c)}`)
+  lines.push('================================')
+  lines.push(`TOTAL OPEX: P${money(data.total_amount_c)}`)
+  lines.push('================================')
+  lines.push(`Purpose: ${data.reason}`)
+  if (data.notes) lines.push(`Notes: ${data.notes}`)
+  lines.push('--------------------------------')
+  lines.push('AUDIT & TAX SIGN-OFF')
+  lines.push('')
+  lines.push('Requested: _____________________')
+  lines.push('')
+  lines.push('Approved:  _____________________')
+  lines.push('--------------------------------')
+  lines.push('File in Daily Expense Receipts')
+  return lines
+}
+

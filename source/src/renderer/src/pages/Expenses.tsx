@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Receipt } from 'lucide-react'
-import type { Expense, ExpenseCategory } from '@shared/types'
+import { Plus, Pencil, Trash2, Receipt, Store } from 'lucide-react'
+import type { Expense, ExpenseCategory, Product } from '@shared/types'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
+import { StoreUseModal } from '../components/inventory/StoreUseModal'
 
 interface Form { id: number | null; category_id: number; amount_c: number; expense_date: string; description: string }
 
@@ -17,6 +18,8 @@ export function Expenses(): React.JSX.Element {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Form | null>(null)
   const [newCat, setNewCat] = useState('')
+  const [storeUseOpen, setStoreUseOpen] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
 
   const load = async () => {
     setLoading(true)
@@ -72,12 +75,38 @@ export function Expenses(): React.JSX.Element {
     } catch (err) { toastError('Failed to add category', String((err as Error)?.message || err)) }
   }
 
+  const openStoreUse = async () => {
+    try {
+      const res = await window.api.products.search('', { status: 'ACTIVE', limit: 1000 })
+      setProducts(res.rows)
+      setStoreUseOpen(true)
+    } catch (err) {
+      toastError('Failed to load products for Store Use', String((err as Error)?.message || err))
+    }
+  }
+
   return (
     <div className="p-6">
       <PageHeader
         title="Expenses"
         subtitle={`${rows.length} records · total ${money(total)}`}
-        actions={<button onClick={() => setEditing(blankForm(cats))} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> New Expense</button>}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void openStoreUse()}
+              className="btn-secondary flex items-center gap-2"
+              title="Deduct Stock for Store Use and Record Operating Expense"
+            >
+              <Store className="h-4 w-4 text-amber-400" /> Store Use (From Stock)
+            </button>
+            <button
+              onClick={() => setEditing(blankForm(cats))}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> New Expense
+            </button>
+          </div>
+        }
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -131,6 +160,17 @@ export function Expenses(): React.JSX.Element {
       )}
 
       {editing && <ExpenseModal form={editing} cats={cats} onSave={save} onClose={() => setEditing(null)} />}
+      {storeUseOpen && (
+        <StoreUseModal
+          products={products}
+          initial={null}
+          onDone={() => {
+            setStoreUseOpen(false)
+            void load()
+          }}
+          onClose={() => setStoreUseOpen(false)}
+        />
+      )}
     </div>
   )
 }

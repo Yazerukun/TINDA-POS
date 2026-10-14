@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-539%2F539_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-542%2F542_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -14,13 +14,13 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Suki Utang Ledger · Wholesale Invoices · Daily E-Wallet Reconciliation · 1-Tap QR Cloud Sync**
+**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Suki Utang Ledger · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger · 1-Tap QR Cloud Sync**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.3_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.3_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.4_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.4/TindaPOS-Feature-Patch-2.2.4.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.5_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Setup-2.2.5.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.5_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Portable-2.2.5.exe)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.5_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Feature-Patch-2.2.5.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,15 +31,15 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.4 Live Patch / v2.2.3 Full Stable)
+## ⚡ Quick Download & Release Assets (v2.2.5 Dual-Release Full Windows & Patch)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Feature-Patch-2.2.4.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.4/TindaPOS-Feature-Patch-2.2.4.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.4)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**TindaPOS-Setup-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Setup-2.2.3.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.2.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/TindaPOS-Portable-2.2.3.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.3/SHA256SUMS-v2.2.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Setup-2.2.5.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
+| [**TindaPOS-Portable-2.2.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Portable-2.2.5.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-Feature-Patch-2.2.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Feature-Patch-2.2.5.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.5)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/SHA256SUMS-v2.2.5.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
@@ -205,6 +205,16 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.5 (VIP Store Use & Operating Expense Edition) · Oct 14, 2026
+- **📦 VIP Store Use / Internal Consumption Feature (`StoreUseModal.tsx`, `Inventory.tsx`, `Expenses.tsx`, `ipc/index.ts`)**:
+  - Double-Entry Accounting Ledger: Automatically deducts item quantities from inventory at **Landed Purchase Cost** (`purchase_cost_c`) rather than retail selling price, and simultaneously creates an atomic Operating Expense under *Store Use / Internal Consumption*.
+  - Dual Entry UI: Seamless access from both **Inventory** (top bar button, grid card action, and table row action) and **Expenses** ("Store Use (From Stock)").
+  - Anti-Kupit & Anti-Pilferage Armor (Dr. Aegis): Requires mandatory department/purpose assignment with quick-purpose chips (*Store Repair & Maintenance*, *Counter & Shelving Build*, *Store Cleaning Supplies*, *Office & Admin Use*), zero-cost edge case warnings, and optional Manager PIN authorization check.
+  - Stock History Integration: Added dedicated `STORE_USE` badge in `StockHistoryView` with distinct amber styling and reference tracking (`SU-YYYYMMDD-XXXX`).
+- **🖨️ 58mm/80mm Thermal Store Use Expense Voucher (`receiptHtml.ts`)**:
+  - Engineered `formatStoreUseSlipLines` with official audit sign-off blanks (`Requested By: ___`, `Approved By: ___`) so store owners can file physical slips for BIR tax deduction auditing.
+  - Audio Confirmation: Integrated pleasant Web Audio chime (`playScanSuccess`) upon successful store use deduction.
 
 ### 🏷️ v2.2.4 (Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition) · Oct 14, 2026
 - **🛡️ Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`)**:

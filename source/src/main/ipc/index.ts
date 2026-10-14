@@ -477,7 +477,7 @@ handle('inventory:adjust', (_e: IpcMainInvokeEvent, input: unknown) => {
 handle('inventory:movement', (_e: IpcMainInvokeEvent, type: string, input: unknown) => {
   sessionSvc.requirePermission('inventory:adjust')
   const i = input as { product_id: number; qty_base: number; reason?: string }
-  const validTypes = ['PURCHASE', 'REFUND', 'RETURN', 'DAMAGE', 'EXPIRATION', 'LOSS', 'ADJUSTMENT']
+  const validTypes = ['PURCHASE', 'REFUND', 'RETURN', 'DAMAGE', 'EXPIRATION', 'LOSS', 'ADJUSTMENT', 'STORE_USE']
   if (!validTypes.includes(type)) throw new Error('Invalid movement type.')
   prodRepo.adjustStock(db(), i.product_id, i.qty_base, type, i.reason ?? '', user().id, undefined,
     type === 'PURCHASE' && i.qty_base > 0 ? { source: 'MANUAL RECEIVING', received_quantity: i.qty_base, notes: i.reason ?? null } : undefined)
@@ -511,6 +511,130 @@ handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
   const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
   return movement
+})
+handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
+  const u = user()
+  const i = input as {
+    product_id: number
+    quantity: number
+    unit_name?: string
+    conversion_to_base?: number
+    cost_c?: number
+    reason: string
+    notes?: string
+    manager_pin?: string
+  }
+
+  if (!i.product_id) throw new Error('Product is required.')
+  if (!Number.isFinite(i.quantity) || i.quantity <= 0) {
+    throw new Error('Quantity must be greater than zero.')
+  }
+  const cleanReason = (i.reason || '').trim()
+  if (!cleanReason) {
+    throw new Error('Store Use purpose / reason is required.')
+  }
+
+  // Anti-kupit security check (Dr. Aegis)
+  if (i.manager_pin) {
+    const pinCheck = authSvc.verifyManagerPin(i.manager_pin)
+    if (!pinCheck.valid) {
+      throw new Error('Invalid Manager PIN. Store Use authorization failed.')
+    }
+  } else {
+    const activeShift = shiftRepo.currentShiftFor(db(), u.id)
+    if (!activeShift) {
+      sessionSvc.requirePermission('inventory:adjust')
+    }
+  }
+
+  return db().transaction(() => {
+    const product = prodRepo.getProduct(db(), i.product_id)
+    const unit = i.unit_name ? product.units.find((u) => u.name === i.unit_name) : undefined
+    const conv = unit?.conversion_to_base ?? (i.conversion_to_base || 1)
+    const qtyBase = i.quantity * conv
+    if (qtyBase <= 0) throw new Error('Calculated quantity must be greater than zero.')
+    if (product.stock < qtyBase) {
+      throw new Error(`Insufficient stock. Current stock is ${product.stock} ${product.base_unit}, but tried to deduct ${qtyBase} ${product.base_unit}.`)
+    }
+
+    // Determine unit cost in centavos
+    const unitCostC = i.cost_c != null && i.cost_c > 0 ? Math.round(i.cost_c) : (product.purchase_cost_c || 0)
+    const effectiveCostC = unitCostC > 0 ? unitCostC : (product.default_price_c || 100)
+    const totalAmountC = Math.round(qtyBase * (effectiveCostC / conv))
+    if (totalAmountC <= 0) throw new Error('Operating expense amount must be greater than zero.')
+
+    const now = new Date()
+    const ymd = now.toLocaleDateString('en-CA').replace(/-/g, '')
+    const rand = Math.floor(1000 + Math.random() * 9000)
+    const refNo = `SU-${ymd}-${rand}`
+
+    const movementReason = `Store Use: ${i.quantity} ${unit?.name || product.base_unit} for "${cleanReason}"`
+
+    // Deduct stock under movement_type 'STORE_USE'
+    prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'STORE_USE', movementReason, u.id, refNo, {
+      unit_cost_c: effectiveCostC,
+      notes: i.notes?.trim() || null
+    })
+    const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+
+    // Ensure category "Store Use / Internal Consumption" exists
+    let cat = expRepo.listExpenseCategories(db()).find(
+      (c) => c.name.toLowerCase() === 'store use' || c.name.toLowerCase() === 'store use / internal consumption'
+    )
+    if (!cat) {
+      cat = expRepo.createExpenseCategory(db(), 'Store Use / Internal Consumption')
+    }
+
+    // Record Operating Expense
+    const expenseDesc = `Store Use: ${i.quantity} ${unit?.name || product.base_unit} of ${product.name} (${cleanReason})`
+    const expenseNotes = [
+      `Product: ${product.name} (#${product.id})`,
+      product.barcode ? `Barcode: ${product.barcode}` : null,
+      `Unit Cost: P${(effectiveCostC / 100).toFixed(2)}`,
+      i.notes?.trim() ? `Notes: ${i.notes.trim()}` : null
+    ].filter(Boolean).join(' | ')
+
+    const expense = expRepo.createExpense(
+      db(),
+      {
+        category_id: cat.id,
+        amount_c: totalAmountC,
+        expense_date: now.toLocaleDateString('en-CA'),
+        description: expenseDesc,
+        reference: refNo,
+        notes: expenseNotes
+      },
+      u.id
+    )
+
+    const activeShift = shiftRepo.currentShiftFor(db(), u.id)
+    if (activeShift) {
+      shiftRepo.updateShiftTotals(db(), activeShift.id)
+    }
+
+    emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+    emitTransactionsChanged()
+
+    return {
+      success: true,
+      reference: refNo,
+      product_id: product.id,
+      product_name: product.name,
+      quantity: i.quantity,
+      unit: unit?.name || product.base_unit,
+      quantity_base: qtyBase,
+      unit_cost_c: effectiveCostC,
+      total_amount_c: totalAmountC,
+      expense_id: expense.id,
+      movement_id: movement ? movement.id : 0,
+      stock_before: product.stock,
+      stock_after: product.stock - qtyBase,
+      reason: cleanReason,
+      notes: i.notes?.trim() || null,
+      cashier_name: u.full_name || u.username,
+      created_at: now.toISOString()
+    }
+  })()
 })
 
 // ---- Suppliers ----
