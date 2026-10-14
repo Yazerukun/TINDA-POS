@@ -625,9 +625,20 @@ export function formatStoreUseSlipLines(
     `Staff: ${data.cashier_name || 'Staff'}`
   ]
   lines.push('--------------------------------')
-  lines.push(`Item: ${data.product_name}`)
-  lines.push(`Qty: ${data.quantity} ${data.unit}`)
-  lines.push(`Unit Cost: P${money(data.unit_cost_c)}`)
+
+  // Multi-item list or legacy single item
+  if (data.items && data.items.length > 0) {
+    lines.push('ITEMS / CONSUMED STOCKS:')
+    data.items.forEach((item, idx) => {
+      lines.push(`${idx + 1}. ${item.product_name}`)
+      lines.push(`   ${item.quantity} ${item.unit} @ P${money(item.unit_cost_c)} = P${money(item.total_amount_c)}`)
+    })
+  } else {
+    lines.push(`Item: ${data.product_name || 'Unknown'}`)
+    lines.push(`Qty: ${data.quantity || 1} ${data.unit || 'unit'}`)
+    lines.push(`Unit Cost: P${money(data.unit_cost_c || 0)}`)
+  }
+
   lines.push('================================')
   lines.push(`TOTAL OPEX: P${money(data.total_amount_c)}`)
   lines.push('================================')

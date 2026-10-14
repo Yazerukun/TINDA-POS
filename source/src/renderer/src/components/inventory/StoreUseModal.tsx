@@ -2,14 +2,16 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Store,
   Search,
-  CheckCircle2,
-  AlertTriangle,
+  Plus,
+  Trash2,
   Printer,
   Sparkles,
   Barcode,
-  HelpCircle,
+  AlertTriangle,
+  Calculator,
   ShieldCheck,
-  Calculator
+  CheckCircle2,
+  Package
 } from 'lucide-react'
 import type { Product, StoreUseRecord } from '@shared/types'
 import { money } from '@shared/format'
@@ -23,6 +25,23 @@ interface StoreUseModalProps {
   initial: Product | null
   onDone: () => void
   onClose: () => void
+}
+
+interface StoreUseItemRow {
+  tempId: string
+  productId: number
+  productName: string
+  barcode: string
+  sku: string
+  baseUnit: string
+  currentStock: number
+  unitName: string
+  conversionToBase: number
+  quantity: number
+  quantityBase: number
+  unitCostC: number
+  subtotalC: number
+  remainingStock: number
 }
 
 const COMMON_PURPOSES = [
@@ -39,113 +58,180 @@ export function StoreUseModal({
   onDone,
   onClose
 }: StoreUseModalProps): React.JSX.Element {
-  const [productSearch, setProductSearch] = useState('')
-  const [productId, setProductId] = useState<number>(initial?.id ?? products[0]?.id ?? 0)
-  const [quantity, setQuantity] = useState('1')
-  const [unit, setUnit] = useState(initial?.units[0]?.name ?? initial?.base_unit ?? '')
-  const [customCostPesos, setCustomCostPesos] = useState('')
+  // Purpose & Details
   const [reason, setReason] = useState<string>('Store Repair & Maintenance')
   const [customReason, setCustomReason] = useState('')
   const [notes, setNotes] = useState('')
   const [managerPin, setManagerPin] = useState('')
   const [printVoucher, setPrintVoucher] = useState(true)
   const [busy, setBusy] = useState(false)
+
+  // Staged Multi-Item Lines
+  const [items, setItems] = useState<StoreUseItemRow[]>([])
+
+  // Entry Bar Fields
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [dropdownIndex, setDropdownIndex] = useState(0)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(initial ?? null)
+  const [selectedUnitName, setSelectedUnitName] = useState('')
+  const [qtyInput, setQtyInput] = useState('1')
+  const [unitCostPesos, setUnitCostPesos] = useState('')
+
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const qtyInputRef = useRef<HTMLInputElement>(null)
+  const costInputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const product = useMemo(
-    () => products.find((p) => p.id === productId),
-    [products, productId]
-  )
-
+  // Filter products for quick search dropdown
   const filteredProducts = useMemo(() => {
-    const q = productSearch.trim().toLowerCase()
-    if (!q) return products
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.barcode && p.barcode.toLowerCase().includes(q)) ||
-        (p.sku && p.sku.toLowerCase().includes(q))
-    )
-  }, [products, productSearch])
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return []
+    return products
+      .filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.barcode && p.barcode.toLowerCase().includes(q)) ||
+          (p.sku && p.sku.toLowerCase().includes(q))
+      )
+      .slice(0, 8)
+  }, [products, searchQuery])
 
-  // Update selected product and default unit when initial changes or search narrows
+  // Select initial product if provided
   useEffect(() => {
     if (initial) {
-      setProductId(initial.id)
-      setUnit(initial.units[0]?.name ?? initial.base_unit ?? '')
+      chooseProduct(initial)
     }
   }, [initial])
 
-  // If active product cost changes or is zero, prepare cost field
-  useEffect(() => {
-    if (product) {
-      if (!unit) {
-        setUnit(product.units[0]?.name ?? product.base_unit ?? '')
-      }
-      if (product.purchase_cost_c > 0) {
-        setCustomCostPesos((product.purchase_cost_c / 100).toFixed(2))
-      } else {
-        setCustomCostPesos('')
-      }
+  const chooseProduct = (p: Product) => {
+    setSelectedProduct(p)
+    const defaultUnit = p.units[0]?.name ?? p.base_unit ?? ''
+    setSelectedUnitName(defaultUnit)
+    if (p.purchase_cost_c > 0) {
+      setUnitCostPesos((p.purchase_cost_c / 100).toFixed(2))
+    } else {
+      setUnitCostPesos('')
     }
-  }, [product])
+    setSearchQuery('')
+    setShowDropdown(false)
+    setTimeout(() => qtyInputRef.current?.focus(), 50)
+  }
 
-  const selectedUnit = useMemo(() => {
-    return (
-      product?.units.find((u) => u.name === unit) ?? {
-        name: product?.base_unit ?? '',
-        conversion_to_base: 1
-      }
-    )
-  }, [product, unit])
+  // Active unit calculation
+  const activeUnit = useMemo(() => {
+    if (!selectedProduct) return { name: '', conversion_to_base: 1 }
+    const match = selectedProduct.units.find((u) => u.name === selectedUnitName)
+    return match ?? { name: selectedProduct.base_unit, conversion_to_base: 1 }
+  }, [selectedProduct, selectedUnitName])
 
-  const qtyNumber = parseFloat(quantity) || 0
-  const conv = selectedUnit.conversion_to_base || 1
-  const subBase = Math.round(qtyNumber * conv * 1000) / 1000
-  const currentStock = product?.stock ?? 0
-  const newStock = Math.round((currentStock - subBase) * 1000) / 1000
+  // Computed values for entry row
+  const parsedQty = parseFloat(qtyInput) || 0
+  const conv = activeUnit.conversion_to_base || 1
+  const entryQtyBase = Math.round(parsedQty * conv * 1000) / 1000
 
-  // Calculate Landed Cost and Total Operating Expense
-  const parsedCost = parseFloat(customCostPesos)
-  const effectiveCostC =
+  // Calculate already allocated base quantity in table
+  const allocatedBaseForSelected = useMemo(() => {
+    if (!selectedProduct) return 0
+    return items
+      .filter((it) => it.productId === selectedProduct.id)
+      .reduce((sum, it) => sum + it.quantityBase, 0)
+  }, [items, selectedProduct])
+
+  const availableAfterAllocated = selectedProduct
+    ? Math.round((selectedProduct.stock - allocatedBaseForSelected) * 1000) / 1000
+    : 0
+
+  const entryRemStock = Math.round((availableAfterAllocated - entryQtyBase) * 1000) / 1000
+
+  const parsedCost = parseFloat(unitCostPesos)
+  const entryCostC =
     !isNaN(parsedCost) && parsedCost > 0
       ? Math.round(parsedCost * 100)
-      : product?.purchase_cost_c ?? 0
+      : selectedProduct?.purchase_cost_c ?? 0
 
-  const totalOpexC = Math.round(qtyNumber * effectiveCostC)
-  const effectiveReason: string = (reason === 'Other' ? customReason.trim() : reason) || 'Store Repair & Maintenance'
+  const canAddLine =
+    Boolean(selectedProduct) &&
+    parsedQty > 0 &&
+    entryRemStock >= 0 &&
+    entryCostC > 0
 
-  const canSave =
-    !busy &&
-    Boolean(product) &&
-    qtyNumber > 0 &&
-    newStock >= 0 &&
-    effectiveCostC > 0 &&
-    Boolean(effectiveReason)
+  // Add Item to table
+  const handleAddItem = () => {
+    if (!canAddLine || !selectedProduct) return
 
+    const lineSubtotalC = Math.round(parsedQty * entryCostC)
+    const newItem: StoreUseItemRow = {
+      tempId: `item-${Date.now()}-${Math.random()}`,
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      barcode: selectedProduct.barcode || '',
+      sku: selectedProduct.sku || '',
+      baseUnit: selectedProduct.base_unit,
+      currentStock: selectedProduct.stock,
+      unitName: activeUnit.name,
+      conversionToBase: conv,
+      quantity: parsedQty,
+      quantityBase: entryQtyBase,
+      unitCostC: entryCostC,
+      subtotalC: lineSubtotalC,
+      remainingStock: entryRemStock
+    }
+
+    setItems((prev) => [...prev, newItem])
+    playScanSuccess()
+
+    // Reset entry bar
+    setSelectedProduct(null)
+    setQtyInput('1')
+    setUnitCostPesos('')
+    setSearchQuery('')
+    setTimeout(() => searchInputRef.current?.focus(), 50)
+  }
+
+  // Remove Item
+  const handleRemoveItem = (tempId: string) => {
+    setItems((prev) => prev.filter((it) => it.tempId !== tempId))
+  }
+
+  // Grand Totals
+  const totalOpexC = useMemo(() => {
+    return items.reduce((sum, it) => sum + it.subtotalC, 0)
+  }, [items])
+
+  const effectiveReason =
+    (reason === 'Other' ? customReason.trim() : reason) || 'Store Repair & Maintenance'
+
+  const canSave = !busy && items.length > 0 && Boolean(effectiveReason)
+
+  // Save Transaction
   const handleSave = async (): Promise<void> => {
-    if (!canSave || !product) return
+    if (!canSave) return
     setBusy(true)
 
     try {
-      const record: StoreUseRecord = await window.api.inventory.storeUse({
-        product_id: product.id,
-        quantity: qtyNumber,
-        unit_name: selectedUnit.name,
-        conversion_to_base: conv,
-        cost_c: effectiveCostC,
+      const payload = {
+        items: items.map((it) => ({
+          product_id: it.productId,
+          quantity: it.quantity,
+          unit_name: it.unitName,
+          conversion_to_base: it.conversionToBase,
+          cost_c: it.unitCostC
+        })),
         reason: effectiveReason,
         notes: notes.trim() || undefined,
         manager_pin: managerPin.trim() || undefined
-      })
+      }
+
+      const record: StoreUseRecord = await window.api.inventory.storeUse(payload)
 
       playScanSuccess()
       toastSuccess(
-        'Store Use Recorded',
-        `Deducted ${record.quantity} ${record.unit} (${money(record.total_amount_c)} OPEX)`
+        'Store Use Voucher Recorded',
+        `Recorded ${record.total_items} items (${money(record.total_amount_c)} OPEX) — Ref: ${record.reference}`
       )
 
-      // Print thermal voucher if enabled
+      // Print thermal slip if requested
       if (printVoucher) {
         try {
           const settings = await window.api.settings.get()
@@ -168,8 +254,8 @@ export function StoreUseModal({
     <Modal
       open
       onClose={onClose}
-      title="Store Use / Operating Expense"
-      maxWidth="max-w-xl"
+      title="Store Use / Operating Expense Voucher"
+      maxWidth="max-w-4xl"
       footer={
         <div className="flex w-full items-center justify-between">
           <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-400 hover:text-slate-200">
@@ -180,280 +266,353 @@ export function StoreUseModal({
               className="checkbox checkbox-sm checkbox-primary"
             />
             <Printer className="h-3.5 w-3.5 text-slate-400" />
-            <span>Print 58/80mm Voucher</span>
+            <span>Print 58/80mm Multi-Item Voucher</span>
           </label>
           <div className="flex items-center gap-2">
             <button className="btn-ghost" onClick={onClose} disabled={busy}>
               Cancel
             </button>
             <button
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary flex items-center gap-2 px-5 py-2.5 text-sm font-bold shadow-lg shadow-brand-500/20"
               disabled={!canSave}
               onClick={() => void handleSave()}
             >
               <Store className="h-4 w-4" />
-              {busy ? 'Recording...' : 'Record Store Use'}
+              {busy ? 'Recording Voucher...' : `Record Store Use (${items.length} items)`}
             </button>
           </div>
         </div>
       }
     >
       <div className="space-y-4">
-        {/* Header Alert & Invariant Information */}
+        {/* Header Invariant Notice */}
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-300">
           <div className="flex items-center gap-2 font-semibold">
             <Sparkles className="h-4 w-4 text-amber-400" />
-            <span>VIP Store Use Feature: Automatic Inventory & OPEX Ledger</span>
+            <span>Multi-Item Store Use (VIP Purchase Invoice Style)</span>
           </div>
           <p className="mt-1 text-slate-300">
-            Deducts stock quantity at <b>Landed Cost Price</b> and records an atomic entry into
-            Operating Expenses under <i>Store Use / Internal Consumption</i> for BIR tax
-            compliance and accurate Gross Margin accounting.
+            Paspas nga pag-lista sa tanang stocks nga gi-gamit para sa internal maintenance o supplies.
+            Usa ra ka atomic voucher para sa deduction sa inventory ug automatic posting sa Operating Expense.
           </p>
         </div>
 
-        {/* Product Selector */}
-        <div>
-          <label className="label text-xs font-semibold text-slate-300">
-            Select Product (Search or Scan Barcode)
-          </label>
-          <div className="mb-2 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search product name, SKU, or barcode..."
-                className="input w-full pl-9"
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-              />
-            </div>
-            {productSearch && (
-              <button
-                type="button"
-                onClick={() => setProductSearch('')}
-                className="btn-ghost text-xs"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <select
-            className="input w-full font-medium"
-            value={productId}
-            onChange={(e) => {
-              const id = Number(e.target.value)
-              setProductId(id)
-              const p = products.find((x) => x.id === id)
-              if (p) {
-                setUnit(p.units[0]?.name ?? p.base_unit ?? '')
-                if (p.purchase_cost_c > 0) setCustomCostPesos((p.purchase_cost_c / 100).toFixed(2))
-              }
-            }}
-          >
-            {filteredProducts.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} {p.barcode ? `[${p.barcode}]` : ''} — Stock: {p.stock} {p.base_unit}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Current Product Info Card */}
-        {product && (
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-ink-line bg-surface-2 p-3 text-xs">
-            <div>
-              <span className="text-slate-400">Current Stock</span>
-              <p className="font-semibold text-white">
-                {product.stock} {product.base_unit}
-              </p>
-            </div>
-            <div>
-              <span className="text-slate-400">Recorded Cost</span>
-              <p className="font-semibold text-emerald-400">
-                {product.purchase_cost_c > 0 ? money(product.purchase_cost_c) : '₱0.00 (Unset)'}
-              </p>
-            </div>
-            <div>
-              <span className="text-slate-400">Selling Price</span>
-              <p className="font-semibold text-sky-400">{money(product.default_price_c)}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Quantity & Unit Selection */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Voucher Header: Purpose & Notes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-xl border border-ink-line bg-surface-2 p-3 text-xs">
           <div>
             <label className="label text-xs font-semibold text-slate-300">
-              Quantity for Store Use *
+              Purpose / Department *
             </label>
-            <input
-              type="number"
-              min="0.001"
-              step="any"
-              className="input w-full font-mono text-base font-bold text-white"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="e.g. 2"
-            />
-          </div>
-          <div>
-            <label className="label text-xs font-semibold text-slate-300">Unit</label>
-            <select
-              className="input w-full font-medium"
-              value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-            >
-              {product?.units.map((u) => (
-                <option key={u.id || u.name} value={u.name}>
-                  {u.name} (×{u.conversion_to_base} {product.base_unit})
-                </option>
+            <div className="mb-2 flex flex-wrap gap-1">
+              {COMMON_PURPOSES.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setReason(p)}
+                  className={`rounded-lg px-2 py-0.5 text-[11px] transition-colors ${
+                    reason === p
+                      ? 'bg-brand-500 text-white font-semibold'
+                      : 'bg-surface-3 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {p}
+                </button>
               ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Landed Cost Validation / Override */}
-        <div>
-          <label className="label flex items-center justify-between text-xs font-semibold text-slate-300">
-            <span>Landed Cost Price per {unit || 'unit'} (₱) *</span>
-            {effectiveCostC <= 0 && (
-              <span className="flex items-center gap-1 text-danger-400">
-                <AlertTriangle className="h-3 w-3" /> Cost required for OPEX
-              </span>
-            )}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-2.5 font-bold text-slate-400">₱</span>
-            <input
-              type="number"
-              min="0.01"
-              step="any"
-              className={`input w-full pl-8 font-mono font-semibold ${
-                effectiveCostC <= 0 ? 'border-danger-500 bg-danger-500/10' : ''
-              }`}
-              value={customCostPesos}
-              onChange={(e) => setCustomCostPesos(e.target.value)}
-              placeholder="0.00"
-            />
-          </div>
-          {product && product.purchase_cost_c <= 0 && (
-            <p className="mt-1 text-[11px] text-amber-400">
-              ⚠️ This item has ₱0.00 cost in inventory. Enter the approximate purchase cost so it
-              can be recorded accurately in operating expenses.
-            </p>
-          )}
-        </div>
-
-        {/* Purpose / Reason with Quick Chips */}
-        <div>
-          <label className="label text-xs font-semibold text-slate-300">
-            Purpose / Department *
-          </label>
-          <div className="mb-2 flex flex-wrap gap-1.5">
-            {COMMON_PURPOSES.map((p) => (
               <button
-                key={p}
                 type="button"
-                onClick={() => setReason(p)}
-                className={`rounded-lg px-2.5 py-1 text-xs transition-colors ${
-                  reason === p
+                onClick={() => setReason('Other')}
+                className={`rounded-lg px-2 py-0.5 text-[11px] transition-colors ${
+                  reason === 'Other'
                     ? 'bg-brand-500 text-white font-semibold'
-                    : 'bg-surface-2 text-slate-400 hover:bg-surface-3 hover:text-white'
+                    : 'bg-surface-3 text-slate-400 hover:text-white'
                 }`}
               >
-                {p}
+                Other
               </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setReason('Other')}
-              className={`rounded-lg px-2.5 py-1 text-xs transition-colors ${
-                reason === 'Other'
-                  ? 'bg-brand-500 text-white font-semibold'
-                  : 'bg-surface-2 text-slate-400 hover:bg-surface-3 hover:text-white'
-              }`}
-            >
-              Other
-            </button>
+            </div>
+            {reason === 'Other' && (
+              <input
+                type="text"
+                className="input w-full text-xs"
+                placeholder="Specify purpose (e.g. Broken Light Fixtures Replacement)"
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+              />
+            )}
           </div>
-          {reason === 'Other' && (
-            <input
-              type="text"
-              className="input w-full text-xs"
-              placeholder="Specify purpose (e.g. Broken Glass Counter Replacement)"
-              value={customReason}
-              onChange={(e) => setCustomReason(e.target.value)}
-            />
+          <div className="space-y-2">
+            <div>
+              <label className="label text-xs font-semibold text-slate-300">
+                Additional Notes / Reference (Optional)
+              </label>
+              <input
+                type="text"
+                className="input w-full text-xs"
+                placeholder="e.g. Counter fabrication by Hardware team"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label flex items-center gap-1 text-[11px] text-slate-400">
+                <ShieldCheck className="h-3 w-3 text-slate-400" />
+                <span>Manager Authorization PIN (Optional)</span>
+              </label>
+              <input
+                type="password"
+                maxLength={6}
+                placeholder="PIN if required"
+                className="input w-full font-mono text-xs"
+                value={managerPin}
+                onChange={(e) => setManagerPin(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Item Entry Bar (Like Purchase Invoice) */}
+        <div className="rounded-xl border border-brand-500/30 bg-surface-2 p-3 shadow-inner">
+          <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-brand-400">
+            <span className="flex items-center gap-1.5">
+              <Package className="h-4 w-4" /> Add Item to Store Use Voucher
+            </span>
+            {selectedProduct && (
+              <span className="text-[11px] font-normal text-slate-400">
+                Current Stock: <b className="text-white">{selectedProduct.stock} {selectedProduct.base_unit}</b>
+                {allocatedBaseForSelected > 0 && ` (Allocated in table: ${allocatedBaseForSelected})`}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+            {/* Search / Scan Box */}
+            <div className="relative md:col-span-5">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Scan barcode or type product name..."
+                  className="input w-full pl-9 text-xs"
+                  value={selectedProduct ? selectedProduct.name : searchQuery}
+                  onChange={(e) => {
+                    if (selectedProduct) setSelectedProduct(null)
+                    setSearchQuery(e.target.value)
+                    setShowDropdown(true)
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.trim()) setShowDropdown(true)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      setDropdownIndex((prev) => Math.min(prev + 1, filteredProducts.length - 1))
+                    } else if (e.key === 'ArrowUp') {
+                      setDropdownIndex((prev) => Math.max(prev - 1, 0))
+                    } else if (e.key === 'Enter' && showDropdown && filteredProducts[dropdownIndex]) {
+                      e.preventDefault()
+                      chooseProduct(filteredProducts[dropdownIndex])
+                    }
+                  }}
+                />
+                {selectedProduct && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedProduct(null)
+                      setSearchQuery('')
+                    }}
+                    className="absolute right-2.5 top-2 text-xs text-slate-400 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Search Dropdown */}
+              {showDropdown && filteredProducts.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-ink-line bg-surface-1 shadow-2xl"
+                >
+                  {filteredProducts.map((p, idx) => (
+                    <div
+                      key={p.id}
+                      onClick={() => chooseProduct(p)}
+                      className={`cursor-pointer border-b border-ink-line/50 p-2 text-xs transition-colors ${
+                        idx === dropdownIndex ? 'bg-brand-500/20 text-brand-300' : 'hover:bg-surface-2 text-slate-300'
+                      }`}
+                    >
+                      <div className="font-semibold text-white">{p.name}</div>
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>{p.barcode || p.sku || 'No Barcode'}</span>
+                        <span>Stock: {p.stock} {p.base_unit} | Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Unit Selector */}
+            <div className="md:col-span-2">
+              <select
+                className="input w-full text-xs font-medium"
+                value={selectedUnitName}
+                onChange={(e) => setSelectedUnitName(e.target.value)}
+                disabled={!selectedProduct}
+              >
+                {selectedProduct?.units.map((u) => (
+                  <option key={u.id || u.name} value={u.name}>
+                    {u.name} (×{u.conversion_to_base} {selectedProduct.base_unit})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Qty Input */}
+            <div className="md:col-span-2">
+              <input
+                ref={qtyInputRef}
+                type="number"
+                min="0.001"
+                step="any"
+                placeholder="Qty"
+                className="input w-full font-mono text-xs font-bold"
+                value={qtyInput}
+                onChange={(e) => setQtyInput(e.target.value)}
+                disabled={!selectedProduct}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (canAddLine) handleAddItem()
+                  }
+                }}
+              />
+            </div>
+
+            {/* Landed Cost Input */}
+            <div className="md:col-span-2">
+              <div className="relative">
+                <span className="absolute left-2.5 top-2 text-xs font-bold text-slate-400">₱</span>
+                <input
+                  ref={costInputRef}
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  placeholder="Cost"
+                  className="input w-full pl-6 font-mono text-xs"
+                  value={unitCostPesos}
+                  onChange={(e) => setUnitCostPesos(e.target.value)}
+                  disabled={!selectedProduct}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (canAddLine) handleAddItem()
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Add Button */}
+            <div className="md:col-span-1">
+              <button
+                type="button"
+                className="btn-primary w-full flex items-center justify-center p-2 text-xs"
+                disabled={!canAddLine}
+                onClick={handleAddItem}
+                title="Add item to list"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Validation warnings for entry */}
+          {selectedProduct && entryRemStock < 0 && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-danger-400">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              <span>Insufficient stock! Available after table allocations: {availableAfterAllocated} {selectedProduct.base_unit}.</span>
+            </div>
           )}
         </div>
 
-        {/* Notes (Optional) */}
-        <div>
-          <label className="label text-xs font-semibold text-slate-300">
-            Additional Notes (Optional)
-          </label>
-          <input
-            type="text"
-            className="input w-full text-xs"
-            placeholder="e.g. Requested by Mang Boy for branch hardware repairs"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
+        {/* Multi-Item Table (The Invoice Style List) */}
+        <div className="overflow-hidden rounded-xl border border-ink-line bg-surface-1">
+          <div className="max-h-64 overflow-y-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="sticky top-0 z-10 border-b border-ink-line bg-surface-2 text-slate-400">
+                <tr>
+                  <th className="py-2.5 pl-3 font-semibold">#</th>
+                  <th className="py-2.5 font-semibold">Product Description</th>
+                  <th className="py-2.5 font-semibold text-right">Qty</th>
+                  <th className="py-2.5 font-semibold">Unit</th>
+                  <th className="py-2.5 font-semibold text-right">Unit Cost</th>
+                  <th className="py-2.5 font-semibold text-right">Subtotal (OPEX)</th>
+                  <th className="py-2.5 pr-3 text-center font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-line/50">
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                      <Package className="mx-auto h-8 w-8 text-slate-600 mb-1 opacity-50" />
+                      Walay items nga nalista. Gamita ang search bar sa ibabaw aron mag-add og mga stocks.
+                    </td>
+                  </tr>
+                ) : (
+                  items.map((it, idx) => (
+                    <tr key={it.tempId} className="hover:bg-surface-2/50 transition-colors">
+                      <td className="py-2.5 pl-3 font-mono text-slate-500">{idx + 1}</td>
+                      <td className="py-2.5">
+                        <div className="font-semibold text-white">{it.productName}</div>
+                        <div className="text-[11px] text-slate-400">
+                          {it.barcode ? `Barcode: ${it.barcode} | ` : ''}Deduction: {it.quantityBase} {it.baseUnit}
+                        </div>
+                      </td>
+                      <td className="py-2.5 text-right font-mono font-bold text-white">
+                        {it.quantity}
+                      </td>
+                      <td className="py-2.5 font-medium text-slate-300">
+                        {it.unitName}
+                      </td>
+                      <td className="py-2.5 text-right font-mono text-slate-300">
+                        {money(it.unitCostC)}
+                      </td>
+                      <td className="py-2.5 text-right font-mono font-bold text-amber-400">
+                        {money(it.subtotalC)}
+                      </td>
+                      <td className="py-2.5 pr-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(it.tempId)}
+                          className="rounded p-1 text-slate-400 hover:bg-danger-500/20 hover:text-danger-400 transition-colors"
+                          title="Remove item"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Live Calculation & Stock Impact Card */}
-        <div className="rounded-xl border border-ink-line bg-surface-2 p-3 text-xs space-y-2">
-          <div className="flex items-center justify-between text-slate-400">
-            <span>Deduction:</span>
-            <span className="font-mono text-white">
-              {qtyNumber || 0} {selectedUnit.name} ({subBase} {product?.base_unit})
-            </span>
+          {/* Grand Totals Bar */}
+          <div className="flex items-center justify-between border-t border-ink-line bg-surface-2 p-3 text-xs">
+            <div className="text-slate-400">
+              Total Items in Voucher: <b className="text-white">{items.length}</b> ({items.reduce((sum, it) => sum + it.quantity, 0)} units total)
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+                <Calculator className="h-4 w-4" /> Grand Total Operating Expense:
+              </span>
+              <span className="font-mono text-lg font-extrabold text-amber-400">
+                {money(totalOpexC)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center justify-between text-slate-400">
-            <span>New Stock Remaining:</span>
-            <span
-              className={`font-mono font-bold ${
-                newStock < 0 ? 'text-danger-400' : 'text-emerald-400'
-              }`}
-            >
-              {newStock} {product?.base_unit}
-            </span>
-          </div>
-          <div className="border-t border-ink-line pt-2 flex items-center justify-between">
-            <span className="font-semibold text-amber-300 flex items-center gap-1.5">
-              <Calculator className="h-3.5 w-3.5" /> Total Operating Expense Charged:
-            </span>
-            <span className="font-mono text-base font-extrabold text-amber-400">
-              {money(totalOpexC)}
-            </span>
-          </div>
-        </div>
-
-        {newStock < 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-danger-500/10 p-2.5 text-xs text-danger-400">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            <span>Cannot withdraw more than current inventory stock ({currentStock} available).</span>
-          </div>
-        )}
-
-        {/* Optional Manager PIN (Dr. Aegis Anti-Kupit Guard) */}
-        <div>
-          <div className="flex items-center justify-between">
-            <label className="label flex items-center gap-1 text-[11px] text-slate-400">
-              <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-              <span>Manager Authorization PIN (Optional for Cashiers)</span>
-            </label>
-          </div>
-          <input
-            type="password"
-            maxLength={6}
-            placeholder="Enter 4-digit Manager PIN if required"
-            className="input w-full font-mono text-xs"
-            value={managerPin}
-            onChange={(e) => setManagerPin(e.target.value)}
-          />
         </div>
       </div>
     </Modal>

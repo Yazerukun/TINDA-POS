@@ -61,4 +61,54 @@ describe('Store Use (Operating Expense) Invariant Suite', () => {
     const invalidRemaining = currentStock - overDeducted
     expect(invalidRemaining < 0).toBe(true)
   })
+
+  it('formats multi-item store use voucher slip lines with exact itemization', () => {
+    const multiRecord: StoreUseRecord = {
+      success: true,
+      reference: 'SU-20261015-8821',
+      total_items: 2,
+      total_amount_c: 215000, // ₱2,150.00
+      expense_id: 99,
+      reason: 'Store Repair & Maintenance',
+      notes: 'Counter expansion project',
+      cashier_name: 'Lead Cashier',
+      created_at: '2026-10-15T08:00:00.000Z',
+      items: [
+        {
+          product_id: 1,
+          product_name: 'LED Fluorescent Tube 18W',
+          quantity: 4,
+          unit: 'pc',
+          quantity_base: 4,
+          unit_cost_c: 20000, // ₱200.00
+          total_amount_c: 80000, // ₱800.00
+          stock_before: 20,
+          stock_after: 16
+        },
+        {
+          product_id: 2,
+          product_name: 'Marine Plywood 1/2',
+          quantity: 1,
+          unit: 'sheet',
+          quantity_base: 1,
+          unit_cost_c: 135000, // ₱1,350.00
+          total_amount_c: 135000,
+          stock_before: 5,
+          stock_after: 4
+        }
+      ]
+    }
+
+    const lines = formatStoreUseSlipLines(multiRecord, 'TINDA SUPERSTORE')
+    expect(lines).toContain('TINDA SUPERSTORE')
+    expect(lines).toContain('Voucher Ref: SU-20261015-8821')
+    expect(lines).toContain('ITEMS / CONSUMED STOCKS:')
+    expect(lines).toContain('1. LED Fluorescent Tube 18W')
+    expect(lines).toContain('   4 pc @ P200.00 = P800.00')
+    expect(lines).toContain('2. Marine Plywood 1/2')
+    expect(lines).toContain('   1 sheet @ P1350.00 = P1350.00')
+    expect(lines).toContain('TOTAL OPEX: P2150.00')
+    expect(lines).toContain('Purpose: Store Repair & Maintenance')
+    expect(lines).toContain('Notes: Counter expansion project')
+  })
 })

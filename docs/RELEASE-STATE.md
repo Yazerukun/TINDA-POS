@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.5 (VIP STORE USE & OPERATING EXPENSE EDITION)
+- v2.2.6 (MULTI-ITEM STORE USE & VIP INVOICE EDITION)
 
 TARGET:
-- v2.2.6 (NEXT CYCLE)
+- v2.2.7 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.5 Full Windows Standalone Executables & In-App Live Hot Patch Published
+- Production Release Completed — v2.2.6 Multi-Item Store Use (VIP Purchase Invoice Style) with Full Atomic Transaction & In-App Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

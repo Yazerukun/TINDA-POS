@@ -514,9 +514,16 @@ handle('inventory:withdraw', (_e: IpcMainInvokeEvent, input: unknown) => {
 })
 handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
   const u = user()
-  const i = input as {
-    product_id: number
-    quantity: number
+  const raw = input as {
+    items?: Array<{
+      product_id: number
+      quantity: number
+      unit_name?: string
+      conversion_to_base?: number
+      cost_c?: number
+    }>
+    product_id?: number
+    quantity?: number
     unit_name?: string
     conversion_to_base?: number
     cost_c?: number
@@ -525,18 +532,38 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
     manager_pin?: string
   }
 
-  if (!i.product_id) throw new Error('Product is required.')
-  if (!Number.isFinite(i.quantity) || i.quantity <= 0) {
-    throw new Error('Quantity must be greater than zero.')
-  }
-  const cleanReason = (i.reason || '').trim()
+  const cleanReason = (raw.reason || '').trim()
   if (!cleanReason) {
     throw new Error('Store Use purpose / reason is required.')
   }
 
+  // Normalize to item array (supports both multi-item and legacy single-item)
+  const itemsInput = raw.items && raw.items.length > 0
+    ? raw.items
+    : raw.product_id
+      ? [{
+          product_id: raw.product_id,
+          quantity: raw.quantity || 0,
+          unit_name: raw.unit_name,
+          conversion_to_base: raw.conversion_to_base,
+          cost_c: raw.cost_c
+        }]
+      : []
+
+  if (itemsInput.length === 0) {
+    throw new Error('At least one product item is required for Store Use.')
+  }
+
+  for (const item of itemsInput) {
+    if (!item.product_id) throw new Error('Product is required for all store use items.')
+    if (!Number.isFinite(item.quantity) || item.quantity <= 0) {
+      throw new Error('Quantity must be greater than zero for all items.')
+    }
+  }
+
   // Anti-kupit security check (Dr. Aegis)
-  if (i.manager_pin) {
-    const pinCheck = authSvc.verifyManagerPin(i.manager_pin)
+  if (raw.manager_pin) {
+    const pinCheck = authSvc.verifyManagerPin(raw.manager_pin)
     if (!pinCheck.valid) {
       throw new Error('Invalid Manager PIN. Store Use authorization failed.')
     }
@@ -548,34 +575,63 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
   }
 
   return db().transaction(() => {
-    const product = prodRepo.getProduct(db(), i.product_id)
-    const unit = i.unit_name ? product.units.find((u) => u.name === i.unit_name) : undefined
-    const conv = unit?.conversion_to_base ?? (i.conversion_to_base || 1)
-    const qtyBase = i.quantity * conv
-    if (qtyBase <= 0) throw new Error('Calculated quantity must be greater than zero.')
-    if (product.stock < qtyBase) {
-      throw new Error(`Insufficient stock. Current stock is ${product.stock} ${product.base_unit}, but tried to deduct ${qtyBase} ${product.base_unit}.`)
-    }
-
-    // Determine unit cost in centavos
-    const unitCostC = i.cost_c != null && i.cost_c > 0 ? Math.round(i.cost_c) : (product.purchase_cost_c || 0)
-    const effectiveCostC = unitCostC > 0 ? unitCostC : (product.default_price_c || 100)
-    const totalAmountC = Math.round(qtyBase * (effectiveCostC / conv))
-    if (totalAmountC <= 0) throw new Error('Operating expense amount must be greater than zero.')
-
     const now = new Date()
     const ymd = now.toLocaleDateString('en-CA').replace(/-/g, '')
     const rand = Math.floor(1000 + Math.random() * 9000)
     const refNo = `SU-${ymd}-${rand}`
 
-    const movementReason = `Store Use: ${i.quantity} ${unit?.name || product.base_unit} for "${cleanReason}"`
+    let grandTotalAmountC = 0
+    const processedItems: Array<{
+      product_id: number
+      product_name: string
+      quantity: number
+      unit: string
+      quantity_base: number
+      unit_cost_c: number
+      total_amount_c: number
+      stock_before: number
+      stock_after: number
+    }> = []
 
-    // Deduct stock under movement_type 'STORE_USE'
-    prodRepo.adjustStock(db(), i.product_id, -qtyBase, 'STORE_USE', movementReason, u.id, refNo, {
-      unit_cost_c: effectiveCostC,
-      notes: i.notes?.trim() || null
-    })
-    const movement = invRepo.movementsForProduct(db(), i.product_id, 1)[0]
+    const touchedProductIds: number[] = []
+
+    for (const item of itemsInput) {
+      const product = prodRepo.getProduct(db(), item.product_id)
+      const unit = item.unit_name ? product.units.find((u) => u.name === item.unit_name) : undefined
+      const conv = unit?.conversion_to_base ?? (item.conversion_to_base || 1)
+      const qtyBase = Math.round(item.quantity * conv * 1000) / 1000
+      if (qtyBase <= 0) throw new Error(`Calculated quantity for ${product.name} must be greater than zero.`)
+      if (product.stock < qtyBase) {
+        throw new Error(`Insufficient stock for "${product.name}". Current stock is ${product.stock} ${product.base_unit}, but tried to use ${qtyBase} ${product.base_unit}.`)
+      }
+
+      const unitCostC = item.cost_c != null && item.cost_c > 0 ? Math.round(item.cost_c) : (product.purchase_cost_c || 0)
+      const effectiveCostC = unitCostC > 0 ? unitCostC : (product.default_price_c || 100)
+      const lineTotalAmountC = Math.round(qtyBase * (effectiveCostC / conv))
+      if (lineTotalAmountC <= 0) throw new Error(`Operating expense amount for ${product.name} must be greater than zero.`)
+
+      grandTotalAmountC += lineTotalAmountC
+
+      const movementReason = `Store Use: ${item.quantity} ${unit?.name || product.base_unit} for "${cleanReason}"`
+      prodRepo.adjustStock(db(), item.product_id, -qtyBase, 'STORE_USE', movementReason, u.id, refNo, {
+        unit_cost_c: effectiveCostC,
+        notes: raw.notes?.trim() || null
+      })
+
+      processedItems.push({
+        product_id: product.id,
+        product_name: product.name,
+        quantity: item.quantity,
+        unit: unit?.name || product.base_unit,
+        quantity_base: qtyBase,
+        unit_cost_c: effectiveCostC,
+        total_amount_c: lineTotalAmountC,
+        stock_before: product.stock,
+        stock_after: Math.round((product.stock - qtyBase) * 1000) / 1000
+      })
+
+      touchedProductIds.push(item.product_id)
+    }
 
     // Ensure category "Store Use / Internal Consumption" exists
     let cat = expRepo.listExpenseCategories(db()).find(
@@ -585,24 +641,28 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       cat = expRepo.createExpenseCategory(db(), 'Store Use / Internal Consumption')
     }
 
-    // Record Operating Expense
-    const expenseDesc = `Store Use: ${i.quantity} ${unit?.name || product.base_unit} of ${product.name} (${cleanReason})`
-    const expenseNotes = [
-      `Product: ${product.name} (#${product.id})`,
-      product.barcode ? `Barcode: ${product.barcode}` : null,
-      `Unit Cost: P${(effectiveCostC / 100).toFixed(2)}`,
-      i.notes?.trim() ? `Notes: ${i.notes.trim()}` : null
-    ].filter(Boolean).join(' | ')
+    // Record Consolidated Operating Expense
+    const firstProcessed = processedItems[0]
+    const expenseDesc = itemsInput.length === 1 && firstProcessed
+      ? `Store Use: ${firstProcessed.quantity} ${firstProcessed.unit} of ${firstProcessed.product_name} (${cleanReason})`
+      : `Store Use: ${processedItems.length} items (${cleanReason})`
+
+    const expenseNotesLines = [
+      `Voucher: ${refNo}`,
+      `Reason: ${cleanReason}`,
+      raw.notes?.trim() ? `Notes: ${raw.notes.trim()}` : null,
+      ...processedItems.map((p) => `- ${p.product_name}: ${p.quantity} ${p.unit} @ P${(p.unit_cost_c / 100).toFixed(2)} = P${(p.total_amount_c / 100).toFixed(2)}`)
+    ].filter(Boolean)
 
     const expense = expRepo.createExpense(
       db(),
       {
         category_id: cat.id,
-        amount_c: totalAmountC,
+        amount_c: grandTotalAmountC,
         expense_date: now.toLocaleDateString('en-CA'),
         description: expenseDesc,
         reference: refNo,
-        notes: expenseNotes
+        notes: expenseNotesLines.join(' | ')
       },
       u.id
     )
@@ -612,27 +672,30 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       shiftRepo.updateShiftTotals(db(), activeShift.id)
     }
 
-    emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [i.product_id] })
+    emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: touchedProductIds })
     emitTransactionsChanged()
 
+    const firstItem = processedItems[0]
     return {
       success: true,
       reference: refNo,
-      product_id: product.id,
-      product_name: product.name,
-      quantity: i.quantity,
-      unit: unit?.name || product.base_unit,
-      quantity_base: qtyBase,
-      unit_cost_c: effectiveCostC,
-      total_amount_c: totalAmountC,
+      items: processedItems,
+      total_amount_c: grandTotalAmountC,
+      total_items: processedItems.length,
       expense_id: expense.id,
-      movement_id: movement ? movement.id : 0,
-      stock_before: product.stock,
-      stock_after: product.stock - qtyBase,
       reason: cleanReason,
-      notes: i.notes?.trim() || null,
+      notes: raw.notes?.trim() || null,
       cashier_name: u.full_name || u.username,
-      created_at: now.toISOString()
+      created_at: now.toISOString(),
+      // Legacy fields for backward-compatibility
+      product_id: firstItem?.product_id,
+      product_name: firstItem?.product_name,
+      quantity: firstItem?.quantity,
+      unit: firstItem?.unit,
+      quantity_base: firstItem?.quantity_base,
+      unit_cost_c: firstItem?.unit_cost_c,
+      stock_before: firstItem?.stock_before,
+      stock_after: firstItem?.stock_after
     }
   })()
 })

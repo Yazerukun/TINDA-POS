@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.6-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-542%2F542_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.5_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Setup-2.2.5.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.5_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Portable-2.2.5.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.5_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Feature-Patch-2.2.5.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.6_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Setup-2.2.6.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.6_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Portable-2.2.6.exe)
+[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.6_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Feature-Patch-2.2.6.zip)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />

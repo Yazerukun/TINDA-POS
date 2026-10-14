@@ -163,9 +163,15 @@ export type InventoryMovementType =
 
 export type WithdrawalReason = 'TAKEN' | 'DAMAGED' | 'EXPIRED' | 'FORWARD'
 
-export interface StoreUseRecord {
-  success: boolean
-  reference: string
+export interface StoreUseItemInput {
+  product_id: number
+  quantity: number
+  unit_name?: string
+  conversion_to_base?: number
+  cost_c?: number
+}
+
+export interface StoreUseItemRecord {
   product_id: number
   product_name: string
   quantity: number
@@ -173,14 +179,31 @@ export interface StoreUseRecord {
   quantity_base: number
   unit_cost_c: number
   total_amount_c: number
-  expense_id: number
-  movement_id: number
   stock_before: number
   stock_after: number
+}
+
+export interface StoreUseRecord {
+  success: boolean
+  reference: string
+  items?: StoreUseItemRecord[]
+  total_amount_c: number
+  total_items?: number
+  expense_id: number
+  movement_id?: number
   reason: string
   notes?: string | null
   cashier_name?: string | null
   created_at: string
+  // Legacy backward-compatible fields for single-item readers
+  product_id?: number
+  product_name?: string
+  quantity?: number
+  unit?: string
+  quantity_base?: number
+  unit_cost_c?: number
+  stock_before?: number
+  stock_after?: number
 }
 
 export interface InventoryMovement {
