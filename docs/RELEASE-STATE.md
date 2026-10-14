@@ -7,7 +7,7 @@ TARGET:
 - v2.2.5 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.4 In-App Live Hot Patch Published
+- Production Release Completed — v2.2.4 Full Windows Standalone Executables & In-App Live Hot Patch Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -38,6 +38,7 @@ COMPLETED:
 - Stage 26: v2.2.3 Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition official release. F9 shortcut collision elimination: removed global F9 listener in `NotificationBellDrawer.tsx`, permanently dedicating F9 100% exclusively to retail Cash Checkout and Cash Tendered input refocus in `POS.tsx`. Multi-day shift isolation: engineered `calculateDailyExpected` in `readReports.ts` and `reports:dailyCashExpected` IPC handler to isolate today's retail cash sales, refunds, expenses, and movements. Added multi-day shift amber warning banner and 1-click Quick Presets in `EwalletAudit.tsx`. 539/539 unit tests passing across 83 test suites, 0 TypeScript errors. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.3`).
 - Stage 27: Full Windows Executables (`TindaPOS-Setup-2.2.3.exe` + `TindaPOS-Portable-2.2.3.exe`) compiled and published to official GitHub Release `v2.2.3` alongside `latest.yml`, `SHA256SUMS-v2.2.3.txt`, and in-app hot patch with verified cryptographic checksums.
 - Stage 28: v2.2.4 Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition official release. Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`): locked Expected Drawer Cash default initialization strictly to Today's Daily Target (Float + POS Net Cash + E-Wallet Net Delta), guaranteed reset handler resets strictly to Today's Daily Target, re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge, set "[ 🎯 Today's Daily Target ]" as primary glowing emerald preset, replaced multi-day confusion with expandable disclaimer for past unclosed shifts, and added clean transparent formula breakdown card. Thermal print audit report slip titled "DAILY E-WALLET & CASH RECONCILIATION REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)". 539/539 unit tests passing across 83 test suites, 0 TypeScript errors. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.4`).
+- Stage 29: Full Windows Executables (`TindaPOS-Setup-2.2.4.exe` + `TindaPOS-Portable-2.2.4.exe`) compiled and published to official GitHub Release `v2.2.4` alongside `latest.yml`, `SHA256SUMS-v2.2.4.txt`, blockmap, and in-app hot patch with verified cryptographic checksums.
 
 
 PENDING APPROVAL:

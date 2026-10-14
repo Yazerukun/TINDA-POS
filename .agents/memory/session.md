@@ -17,6 +17,7 @@ IDLE | None | 2026-10-13 22:56
 - **RULE 14 (Dynamic Skill Synthesis)**: Dynamic synthesis of specialized "Visiting Professor" subagents and capability upgrades when domain exceeds existing stack.
 - **RULE 15 (Executive Evolution Reporting)**: Ultra-brief routine updates, condensed telepathic milestones, and comprehensive Evolution Reports.
 - **RULE 17 (Concurrent Execution & Swarm Synergy)**: The "Divide & Conquer" Protocol — Task partitioning via Architect's DAG, parallel sub-instance dispatch of Builders, real-time asynchronous component testing by Verifier, and seamless War Room fusion with zero merge conflicts.
+- **RULE 18 (Mandatory Full Build on Every Update - Boss Mandate)**: Every single update cycle (whether v2.2.4, v2.2.5, or any future patch/feature release) MUST ALWAYS compile and publish the Full Windows Build (`TindaPOS-Setup-*.exe` and `TindaPOS-Portable-*.exe` ~111 MB) alongside the in-app live hot patch. Never release a patch alone without also generating, hashing, and uploading the complete NSIS setup, portable executables, blockmap, and `latest.yml` to GitHub Releases.
 
 ## Recent Handoff History
 
