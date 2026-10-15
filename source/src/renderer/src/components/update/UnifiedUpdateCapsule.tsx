@@ -13,7 +13,6 @@ import {
   Moon,
   Clock,
   FolderOpen,
-  Zap,
   Disc,
   CheckCircle2
 } from 'lucide-react'
@@ -273,44 +272,36 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
             <span>Store transactions, inventory, and utang credits are 100% protected.</span>
           </div>
 
-          {/* Dual-Choice Mode Selection when Update Available */}
+          {/* Single Streamlined Full Setup Card */}
           {s === 'UPDATE_AVAILABLE' && (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void handleDownload('PATCH')}
-                className="group flex flex-col text-left rounded-xl border border-ink-800 bg-ink-900/60 p-2.5 hover:border-brand-500/60 hover:bg-brand-500/10 transition active:scale-[0.98]"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100 group-hover:text-brand-300">
-                  <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span>Express Patch</span>
+            <div className="mt-3 rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/30 to-ink-900/80 p-3.5 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Disc className="h-4 w-4 text-emerald-400 shrink-0 animate-pulse" />
+                    <span className="font-bold text-white text-xs">Official Full Installer · v{version}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Clean, official release with pre-update SQLite backup and automatic 3-second restart.
+                  </p>
                 </div>
-                <p className="mt-1 text-[10px] text-slate-400 leading-tight">
-                  ~1 MB · 0.3s live reload with zero restart. Ideal during store hours.
-                </p>
-                <span className="mt-2.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-400 group-hover:underline">
-                  <Download className="h-2.5 w-2.5" /> Get Patch →
-                </span>
-              </button>
+              </div>
 
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void handleDownload('FULL')}
-                className="group flex flex-col text-left rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2.5 hover:border-emerald-400 hover:bg-emerald-950/40 transition shadow-[0_0_15px_rgba(16,185,129,0.08)] active:scale-[0.98]"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100 group-hover:text-emerald-300">
-                  <Disc className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>Full Setup.exe</span>
+              <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-emerald-500/20">
+                <div className="flex items-center gap-1.5 text-[10px] text-emerald-300/90 font-mono">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Zero Data Loss Guaranteed</span>
                 </div>
-                <p className="mt-1 text-[10px] text-slate-400 leading-tight">
-                  ~111 MB · Complete NSIS installer with DB safety backup &amp; auto-restart.
-                </p>
-                <span className="mt-2.5 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 group-hover:underline">
-                  <Download className="h-2.5 w-2.5" /> Get Full Build →
-                </span>
-              </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void handleDownload('FULL')}
+                  className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 px-3.5 py-1.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 active:scale-95 transition"
+                >
+                  {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                  <span>Download &amp; Auto-Update</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -325,9 +316,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
                   <span className="font-bold text-slate-100 truncate text-[11px]">
-                    {event.updateType === 'FULL'
-                      ? `TindaPOS-Setup-${version}.exe`
-                      : `TindaPOS-Feature-Patch-${version}.zip`}
+                    TindaPOS-Setup-{version}.exe
                   </span>
                 </div>
                 <span className="font-mono font-extrabold text-emerald-400 shrink-0">
@@ -462,7 +451,7 @@ export function UnifiedUpdateCapsule(): React.JSX.Element | null {
                   className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] transition active:scale-95"
                 >
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-                  <span>Restart &amp; Install Now</span>
+                  <span>Restart &amp; Install Now (3s)</span>
                 </button>
               )}
 

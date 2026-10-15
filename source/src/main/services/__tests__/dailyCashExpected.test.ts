@@ -55,23 +55,23 @@ describe('Daily Cash Expected Service (Multi-Day Shift Isolation)', () => {
     // 4. Day 3 (TODAY) Cash Sale ₱2,500 (250,000c)
     db.prepare(
       `INSERT INTO sales (id, user_id, shift_id, transaction_no, total_c, subtotal_c, discount_c, status, created_at)
-       VALUES (103, 1, 1, 'TX-103', 250000, 250000, 0, 'COMPLETED', '${today} 11:00:00')`
+       VALUES (103, 1, 1, 'TX-103', 250000, 250000, 0, 'COMPLETED', '${today} 01:00:00')`
     ).run()
     db.prepare(
       `INSERT INTO payments (sale_id, method, amount_c, created_at)
-       VALUES (103, 'CASH', 250000, '${today} 11:00:00')`
+       VALUES (103, 'CASH', 250000, '${today} 01:00:00')`
     ).run()
 
     // 5. Day 3 (TODAY) Expense ₱200 (20,000c)
     db.prepare(
       `INSERT INTO expenses (user_id, category_id, amount_c, expense_date, created_at)
-       VALUES (1, 1, 20000, '${today}', '${today} 12:00:00')`
+       VALUES (1, 1, 20000, '${today}', '${today} 02:00:00')`
     ).run()
 
     // 6. Day 3 (TODAY) Cash In movement ₱500 (50,000c)
     db.prepare(
       `INSERT INTO cash_movements (shift_id, user_id, type, amount_c, reason, created_at)
-       VALUES (1, 1, 'CASH_IN', 50000, 'Change fund', '${today} 09:00:00')`
+       VALUES (1, 1, 'CASH_IN', 50000, 'Change fund', '${today} 01:30:00')`
     ).run()
 
     const report = calculateDailyExpected(db, today, 1)

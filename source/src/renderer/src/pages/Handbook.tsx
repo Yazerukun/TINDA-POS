@@ -68,7 +68,7 @@ export function Handbook(): React.JSX.Element {
             </div>
             <h2 className="mt-1 text-2xl font-black text-white">4-Step Daily Cashier Standard (SOP)</h2>
             <p className="mt-2 text-slate-300 text-sm">
-              Gidisenyo ang TINDA POS aron paspas ug dili makalibog ang pagpamaligya. Bisan kinsang bag-ong cashier o tindera, sunda lang kining 4 ka yano nga pamaagi:
+              TINDA POS is designed to make selling fast and trouble-free. Any new cashier can follow these 4 simple steps:
             </p>
           </div>
 
@@ -77,14 +77,14 @@ export function Handbook(): React.JSX.Element {
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/20 text-sm font-black text-brand-400">1</span>
                 <div>
-                  <h4 className="font-bold text-white text-base">Paspas Pag-Scan & Search</h4>
+                  <h4 className="font-bold text-white text-base">Fast Scanning & Search</h4>
                   <span className="text-[11px] text-brand-300 font-mono">Barcode Gun / F1 / Quick Keys</span>
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                • I-tutok dayon ang barcode scanner gun sa produkto. Automatic kining mosulod sa Cart.<br />
-                • Walay barcode? Pindota ang <strong>⚡ Quick Keys</strong> para sa Yelo (₱5), Yosi (₱8), Candy (₱1), o Rush ID (₱75).<br />
-                • Gamita ang keyboard shortcut <strong>F1 o /</strong> para mangita gamit ang ngalan.
+                • Point the barcode scanner gun straight at the product. It drops into the Cart automatically.<br />
+                • No barcode? Tap <strong>⚡ Quick Keys</strong> for Ice (₱5), Cigarettes (₱8), Candy (₱1), or Rush ID (₱75).<br />
+                • Use the keyboard shortcut <strong>F1 or /</strong> to search by name.
               </p>
             </div>
 
@@ -92,14 +92,14 @@ export function Handbook(): React.JSX.Element {
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-sm font-black text-emerald-400">2</span>
                 <div>
-                  <h4 className="font-bold text-white text-base">Suki & Utang Recording</h4>
+                  <h4 className="font-bold text-white text-base">Regular Customer & Credit Recording</h4>
                   <span className="text-[11px] text-emerald-300 font-mono">1-Click Customer Select & Ledger</span>
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                • Kung mangutang ang suki, i-click ang <strong>Customer</strong> sa ibabaw sa Cart.<br />
-                • Makit-an nimo dayon ang ilang balance history ug credit limit.<br />
-                • I-pili ang <strong>Charge to Utang</strong> inig checkout — automatic ma-update ang ilang record nga walay manual lista sa notebook!
+                • When a regular customer buys on credit, click <strong>Customer</strong> above the Cart.<br />
+                • You instantly see their balance history and credit limit.<br />
+                • Choose <strong>Charge to Credit</strong> at checkout — their record updates automatically with no manual notebook list!
               </p>
             </div>
 
@@ -112,9 +112,9 @@ export function Handbook(): React.JSX.Element {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                • Pindota ang <strong>F12 / Checkout</strong>.<br />
-                • Dawata ang <strong>Cash</strong> (automatic ang kwenta sa sukli), <strong>GCash QR</strong>, o <strong>Split Payment</strong> (tunga Cash, tunga Utang).<br />
-                • <em>Bulletproof Checkout Immunity:</em> Walay crash bisan unsay mahitabo sa produkto.
+                • Press <strong>F12 / Checkout</strong>.<br />
+                • Accept <strong>Cash</strong> (change is counted automatically), <strong>GCash QR</strong>, or <strong>Split Payment</strong> (half Cash, half Credit).<br />
+                • <em>Bulletproof Checkout Immunity:</em> No crash no matter what happens with a product.
               </p>
             </div>
 
@@ -127,9 +127,9 @@ export function Handbook(): React.JSX.Element {
                 </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                • 1-tap thermal receipt print gamit ang standard POS printer o Chiteng CT221B.<br />
-                • Inig sira sa tindahan, pindota ang <strong>Z-Reading (End Shift)</strong> aron ma-ihap ang physical drawer cash.<br />
-                • Sigurado ang ginansya ug walay alkanse!
+                • 1-tap thermal receipt printing with a standard POS printer or Chiteng CT221B.<br />
+                • When closing the store, press <strong>Z-Reading (End Shift)</strong> to count the physical drawer cash.<br />
+                • Profit is secure and nothing is lost!
               </p>
             </div>
           </div>
@@ -480,7 +480,7 @@ export function Handbook(): React.JSX.Element {
             <div className="rounded-lg border border-ink-line bg-ink-900 p-4">
               <h4 className="font-semibold text-white">Itemized Breakdown with Package Icon</h4>
               <p className="mt-1 text-xs text-slate-400">
-                When a customer asks, <em>&ldquo;Unsa man ning akong gi-utang sa miaging adlaw?&rdquo;</em>, click the <strong>Package Icon</strong> next to the ledger entry. An itemized drawer opens showing every specific product, unit, price, and timestamp purchased.
+                When a customer asks, <em>&ldquo;What did I put on credit the other day?&rdquo;</em>, click the <strong>Package Icon</strong> next to the ledger entry. An itemized drawer opens showing every specific product, unit, price, and timestamp purchased.
               </p>
             </div>
 

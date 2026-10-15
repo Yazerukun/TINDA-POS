@@ -118,7 +118,7 @@ export function HelpGuideModal(): React.JSX.Element | null {
                 4-Step Cashier Superpower Guide (v2.0.2)
               </h3>
               <p className="mt-1 text-slate-300 leading-relaxed text-xs">
-                Kini ang pinaka-paspas nga pamaagi sa pag-operate sa TINDA POS. Sunda kining 4 ka steps para dili maglibog ang cashier o tindera:
+                This is the fastest way to operate TINDA POS. Follow these 4 steps so the cashier never gets confused:
               </p>
             </div>
 
@@ -126,24 +126,24 @@ export function HelpGuideModal(): React.JSX.Element | null {
               <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-brand-500/40 transition-colors">
                 <div className="flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-500/20 text-xs font-bold text-brand-400">1</span>
-                  <h4 className="font-bold text-white text-sm">Paspas Pag-Scan & Search</h4>
+                  <h4 className="font-bold text-white text-sm">Fast Scanning & Search</h4>
                 </div>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  • I-tutok ang barcode scanner sa item o pindota ang <strong>F1 / Search</strong>.<br />
-                  • Pindota ang <strong>⚡ Quick Keys</strong> para sa mga walay barcode (Yelo ₱5, Yosi ₱8, Candy ₱1).<br />
-                  • Automatic mo-sulod sa Cart ang mga produkto.
+                  • Point the barcode scanner at the item or press <strong>F1 / Search</strong>.<br />
+                  • Tap <strong>⚡ Quick Keys</strong> for items without a barcode (Ice ₱5, Cigarettes ₱8, Candy ₱1).<br />
+                  • Products drop into the Cart automatically.
                 </p>
               </div>
 
               <div className="rounded-xl border border-ink-line bg-ink-900/90 p-4 space-y-2 hover:border-emerald-500/40 transition-colors">
                 <div className="flex items-center gap-2">
                   <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20 text-xs font-bold text-emerald-400">2</span>
-                  <h4 className="font-bold text-white text-sm">Suki & Utang Recording</h4>
+                  <h4 className="font-bold text-white text-sm">Regular Customer & Credit Recording</h4>
                 </div>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  • Kung naay suki nga mangutang, i-click ang <strong>Customer</strong> sa Cart.<br />
-                  • Makit-an dayon ang ilang past balance ug credit limit.<br />
-                  • I-pili ang <strong>Charge to Utang</strong> at checkout — auto-post sa ledger!
+                  • When a regular customer buys on credit, click <strong>Customer</strong> in the Cart.<br />
+                  • You instantly see their past balance and credit limit.<br />
+                  • Choose <strong>Charge to Credit</strong> at checkout — it posts to the ledger automatically!
                 </p>
               </div>
 
@@ -153,9 +153,9 @@ export function HelpGuideModal(): React.JSX.Element | null {
                   <h4 className="font-bold text-white text-sm">Multi-Payment Checkout</h4>
                 </div>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  • Pindota ang <strong>F12 / Checkout</strong>.<br />
-                  • Dawata ang <strong>Cash</strong> (auto-sukli), <strong>GCash / Maya</strong>, o <strong>Split Payment</strong> (tunga Cash, tunga Utang).<br />
-                  • Safe batok sa missing products — zero crash guarantee!
+                  • Press <strong>F12 / Checkout</strong>.<br />
+                  • Accept <strong>Cash</strong> (change calculated automatically), <strong>GCash / Maya</strong>, or <strong>Split Payment</strong> (half Cash, half Credit).<br />
+                  • Safe against missing products — zero crash guarantee!
                 </p>
               </div>
 
@@ -165,16 +165,16 @@ export function HelpGuideModal(): React.JSX.Element | null {
                   <h4 className="font-bold text-white text-sm">Receipt & Shift Balancing</h4>
                 </div>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  • 1-tap thermal receipt print gamit ang 58mm/80mm o Chiteng CT221B.<br />
-                  • Inig human sa adlaw, pindota ang <strong>Z-Reading</strong> para i-balanse ang physical cash sa drawer.<br />
-                  • Sakto sa sentimo, walay mawala nga kita!
+                  • 1-tap thermal receipt printing with 58mm/80mm or Chiteng CT221B.<br />
+                  • At the end of the day, press <strong>Z-Reading</strong> to balance the physical cash in the drawer.<br />
+                  • Accurate to the centavo, no lost income!
                 </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between rounded-lg bg-ink-850 p-3 border border-ink-line">
               <span className="text-xs text-slate-300">
-                Gusto nimog mas lawom nga katin-awan sa matag button ug feature?
+                Want a deeper explanation of every button and feature?
               </span>
               <button
                 type="button"
@@ -184,7 +184,7 @@ export function HelpGuideModal(): React.JSX.Element | null {
                 }}
                 className="btn-secondary px-3 py-1.5 text-xs font-bold text-brand-300"
               >
-                Tan-awa ang Store Handbook →
+                View the Store Handbook →
               </button>
             </div>
           </div>

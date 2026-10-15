@@ -292,8 +292,8 @@ export function StoreUseModal({
             <span>Multi-Item Store Use (VIP Purchase Invoice Style)</span>
           </div>
           <p className="mt-1 text-slate-300">
-            Paspas nga pag-lista sa tanang stocks nga gi-gamit para sa internal maintenance o supplies.
-            Usa ra ka atomic voucher para sa deduction sa inventory ug automatic posting sa Operating Expense.
+            Quickly log all stocks consumed for internal maintenance or store supplies.
+            A single atomic voucher handles both the inventory deduction and the automatic posting to Operating Expense.
           </p>
         </div>
 
@@ -557,7 +557,7 @@ export function StoreUseModal({
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-500">
                       <Package className="mx-auto h-8 w-8 text-slate-600 mb-1 opacity-50" />
-                      Walay items nga nalista. Gamita ang search bar sa ibabaw aron mag-add og mga stocks.
+                      No items listed yet. Use the search bar above to add items.
                     </td>
                   </tr>
                 ) : (

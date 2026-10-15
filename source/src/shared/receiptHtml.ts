@@ -655,3 +655,162 @@ export function formatStoreUseSlipLines(
   return lines
 }
 
+export interface UtangMasterRow {
+  fullName: string
+  nickname?: string | null
+  phone?: string | null
+  balanceC: number
+  creditLimitC: number
+  dueDate?: string | null
+  statusText?: string
+  notes?: string | null
+}
+
+export interface UtangMasterPrintPayload {
+  storeName?: string | null
+  storeAddress?: string | null
+  storePhone?: string | null
+  storeTin?: string | null
+  cashierName?: string | null
+  filterSubtitle?: string | null
+  totalOutstandingC: number
+  totalDebtorsCount: number
+  totalOverdueCount: number
+  totalCreditLimitC: number
+  rows: UtangMasterRow[]
+}
+
+export interface CustomerStatementEntry {
+  date: string
+  entryType: string
+  referenceId?: number | null
+  amountC: number
+  runningBalanceC?: number
+  notes?: string | null
+}
+
+export interface CustomerStatementPrintPayload {
+  storeName?: string | null
+  storeAddress?: string | null
+  storePhone?: string | null
+  customerName: string
+  nickname?: string | null
+  phone?: string | null
+  address?: string | null
+  creditLimitC: number
+  currentBalanceC: number
+  dueDate?: string | null
+  reminderNotes?: string | null
+  entries: CustomerStatementEntry[]
+}
+
+export function formatUtangMasterLines(payload: UtangMasterPrintPayload): string[] {
+  const money = (cents: number): string => (cents / 100).toFixed(2)
+  const lines: string[] = [
+    payload.storeName || 'TINDA POS',
+    'ACCOUNTS RECEIVABLE MASTER REPORT',
+    'UTANG SUMMARY & BREAKDOWN',
+    '--------------------------------'
+  ]
+
+  if (payload.storeAddress) lines.push(payload.storeAddress)
+  if (payload.storePhone) lines.push(`Tel: ${payload.storePhone}`)
+  if (payload.storeTin) lines.push(`TIN: ${payload.storeTin}`)
+
+  lines.push(`Date: ${formatReceiptDate(new Date().toISOString())}`)
+  if (payload.cashierName) lines.push(`Staff: ${payload.cashierName}`)
+  if (payload.filterSubtitle) lines.push(`Scope: ${payload.filterSubtitle}`)
+  lines.push('--------------------------------')
+
+  lines.push('FINANCIAL BREAKDOWN:')
+  lines.push(`TOTAL RECEIVABLES P${money(payload.totalOutstandingC)}`)
+  lines.push(`Total Debtors      ${payload.totalDebtorsCount} Accounts`)
+  lines.push(`Overdue Accounts   ${payload.totalOverdueCount}`)
+  lines.push(`Credit Extended   P${money(payload.totalCreditLimitC)}`)
+  lines.push('================================')
+
+  lines.push('LIST OF DEBTORS:')
+  if (payload.rows.length === 0) {
+    lines.push('No accounts found for selected filter.')
+  } else {
+    payload.rows.forEach((r, idx) => {
+      const alias = r.nickname ? ` (${r.nickname})` : ''
+      lines.push(`${idx + 1}. ${r.fullName}${alias}`)
+      if (r.phone) lines.push(`   Contact: ${r.phone}`)
+      const statusBadge = r.statusText ? ` [${r.statusText}]` : ''
+      lines.push(`   Balance: P${money(r.balanceC)} / P${money(r.creditLimitC)}${statusBadge}`)
+      if (r.dueDate) lines.push(`   Due: ${r.dueDate}`)
+      if (r.notes) lines.push(`   Note: ${r.notes.slice(0, 32)}`)
+      lines.push('--------------------------------')
+    })
+  }
+
+  lines.push('================================')
+  lines.push(`GRAND TOTAL: P${money(payload.totalOutstandingC)}`)
+  lines.push('================================')
+  lines.push('')
+  lines.push('Prepared: _____________________')
+  lines.push('')
+  lines.push('Audited:  _____________________')
+  lines.push('--------------------------------')
+  lines.push('Official Accounting Record')
+  return lines
+}
+
+export function formatCustomerStatementLines(payload: CustomerStatementPrintPayload): string[] {
+  const money = (cents: number): string => (cents / 100).toFixed(2)
+  const lines: string[] = [
+    payload.storeName || 'TINDA POS',
+    'STATEMENT OF ACCOUNT (SOA)',
+    'CUSTOMER UTANG LEDGER BREAKDOWN',
+    '--------------------------------'
+  ]
+
+  if (payload.storeAddress) lines.push(payload.storeAddress)
+  if (payload.storePhone) lines.push(`Tel: ${payload.storePhone}`)
+  lines.push(`As of: ${formatReceiptDate(new Date().toISOString())}`)
+  lines.push('--------------------------------')
+
+  lines.push(`Customer: ${payload.customerName}${payload.nickname ? ` (${payload.nickname})` : ''}`)
+  if (payload.phone) lines.push(`Mobile:   ${payload.phone}`)
+  if (payload.address) lines.push(`Address:  ${payload.address}`)
+  lines.push('--------------------------------')
+
+  lines.push(`Credit Limit:    P${money(payload.creditLimitC)}`)
+  lines.push(`Current Balance: P${money(payload.currentBalanceC)}`)
+  const avail = Math.max(0, payload.creditLimitC - payload.currentBalanceC)
+  lines.push(`Available Credit: P${money(avail)}`)
+  if (payload.dueDate) lines.push(`Promise Due:     ${payload.dueDate}`)
+  if (payload.reminderNotes) lines.push(`Promise Note:    ${payload.reminderNotes}`)
+  lines.push('================================')
+
+  lines.push('RECENT TRANSACTIONS BREAKDOWN:')
+  if (payload.entries.length === 0) {
+    lines.push('No recent ledger transactions.')
+  } else {
+    payload.entries.forEach((e) => {
+      const typeLabel = e.entryType.replace(/_/g, ' ')
+      const sign = e.amountC >= 0 ? '+' : ''
+      lines.push(`${formatReceiptDate(e.date)} - ${typeLabel}`)
+      lines.push(`   Amount: ${sign}P${money(e.amountC)}`)
+      if (e.runningBalanceC !== undefined) {
+        lines.push(`   Bal: P${money(e.runningBalanceC)}`)
+      }
+      if (e.notes) lines.push(`   (${e.notes.slice(0, 30)})`)
+    })
+  }
+
+  lines.push('================================')
+  lines.push(`TOTAL OUTSTANDING: P${money(payload.currentBalanceC)}`)
+  lines.push('================================')
+  lines.push('')
+  lines.push('I hereby acknowledge the accuracy')
+  lines.push('of this balance and promise to settle')
+  lines.push('on or before agreed date.')
+  lines.push('')
+  lines.push('Customer Signature: _____________')
+  lines.push('--------------------------------')
+  lines.push('Thank you for your patronage!')
+  return lines
+}
+

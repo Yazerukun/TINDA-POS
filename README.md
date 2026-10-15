@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.6-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-542%2F542_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-546%2F546_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -14,13 +14,12 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Suki Utang Ledger · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger · 1-Tap QR Cloud Sync**
+**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger · Clean Full Setup.exe Auto-Update · 1-Tap QR Cloud Sync**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.6_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Setup-2.2.6.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.6_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Portable-2.2.6.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.6_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.6/TindaPOS-Feature-Patch-2.2.6.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.8_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/TindaPOS-Setup-2.2.8.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.8_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/TindaPOS-Portable-2.2.8.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,15 +30,14 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.5 Dual-Release Full Windows & Patch)
+## ⚡ Quick Download & Release Assets (v2.2.8 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Setup-2.2.5.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.2.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Portable-2.2.5.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.2.5.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/TindaPOS-Feature-Patch-2.2.5.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.5)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.5/SHA256SUMS-v2.2.5.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/TindaPOS-Setup-2.2.8.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/TindaPOS-Portable-2.2.8.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.8.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.8/SHA256SUMS-v2.2.8.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 

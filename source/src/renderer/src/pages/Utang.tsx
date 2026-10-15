@@ -16,6 +16,7 @@ import { Modal } from '../components/ui/Modal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { useGuide } from '../stores/guide'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
+import { UtangPrintModal, UtangPrintMode } from '../components/UtangPrintModal'
 
 type UtangTab = 'WITH_BALANCE' | 'OVERDUE' | 'SETTLED' | 'ALL'
 
@@ -30,6 +31,9 @@ export function Utang(): React.JSX.Element {
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const [remindersNonce, setRemindersNonce] = useState(0)
+  const [printModalOpen, setPrintModalOpen] = useState(false)
+  const [printInitialCustomer, setPrintInitialCustomer] = useState<Customer | null>(null)
+  const [printInitialMode, setPrintInitialMode] = useState<UtangPrintMode>('MASTER_LIST')
 
   const load = async () => {
     setLoading(true)
@@ -117,12 +121,26 @@ export function Utang(): React.JSX.Element {
         title="Utang"
         subtitle={`Customer credit management · Total outstanding: ${money(totalOutstanding)}`}
         actions={
-          <button
-            onClick={() => useGuide.getState().openGuide('utang')}
-            className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"
-          >
-            <HelpCircle className="h-4 w-4 text-amber-400" /> Utang Guide
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setPrintInitialCustomer(null)
+                setPrintInitialMode('MASTER_LIST')
+                setPrintModalOpen(true)
+              }}
+              className="btn-primary flex items-center gap-2 bg-brand-500 hover:bg-brand-400 text-white font-bold"
+              title="Print accounts receivable list and total breakdown"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Print Utang List</span>
+            </button>
+            <button
+              onClick={() => useGuide.getState().openGuide('utang')}
+              className="btn-ghost flex items-center gap-2 text-amber-300 hover:text-amber-200"
+            >
+              <HelpCircle className="h-4 w-4 text-amber-400" /> Utang Guide
+            </button>
+          </div>
         }
       />
 
@@ -431,6 +449,17 @@ export function Utang(): React.JSX.Element {
                           >
                             <Scale className="h-3.5 w-3.5" /> Adj
                           </button>
+                          <button
+                            onClick={() => {
+                              setPrintInitialCustomer(c)
+                              setPrintInitialMode('STATEMENT')
+                              setPrintModalOpen(true)
+                            }}
+                            className="btn-ghost-2 flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-brand-300 hover:bg-brand-500/10"
+                            title="Print Customer Statement of Account (SOA)"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -452,10 +481,25 @@ export function Utang(): React.JSX.Element {
             setSelected(updated)
             setRows((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
           }}
+          onPrintStatement={(c) => {
+            setPrintInitialCustomer(c)
+            setPrintInitialMode('STATEMENT')
+            setPrintModalOpen(true)
+          }}
         />
       )}
       {action && <CreditActionModal action={action} onClose={() => setAction(null)} onDone={() => void actionDone()} />}
       <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} onActivated={() => void load()} />
+      <UtangPrintModal
+        open={printModalOpen}
+        onClose={() => {
+          setPrintModalOpen(false)
+          setPrintInitialCustomer(null)
+        }}
+        customers={rows}
+        initialCustomer={printInitialCustomer}
+        initialMode={printInitialMode}
+      />
     </div>
   )
 }
@@ -664,13 +708,15 @@ function LedgerModal({
   entries,
   onClose,
   onPay,
-  onUpdateCustomer
+  onUpdateCustomer,
+  onPrintStatement
 }: {
   customer: Customer
   entries: CreditLedgerEntry[]
   onClose: () => void
   onPay: () => void
   onUpdateCustomer?: (updated: Customer) => void
+  onPrintStatement?: (customer: Customer) => void
 }): React.JSX.Element {
   const [currentCustomer, setCurrentCustomer] = useState<Customer>(customer)
   const [currentEntries, setCurrentEntries] = useState<CreditLedgerEntry[]>(entries)
@@ -1089,16 +1135,27 @@ function LedgerModal({
     <>
       <Modal open onClose={onClose} title={currentCustomer.full_name} maxWidth="max-w-lg" footer={
         <div className="flex items-center justify-between w-full">
-          <button
-            type="button"
-            onClick={() => void copySmsReminder()}
-            className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
-            title="Generate polite collection SMS/Messenger reminder"
-          >
-            <Crown className="h-3.5 w-3.5 text-amber-400" />
-            <MessageSquare className="h-3.5 w-3.5" />
-            <span>VIP SMS Reminder</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onPrintStatement?.(currentCustomer)}
+              className="btn-ghost flex items-center gap-1.5 text-xs text-brand-300 border-brand-500/30 hover:bg-brand-500/10"
+              title="Print Customer Statement of Account (SOA)"
+            >
+              <Printer className="h-3.5 w-3.5 text-brand-400" />
+              <span>Print Statement</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => void copySmsReminder()}
+              className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+              title="Generate polite collection SMS/Messenger reminder"
+            >
+              <Crown className="h-3.5 w-3.5 text-amber-400" />
+              <MessageSquare className="h-3.5 w-3.5" />
+              <span>VIP SMS</span>
+            </button>
+          </div>
           <button onClick={onPay} className="btn-primary flex items-center gap-2"><HandCoins className="h-4 w-4" /> Collect Payment</button>
         </div>
       }>

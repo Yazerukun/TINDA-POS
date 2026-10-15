@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.6 (MULTI-ITEM STORE USE & VIP INVOICE EDITION)
+- v2.2.8 (FULL SETUP.EXE CLEAN AUTO-DOWNLOAD & INSTANT 3S SILENT AUTO-RESTART EDITION)
 
 TARGET:
-- v2.2.7 (NEXT CYCLE)
+- v2.2.9 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.6 Multi-Item Store Use (VIP Purchase Invoice Style) with Full Atomic Transaction & In-App Hot Patch Published
+- Production Release Completed — v2.2.8 Full Setup.exe Clean Auto-Download, Pre-Update SQLite Safety Snapshot & 3-Second Silent Auto-Restart Edition with Full Windows Executables Compiled & Published
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -41,6 +41,9 @@ COMPLETED:
 - Stage 29: Full Windows Executables (`TindaPOS-Setup-2.2.4.exe` + `TindaPOS-Portable-2.2.4.exe`) compiled and published to official GitHub Release `v2.2.4` alongside `latest.yml`, `SHA256SUMS-v2.2.4.txt`, blockmap, and in-app hot patch with verified cryptographic checksums.
 - Stage 30: v2.2.5 VIP Store Use & Operating Expense Edition official release. Double-entry inventory-to-expense deduction ledger (`inventory:storeUse`), Landed Cost valuation (`purchase_cost_c`), `StoreUseModal.tsx` with auto-focus barcode scanner, quick purpose chips, anti-kupit Manager PIN authorization check, `STORE_USE` badge in `StockHistoryView`, `formatStoreUseSlipLines` 58mm/80mm thermal voucher formatter with audit sign-off blanks, and Web Audio deduction confirmation chime. 542/542 unit tests passing across 84 test suites, 0 TypeScript errors.
 - Stage 31: Full Windows Executables (`TindaPOS-Setup-2.2.5.exe` + `TindaPOS-Portable-2.2.5.exe`) compiled and published to official GitHub Release `v2.2.5` alongside `latest.yml`, `SHA256SUMS-v2.2.5.txt`, blockmap, and in-app hot patch with verified cryptographic checksums.
+- Stage 32: v2.2.6 Multi-Item Store Use (VIP Purchase Invoice Style) with Full Atomic Transaction & In-App Hot Patch Published.
+- Stage 33: v2.2.7 Printable Utang Master List, Total Receivables Breakdown & Customer SOA Edition official release. Dedicated UtangPrintModal with interactive preview, dual printing engines (standard A4/Letter Document via window.api.printer.printDocument and thermal 58mm/80mm POS receipt via window.api.printer.printLines with formatUtangMasterLines and formatCustomerStatementLines), comprehensive total breakdown (Total Receivables, Active Debtors with Balance, Overdue / Due Today, Total Credit Extended, Settled Debtors), and itemized individual Statement of Account (SOA) breakdown with customer promissory agreement signature lines. 545/545 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.7`).
+- Stage 34: v2.2.8 Full Setup.exe Clean Auto-Download, Pre-Update SQLite Safety Snapshot & 3-Second Silent Auto-Restart Edition official release. Deprecated error-prone patch options in favor of clean single-card Full Setup.exe downloads. Integrated Tesla Cyber-Emerald progress bar directly streaming `TindaPOS-Setup-*.exe`, pre-update SQLite safety snapshot ensuring zero data loss, and silent NSIS auto-restart (`quitAndInstall(true, true)`). 546/546 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Windows binaries (`TindaPOS-Setup-2.2.8.exe` + `TindaPOS-Portable-2.2.8.exe`) compiled and published to GitHub Releases (`v2.2.8`).
 
 
 PENDING APPROVAL:

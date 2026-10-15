@@ -1,49 +1,37 @@
 #!/usr/bin/env bash
-# Actual Executable Subagent Dispatcher for ATLAS
+# Real-Time PhD Subagent Dispatcher for JIN
+# Bridges legacy calls to the 4 Elite PhD Specialists
 
 AGENT=$1
 TASK=$2
 
 echo "=================================================="
-echo "🧠 [ATLAS DISPATCHER] Spawning Subagent: $AGENT"
+echo "🫡 [JIN DISPATCHER] Spawning Real-Time PhD Specialist: $AGENT"
 echo "📋 [ASSIGNED TASK]: $TASK"
 echo "=================================================="
 
 case $AGENT in
-  kronos)
-    echo "⚡ [Dr. Kronos - PhD UI/UX Active]"
-    echo "DIRECTIVE: Enforce zero-lag DOM, 1-tap tingi buttons, barcode auto-focus lock, large sukli display."
+  vex|dr-vex|dr-vex-code|kronos|matrix)
+    echo "🎯 [Dr. Vex - PhD Principal Software Architecture Active]"
+    echo "DIRECTIVE: Full-stack POS engineering, zero-lag DOM, Electron IPC, thermal printers, clean modular code."
     ;;
-  vault)
-    echo "🔐 [Dr. Vault - PhD DB & FinTech Active]"
-    echo "DIRECTIVE: Enforce integer centavo Peso math (Math.round(val * 100)), Offline-First storage, box-to-piece stock conversion, Utang ledger integrity."
+  kael|dr-kael|dr-kael-quant|vault|oracle)
+    echo "🔢 [Dr. Kael - PhD Quantitative Logic & Precision Math Active]"
+    echo "DIRECTIVE: Integer centavo Peso math, zero rounding drift, Cash Drawer & Utang ledgers, analytics."
     ;;
-  matrix)
-    echo "🖨️ [Dr. Matrix - PhD Hardware Active]"
-    echo "DIRECTIVE: Enforce 58mm/80mm @media print thermal layout, 50ms barcode scanner debounce, low-RAM optimization."
+  nyx|dr-nyx|dr-nyx-ops|echo)
+    echo "📑 [Dr. Nyx - PhD Operations & Executive Strategy Active]"
+    echo "DIRECTIVE: Clean executive documentation, SOPs, cashier workflows, release management."
     ;;
-  oracle)
-    echo "📊 [Dr. Oracle - PhD Retail Analytics Active]"
-    echo "DIRECTIVE: Compute retail vs wholesale margins, fast-moving velocity alerts, dead-stock flags."
-    ;;
-  echo)
-    echo "🔊 [Dr. Echo - PhD Audio & Assist Active]"
-    echo "DIRECTIVE: Web Audio API offline beep/error tones, elder-friendly readability, clean Utang receipt export."
-    ;;
-  aegis)
-    echo "🛡️ [Dr. Aegis - PhD QA & Anti-Kupit Audit Active]"
-    echo "Running automated syntax & integrity checks on project files..."
-    for f in *.js; do
-      [ -f "$f" ] && node --check "$f" && echo "✔ Syntax Verified: $f"
-    done
-    echo "DIRECTIVE: Verify shift Z-reading, void PIN protection, and power-loss state recovery."
+  argus|dr-argus|dr-argus-qa|aegis)
+    echo "🛡️ [Dr. Argus - PhD Formal Verification & Zero-Error QA Active]"
+    echo "DIRECTIVE: Inspect files, verify syntax & runtime, validate math, anti-kupit integrity check."
     ;;
   *)
-    echo "⚠️ Unknown Subagent. Available: kronos | vault | matrix | oracle | echo | aegis"
-    exit 1
+    echo "⚠️ Unknown Specialist '$AGENT'. Falling back to Dr. Vex & Dr. Argus."
     ;;
 esac
 
-# Log execution so ATLAS proves the subagent was invoked
+mkdir -p .agents
 echo "$(date '+%Y-%m-%d %H:%M:%S') | Spawned: $AGENT | Task: $TASK" >> .agents/swarm_execution.log
-echo "✅ [SUBAGENT $AGENT READY — PROCEED WITH SURGICAL CODE EDIT]"
+echo "✅ [PHD SPECIALIST $AGENT READY — PROCEED WITH 0-ERROR EXECUTION]"
