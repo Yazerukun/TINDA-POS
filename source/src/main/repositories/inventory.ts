@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3'
-import type { InventoryMovement, InventoryMovementType, StockReceivingRecord, StockReceivingSource } from '@shared/types'
+import type { InventoryMovement, InventoryMovementType, StockReceivingRecord, StockReceivingSource, StoreUseRecord, StoreUseItemRecord } from '@shared/types'
 
 export function listMovements(
   db: Database.Database,
@@ -98,3 +98,170 @@ export function listReceiving(
   `).all(...params, opts.limit ?? 250, opts.offset ?? 0) as StockReceivingRecord[]
   return { rows, total, total_cost_c: summary.total_cost_c }
 }
+
+export function listStoreUseHistory(
+  db: Database.Database,
+  opts: {
+    search?: string
+    from?: string
+    to?: string
+    limit?: number
+    offset?: number
+  } = {}
+): { rows: StoreUseRecord[]; total: number } {
+  const where: string[] = ["(e.reference LIKE 'SU-%' OR e.description LIKE 'Store Use%')"]
+  const params: unknown[] = []
+
+  if (opts.from) {
+    where.push('(e.expense_date >= ? OR substr(e.created_at, 1, 10) >= ?)')
+    params.push(opts.from, opts.from)
+  }
+  if (opts.to) {
+    where.push('(e.expense_date <= ? OR substr(e.created_at, 1, 10) <= ?)')
+    params.push(opts.to, opts.to)
+  }
+  if (opts.search?.trim()) {
+    const q = `%${opts.search.trim()}%`
+    where.push('(e.reference LIKE ? OR e.description LIKE ? OR e.notes LIKE ?)')
+    params.push(q, q, q)
+  }
+
+  const whereSql = `WHERE ${where.join(' AND ')}`
+  const total = (
+    db.prepare(`SELECT COUNT(*) AS c FROM expenses e ${whereSql}`).get(...params) as { c: number }
+  ).c
+
+  const limit = opts.limit ?? 100
+  const offset = opts.offset ?? 0
+
+  const expenseRows = db
+    .prepare(
+      `SELECT e.id AS expense_id, e.reference, e.amount_c AS total_amount_c,
+              e.expense_date, e.description, e.notes, e.created_at,
+              COALESCE(u.full_name, u.username, 'Cashier') AS cashier_name
+       FROM expenses e
+       LEFT JOIN users u ON u.id = e.user_id
+       ${whereSql}
+       ORDER BY e.created_at DESC, e.id DESC
+       LIMIT ? OFFSET ?`
+    )
+    .all(...params, limit, offset) as Array<{
+      expense_id: number
+      reference: string | null
+      total_amount_c: number
+      expense_date: string
+      description: string | null
+      notes: string | null
+      created_at: string
+      cashier_name: string
+    }>
+
+  // Prepared statement to query inventory_movements for line items if needed
+  const getMovementsStmt = db.prepare(`
+    SELECT im.id, im.product_id, COALESCE(p.name, 'Unknown Product') AS product_name,
+           COALESCE(im.received_unit, im.unit, p.base_unit, 'pc') AS unit,
+           COALESCE(im.received_quantity, ABS(im.quantity_change)) AS quantity,
+           ABS(im.quantity_change) AS quantity_base,
+           COALESCE(im.unit_cost_c, 0) AS unit_cost_c,
+           im.quantity_before AS stock_before,
+           im.quantity_after AS stock_after,
+           im.reason
+    FROM inventory_movements im
+    LEFT JOIN products p ON p.id = im.product_id
+    WHERE im.reference = ? AND im.movement_type = 'STORE_USE'
+    ORDER BY im.id ASC
+  `)
+
+  const records: StoreUseRecord[] = expenseRows.map((e) => {
+    let items: StoreUseItemRecord[] = []
+    let reason = 'Store Repair & Maintenance'
+    let notesText: string | null = null
+
+    // 1. Try parsing JSON_DATA from e.notes
+    if (e.notes && e.notes.includes('JSON_DATA:')) {
+      try {
+        const jsonPart = e.notes.substring(e.notes.indexOf('JSON_DATA:') + 'JSON_DATA:'.length)
+        const parsed = JSON.parse(jsonPart)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          items = parsed
+        }
+      } catch {}
+    }
+
+    // 2. Extract Reason and Notes from text notes
+    if (e.notes) {
+      const parts = e.notes.split(' | ')
+      for (const part of parts) {
+        if (part.startsWith('Reason:')) {
+          reason = part.replace('Reason:', '').trim()
+        } else if (part.startsWith('Notes:')) {
+          notesText = part.replace('Notes:', '').trim()
+        }
+      }
+    }
+
+    if (!reason && e.description) {
+      const match = e.description.match(/\(([^)]+)\)/)
+      if (match && match[1]) reason = match[1]
+    }
+
+    // 3. Fallback: if items were not in JSON_DATA, load from inventory_movements
+    if (items.length === 0 && e.reference) {
+      const movements = getMovementsStmt.all(e.reference) as Array<{
+        id: number
+        product_id: number
+        product_name: string
+        unit: string
+        quantity: number
+        quantity_base: number
+        unit_cost_c: number
+        stock_before: number
+        stock_after: number
+        reason: string | null
+      }>
+
+      if (movements.length > 0) {
+        items = movements.map((m) => {
+          const lineTotal = Math.round(m.quantity * m.unit_cost_c)
+          return {
+            product_id: m.product_id,
+            product_name: m.product_name,
+            quantity: m.quantity,
+            unit: m.unit,
+            quantity_base: m.quantity_base,
+            unit_cost_c: m.unit_cost_c,
+            total_amount_c: lineTotal > 0 ? lineTotal : Math.round(e.total_amount_c / movements.length),
+            stock_before: m.stock_before,
+            stock_after: m.stock_after
+          }
+        })
+      }
+    }
+
+    const firstItem = items[0]
+
+    return {
+      success: true,
+      reference: e.reference || `SU-${e.expense_date}-${e.expense_id}`,
+      items,
+      total_amount_c: e.total_amount_c,
+      total_items: items.length || 1,
+      expense_id: e.expense_id,
+      reason: reason || 'Store Operation',
+      notes: notesText,
+      cashier_name: e.cashier_name,
+      created_at: e.created_at,
+      product_id: firstItem?.product_id,
+      product_name: firstItem?.product_name,
+      quantity: firstItem?.quantity,
+      unit: firstItem?.unit,
+      quantity_base: firstItem?.quantity_base,
+      unit_cost_c: firstItem?.unit_cost_c,
+      stock_before: firstItem?.stock_before,
+      stock_after: firstItem?.stock_after
+    }
+  })
+
+  return { rows: records, total }
+}
+

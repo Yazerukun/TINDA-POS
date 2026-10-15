@@ -162,5 +162,60 @@ describe('Store Use (Operating Expense) Invariant Suite', () => {
     }
     expect(computeRetailPriceForUnit(costOnlyProd, 'Box')).toBe(10000)
   })
+
+  it('correctly parses JSON_DATA embedded in notes for Store Use History', () => {
+    const rawNotes = 'Reason: Counter fabrication | Notes: Urgent repair | JSON_DATA:[{"product_id":10,"product_name":"Marine Plywood 1/4","quantity":2,"unit":"sheet","quantity_base":2,"unit_cost_c":45000,"total_amount_c":90000,"stock_before":15,"stock_after":13}]'
+
+    let items: Array<{ product_id: number; product_name: string; quantity: number; unit: string; total_amount_c: number }> = []
+    let reason = 'Store Repair & Maintenance'
+    let notesText: string | null = null
+
+    if (rawNotes.includes('JSON_DATA:')) {
+      const jsonPart = rawNotes.substring(rawNotes.indexOf('JSON_DATA:') + 'JSON_DATA:'.length)
+      items = JSON.parse(jsonPart)
+    }
+
+    const parts = rawNotes.split(' | ')
+    for (const part of parts) {
+      if (part.startsWith('Reason:')) {
+        reason = part.replace('Reason:', '').trim()
+      } else if (part.startsWith('Notes:')) {
+        notesText = part.replace('Notes:', '').trim()
+      }
+    }
+
+    expect(reason).toBe('Counter fabrication')
+    expect(notesText).toBe('Urgent repair')
+    expect(items.length).toBe(1)
+    expect(items[0]!.product_name).toBe('Marine Plywood 1/4')
+    expect(items[0]!.quantity).toBe(2)
+    expect(items[0]!.total_amount_c).toBe(90000)
+  })
+
+  it('gracefully handles legacy Store Use vouchers without JSON_DATA', () => {
+    const legacyNotes = 'Reason: Store Cleaning Supplies | Notes: Restock bathroom supplies'
+
+    let items: unknown[] = []
+    let reason = 'Store Repair & Maintenance'
+    let notesText: string | null = null
+
+    if (legacyNotes.includes('JSON_DATA:')) {
+      const jsonPart = legacyNotes.substring(legacyNotes.indexOf('JSON_DATA:') + 'JSON_DATA:'.length)
+      items = JSON.parse(jsonPart)
+    }
+
+    const parts = legacyNotes.split(' | ')
+    for (const part of parts) {
+      if (part.startsWith('Reason:')) {
+        reason = part.replace('Reason:', '').trim()
+      } else if (part.startsWith('Notes:')) {
+        notesText = part.replace('Notes:', '').trim()
+      }
+    }
+
+    expect(items.length).toBe(0) // Empty triggers fallback to inventory_movements
+    expect(reason).toBe('Store Cleaning Supplies')
+    expect(notesText).toBe('Restock bathroom supplies')
+  })
 })
 

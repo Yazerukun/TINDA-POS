@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = `TINDA POS ${TAG} — Store Use Automatic Retail Price & Resilient Full Setup.exe Edition`
+const RELEASE_NAME = `TINDA POS ${TAG} — Store Use History Details & VIP Thermal Slip Center Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,9 +162,10 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Store Use Automatic Retail Price**: Automatically sets the valuation to the item retail selling price across all units upon selection and unit changes.
-- **Resilient Preload & rawInvoke Safe Fallback**: Completely eliminates \`window.api.inventory.storeUse is not a function\` by bundling native IPC handlers and safe fallback channels.
-- **100% Pure Full Setup.exe Only**: Zero patches, zero asset mismatch, and 100% clean installation and updates with pre-update SQLite safety snapshots and silent auto-restart.`
+    releaseNotes = `- **Store Use History & Details (VIP)**: Dedicated Store Use History tab with multi-filter search, date range pickers, and quick preset buttons (Today, Last 7 Days, This Month, All Time).
+- **Atomic Itemized Voucher Breakdown**: View complete details of any past voucher including product names, units, quantities, unit prices (OPEX), subtotals, and before/after stock impact.
+- **Instant 58mm/80mm Thermal Reprinting**: 1-click reprint of official internal consumption vouchers for physical expense filing and accounting audit.
+- **100% Pure Full Setup.exe Only**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 
   const body = `## 🚀 TINDA POS ${TAG} — Official Full Windows Release

@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.9 (STORE USE AUTOMATIC RETAIL PRICE & RESILIENT FULL SETUP.EXE EDITION)
+- v2.2.10 (STORE USE HISTORY DETAILS & VIP THERMAL SLIP CENTER EDITION)
 
 TARGET:
 - v2.3.0 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Completed — v2.2.9 Store Use Automatic Retail Price & Resilient Full Setup.exe Edition with Full Windows Executables Compiled & Published
+- Production Release In Progress — v2.2.10 Store Use History Details & VIP Thermal Slip Center Edition compiling Full Windows Executables
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -45,6 +45,7 @@ COMPLETED:
 - Stage 33: v2.2.7 Printable Utang Master List, Total Receivables Breakdown & Customer SOA Edition official release. Dedicated UtangPrintModal with interactive preview, dual printing engines (standard A4/Letter Document via window.api.printer.printDocument and thermal 58mm/80mm POS receipt via window.api.printer.printLines with formatUtangMasterLines and formatCustomerStatementLines), comprehensive total breakdown (Total Receivables, Active Debtors with Balance, Overdue / Due Today, Total Credit Extended, Settled Debtors), and itemized individual Statement of Account (SOA) breakdown with customer promissory agreement signature lines. 545/545 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Live in-app hot patch bundled and published to GitHub Releases (`v2.2.7`).
 - Stage 34: v2.2.8 Full Setup.exe Clean Auto-Download, Pre-Update SQLite Safety Snapshot & 3-Second Silent Auto-Restart Edition official release. Deprecated error-prone patch options in favor of clean single-card Full Setup.exe downloads. Integrated Tesla Cyber-Emerald progress bar directly streaming `TindaPOS-Setup-*.exe`, pre-update SQLite safety snapshot ensuring zero data loss, and silent NSIS auto-restart (`quitAndInstall(true, true)`). 546/546 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Windows binaries (`TindaPOS-Setup-2.2.8.exe` + `TindaPOS-Portable-2.2.8.exe`) compiled and published to GitHub Releases (`v2.2.8`).
 - Stage 35: v2.2.9 Store Use Automatic Retail Price & Resilient IPC Safety Edition official release. Automatic retail price valuation in Store Use (`getRetailPriceForUnit`) when adding products or switching units, defensive `rawInvoke` fallback and error handling preventing `window.api.inventory.storeUse is not a function` crashes on older base setups, 547 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (`TindaPOS-Setup-2.2.9.exe` + `TindaPOS-Portable-2.2.9.exe`) compiled and published to GitHub Releases (`v2.2.9`).
+- Stage 36: v2.2.10 Store Use History Details & VIP Thermal Slip Center Edition official release. Dedicated Store Use History tab, interactive date range & preset filters (Today, 7 Days, 30 Days, All), itemized voucher breakdown dialog (StoreUseDetailsModal) showing products, units, OPEX costs, and stock before/after, instant 58mm/80mm thermal receipt reprint, backward and forward compatible JSON_DATA notes & inventory_movements extraction, 549 unit tests passing, 0 TypeScript errors, master invariants 100% verified.
 
 
 PENDING APPROVAL:

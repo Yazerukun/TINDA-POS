@@ -615,6 +615,8 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       const movementReason = `Store Use: ${item.quantity} ${unit?.name || product.base_unit} for "${cleanReason}"`
       prodRepo.adjustStock(db(), item.product_id, -qtyBase, 'STORE_USE', movementReason, u.id, refNo, {
         unit_cost_c: effectiveCostC,
+        received_unit: unit?.name || product.base_unit,
+        received_quantity: item.quantity,
         notes: raw.notes?.trim() || null
       })
 
@@ -651,7 +653,8 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       `Voucher: ${refNo}`,
       `Reason: ${cleanReason}`,
       raw.notes?.trim() ? `Notes: ${raw.notes.trim()}` : null,
-      ...processedItems.map((p) => `- ${p.product_name}: ${p.quantity} ${p.unit} @ P${(p.unit_cost_c / 100).toFixed(2)} = P${(p.total_amount_c / 100).toFixed(2)}`)
+      ...processedItems.map((p) => `- ${p.product_name}: ${p.quantity} ${p.unit} @ P${(p.unit_cost_c / 100).toFixed(2)} = P${(p.total_amount_c / 100).toFixed(2)}`),
+      `JSON_DATA:${JSON.stringify(processedItems)}`
     ].filter(Boolean)
 
     const expense = expRepo.createExpense(
@@ -698,6 +701,13 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       stock_after: firstItem?.stock_after
     }
   })()
+})
+handle('inventory:storeUseHistory', (_e: IpcMainInvokeEvent, opts?: unknown) => {
+  user()
+  return invRepo.listStoreUseHistory(
+    db(),
+    (opts as { search?: string; from?: string; to?: string; limit?: number; offset?: number }) || {}
+  )
 })
 
 // ---- Suppliers ----

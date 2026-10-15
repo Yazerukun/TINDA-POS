@@ -303,6 +303,13 @@ export interface TindaApi {
       notes?: string
       manager_pin?: string
     }) => Promise<import('./types').StoreUseRecord>
+    storeUseHistory: (opts?: {
+      search?: string
+      from?: string
+      to?: string
+      limit?: number
+      offset?: number
+    }) => Promise<{ rows: import('./types').StoreUseRecord[]; total: number }>
   }
 
   suppliers: {

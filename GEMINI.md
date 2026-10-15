@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.9 (Store Use Automatic Retail Price & Resilient Full Setup.exe Edition)
+- **Current Stable Version:** v2.2.10 (Store Use History Details & VIP Thermal Slip Center Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Store Use auto-populates retail selling price across all units, rawInvoke IPC fallback prevents missing function crashes, and 100% clean Full Setup installer build.
+- **Latest Feature:** Store Use History & Details VIP view with atomic itemized breakdown dialog, date/preset filters, instant 58mm/80mm voucher reprint, and 100% clean Full Setup installer build.

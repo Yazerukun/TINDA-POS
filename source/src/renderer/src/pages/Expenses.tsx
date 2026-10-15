@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Receipt, Store } from 'lucide-react'
+import { Plus, Pencil, Trash2, Receipt, Store, Clock } from 'lucide-react'
 import type { Expense, ExpenseCategory, Product } from '@shared/types'
 import { money, shortDate } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -19,6 +19,7 @@ export function Expenses(): React.JSX.Element {
   const [editing, setEditing] = useState<Form | null>(null)
   const [newCat, setNewCat] = useState('')
   const [storeUseOpen, setStoreUseOpen] = useState(false)
+  const [storeUseTab, setStoreUseTab] = useState<'CREATE' | 'HISTORY'>('CREATE')
   const [products, setProducts] = useState<Product[]>([])
 
   const load = async () => {
@@ -75,10 +76,11 @@ export function Expenses(): React.JSX.Element {
     } catch (err) { toastError('Failed to add category', String((err as Error)?.message || err)) }
   }
 
-  const openStoreUse = async () => {
+  const openStoreUse = async (tab: 'CREATE' | 'HISTORY' = 'CREATE') => {
     try {
       const res = await window.api.products.search('', { status: 'ACTIVE', limit: 1000 })
       setProducts(res.rows)
+      setStoreUseTab(tab)
       setStoreUseOpen(true)
     } catch (err) {
       toastError('Failed to load products for Store Use', String((err as Error)?.message || err))
@@ -93,7 +95,14 @@ export function Expenses(): React.JSX.Element {
         actions={
           <div className="flex items-center gap-2">
             <button
-              onClick={() => void openStoreUse()}
+              onClick={() => void openStoreUse('HISTORY')}
+              className="btn-secondary flex items-center gap-2 border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+              title="View past Store Use vouchers, itemized details, and reprint slips"
+            >
+              <Clock className="h-4 w-4 text-amber-400" /> Store Use History (VIP)
+            </button>
+            <button
+              onClick={() => void openStoreUse('CREATE')}
               className="btn-secondary flex items-center gap-2"
               title="Deduct Stock for Store Use and Record Operating Expense"
             >
@@ -164,6 +173,7 @@ export function Expenses(): React.JSX.Element {
         <StoreUseModal
           products={products}
           initial={null}
+          initialTab={storeUseTab}
           onDone={() => {
             setStoreUseOpen(false)
             void load()

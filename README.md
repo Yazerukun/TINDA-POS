@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.10-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-547%2F547_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-549%2F549_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -14,12 +14,12 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger · Clean Full Setup.exe Auto-Update · 1-Tap QR Cloud Sync**
+**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR Cloud Sync**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.9_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.9/TindaPOS-Setup-2.2.9.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.9_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.9/TindaPOS-Portable-2.2.9.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.10_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.10/TindaPOS-Setup-2.2.10.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.10_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.10/TindaPOS-Portable-2.2.10.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
