@@ -28,3 +28,5 @@
 2026-10-15 14:45:39 | Jin Engine Dispatched | Task: Design & Strategic Architecture for Free Demo Account in TINDA POS
 2026-10-15 14:51:12 | Jin Engine Dispatched | Task: Fix Barcode Label Description Truncation & Add Multi-Line Auto-Wrapping for VIP Client
 2026-10-15 15:20:19 | Jin Engine Dispatched | Task: Produce full build stable release with auto-version bump for barcode description wrapping and auto-fit fix
+2026-10-15 15:40:26 | Jin Engine Dispatched | Task: Fix Store Use item search dropdown transparent background bleeding text behind it, make solid opaque dark with high contrast, and prepare full build release
+2026-10-15 15:50:12 | Jin Engine Dispatched | Task: Finalize docs/RELEASE-STATE.md, run npm run build:win, and publish official GitHub Release v2.2.12

@@ -423,7 +423,7 @@ export function PosToolsModal({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm leading-tight truncate">Check for Updates</p>
-                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '2.2.11'} · Live Check</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '2.2.12'} · Live Check</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-emerald-400 group-hover:underline shrink-0">

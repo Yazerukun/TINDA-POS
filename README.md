@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.11-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.12-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-549%2F549_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.11_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/TindaPOS-Setup-2.2.11.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.11_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/TindaPOS-Portable-2.2.11.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.12_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/TindaPOS-Setup-2.2.12.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.12_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/TindaPOS-Portable-2.2.12.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +30,14 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.11 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v2.2.12 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.11.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/TindaPOS-Setup-2.2.11.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-2.2.11.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/TindaPOS-Portable-2.2.11.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.11.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.11/SHA256SUMS-v2.2.11.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.12.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/TindaPOS-Setup-2.2.12.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.12.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/TindaPOS-Portable-2.2.12.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.12.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.12/SHA256SUMS-v2.2.12.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 

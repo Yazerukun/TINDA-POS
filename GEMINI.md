@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.11 (Chiteng CT221B Barcode Multi-Line Wrapping & Dynamic Auto-Fit Edition)
+- **Current Stable Version:** v2.2.12 (Store Use Solid Opaque High-Contrast Search & Zero-Bleed Dropdown Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Dedicated Product Description / Specs rendering on thermal barcode tags, up to 5-line title auto-wrapping, dynamic auto-fit font scaling, live 1:1 preview, and 100% clean Full Setup installer build.
+- **Latest Feature:** Replaced unstyled surface classes with 100% solid opaque ink dark backgrounds in Store Use, preventing text bleed-through in product search dropdown, added sticky matching product counter, high-contrast item rows, and 100% clean Full Setup installer build.

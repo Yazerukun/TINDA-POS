@@ -178,15 +178,15 @@ export function StoreUseDetailsModal({
       <div className="space-y-4">
         {/* Header Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-ink-line bg-surface-2 p-3">
+          <div className="rounded-xl border border-ink-line bg-ink-850 p-3">
             <span className="text-[11px] font-semibold text-slate-400 block mb-1">Voucher Ref</span>
             <span className="font-mono text-sm font-bold text-amber-300 break-all">{record.reference}</span>
           </div>
-          <div className="rounded-xl border border-ink-line bg-surface-2 p-3">
+          <div className="rounded-xl border border-ink-line bg-ink-850 p-3">
             <span className="text-[11px] font-semibold text-slate-400 block mb-1">Date & Time</span>
             <span className="text-xs font-semibold text-white">{formatDateTime(record.created_at)}</span>
           </div>
-          <div className="rounded-xl border border-ink-line bg-surface-2 p-3">
+          <div className="rounded-xl border border-ink-line bg-ink-850 p-3">
             <span className="text-[11px] font-semibold text-slate-400 block mb-1">Staff / Issuer</span>
             <span className="text-xs font-semibold text-white">{record.cashier_name || 'Staff'}</span>
           </div>
@@ -197,7 +197,7 @@ export function StoreUseDetailsModal({
         </div>
 
         {/* Purpose & Notes */}
-        <div className="rounded-xl border border-ink-line bg-surface-1 p-3.5 space-y-2">
+        <div className="rounded-xl border border-ink-line bg-ink-900 p-3.5 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 font-medium">Purpose / Department:</span>
             <span className="badge bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold text-xs">
@@ -205,7 +205,7 @@ export function StoreUseDetailsModal({
             </span>
           </div>
           {record.notes && (
-            <div className="text-xs text-slate-300 bg-surface-2/60 p-2.5 rounded-lg border border-ink-line/50">
+            <div className="text-xs text-slate-300 bg-ink-850/80 p-2.5 rounded-lg border border-ink-line/50">
               <span className="font-semibold text-slate-400">Notes / Remarks: </span>
               {record.notes}
             </div>
@@ -213,14 +213,14 @@ export function StoreUseDetailsModal({
         </div>
 
         {/* Line Items Table */}
-        <div className="overflow-hidden rounded-xl border border-ink-line bg-surface-1">
-          <div className="border-b border-ink-line bg-surface-2 px-3 py-2 text-xs font-semibold text-slate-300 flex items-center justify-between">
+        <div className="overflow-hidden rounded-xl border border-ink-line bg-ink-900">
+          <div className="border-b border-ink-line bg-ink-850 px-3 py-2 text-xs font-semibold text-slate-300 flex items-center justify-between">
             <span>Itemized Consumed Products ({itemsList.length} items)</span>
             <span className="text-amber-400 font-mono font-bold">Total: {money(record.total_amount_c)}</span>
           </div>
           <div className="max-h-64 overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 z-10 border-b border-ink-line bg-surface-2/95 text-slate-400">
+              <thead className="sticky top-0 z-10 border-b border-ink-line bg-ink-850/95 text-slate-400">
                 <tr>
                   <th className="py-2.5 pl-3 font-semibold">#</th>
                   <th className="py-2.5 font-semibold">Product Description</th>
@@ -233,7 +233,7 @@ export function StoreUseDetailsModal({
               </thead>
               <tbody className="divide-y divide-ink-line/50">
                 {itemsList.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-surface-2/40 transition-colors">
+                  <tr key={idx} className="hover:bg-ink-800/40 transition-colors">
                     <td className="py-2.5 pl-3 font-mono text-slate-500">{idx + 1}</td>
                     <td className="py-2.5 font-semibold text-white">{item.product_name}</td>
                     <td className="py-2.5 text-right font-mono font-bold text-white">{item.quantity}</td>
@@ -650,7 +650,7 @@ export function StoreUseModal({
                 className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                   activeTab === 'CREATE'
                     ? 'bg-primary-500/20 text-primary-300 border border-primary-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-surface-2'
+                    : 'text-slate-400 hover:text-white hover:bg-ink-800'
                 }`}
               >
                 <Plus className="h-4 w-4" />
@@ -665,7 +665,7 @@ export function StoreUseModal({
                 className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                   activeTab === 'HISTORY'
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-surface-2'
+                    : 'text-slate-400 hover:text-white hover:bg-ink-800'
                 }`}
               >
                 <Clock className="h-4 w-4 text-amber-400" />
@@ -707,7 +707,7 @@ export function StoreUseModal({
               </div>
 
               {/* Voucher Header: Purpose & Notes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-xl border border-ink-line bg-surface-2 p-3 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-xl border border-ink-line bg-ink-850 p-3 text-xs">
                 <div>
                   <label className="label text-xs font-semibold text-slate-300">
                     Purpose / Department *
@@ -721,7 +721,7 @@ export function StoreUseModal({
                         className={`rounded-lg px-2 py-0.5 text-[11px] transition-colors ${
                           reason === p
                             ? 'bg-brand-500 text-white font-semibold'
-                            : 'bg-surface-3 text-slate-400 hover:text-white'
+                            : 'bg-ink-800 text-slate-400 hover:text-white'
                         }`}
                       >
                         {p}
@@ -733,7 +733,7 @@ export function StoreUseModal({
                       className={`rounded-lg px-2 py-0.5 text-[11px] transition-colors ${
                         reason === 'Other'
                           ? 'bg-brand-500 text-white font-semibold'
-                          : 'bg-surface-3 text-slate-400 hover:text-white'
+                          : 'bg-ink-800 text-slate-400 hover:text-white'
                       }`}
                     >
                       Other
@@ -780,7 +780,7 @@ export function StoreUseModal({
               </div>
 
               {/* Item Entry Bar (Like Purchase Invoice) */}
-              <div className="rounded-xl border border-brand-500/30 bg-surface-2 p-3 shadow-inner">
+              <div className="rounded-xl border border-brand-500/30 bg-ink-850 p-3 shadow-inner">
                 <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-brand-400">
                   <span className="flex items-center gap-1.5">
                     <Package className="h-4 w-4" /> Add Item to Store Use Voucher
@@ -837,25 +837,37 @@ export function StoreUseModal({
                       )}
                     </div>
 
-                    {/* Search Dropdown */}
+                    {/* Search Dropdown - 100% Solid Opaque High-Contrast Menu */}
                     {showDropdown && filteredProducts.length > 0 && (
                       <div
                         ref={dropdownRef}
-                        className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-ink-line bg-surface-1 shadow-2xl"
+                        className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-brand-500/40 bg-ink-900 shadow-2xl ring-2 ring-black"
+                        style={{ backgroundColor: '#111418' }}
                       >
+                        <div
+                          className="sticky top-0 z-10 border-b border-ink-line px-3 py-1.5 text-[11px] font-bold text-slate-400 flex items-center justify-between"
+                          style={{ backgroundColor: '#0a0d0f' }}
+                        >
+                          <span>Matching Products ({filteredProducts.length})</span>
+                          <span className="text-[10px] text-brand-400 font-mono">Use ↑↓ &amp; Enter to Select</span>
+                        </div>
                         {filteredProducts.map((p, idx) => (
                           <div
                             key={p.id}
                             onClick={() => chooseProduct(p)}
-                            className={`cursor-pointer border-b border-ink-line/50 p-2 text-xs transition-colors ${
-                              idx === dropdownIndex ? 'bg-brand-500/20 text-brand-300' : 'hover:bg-surface-2 text-slate-300'
+                            onMouseEnter={() => setDropdownIndex(idx)}
+                            className={`cursor-pointer border-b border-ink-line/50 p-2.5 text-xs transition-colors ${
+                              idx === dropdownIndex
+                                ? 'bg-brand-500/25 text-white border-l-4 border-brand-400 pl-3 font-semibold'
+                                : 'text-slate-200 hover:bg-ink-800 hover:text-white'
                             }`}
+                            style={idx === dropdownIndex ? { backgroundColor: 'rgba(16, 185, 129, 0.25)' } : { backgroundColor: '#111418' }}
                           >
-                            <div className="font-semibold text-white">{p.name}</div>
-                            <div className="flex items-center justify-between text-[11px] text-slate-400">
-                              <span>{p.barcode || p.sku || 'No Barcode'}</span>
+                            <div className="font-bold text-white text-sm leading-snug">{p.name}</div>
+                            <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                              <span className="font-mono text-slate-300 font-semibold">{p.barcode || p.sku || 'No Barcode'}</span>
                               <span>
-                                Stock: {p.stock} {p.base_unit} | <span className="font-semibold text-emerald-400">Retail: ₱{(p.default_price_c / 100).toFixed(2)}</span>
+                                Stock: <b className="text-white">{p.stock} {p.base_unit}</b> | <span className="font-bold text-emerald-400">Retail: ₱{(p.default_price_c / 100).toFixed(2)}</span>
                                 {p.purchase_cost_c > 0 ? ` (Cost: ₱${(p.purchase_cost_c / 100).toFixed(2)})` : ''}
                               </span>
                             </div>
@@ -960,10 +972,10 @@ export function StoreUseModal({
               </div>
 
               {/* Multi-Item Table (The Invoice Style List) */}
-              <div className="overflow-hidden rounded-xl border border-ink-line bg-surface-1">
+              <div className="overflow-hidden rounded-xl border border-ink-line bg-ink-900">
                 <div className="max-h-64 overflow-y-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="sticky top-0 z-10 border-b border-ink-line bg-surface-2 text-slate-400">
+                    <thead className="sticky top-0 z-10 border-b border-ink-line bg-ink-850 text-slate-400">
                       <tr>
                         <th className="py-2.5 pl-3 font-semibold">#</th>
                         <th className="py-2.5 font-semibold">Product Description</th>
@@ -984,7 +996,7 @@ export function StoreUseModal({
                         </tr>
                       ) : (
                         items.map((it, idx) => (
-                          <tr key={it.tempId} className="hover:bg-surface-2/50 transition-colors">
+                          <tr key={it.tempId} className="hover:bg-ink-800/50 transition-colors">
                             <td className="py-2.5 pl-3 font-mono text-slate-500">{idx + 1}</td>
                             <td className="py-2.5">
                               <div className="font-semibold text-white">{it.productName}</div>
@@ -1022,7 +1034,7 @@ export function StoreUseModal({
                 </div>
 
                 {/* Grand Totals Bar */}
-                <div className="flex items-center justify-between border-t border-ink-line bg-surface-2 p-3 text-xs">
+                <div className="flex items-center justify-between border-t border-ink-line bg-ink-850 p-3 text-xs">
                   <div className="text-slate-400">
                     Total Items in Voucher: <b className="text-white">{items.length}</b> ({items.reduce((sum, it) => sum + it.quantity, 0)} units total)
                   </div>
@@ -1043,7 +1055,7 @@ export function StoreUseModal({
           {activeTab === 'HISTORY' && (
             <div className="space-y-4">
               {/* Filter & Search Bar */}
-              <div className="rounded-xl border border-ink-line bg-surface-2 p-3 space-y-3">
+              <div className="rounded-xl border border-ink-line bg-ink-850 p-3 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                   <div className="relative md:col-span-5">
                     <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -1116,7 +1128,7 @@ export function StoreUseModal({
                           className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
                             datePreset === p
                               ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
-                              : 'bg-surface-3 text-slate-400 hover:text-white'
+                              : 'bg-ink-800 text-slate-400 hover:text-white'
                           }`}
                         >
                           {labels[p]}
@@ -1129,11 +1141,11 @@ export function StoreUseModal({
 
               {/* KPI Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="rounded-xl border border-ink-line bg-surface-1 p-3">
+                <div className="rounded-xl border border-ink-line bg-ink-850 p-3">
                   <span className="text-[11px] font-semibold text-slate-400 block mb-1">Total Vouchers Recorded</span>
                   <span className="font-mono text-xl font-bold text-white">{historySummary.totalVouchers}</span>
                 </div>
-                <div className="rounded-xl border border-ink-line bg-surface-1 p-3">
+                <div className="rounded-xl border border-ink-line bg-ink-850 p-3">
                   <span className="text-[11px] font-semibold text-slate-400 block mb-1">Total Items Consumed</span>
                   <span className="font-mono text-xl font-bold text-amber-300">{historySummary.totalItems} units</span>
                 </div>
@@ -1144,10 +1156,10 @@ export function StoreUseModal({
               </div>
 
               {/* History Table */}
-              <div className="overflow-hidden rounded-xl border border-ink-line bg-surface-1">
+              <div className="overflow-hidden rounded-xl border border-ink-line bg-ink-900">
                 <div className="max-h-72 overflow-y-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="sticky top-0 z-10 border-b border-ink-line bg-surface-2 text-slate-400">
+                    <thead className="sticky top-0 z-10 border-b border-ink-line bg-ink-850 text-slate-400">
                       <tr>
                         <th className="py-2.5 pl-3 font-semibold">Date & Time</th>
                         <th className="py-2.5 font-semibold">Voucher Ref</th>
@@ -1184,7 +1196,7 @@ export function StoreUseModal({
                           const isReprintingThis = reprintingRef === r.reference
 
                           return (
-                            <tr key={r.reference || idx} className="hover:bg-surface-2/50 transition-colors">
+                            <tr key={r.reference || idx} className="hover:bg-ink-800/50 transition-colors">
                               <td className="py-2.5 pl-3 font-mono text-slate-300 whitespace-nowrap">
                                 {formatDateTime(r.created_at)}
                               </td>
@@ -1210,7 +1222,7 @@ export function StoreUseModal({
                                   <button
                                     type="button"
                                     onClick={() => setSelectedRecordForDetails(r)}
-                                    className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-surface-3 transition-colors"
+                                    className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-ink-750 transition-colors"
                                     title="View Voucher Breakdown & Items"
                                   >
                                     <Eye className="h-4 w-4 text-brand-400" />
@@ -1219,7 +1231,7 @@ export function StoreUseModal({
                                     type="button"
                                     onClick={() => void handleReprintSlip(r)}
                                     disabled={isReprintingThis}
-                                    className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-surface-3 transition-colors"
+                                    className="btn-ghost-2 rounded-lg p-1.5 text-slate-300 hover:text-white hover:bg-ink-750 transition-colors"
                                     title="Reprint 58mm/80mm Thermal Slip"
                                   >
                                     <Printer className={`h-4 w-4 ${isReprintingThis ? 'animate-spin text-amber-400' : 'text-amber-400'}`} />
