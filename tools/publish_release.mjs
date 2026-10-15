@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Dashboard Store Use Balance-Only Non-Cash Exclusion Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Customizable Utility Billers & Presets Manager Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,10 +162,10 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Dashboard Store Use Balance-Only Non-Cash Exclusion**: Decoupled Store Use non-cash expenses from Dashboard cash operating expenses and True Net Profit. Store Use internal consumption is strictly balance-only (deducted in inventory stock balance and asset valuation) and never subtracted from operational cash profit.
-- **Operating Expenses Purity**: Dashboard and Sales Reports Operating Expenses now reflect 100% pure cash disbursements from the store, with dynamic Store Use balance indicator badges (\`Store Use: ₱... (balance only)\`).
-- **Cash Drawer Reconciliation Immunity**: Eliminated false cash drawer shortages by preventing non-cash Store Use transactions from reducing expected cash in daily shift Z-Read and store telemetry.
-- **550 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+    releaseNotes = `- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly (e.g. Meralco, Electric Cooperatives, BENECO, Maynilad, PrimeWater, MCWD) directly in the transaction form.
+- **Manage Billers Modal**: Full Biller Preset Manager modal to add new custom local billers, rename existing billers, and configure default convenience fees, persisted reactively across sessions.
+- **Telco E-Load Protection**: Strict protection for Globe/TM, Smart/TNT, and DITO networks — keeping telecom load denominations and network identifiers secure from accidental renaming.
+- **553 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 

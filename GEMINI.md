@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.13 (Dashboard Store Use Balance-Only Non-Cash Exclusion Edition)
+- **Current Stable Version:** v2.2.14 (Customizable Utility Billers & Presets Manager Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Separated Store Use non-cash expenses from Dashboard cash operating expenses and True Net Profit; Store Use internal inventory consumption is now strictly balance-only (deducted in inventory stock/valuation balance only) and never subtracted from cash profit or cash drawer reconciliation.
+- **Latest Feature:** Full customization and on-the-fly editing for utility and water billers (Meralco, electric coops, water districts, loans, internet) in E-Wallet & Bills Hub with a dedicated Biller Preset Manager modal, while strictly protecting telecom E-Load networks from accidental changes.

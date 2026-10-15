@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.13-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v2.2.14-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-550%2F550_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-553%2F553_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.13_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/TindaPOS-Setup-2.2.13.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.13_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/TindaPOS-Portable-2.2.13.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.14_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/TindaPOS-Setup-2.2.14.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.14_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/TindaPOS-Portable-2.2.14.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +30,14 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.13 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v2.2.14 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.13.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/TindaPOS-Setup-2.2.13.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-2.2.13.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/TindaPOS-Portable-2.2.13.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.13.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.13/SHA256SUMS-v2.2.13.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.14.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/TindaPOS-Setup-2.2.14.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.14.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/TindaPOS-Portable-2.2.14.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.14.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.14/SHA256SUMS-v2.2.14.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
@@ -203,6 +203,18 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.14 (Customizable Utility Billers & Presets Manager Edition) · Oct 15, 2026
+- **⚡ Customizable Utility & Water Billers (`EwalletAudit.tsx`, `BillsLoadHub.tsx`, `billerCustomization.ts`)**:
+  - Cashiers can now edit utility and water biller names on-the-fly directly in the Express Bills form (e.g. BENECO, CANORECO, Visayan Electric, Maynilad, Manila Water, PrimeWater, Local Water Districts, Home Credit, PLDT, Converge).
+  - Immediate propagation across all transaction records, SQLite e-wallet mirroring, cashier cart line items, thermal receipt printing, and customer-facing CFD displays.
+- **⚙️ Dedicated Biller Preset Manager Modal (`ManageBillersModal.tsx`)**:
+  - Full-featured modal accessible with one tap from the Biller selector to add new local billers, rename presets, adjust default convenience fees, filter by utility category, and delete obsolete entries.
+  - Reactive persistence via `localStorage` (`tinda_custom_biller_presets_v1`) with instant multi-window and multi-tab synchronization.
+- **🛡️ Strict Telco E-Load Protection**:
+  - Standard telecom mobile load networks (Globe/TM, Smart/TNT, DITO Telecommunity) are strictly protected with an E-Load indicator badge and cannot be accidentally renamed or corrupted.
+- **🧪 553 Automated Tests Passing & Master Invariant Verification**:
+  - 100% test passing across all 86 test suites including new utility customization suite (`billerCustomization.test.ts`), 0 TypeScript errors.
 
 ### 🏷️ v2.2.5 (VIP Store Use & Operating Expense Edition) · Oct 14, 2026
 - **📦 VIP Store Use / Internal Consumption Feature (`StoreUseModal.tsx`, `Inventory.tsx`, `Expenses.tsx`, `ipc/index.ts`)**:

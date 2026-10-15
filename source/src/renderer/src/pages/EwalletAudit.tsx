@@ -17,7 +17,9 @@ import {
   Receipt,
   RotateCcw,
   Calendar,
-  X
+  X,
+  Settings,
+  Edit3
 } from 'lucide-react'
 import type {
   EwalletTransactionRecord,
@@ -31,6 +33,12 @@ import { CASH_COUNT_DENOMINATIONS, actualCashCent } from '@shared/cashCount'
 import { toastSuccess, toastError } from '../stores/toast'
 import { usePosCart } from './POS'
 import { useNav } from '../stores/nav'
+import {
+  loadBillerPresets,
+  type BillerPreset,
+  BILLERS_CHANGED_EVENT
+} from '../utils/billerCustomization'
+import { ManageBillersModal } from '../components/ewallet/ManageBillersModal'
 
 export type EwalletDatePeriod = 'TODAY' | 'YESTERDAY' | 'LAST_7_DAYS' | 'THIS_MONTH' | 'CUSTOM' | 'ALL'
 
@@ -187,22 +195,6 @@ const toast = {
   error: (title: string, msg?: string) => toastError(title, msg)
 }
 
-const BILLER_PRESETS = [
-  { name: 'Meralco', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'Electric Cooperative', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'VECO / Visayan Electric', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'Maynilad / Manila Water', category: 'WATER', defaultFee: 15, icon: '💧' },
-  { name: 'Local Water District', category: 'WATER', defaultFee: 15, icon: '💧' },
-  { name: 'Home Credit', category: 'LOANS', defaultFee: 20, icon: '💳' },
-  { name: 'Cashalo / Tala', category: 'LOANS', defaultFee: 20, icon: '💳' },
-  { name: 'ShopeePay / SPayLater', category: 'LOANS', defaultFee: 15, icon: '🛍️' },
-  { name: 'Globe / TM Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'Smart / TNT Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'DITO Telecommunity', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'Converge ICT', category: 'INTERNET', defaultFee: 20, icon: '🌐' },
-  { name: 'PLDT Home / Smart Bro', category: 'INTERNET', defaultFee: 20, icon: '🌐' }
-]
-
 const BILLS_STORAGE_KEY = 'tinda_bills_load_records'
 
 export interface BillRecord {
@@ -241,18 +233,48 @@ export function EwalletAudit(): React.JSX.Element {
       return []
     }
   })
-  const [selectedBiller, setSelectedBiller] = useState(BILLER_PRESETS[0]?.name || 'Meralco')
+  const [billerPresets, setBillerPresets] = useState<BillerPreset[]>(() => loadBillerPresets())
+  const [manageBillersOpen, setManageBillersOpen] = useState(false)
+  const [selectedBiller, setSelectedBiller] = useState(() => billerPresets[0]?.name || 'Meralco')
+  const [customBillerName, setCustomBillerName] = useState(() => billerPresets[0]?.name || 'Meralco')
   const [billAccountNo, setBillAccountNo] = useState('')
   const [billCustomerName, setBillCustomerName] = useState('')
   const [billCustomerPhone, setBillCustomerPhone] = useState('')
   const [billAmountStr, setBillAmountStr] = useState('')
-  const [billFeeStr, setBillFeeStr] = useState(String(BILLER_PRESETS[0]?.defaultFee || 15))
+  const [billFeeStr, setBillFeeStr] = useState(() => String(billerPresets[0]?.defaultFee || 15))
   const [billFeeMode, setBillFeeMode] = useState<'ADD' | 'DEDUCT'>('ADD')
   const [billCashReceivedStr, setBillCashReceivedStr] = useState('')
   const [billSourceWallet, setBillSourceWallet] = useState<'GCASH' | 'MAYA' | 'MARIBANK'>('GCASH')
   const [billReferenceNo, setBillReferenceNo] = useState('')
   const [billSearchQuery, setBillSearchQuery] = useState('')
   const [billToDelete, setBillToDelete] = useState<BillRecord | null>(null)
+
+  // Listen for biller presets changes from modal or other tabs
+  useEffect(() => {
+    const handlePresetsChanged = () => {
+      const refreshed = loadBillerPresets()
+      setBillerPresets(refreshed)
+      if (!refreshed.some((p) => p.name === selectedBiller)) {
+        const first = refreshed[0]
+        if (first) {
+          setSelectedBiller(first.name)
+          setCustomBillerName(first.name)
+          setBillFeeStr(String(first.defaultFee))
+        }
+      }
+    }
+    window.addEventListener(BILLERS_CHANGED_EVENT, handlePresetsChanged)
+    return () => window.removeEventListener(BILLERS_CHANGED_EVENT, handlePresetsChanged)
+  }, [selectedBiller])
+
+  const currentBillerPreset = useMemo(
+    () => billerPresets.find((p) => p.name === selectedBiller),
+    [billerPresets, selectedBiller]
+  )
+  const isTelcoEload = Boolean(currentBillerPreset?.isEload)
+  const effectiveBiller = isTelcoEload
+    ? selectedBiller
+    : (customBillerName.trim() || selectedBiller)
 
   // Register Form State
   const [channel, setChannel] = useState<EwalletChannel>('GCASH')
@@ -408,7 +430,7 @@ export function EwalletAudit(): React.JSX.Element {
           status: 'ACTIVE',
           mode: 'BILLS_PAYMENT',
           billsPayload: {
-            biller: selectedBiller,
+            biller: effectiveBiller,
             accountNo: billAccountNo.trim(),
             customerName: billCustomerName.trim() || undefined,
             customerPhone: billCustomerPhone.trim() || undefined,
@@ -430,7 +452,7 @@ export function EwalletAudit(): React.JSX.Element {
         }).catch(() => {})
       }
     }
-  }, [activeTab, selectedBiller, billAccountNo, billCustomerName, billCustomerPhone, billAmountStr, billFeeStr, billFeeMode, billCashReceivedStr, billSourceWallet])
+  }, [activeTab, selectedBiller, effectiveBiller, billAccountNo, billCustomerName, billCustomerPhone, billAmountStr, billFeeStr, billFeeMode, billCashReceivedStr, billSourceWallet])
 
   // Denomination calculations
   const actualCashC = useMemo(() => {
@@ -685,8 +707,8 @@ export function EwalletAudit(): React.JSX.Element {
 
     const newTx: BillRecord = {
       id: 'BL-' + Date.now().toString(36).toUpperCase(),
-      category: (BILLER_PRESETS.find((b) => b.name === selectedBiller)?.category as any) || 'UTILITIES',
-      biller: selectedBiller,
+      category: (currentBillerPreset?.category as any) || 'UTILITIES',
+      biller: effectiveBiller,
       accountNo: billAccountNo.trim(),
       customerName: billCustomerName.trim() || 'Walk-in Customer',
       customerPhone: billCustomerPhone.trim(),
@@ -714,7 +736,7 @@ export function EwalletAudit(): React.JSX.Element {
           reference_no: newTx.referenceNo,
           customer_name: newTx.customerName,
           customer_phone: newTx.customerPhone || undefined,
-          notes: `Bills/Load: ${selectedBiller} (Acct: ${billAccountNo.trim()})`
+          notes: `Bills/Load: ${effectiveBiller} (Acct: ${billAccountNo.trim()})`
         })
       }
     } catch (err) {
@@ -723,13 +745,13 @@ export function EwalletAudit(): React.JSX.Element {
 
     const next = [newTx, ...billRecords]
     saveBillRecords(next)
-    toast.success('Transaction Recorded', `${selectedBiller} payment of ₱${amt.toFixed(2)} logged!`)
+    toast.success('Transaction Recorded', `${effectiveBiller} payment of ₱${amt.toFixed(2)} logged!`)
 
     void window.api.phoneScanner?.updateCfd({
       status: 'COMPLETED',
       mode: 'BILLS_PAYMENT',
       billsPayload: {
-        biller: selectedBiller,
+        biller: effectiveBiller,
         accountNo: billAccountNo.trim(),
         customerName: billCustomerName.trim() || undefined,
         customerPhone: billCustomerPhone.trim() || undefined,
@@ -767,14 +789,14 @@ export function EwalletAudit(): React.JSX.Element {
     const totalDue = billFeeMode === 'DEDUCT' ? Math.max(0, amt - fee) : amt + fee
     const priceC = Math.round(totalDue * 100)
     const costC = Math.round(amt * 100)
-    const itemName = `Bills: ${selectedBiller} (${billAccountNo.trim()})`
+    const itemName = `Bills: ${effectiveBiller} (${billAccountNo.trim()})`
 
     usePosCart.getState().addCustomItem(itemName, priceC, 'txn', 1, costC)
 
     const newTx: BillRecord = {
       id: 'BL-' + Date.now().toString(36).toUpperCase(),
-      category: (BILLER_PRESETS.find((b) => b.name === selectedBiller)?.category as any) || 'UTILITIES',
-      biller: selectedBiller,
+      category: (currentBillerPreset?.category as any) || 'UTILITIES',
+      biller: effectiveBiller,
       accountNo: billAccountNo.trim(),
       customerName: billCustomerName.trim() || 'Walk-in Customer',
       customerPhone: billCustomerPhone.trim(),
@@ -801,7 +823,7 @@ export function EwalletAudit(): React.JSX.Element {
           reference_no: newTx.referenceNo,
           customer_name: newTx.customerName,
           customer_phone: newTx.customerPhone || undefined,
-          notes: `Bills/Load: ${selectedBiller} (Acct: ${billAccountNo.trim()}) [POS Cart Item]`
+          notes: `Bills/Load: ${effectiveBiller} (Acct: ${billAccountNo.trim()}) [POS Cart Item]`
         })
       }
     } catch (err) {
@@ -1642,27 +1664,66 @@ export function EwalletAudit(): React.JSX.Element {
                     </div>
                   </div>
 
-                  {/* Biller Preset Selector */}
+                  {/* Biller Preset Selector & Manage Button */}
                   <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-                      Biller / Telecom Network:
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-slate-300">
+                        Biller / Telecom Network:
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setManageBillersOpen(true)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-400 hover:text-brand-300 hover:underline transition"
+                        title="Add, rename, delete or adjust default fees for billers"
+                      >
+                        <Settings className="h-3 w-3" />
+                        <span>Manage Billers</span>
+                      </button>
+                    </div>
                     <select
                       value={selectedBiller}
                       onChange={(e) => {
                         const val = e.target.value
                         setSelectedBiller(val)
-                        const preset = BILLER_PRESETS.find((p) => p.name === val)
-                        if (preset) setBillFeeStr(String(preset.defaultFee))
+                        const preset = billerPresets.find((p) => p.name === val)
+                        if (preset) {
+                          setBillFeeStr(String(preset.defaultFee))
+                          setCustomBillerName(preset.name)
+                        }
                       }}
                       className="w-full rounded-xl border border-ink-line bg-ink-950 px-3 py-2 text-xs font-semibold text-white outline-none focus:border-brand-500 transition"
                     >
-                      {BILLER_PRESETS.map((p) => (
+                      {billerPresets.map((p) => (
                         <option key={p.name} value={p.name}>
-                          {p.icon} {p.name} ({p.category}) — Default Fee: ₱{p.defaultFee}
+                          {p.icon} {p.name} ({p.category}) — Default Fee: ₱{p.defaultFee}{p.isEload ? ' [E-Load]' : ''}
                         </option>
                       ))}
                     </select>
+
+                    {/* On-the-fly Editable Biller Name for non-Eload billers */}
+                    {!isTelcoEload ? (
+                      <div className="mt-2 p-2.5 rounded-xl bg-ink-950/80 border border-brand-500/30 space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-brand-300 font-semibold flex items-center gap-1">
+                            <Edit3 className="h-3 w-3 text-brand-400" />
+                            Editable Biller Name:
+                          </span>
+                          <span className="text-[10px] text-slate-400">Custom utility / water district</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={customBillerName}
+                          onChange={(e) => setCustomBillerName(e.target.value)}
+                          placeholder={selectedBiller}
+                          className="w-full rounded-lg border border-ink-line bg-ink-900 px-2.5 py-1.5 text-xs font-bold text-white outline-none focus:border-brand-400 transition"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-1.5 text-[11px] text-slate-400 flex items-center gap-1.5 px-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span>Standard Telco Network (E-Load Protected)</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Account / Mobile Number */}
@@ -3182,6 +3243,12 @@ export function EwalletAudit(): React.JSX.Element {
           </div>
         </div>
       )}
+
+      {/* Manage Billers Modal */}
+      <ManageBillersModal
+        isOpen={manageBillersOpen}
+        onClose={() => setManageBillersOpen(false)}
+      />
     </div>
   )
 }

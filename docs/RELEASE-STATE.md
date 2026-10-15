@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.13 (DASHBOARD STORE USE BALANCE-ONLY NON-CASH EXCLUSION EDITION)
+- v2.2.14 (CUSTOMIZABLE UTILITY BILLERS & PRESETS MANAGER EDITION)
 
 TARGET:
 - v2.3.0 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release In Progress — v2.2.13 Dashboard Store Use Balance-Only Non-Cash Exclusion Edition compiling Full Windows Executables
+- Production Release Ready — v2.2.14 Customizable Utility Billers & Presets Manager Edition compiling Full Windows Executables
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -49,6 +49,7 @@ COMPLETED:
 - Stage 37: v2.2.11 Chiteng CT221B Barcode Multi-Line Wrapping & Dynamic Auto-Fit Edition official release. Dedicated Product Description / Specs rendering on thermal barcode tags, up to 5-line title auto-wrapping without hardcoded 22px cutoff, dynamic auto-fit font scaling (Auto, Small, Medium, Large), interactive 1:1 preview, zero-loss persistence in printerCustomization.ts, 549 unit tests passing, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.11.exe + TindaPOS-Portable-2.2.11.exe).
 - Stage 38: v2.2.12 Store Use Solid Opaque High-Contrast Search & Zero-Bleed Dropdown Edition official release. Completely eliminated search item text bleed-through in StoreUseModal caused by unmapped CSS utility classes. Replaced with deep solid ink palette (bg-ink-950, bg-ink-900, bg-ink-850) with explicit #111418 background color fallback, z-50 elevation, brand-500 border glow, ring-2 ring-black, sticky result count header, smooth mouse-hover tracking, and high-contrast typography (pure white item names, emerald retail prices). 549 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.12.exe + TindaPOS-Portable-2.2.12.exe).
 - Stage 39: v2.2.13 Dashboard Store Use Balance-Only Non-Cash Exclusion Edition official release. Decoupled Store Use non-cash expenses from Dashboard cash operating expenses and True Net Profit calculations. Store Use internal consumption is strictly balance-only (deducted in inventory stock balance and asset valuation) and never subtracted from cash profit or cash drawer reconciliation. Added store_use_c to ReportSummary and store_use_today_c to DashboardStats, updated sumExpenses repository method, storeTelemetry, and readReports. 550 unit tests passing across 85 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.13.exe + TindaPOS-Portable-2.2.13.exe).
+- Stage 40: v2.2.14 Customizable Utility Billers & Presets Manager Edition official release. Added dynamic biller customization (billerCustomization.ts), ManageBillersModal.tsx for adding, renaming, adjusting default fees and categorizing local billers, on-the-fly editable biller name in EwalletAudit.tsx and BillsLoadHub.tsx, and strict protection for telecom E-Load networks. 553 unit tests passing across 86 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.14.exe + TindaPOS-Portable-2.2.14.exe).
 
 
 PENDING APPROVAL:

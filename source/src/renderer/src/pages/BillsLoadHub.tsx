@@ -13,7 +13,8 @@ import {
   Search,
   Plus,
   RefreshCw,
-  Crown
+  Crown,
+  Settings
 } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { money } from '@shared/format'
@@ -21,6 +22,12 @@ import { toastSuccess, toastError } from '../stores/toast'
 import { useLicense } from '../stores/license'
 import { VipUpgradeModal } from '../components/VipUpgradeModal'
 import { formatLocalDateKey, parseRecordLocalDateKey } from './EwalletAudit'
+import {
+  loadBillerPresets,
+  type BillerPreset,
+  BILLERS_CHANGED_EVENT
+} from '../utils/billerCustomization'
+import { ManageBillersModal } from '../components/ewallet/ManageBillersModal'
 
 interface BillTransaction {
   id: string
@@ -38,43 +45,51 @@ interface BillTransaction {
   referenceNo: string
 }
 
-const BILLER_PRESETS = [
-  { name: 'Meralco', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'Electric Cooperative', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'VECO / Visayan Electric', category: 'UTILITIES', defaultFee: 15, icon: '⚡' },
-  { name: 'Maynilad / Manila Water', category: 'WATER', defaultFee: 15, icon: '💧' },
-  { name: 'Local Water District', category: 'WATER', defaultFee: 15, icon: '💧' },
-  { name: 'Home Credit', category: 'LOANS', defaultFee: 20, icon: '💳' },
-  { name: 'Cashalo / Tala', category: 'LOANS', defaultFee: 20, icon: '💳' },
-  { name: 'ShopeePay / SPayLater', category: 'LOANS', defaultFee: 15, icon: '🛍️' },
-  { name: 'Globe / TM Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'Smart / TNT Regular / Promo', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'DITO Telecommunity', category: 'TELCO', defaultFee: 5, icon: '📶' },
-  { name: 'Converge ICT', category: 'INTERNET', defaultFee: 20, icon: '🌐' },
-  { name: 'PLDT Home / Smart Bro', category: 'INTERNET', defaultFee: 20, icon: '🌐' }
-]
-
 const STORAGE_KEY = 'tinda_bills_load_records'
 
 export function BillsLoadHub(): React.JSX.Element {
   const { isVip } = useLicense()
   const [vipModalOpen, setVipModalOpen] = useState(false)
+  const [manageBillersOpen, setManageBillersOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'register' | 'history'>('register')
 
+  // Biller Presets state
+  const [billerPresets, setBillerPresets] = useState<BillerPreset[]>(() => loadBillerPresets())
+
   // Form state
-  const [selectedBiller, setSelectedBiller] = useState(BILLER_PRESETS[0]!.name)
+  const [selectedBiller, setSelectedBiller] = useState(() => billerPresets[0]?.name || 'Meralco')
   const [customBiller, setCustomBiller] = useState('')
   const [accountNo, setAccountNo] = useState('')
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [amountStr, setAmountStr] = useState('')
-  const [serviceFeeStr, setServiceFeeStr] = useState('15')
+  const [serviceFeeStr, setServiceFeeStr] = useState(() => String(billerPresets[0]?.defaultFee || 15))
   const [sourceWallet, setSourceWallet] = useState<'GCASH' | 'MAYA'>('GCASH')
   const [referenceNo, setReferenceNo] = useState('')
 
   // Records state
   const [records, setRecords] = useState<BillTransaction[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Listen to biller updates
+  useEffect(() => {
+    const handlePresetsChanged = () => {
+      const refreshed = loadBillerPresets()
+      setBillerPresets(refreshed)
+      if (!refreshed.some((p) => p.name === selectedBiller)) {
+        const first = refreshed[0]
+        if (first) {
+          setSelectedBiller(first.name)
+          setServiceFeeStr(String(first.defaultFee))
+        }
+      }
+    }
+    window.addEventListener(BILLERS_CHANGED_EVENT, handlePresetsChanged)
+    return () => window.removeEventListener(BILLERS_CHANGED_EVENT, handlePresetsChanged)
+  }, [selectedBiller])
+
+  const currentPreset = billerPresets.find((b) => b.name === selectedBiller)
+  const isEload = Boolean(currentPreset?.isEload)
 
   useEffect(() => {
     try {
@@ -135,7 +150,7 @@ export function BillsLoadHub(): React.JSX.Element {
     } catch {}
   }
 
-  const handleBillerSelect = (b: typeof BILLER_PRESETS[0]) => {
+  const handleBillerSelect = (b: BillerPreset) => {
     setSelectedBiller(b.name)
     setServiceFeeStr(String(b.defaultFee))
   }
@@ -165,7 +180,7 @@ export function BillsLoadHub(): React.JSX.Element {
 
     const newTx: BillTransaction = {
       id: 'BL-' + Date.now().toString(36).toUpperCase(),
-      category: BILLER_PRESETS.find((b) => b.name === billerName)?.category as any || 'UTILITIES',
+      category: (billerPresets.find((b) => b.name === billerName)?.category as any) || 'UTILITIES',
       biller: billerName,
       accountNo: accountNo.trim(),
       customerName: customerName.trim() || 'Walk-in Customer',
@@ -333,9 +348,20 @@ export function BillsLoadHub(): React.JSX.Element {
           {/* Preset Buttons */}
           <div className="lg:col-span-5 space-y-4">
             <div className="card p-4 border border-ink-line bg-ink-900/90 rounded-2xl space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Popular Billers & Services</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {BILLER_PRESETS.map((b) => (
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Popular Billers & Services</h3>
+                <button
+                  type="button"
+                  onClick={() => setManageBillersOpen(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-400 hover:text-brand-300 hover:underline transition"
+                  title="Add, rename, delete or adjust default fees for billers"
+                >
+                  <Settings className="h-3 w-3" />
+                  <span>Manage</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-[360px] overflow-y-auto pr-1">
+                {billerPresets.map((b) => (
                   <button
                     key={b.name}
                     type="button"
@@ -394,12 +420,22 @@ export function BillsLoadHub(): React.JSX.Element {
               {/* Biller Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Biller / Telco</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-slate-300">Biller / Telco</label>
+                    {isEload && (
+                      <span className="text-[10px] text-emerald-400 font-semibold">E-Load Protected</span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={selectedBiller}
-                    onChange={(e) => setSelectedBiller(e.target.value)}
-                    className="input w-full"
+                    onChange={(e) => {
+                      if (!isEload) {
+                        setSelectedBiller(e.target.value)
+                      }
+                    }}
+                    readOnly={isEload}
+                    className={`input w-full ${isEload ? 'opacity-80 bg-ink-950 cursor-not-allowed' : ''}`}
                     placeholder="e.g. Home Credit, Meralco"
                     required
                   />
@@ -595,6 +631,7 @@ export function BillsLoadHub(): React.JSX.Element {
       )}
 
       {vipModalOpen && <VipUpgradeModal open={vipModalOpen} onClose={() => setVipModalOpen(false)} />}
+      <ManageBillersModal isOpen={manageBillersOpen} onClose={() => setManageBillersOpen(false)} />
     </div>
   )
 }

@@ -32,3 +32,5 @@
 2026-10-15 15:50:12 | Jin Engine Dispatched | Task: Finalize docs/RELEASE-STATE.md, run npm run build:win, and publish official GitHub Release v2.2.12
 2026-10-15 15:53:50 | Jin Engine Dispatched | Task: Publish Official GitHub Release v2.2.12
 2026-10-15 15:58:47 | Jin Engine Dispatched | Task: Separate Store Use expenses from Dashboard cash expenses and profit calculations so Store Use is not subtracted on Dashboard
+2026-10-15 16:31:41 | Jin Engine Dispatched | Task: Make Bills Payment Billers editable (excluding E-Load) in E-Wallet / Bills Payment Hub
+2026-10-15 16:38:19 | Jin Engine Dispatched | Task: Make utility billers editable and customizable with presets manager while preserving eload, bump v2.2.14, compile full build
