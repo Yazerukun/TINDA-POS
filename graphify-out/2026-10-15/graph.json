@@ -35081,14 +35081,14 @@
       "source_location": "L173"
     },
     {
-      "id": "readme_quick_download_release_assets_v2_2_9_full_windows_release",
-      "label": "\u26a1 Quick Download & Release Assets (v2.2.9 Full Windows Release)",
+      "id": "readme_quick_download_release_assets_v2_2_12_full_windows_release",
+      "label": "\u26a1 Quick Download & Release Assets (v2.2.12 Full Windows Release)",
       "_origin": "ast",
       "community": 190,
       "community_name": "\ud83c\udfea TINDA POS (Desktop Master Edition)",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "\u26a1 quick download & release assets (v2.2.9 full windows release)",
+      "norm_label": "\u26a1 quick download & release assets (v2.2.12 full windows release)",
       "source_file": "README.md",
       "source_location": "L33"
     },
@@ -82231,7 +82231,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "source/src/renderer/src/components/inventory/StoreUseModal.tsx",
-      "source_location": "L1189",
+      "source_location": "L1201",
       "weight": 1.0
     },
     {
@@ -82243,7 +82243,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "source/src/renderer/src/components/inventory/StoreUseModal.tsx",
-      "source_location": "L1244",
+      "source_location": "L1256",
       "weight": 1.0
     },
     {
@@ -92791,7 +92791,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "tools/publish_release.mjs",
-      "source_location": "L211",
+      "source_location": "L212",
       "weight": 1.0
     },
     {
@@ -92803,7 +92803,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "tools/publish_release.mjs",
-      "source_location": "L280",
+      "source_location": "L281",
       "weight": 1.0
     },
     {
@@ -161092,7 +161092,7 @@
     },
     {
       "source": "readme_tinda_pos_desktop_master_edition",
-      "target": "readme_quick_download_release_assets_v2_2_9_full_windows_release",
+      "target": "readme_quick_download_release_assets_v2_2_12_full_windows_release",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -190994,5 +190994,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f44273fa73ab210d4cbdf5b3a0ddca2666f358df"
+  "built_at_commit": "cd7ce014491f4ab86aa387a18b6f45a474fb92b6"
 }
