@@ -34,6 +34,9 @@ export interface PrinterCustomizationSettings {
   label_barcode_height_mm: number
   label_barcode_bar_width: number
   label_price_font_size: 'medium' | 'large' | 'jumbo'
+  label_name_wrap_lines: 1 | 2 | 3 | 4 | 5
+  label_name_font_size: 'auto' | 'small' | 'medium' | 'large'
+  label_show_description: boolean
   label_show_store_name: boolean
   label_show_barcode: boolean
   label_show_sku: boolean
@@ -68,6 +71,9 @@ export const DEFAULT_PRINTER_CUSTOMIZATION: PrinterCustomizationSettings = {
   label_barcode_height_mm: 26,
   label_barcode_bar_width: 1.3,
   label_price_font_size: 'large',
+  label_name_wrap_lines: 4,
+  label_name_font_size: 'auto',
+  label_show_description: true,
   label_show_store_name: true,
   label_show_barcode: true,
   label_show_sku: true,
@@ -172,6 +178,9 @@ export function reconcilePrinterCustomization(
     label_barcode_height_mm: Number(resolveVal('label_barcode_height_mm', DEFAULT_PRINTER_CUSTOMIZATION.label_barcode_height_mm)),
     label_barcode_bar_width: Number(resolveVal('label_barcode_bar_width', DEFAULT_PRINTER_CUSTOMIZATION.label_barcode_bar_width)),
     label_price_font_size: resolveVal('label_price_font_size', DEFAULT_PRINTER_CUSTOMIZATION.label_price_font_size),
+    label_name_wrap_lines: Number(resolveVal('label_name_wrap_lines', DEFAULT_PRINTER_CUSTOMIZATION.label_name_wrap_lines)) as 1 | 2 | 3 | 4 | 5,
+    label_name_font_size: resolveVal('label_name_font_size', DEFAULT_PRINTER_CUSTOMIZATION.label_name_font_size),
+    label_show_description: Boolean(resolveVal('label_show_description', DEFAULT_PRINTER_CUSTOMIZATION.label_show_description)),
     label_show_store_name: Boolean(resolveVal('label_show_store_name', DEFAULT_PRINTER_CUSTOMIZATION.label_show_store_name)),
     label_show_barcode: Boolean(resolveVal('label_show_barcode', DEFAULT_PRINTER_CUSTOMIZATION.label_show_barcode)),
     label_show_sku: Boolean(resolveVal('label_show_sku', DEFAULT_PRINTER_CUSTOMIZATION.label_show_sku)),

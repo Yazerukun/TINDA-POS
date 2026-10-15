@@ -570,7 +570,9 @@ export interface StoreSettings {
   label_barcode_height_mm?: number
   label_barcode_bar_width?: number
   label_price_font_size?: 'medium' | 'large' | 'jumbo'
-  label_name_wrap_lines?: 1 | 2
+  label_name_wrap_lines?: 1 | 2 | 3 | 4 | 5
+  label_name_font_size?: 'auto' | 'small' | 'medium' | 'large'
+  label_show_description?: boolean
   label_show_store_name?: boolean
   label_show_barcode?: boolean
   label_show_sku?: boolean

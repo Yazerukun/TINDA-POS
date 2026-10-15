@@ -87,6 +87,9 @@ export function PrinterStudioModal({
   const [labelShowBarcode, setLabelShowBarcode] = useState(true)
   const [labelShowSku, setLabelShowSku] = useState(true)
   const [labelShowWholesale, setLabelShowWholesale] = useState(false)
+  const [labelNameWrapLines, setLabelNameWrapLines] = useState<1 | 2 | 3 | 4 | 5>(4)
+  const [labelNameFontSize, setLabelNameFontSize] = useState<'auto' | 'small' | 'medium' | 'large'>('auto')
+  const [labelShowDescription, setLabelShowDescription] = useState(true)
 
   // Sync state on open
   useEffect(() => {
@@ -124,6 +127,9 @@ export function PrinterStudioModal({
       setLabelShowBarcode(reconciled.label_show_barcode)
       setLabelShowSku(reconciled.label_show_sku)
       setLabelShowWholesale(reconciled.label_show_wholesale)
+      setLabelNameWrapLines(reconciled.label_name_wrap_lines)
+      setLabelNameFontSize(reconciled.label_name_font_size)
+      setLabelShowDescription(reconciled.label_show_description)
     }
   }, [open, initialTab, settings])
 
@@ -227,7 +233,10 @@ export function PrinterStudioModal({
         label_show_store_name: labelShowStoreName,
         label_show_barcode: labelShowBarcode,
         label_show_sku: labelShowSku,
-        label_show_wholesale: labelShowWholesale
+        label_show_wholesale: labelShowWholesale,
+        label_name_wrap_lines: labelNameWrapLines,
+        label_name_font_size: labelNameFontSize,
+        label_show_description: labelShowDescription
       }
 
       // Synchronously write to localStorage and dispatch event first
@@ -1358,6 +1367,77 @@ export function PrinterStudioModal({
                     </label>
                   </div>
                 </div>
+
+                {/* 4. Description & Long Name Auto-Wrapping */}
+                <div className="card p-3.5 space-y-3 bg-ink-900/60 border-ink-line">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                      Description &amp; Multi-Line Title Auto-Fit
+                    </span>
+                    <span className="text-[10px] text-emerald-300 font-mono font-semibold">
+                      Zero Truncation
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                        Max Title Lines
+                      </label>
+                      <div className="grid grid-cols-4 gap-1">
+                        {([2, 3, 4, 5] as const).map((lines) => (
+                          <button
+                            key={lines}
+                            type="button"
+                            onClick={() => setLabelNameWrapLines(lines)}
+                            className={`py-1 text-xs rounded-md border font-bold transition ${
+                              labelNameWrapLines === lines
+                                ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
+                                : 'border-ink-line bg-ink-850 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {lines}L
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-300 block mb-1">
+                        Title Font Scaling
+                      </label>
+                      <div className="grid grid-cols-4 gap-1">
+                        {(['auto', 'small', 'medium', 'large'] as const).map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => setLabelNameFontSize(sz)}
+                            className={`py-1 text-[10px] capitalize rounded-md border font-bold transition ${
+                              labelNameFontSize === sz
+                                ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
+                                : 'border-ink-line bg-ink-850 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {sz === 'auto' ? 'Auto' : sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 border-t border-ink-line">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={labelShowDescription}
+                        onChange={(e) => setLabelShowDescription(e.target.checked)}
+                        className="rounded text-brand-500 border-ink-line"
+                      />
+                      <span className="font-semibold text-emerald-400">Include Product Description / Specs</span>
+                    </label>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -1447,9 +1527,41 @@ export function PrinterStudioModal({
                       )}
 
                       <div className="my-0.5">
-                        <div className="text-[10px] font-black text-black leading-tight truncate">
-                          San Miguel Pale Pilsen 330ml
+                        <div
+                          className="font-black text-black leading-tight text-center"
+                          style={{
+                            fontSize:
+                              labelNameFontSize === 'small'
+                                ? '8.5px'
+                                : labelNameFontSize === 'large'
+                                ? '11px'
+                                : labelNameFontSize === 'medium'
+                                ? '9.5px'
+                                : '9.5px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: labelNameWrapLines,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            wordBreak: 'break-word'
+                          }}
+                          title="San Miguel Pale Pilsen 330ml Can Extra Cold Crisp Lager"
+                        >
+                          San Miguel Pale Pilsen 330ml Can Extra Cold Crisp Lager
                         </div>
+                        {labelShowDescription && (
+                          <div
+                            className="text-[7.5px] text-slate-700 italic font-medium leading-tight mt-0.5 text-center"
+                            style={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              wordBreak: 'break-word'
+                            }}
+                          >
+                            Premium 5% ABV Filipino brewed draft beer
+                          </div>
+                        )}
                         <div className={`font-black text-black leading-none mt-0.5 ${
                           labelPriceSize === 'jumbo' ? 'text-xl' : labelPriceSize === 'large' ? 'text-base' : 'text-sm'
                         }`}>

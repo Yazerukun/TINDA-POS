@@ -29,7 +29,9 @@ import { generateBarcodeSvg } from '@shared/barcodeSvg'
 import { PrinterStudioModal } from './PrinterStudioModal'
 import {
   reconcilePrinterCustomization,
-  PRINTER_CONFIG_CHANGED_EVENT
+  saveStoredPrinterCustomization,
+  PRINTER_CONFIG_CHANGED_EVENT,
+  type PrinterCustomizationSettings
 } from '../utils/printerCustomization'
 
 interface PriceTagPrintModalProps {
@@ -65,7 +67,15 @@ export function PriceTagPrintModal({
   const [showSku, setShowSku] = useState(settings?.label_show_sku ?? true)
   const [showStoreName, setShowStoreName] = useState(settings?.label_show_store_name ?? true)
   const [showWholesale, setShowWholesale] = useState(settings?.label_show_wholesale ?? true)
+  const [showDescription, setShowDescription] = useState(settings?.label_show_description ?? true)
+  const [nameWrapLines, setNameWrapLines] = useState<1 | 2 | 3 | 4 | 5>(settings?.label_name_wrap_lines ?? 4)
+  const [nameFontSize, setNameFontSize] = useState<'auto' | 'small' | 'medium' | 'large'>(settings?.label_name_font_size ?? 'auto')
   const [studioOpen, setStudioOpen] = useState(false)
+
+  const updateCustomPreference = (patch: Partial<PrinterCustomizationSettings>) => {
+    saveStoredPrinterCustomization(patch)
+    void updateSettings(patch as any)
+  }
 
   // Hardware printer detection state
   const [detectedPrinter, setDetectedPrinter] = useState<AutoDetectedLabelPrinter | null>(null)
@@ -139,6 +149,9 @@ export function PriceTagPrintModal({
       setShowSku(reconciled.label_show_sku)
       setShowStoreName(reconciled.label_show_store_name)
       setShowWholesale(reconciled.label_show_wholesale)
+      setShowDescription(reconciled.label_show_description)
+      setNameWrapLines(reconciled.label_name_wrap_lines)
+      setNameFontSize(reconciled.label_name_font_size)
       if (selectedProduct?.id) {
         setChosenProductId(selectedProduct.id)
       }
@@ -156,6 +169,9 @@ export function PriceTagPrintModal({
       setShowSku(reconciled.label_show_sku)
       setShowStoreName(reconciled.label_show_store_name)
       setShowWholesale(reconciled.label_show_wholesale)
+      setShowDescription(reconciled.label_show_description)
+      setNameWrapLines(reconciled.label_name_wrap_lines)
+      setNameFontSize(reconciled.label_name_font_size)
     }
     window.addEventListener(PRINTER_CONFIG_CHANGED_EVENT, onCustomChange)
     return () => window.removeEventListener(PRINTER_CONFIG_CHANGED_EVENT, onCustomChange)
@@ -192,13 +208,40 @@ export function PriceTagPrintModal({
     const offsetY = reconciled.label_offset_y_mm
     const safeMargin = reconciled.label_safe_margin_mm
     const priceSize = reconciled.label_price_font_size || 'large'
+    const nameWrap = nameWrapLines || reconciled.label_name_wrap_lines || 4
+    const nameFontSetting = nameFontSize || reconciled.label_name_font_size || 'auto'
+    const showDesc = showDescription ?? reconciled.label_show_description ?? true
+
+    let computedNameFontSize = '9px'
+    if (activeDims.height <= 20) {
+      if (nameFontSetting === 'small') computedNameFontSize = '6.5px'
+      else if (nameFontSetting === 'medium') computedNameFontSize = '7.5px'
+      else if (nameFontSetting === 'large') computedNameFontSize = '8.5px'
+      else {
+        const len = activeProduct.name.length
+        computedNameFontSize = len > 40 ? '6.5px' : len > 22 ? '7.5px' : '8.5px'
+      }
+    } else {
+      if (nameFontSetting === 'small') computedNameFontSize = '7.5px'
+      else if (nameFontSetting === 'medium') computedNameFontSize = '9px'
+      else if (nameFontSetting === 'large') computedNameFontSize = '10.5px'
+      else {
+        const len = activeProduct.name.length
+        computedNameFontSize = len > 50 ? '7.5px' : len > 28 ? '8.5px' : '9.5px'
+      }
+    }
+
+    const computedDescFontSize = activeDims.height <= 20 ? '6px' : '7.5px'
 
     // Build thermal label HTML
     const singleLabelHtml = `
       <div class="label-tag">
         <div class="label-inner" style="width: 100%; height: 100%; padding: ${safeMargin}mm; display: flex; flex-direction: column; justify-content: space-between; transform: translate(${offsetX}mm, ${offsetY}mm);">
           ${showStoreName ? `<div class="store-hdr">${settings?.store_name || 'TINDA STORE'}</div>` : ''}
-          <div class="p-name">${activeProduct.name}</div>
+          <div class="p-header-box">
+            <div class="p-name">${activeProduct.name}</div>
+            ${showDesc && activeProduct.description ? `<div class="p-desc">${activeProduct.description}</div>` : ''}
+          </div>
           <div class="price-wrap price-${priceSize}">
             <span class="currency">₱</span><span class="price">${(activeProduct.default_price_c / 100).toFixed(2)}</span>
           </div>
@@ -286,17 +329,37 @@ export function PriceTagPrintModal({
             padding-bottom: 0.4px;
             color: #000000;
           }
+          .p-header-box {
+            margin: 0.5px 0;
+            max-width: 100%;
+            overflow: hidden;
+          }
           .p-name {
-            font-size: ${activeDims.height <= 20 ? '7.5px' : '9px'};
+            font-size: ${computedNameFontSize};
             font-weight: 800;
             line-height: 1.1;
-            max-height: ${activeDims.height <= 20 ? '14px' : '22px'};
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
+            -webkit-line-clamp: ${nameWrap};
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            color: #000000;
+          }
+          .p-desc {
+            font-size: ${computedDescFontSize};
+            font-weight: 500;
+            font-style: italic;
+            line-height: 1.05;
+            color: #222222;
+            margin-top: 0.5px;
+            display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            color: #000000;
+            overflow: hidden;
+            word-break: break-word;
+            overflow-wrap: break-word;
           }
           .price-wrap {
             font-weight: 900;
@@ -616,9 +679,44 @@ export function PriceTagPrintModal({
               )}
 
               <div className="my-1">
-                <div className="text-xs font-black leading-tight truncate" title={activeProduct.name}>
+                <div
+                  className="font-black leading-tight text-black text-center"
+                  style={{
+                    fontSize:
+                      nameFontSize === 'small'
+                        ? '9.5px'
+                        : nameFontSize === 'large'
+                        ? '13px'
+                        : nameFontSize === 'medium'
+                        ? '11px'
+                        : activeProduct.name.length > 40
+                        ? '9.5px'
+                        : '11.5px',
+                    display: '-webkit-box',
+                    WebkitLineClamp: nameWrapLines,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    wordBreak: 'break-word'
+                  }}
+                  title={activeProduct.name}
+                >
                   {activeProduct.name}
                 </div>
+                {showDescription && activeProduct.description && (
+                  <div
+                    className="text-[8.5px] text-slate-700 font-medium italic leading-tight mt-0.5 text-center"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word'
+                    }}
+                    title={activeProduct.description}
+                  >
+                    {activeProduct.description}
+                  </div>
+                )}
                 <div className="text-lg font-black text-black leading-none mt-1">
                   {money(activeProduct.default_price_c)}
                 </div>
@@ -699,13 +797,91 @@ export function PriceTagPrintModal({
               </div>
             </div>
 
+            {/* Description & Long Title Auto-Wrap Controls */}
+            <div className="bg-ink-850/80 p-2.5 rounded-xl border border-ink-line space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-200">
+                  Description &amp; Long Name Auto-Wrap
+                </span>
+                <span className="text-[10px] text-brand-400 font-semibold">
+                  Zero Truncation
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {/* Max Lines */}
+                <div>
+                  <span className="text-[10px] text-slate-400 block mb-1">Title Max Lines</span>
+                  <div className="flex items-center gap-1">
+                    {([2, 3, 4, 5] as const).map((lines) => (
+                      <button
+                        key={lines}
+                        type="button"
+                        onClick={() => {
+                          setNameWrapLines(lines)
+                          updateCustomPreference({ label_name_wrap_lines: lines })
+                        }}
+                        className={`flex-1 py-1 text-[11px] font-bold rounded border transition ${
+                          nameWrapLines === lines
+                            ? 'border-brand-500 bg-brand-500/20 text-white'
+                            : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {lines}L
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Font Scaling */}
+                <div>
+                  <span className="text-[10px] text-slate-400 block mb-1">Font Scaling</span>
+                  <div className="flex items-center gap-1">
+                    {(['auto', 'small', 'medium', 'large'] as const).map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => {
+                          setNameFontSize(sz)
+                          updateCustomPreference({ label_name_font_size: sz })
+                        }}
+                        className={`flex-1 py-1 text-[10px] font-bold capitalize rounded border transition ${
+                          nameFontSize === sz
+                            ? 'border-brand-500 bg-brand-500/20 text-white'
+                            : 'border-ink-line bg-ink-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {sz === 'auto' ? 'Auto' : sz}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Toggle Switches */}
             <div className="grid grid-cols-2 gap-2 pt-1 border-t border-ink-line">
               <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-ink-850 transition">
                 <input
                   type="checkbox"
+                  checked={showDescription}
+                  onChange={(e) => {
+                    setShowDescription(e.target.checked)
+                    updateCustomPreference({ label_show_description: e.target.checked })
+                  }}
+                  className="rounded border-ink-line text-brand-500"
+                />
+                <span className="font-medium text-emerald-400">Include Product Description</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-ink-850 transition">
+                <input
+                  type="checkbox"
                   checked={showBarcode}
-                  onChange={(e) => setShowBarcode(e.target.checked)}
+                  onChange={(e) => {
+                    setShowBarcode(e.target.checked)
+                    updateCustomPreference({ label_show_barcode: e.target.checked })
+                  }}
                   className="rounded border-ink-line text-brand-500"
                 />
                 <span>Include Scannable Barcode</span>
@@ -715,7 +891,10 @@ export function PriceTagPrintModal({
                 <input
                   type="checkbox"
                   checked={showStoreName}
-                  onChange={(e) => setShowStoreName(e.target.checked)}
+                  onChange={(e) => {
+                    setShowStoreName(e.target.checked)
+                    updateCustomPreference({ label_show_store_name: e.target.checked })
+                  }}
                   className="rounded border-ink-line text-brand-500"
                 />
                 <span>Include Store Name Header</span>
@@ -725,17 +904,23 @@ export function PriceTagPrintModal({
                 <input
                   type="checkbox"
                   checked={showSku}
-                  onChange={(e) => setShowSku(e.target.checked)}
+                  onChange={(e) => {
+                    setShowSku(e.target.checked)
+                    updateCustomPreference({ label_show_sku: e.target.checked })
+                  }}
                   className="rounded border-ink-line text-brand-500"
                 />
                 <span>Include SKU Code</span>
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-ink-850 transition">
+              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded-lg hover:bg-ink-850 transition col-span-2">
                 <input
                   type="checkbox"
                   checked={showWholesale}
-                  onChange={(e) => setShowWholesale(e.target.checked)}
+                  onChange={(e) => {
+                    setShowWholesale(e.target.checked)
+                    updateCustomPreference({ label_show_wholesale: e.target.checked })
+                  }}
                   className="rounded border-ink-line text-brand-500"
                 />
                 <span>Include Wholesale Price</span>
