@@ -244,7 +244,11 @@ export function Reports(): React.JSX.Element {
               <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-6">
                 <Stat label="Sales" v={money(data.summary.sales_total_c)} />
                 <Stat label="Gross Profit" v={money(data.summary.profit_c)} />
-                <Stat label="Expenses" v={money(data.summary.expenses_c)} />
+                <Stat
+                  label="Expenses"
+                  v={money(data.summary.expenses_c)}
+                  sub={data.summary.store_use_c && data.summary.store_use_c > 0 ? `Store Use: ${money(data.summary.store_use_c)} (balance only)` : undefined}
+                />
                 <Stat label="True Net Profit" v={money(data.summary.net_profit_c ?? (data.summary.profit_c - data.summary.expenses_c))} />
                 <Stat label="Cost" v={money(data.summary.cost_c)} />
                 <Stat label="Transactions" v={String(data.summary.transactions)} />
@@ -756,11 +760,12 @@ function ReadPanel({report,finalize,onFinalized,onCashCount,onUpdate,onRefresh}:
   </div>
 }
 
-function Stat({ label, v }: { label: string; v: string }): React.JSX.Element {
+function Stat({ label, v, sub }: { label: string; v: string; sub?: string }): React.JSX.Element {
   return (
     <div className="card p-3">
       <p className="text-xs uppercase text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-black text-white">{v}</p>
+      {sub && <p className="mt-0.5 text-[10px] text-slate-400">{sub}</p>}
     </div>
   )
 }

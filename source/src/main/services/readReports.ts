@@ -39,7 +39,13 @@ export function calculateRead(db: Database.Database, shiftId: number, type: 'X' 
     WHERE cl.entry_type='REFUND' AND cl.reference_type='REFUND' AND cl.reference_id=r.id
   ),0))),0) total FROM refunds r JOIN sales s ON s.id=r.sale_id
   WHERE s.shift_id=? AND s.status!='VOIDED'`).get(shiftId) as {total:number}).total
-  const expenses = (db.prepare(`SELECT COALESCE(SUM(amount_c),0) total FROM expenses WHERE user_id=? AND created_at>=? AND created_at<=COALESCE(?,datetime('now','localtime'))`).get(shift.user_id, shift.opened_at, shift.closed_at) as {total:number}).total
+  const expenses = (db.prepare(`
+    SELECT COALESCE(SUM(e.amount_c),0) total
+    FROM expenses e
+    LEFT JOIN expense_categories ec ON ec.id = e.category_id
+    WHERE e.user_id=? AND e.created_at>=? AND e.created_at<=COALESCE(?,datetime('now','localtime'))
+      AND NOT (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')
+  `).get(shift.user_id, shift.opened_at, shift.closed_at) as {total:number}).total
   const moves = db.prepare(`SELECT COALESCE(SUM(CASE WHEN type='CASH_IN' THEN amount_c ELSE 0 END),0) cash_in, COALESCE(SUM(CASE WHEN type='CASH_OUT' THEN amount_c ELSE 0 END),0) cash_out FROM cash_movements WHERE shift_id=?`).get(shiftId) as {cash_in:number,cash_out:number}
   const split = (db.prepare(`SELECT COUNT(*) count FROM (SELECT p.sale_id FROM payments p JOIN sales s ON s.id=p.sale_id WHERE s.shift_id=? AND s.status!='VOIDED' GROUP BY p.sale_id HAVING COUNT(*)>1)`).get(shiftId) as {count:number}).count
   const gross = sales.gross || 0, discount = sales.discount || 0, voids = sales.voids || 0
@@ -94,9 +100,11 @@ export function calculateDailyExpected(
   // 3. Expenses for today
   const expenseRow = db
     .prepare(
-      `SELECT COALESCE(SUM(amount_c), 0) AS total
-       FROM expenses
-       WHERE (expense_date = ? OR (created_at >= ? AND created_at <= ?))`
+      `SELECT COALESCE(SUM(e.amount_c), 0) AS total
+       FROM expenses e
+       LEFT JOIN expense_categories ec ON ec.id = e.category_id
+       WHERE (e.expense_date = ? OR (e.created_at >= ? AND e.created_at <= ?))
+         AND NOT (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')`
     )
     .get(today, from, to) as { total: number } | undefined
   const today_expenses_c = expenseRow?.total || 0

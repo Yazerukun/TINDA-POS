@@ -80,14 +80,32 @@ export function salesReport(opts: { from: string; to: string; groupBy?: 'DAILY' 
   // Gross Profit reflects true merchandise margin: (Gross Sales - Refunds) - (COGS - Refunded Cost)
   summary.profit_c = Math.round((grossSalesTotal - refunds.c) - (cost.c - refundedCost.c))
 
-  const expenses = db
+  // Operating Expenses (cash expenses disbursed from store, excluding non-cash Store Use)
+  const cashExpenses = db
     .prepare(
-      `SELECT COALESCE(SUM(amount_c),0) AS c FROM expenses
-       WHERE expense_date >= ? AND expense_date <= ?`
+      `SELECT COALESCE(SUM(e.amount_c),0) AS c
+       FROM expenses e
+       LEFT JOIN expense_categories ec ON ec.id = e.category_id
+       WHERE e.expense_date >= ? AND e.expense_date <= ?
+         AND NOT (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')`
     )
     .get(opts.from, opts.to) as { c: number }
-  summary.expenses_c = expenses.c
-  summary.net_profit_c = summary.profit_c - summary.expenses_c
+
+  // Non-cash Store Use internal consumption (deducted in inventory stock balance only, NOT deducted from net profit)
+  const storeUse = db
+    .prepare(
+      `SELECT COALESCE(SUM(e.amount_c),0) AS c
+       FROM expenses e
+       LEFT JOIN expense_categories ec ON ec.id = e.category_id
+       WHERE e.expense_date >= ? AND e.expense_date <= ?
+         AND (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')`
+    )
+    .get(opts.from, opts.to) as { c: number }
+
+  summary.expenses_c = cashExpenses.c
+  summary.store_use_c = storeUse.c
+  // True Net Profit reflects true earnings: Gross Profit - Cash Operating Expenses (Store Use is deductible only in inventory balance)
+  summary.net_profit_c = summary.profit_c - cashExpenses.c
 
   const costBySale = new Map<number, number>()
   for (const r of db

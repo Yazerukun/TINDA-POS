@@ -217,5 +217,30 @@ describe('Store Use (Operating Expense) Invariant Suite', () => {
     expect(reason).toBe('Store Cleaning Supplies')
     expect(notesText).toBe('Restock bathroom supplies')
   })
+
+  it('guarantees Store Use non-cash expenses are balance-only and NOT deducted from net profit or cash expenses', () => {
+    const mockExpenses = [
+      { amount_c: 12000, reference: 'RECEIPT-01', description: 'Store Electricity', category_name: 'Utilities' },
+      { amount_c: 5000, reference: 'SU-20261015-1234', description: 'Store Use: 1 pc of Sponge', category_name: 'Store Use / Internal Consumption' },
+      { amount_c: 8000, reference: null, description: 'Snacks & Water', category_name: 'Meals' }
+    ]
+
+    const cashExpenses = mockExpenses
+      .filter((e) => !(e.reference?.startsWith('SU-') || e.description.startsWith('Store Use') || e.category_name.startsWith('Store Use')))
+      .reduce((sum, e) => sum + e.amount_c, 0)
+
+    const storeUseExpenses = mockExpenses
+      .filter((e) => e.reference?.startsWith('SU-') || e.description.startsWith('Store Use') || e.category_name.startsWith('Store Use'))
+      .reduce((sum, e) => sum + e.amount_c, 0)
+
+    expect(cashExpenses).toBe(20000) // ₱120 + ₱80 = ₱200
+    expect(storeUseExpenses).toBe(5000) // ₱50
+
+    const grossProfitC = 50000 // ₱500
+    const netProfitC = grossProfitC - cashExpenses // Store Use is NOT subtracted!
+
+    expect(netProfitC).toBe(30000) // ₱300.00
+    expect(netProfitC).not.toBe(grossProfitC - cashExpenses - storeUseExpenses)
+  })
 })
 

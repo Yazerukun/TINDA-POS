@@ -254,7 +254,11 @@ export function Dashboard(): React.JSX.Element | null {
         <StatCard
           label="Operating Expenses"
           value={money(summary.expenses_c)}
-          sub="disbursed from store"
+          sub={
+            summary.store_use_c && summary.store_use_c > 0
+              ? `disbursed · Store Use: ${money(summary.store_use_c)} (balance only)`
+              : 'disbursed from store'
+          }
           icon={<Receipt className="h-5 w-5" />}
           valueColor="text-amber-400"
           iconClass="bg-amber-500/10 text-amber-400"

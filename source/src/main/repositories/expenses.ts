@@ -110,17 +110,30 @@ export function deleteExpense(db: Database.Database, id: number): void {
   db.prepare('DELETE FROM expenses WHERE id = ?').run(id)
 }
 
-export function sumExpenses(db: Database.Database, from?: string, to?: string): number {
+export function sumExpenses(
+  db: Database.Database,
+  from?: string,
+  to?: string,
+  includeStoreUse = false
+): number {
   const where: string[] = []
   const params: unknown[] = []
   if (from) {
-    where.push('expense_date >= ?')
+    where.push('e.expense_date >= ?')
     params.push(from)
   }
   if (to) {
-    where.push('expense_date <= ?')
+    where.push('e.expense_date <= ?')
     params.push(to)
   }
-  const sql = `SELECT COALESCE(SUM(amount_c),0) AS s FROM expenses ${where.length ? 'WHERE ' + where.join(' AND ') : ''}`
+  if (!includeStoreUse) {
+    where.push(
+      "NOT (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')"
+    )
+  }
+  const sql = `SELECT COALESCE(SUM(e.amount_c),0) AS s
+               FROM expenses e
+               LEFT JOIN expense_categories ec ON ec.id = e.category_id
+               ${where.length ? 'WHERE ' + where.join(' AND ') : ''}`
   return (db.prepare(sql).get(...params) as { s: number }).s
 }

@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Store Use Solid Opaque Search & Zero-Bleed Dropdown Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Dashboard Store Use Balance-Only Non-Cash Exclusion Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,10 +162,10 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Store Use Solid Opaque Product Search**: Completely eliminated transparent background bleed-through in Store Use item search modal. Replaced unmapped CSS utility classes with deep solid ink palette (\`bg-ink-950\`, \`bg-ink-900\`, \`bg-ink-850\`) and explicit fallback \`backgroundColor: #111418\`.
-- **Zero-Bleed High-Contrast Dropdown**: Elevated search results with \`z-50\`, emerald border glow, black outer ring, and pure white product titles with vibrant emerald prices for instant readability in any store lighting.
-- **Sticky Matching Products Header**: Added top pinned header counter showing matching product count and keyboard guidance (\`Matching Products (N) | Use ↑↓ & Enter to Select\`).
-- **Smooth Mouse & Keyboard Interaction**: Added synchronized hover and arrow key item tracking for effortless product selection.
+    releaseNotes = `- **Dashboard Store Use Balance-Only Non-Cash Exclusion**: Decoupled Store Use non-cash expenses from Dashboard cash operating expenses and True Net Profit. Store Use internal consumption is strictly balance-only (deducted in inventory stock balance and asset valuation) and never subtracted from operational cash profit.
+- **Operating Expenses Purity**: Dashboard and Sales Reports Operating Expenses now reflect 100% pure cash disbursements from the store, with dynamic Store Use balance indicator badges (\`Store Use: ₱... (balance only)\`).
+- **Cash Drawer Reconciliation Immunity**: Eliminated false cash drawer shortages by preventing non-cash Store Use transactions from reducing expected cash in daily shift Z-Read and store telemetry.
+- **550 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 

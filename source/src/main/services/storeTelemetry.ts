@@ -230,9 +230,11 @@ export function getStoreTelemetrySummary(
     try {
       const res = database
         .prepare(
-          `SELECT COALESCE(SUM(amount_c), 0) AS cash_expenses_c
-           FROM expenses
-           WHERE (expense_date = ? OR (created_at >= ? AND created_at <= ?))`
+          `SELECT COALESCE(SUM(e.amount_c), 0) AS cash_expenses_c
+           FROM expenses e
+           LEFT JOIN expense_categories ec ON ec.id = e.category_id
+           WHERE (e.expense_date = ? OR (e.created_at >= ? AND e.created_at <= ?))
+             AND NOT (COALESCE(e.reference, '') LIKE 'SU-%' OR COALESCE(e.description, '') LIKE 'Store Use%' OR COALESCE(ec.name, '') LIKE 'Store Use%')`
         )
         .get(today, from, to) as typeof expensesAgg | undefined
       if (res) expensesAgg = res

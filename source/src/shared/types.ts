@@ -710,6 +710,7 @@ export interface DashboardStats {
   today_items_sold: number
   expenses_today_c: number
   expenses_7d_c: number
+  store_use_today_c?: number
   outstanding_utang_c: number
   cash_sales_today_c: number
   gcash_today_c: number
@@ -744,6 +745,7 @@ export interface ReportSummary {
   discount_c: number
   refunds_c: number
   expenses_c: number
+  store_use_c?: number
   net_profit_c?: number
   utang_sales_c?: number
   gross_sales_total_c?: number
