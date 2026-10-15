@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = `TINDA POS ${TAG} — Store Use History Details & VIP Thermal Slip Center Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Barcode Description Wrapping & Dynamic Auto-Fit Label Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,10 +162,11 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Store Use History & Details (VIP)**: Dedicated Store Use History tab with multi-filter search, date range pickers, and quick preset buttons (Today, Last 7 Days, This Month, All Time).
-- **Atomic Itemized Voucher Breakdown**: View complete details of any past voucher including product names, units, quantities, unit prices (OPEX), subtotals, and before/after stock impact.
-- **Instant 58mm/80mm Thermal Reprinting**: 1-click reprint of official internal consumption vouchers for physical expense filing and accounting audit.
-- **100% Pure Full Setup.exe Only**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
+    releaseNotes = `- **Chiteng CT221B Barcode Description & Specs Printing**: Product description (\`activeProduct.description\`) is now rendered directly underneath the product title on thermal barcode price tags and sticker rolls.
+- **Multi-Line Title Auto-Wrapping**: Eliminated hardcoded 22px height cutoff; long product names now wrap cleanly across up to 5 lines with natural hyphenation and word-break preservation.
+- **Dynamic Auto-Fit Font Scaling**: Automatically downscales font size (Auto, Small, Medium, Large) based on text length to prevent line-wrapping overflow or barcode occlusion.
+- **Interactive WYSIWYG Label Preview**: Real-time 1:1 simulation reflects exact line wrapping and product specs before sending to the thermal print head.
+- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 
   const body = `## 🚀 TINDA POS ${TAG} — Official Full Windows Release

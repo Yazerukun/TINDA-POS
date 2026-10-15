@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.10 (Store Use History Details & VIP Thermal Slip Center Edition)
+- **Current Stable Version:** v2.2.11 (Chiteng CT221B Barcode Multi-Line Wrapping & Dynamic Auto-Fit Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Store Use History & Details VIP view with atomic itemized breakdown dialog, date/preset filters, instant 58mm/80mm voucher reprint, and 100% clean Full Setup installer build.
+- **Latest Feature:** Dedicated Product Description / Specs rendering on thermal barcode tags, up to 5-line title auto-wrapping, dynamic auto-fit font scaling, live 1:1 preview, and 100% clean Full Setup installer build.
