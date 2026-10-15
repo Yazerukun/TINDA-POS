@@ -140,20 +140,25 @@ Idinisenyo para sa kulturang Pilipino kung saan karaniwan ang pautang sa mga map
 
 ---
 
-## KABANATA 7: Store Use at Operating Expense Voucher (Bago sa v2.2.9)
+## KABANATA 7: Store Use at Operating Expense Voucher (Bago sa v2.2.10)
 
 Ang **Store Use** ay ginagamit kapag ang tindahan mismo ang gagamit ng paninda para sa sariling operasyon (halimbawa: sabon at walis para sa paglilinis, bombilya na ipapalit sa pundido, kape at asukal para sa merienda ng tauhan, o plywood para sa ginagawang estante).
 
-### Mga Pangunahing Katangian sa Bersyon 2.2.9:
+### Mga Pangunahing Katangian sa Bersyon 2.2.10:
 1. **Awtomatikong Pagsunod sa Retail Selling Price:**
    - Pagkapili ng produkto o pagka-scan ng barcode, **agad na lalabas ang Retail Selling Price** bilang valuation upang hindi na kailangang hulaan o mano-manong hanapin ng kahera ang halaga.
-   - Kapag pinalitan ang unit (hal. gikan `Piraso` patungo sa `Kahon`), kusa ring magko-compute ang presyo para sa buong kahon.
+   - Kapag pinalitan ang unit (hal. galing `Piraso` patungo sa `Kahon`), kusa ring magko-compute ang presyo para sa buong kahon.
    - Pwede pa ring baguhin nang mano-mano kung nais ng may-ari na puhunan (cost) ang itala.
 2. **Double-Entry Accounting:**
    - Awtomatikong **ibinabawas ang piraso sa imbentaryo**.
    - Awtomatikong **inililista ang kabuuang halaga sa Operating Expenses (OPEX)** ng tindahan upang hindi maging "short" o mawala sa kwenta ng kita.
-3. **Multi-Item Entry:** Maaaring maglagay ng maraming produkto sa iisang voucher.
-4. **Thermal Voucher Print:** Nagpi-print ng pormal na 58/80mm slip na may linya para sa humiling at nag-apruba.
+3. **Multi-Item Entry:** Maaaring maglagay ng maraming produkto sa iisang voucher tulad ng Purchase Invoice.
+4. **Voucher History & Itemized Details Center (VIP):**
+   - May bagong tab na **"Voucher History & Details (VIP)"** sa Store Use modal at hiwalay na button sa Expenses screen.
+   - **Paghahanap at Pag-filter:** Mabilis na salain ang mga nakaraang voucher gamit ang Reference No. (hal. `SU-20261015-...`), petsa (Today, Last 7 Days, This Month, All Time), o pangalan ng produkto.
+   - **Itemized Breakdown Dialog (View Details):** I-click ang icon na may mata (`View Details`) upang makita ang buong detalye ng voucher: bawat produktong ginamit, dami, unit, unit price, subtotal, at stock bago at pagkatapos mabawas.
+   - **Muling Pag-print (Reprint Voucher Slip):** I-click ang printer icon upang muling i-print ang 58mm o 80mm thermal slip para sa opisyal na pag-file ng resibo at audit ng negosyo.
+5. **Thermal Voucher Print:** Nagpi-print ng pormal na 58/80mm slip na may linya para sa humiling at nag-apruba.
 
 ---
 
