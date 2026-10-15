@@ -234,7 +234,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
 
     try {
       await new Promise<void>((resolve, reject) => {
-        const out = createWriteStream(filePath)
+        const out = createWriteStream(filePath, { highWaterMark: 1024 * 1024 })
         const reader = res.body?.getReader()
         let received = 0
         if (!reader) {
@@ -381,6 +381,8 @@ export class ElectronUpdateTransport implements UpdateTransport {
         const updater = (require('electron-updater') as typeof import('electron-updater')).autoUpdater
         updater.autoDownload = false
         updater.autoInstallOnAppQuit = false
+        updater.disableDifferentialDownload = false
+        updater.autoRunAppAfterInstall = true
         updater.on('download-progress', (p) => {
           if (this.progressHandler) {
             this.progressHandler(toBytes(p.transferred), toBytes(p.total), toBytes(p.bytesPerSecond))

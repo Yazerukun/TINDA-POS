@@ -40,6 +40,8 @@ export const useUpdate = create<UpdateState>((set, get) => ({
         // Only re-show the modal if this is a NEW version the user hasn't dismissed yet
         const alreadyDismissed = dismissedVersion !== null && dismissedVersion === incomingVersion
         set({ event, ...(alreadyDismissed ? {} : { modalDismissed: false }) })
+        // Proactive silent background pre-fetch: start downloading immediately
+        void get().download('FULL')
       } else {
         set({ event })
       }
@@ -58,6 +60,8 @@ export const useUpdate = create<UpdateState>((set, get) => ({
         const alreadyDismissed = dismissedVersion !== null && dismissedVersion === incomingVersion
         // Manual checks always re-show the modal
         set({ event, modalDismissed: manual ? false : !!alreadyDismissed })
+        // Proactive silent background pre-fetch: start downloading immediately
+        void get().download('FULL')
       } else {
         set({ event })
       }
