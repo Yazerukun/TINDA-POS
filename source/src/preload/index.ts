@@ -366,7 +366,8 @@ const api: TindaApi = {
   telemetry: {
     getSummary: (options?: { forceRefresh?: boolean }) =>
       invoke<import('@shared/types').StoreTelemetrySummary>('telemetry:getSummary', options)
-  }
+  },
+  rawInvoke: (channel: string, ...args: unknown[]) => invoke(channel, ...args)
 }
 
 contextBridge.exposeInMainWorld('api', api)

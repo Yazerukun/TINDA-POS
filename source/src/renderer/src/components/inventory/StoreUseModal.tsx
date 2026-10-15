@@ -52,6 +52,28 @@ const COMMON_PURPOSES = [
   'Product Display & Sample'
 ]
 
+/**
+ * Automatically calculates the retail price for a given unit.
+ * Priority:
+ * 1. Unit-specific selling price (`u.selling_price_c`) if configured > 0
+ * 2. Product retail selling price scaled by conversion factor (`p.default_price_c * conv`)
+ * 3. Purchase cost fallback (`p.purchase_cost_c * conv`) if no retail price set
+ */
+export function getRetailPriceForUnit(p: Product, unitName: string): number {
+  const match = p.units?.find((u) => u.name === unitName)
+  if (match && match.selling_price_c > 0) {
+    return match.selling_price_c
+  }
+  const conv = match?.conversion_to_base || 1
+  if (p.default_price_c > 0) {
+    return Math.round(p.default_price_c * conv)
+  }
+  if (p.purchase_cost_c > 0) {
+    return Math.round(p.purchase_cost_c * conv)
+  }
+  return 0
+}
+
 export function StoreUseModal({
   products,
   initial,
@@ -108,8 +130,10 @@ export function StoreUseModal({
     setSelectedProduct(p)
     const defaultUnit = p.units[0]?.name ?? p.base_unit ?? ''
     setSelectedUnitName(defaultUnit)
-    if (p.purchase_cost_c > 0) {
-      setUnitCostPesos((p.purchase_cost_c / 100).toFixed(2))
+    // Auto-populate with retail price immediately
+    const retailPriceC = getRetailPriceForUnit(p, defaultUnit)
+    if (retailPriceC > 0) {
+      setUnitCostPesos((retailPriceC / 100).toFixed(2))
     } else {
       setUnitCostPesos('')
     }
@@ -144,11 +168,12 @@ export function StoreUseModal({
 
   const entryRemStock = Math.round((availableAfterAllocated - entryQtyBase) * 1000) / 1000
 
+  const defaultEntryCostC = selectedProduct ? getRetailPriceForUnit(selectedProduct, selectedUnitName) : 0
   const parsedCost = parseFloat(unitCostPesos)
   const entryCostC =
     !isNaN(parsedCost) && parsedCost > 0
       ? Math.round(parsedCost * 100)
-      : selectedProduct?.purchase_cost_c ?? 0
+      : defaultEntryCostC
 
   const canAddLine =
     Boolean(selectedProduct) &&
@@ -223,7 +248,19 @@ export function StoreUseModal({
         manager_pin: managerPin.trim() || undefined
       }
 
-      const record: StoreUseRecord = await window.api.inventory.storeUse(payload)
+      let record: StoreUseRecord
+      if (typeof window.api?.inventory?.storeUse === 'function') {
+        record = await window.api.inventory.storeUse(payload)
+      } else if (typeof (window.api as unknown as { rawInvoke?: (ch: string, ...args: unknown[]) => Promise<unknown> })?.rawInvoke === 'function') {
+        record = (await (window.api as unknown as { rawInvoke: (ch: string, ...args: unknown[]) => Promise<unknown> }).rawInvoke(
+          'inventory:storeUse',
+          payload
+        )) as StoreUseRecord
+      } else {
+        throw new Error(
+          'Store Use module requires TINDA POS v2.2.9 Full Setup. Please install or restart the latest full build.'
+        )
+      }
 
       playScanSuccess()
       toastSuccess(
@@ -445,7 +482,10 @@ export function StoreUseModal({
                       <div className="font-semibold text-white">{p.name}</div>
                       <div className="flex items-center justify-between text-[11px] text-slate-400">
                         <span>{p.barcode || p.sku || 'No Barcode'}</span>
-                        <span>Stock: {p.stock} {p.base_unit} | Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                        <span>
+                          Stock: {p.stock} {p.base_unit} | <span className="font-semibold text-emerald-400">Retail: ₱{(p.default_price_c / 100).toFixed(2)}</span>
+                          {p.purchase_cost_c > 0 ? ` (Cost: ₱${(p.purchase_cost_c / 100).toFixed(2)})` : ''}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -458,7 +498,16 @@ export function StoreUseModal({
               <select
                 className="input w-full text-xs font-medium"
                 value={selectedUnitName}
-                onChange={(e) => setSelectedUnitName(e.target.value)}
+                onChange={(e) => {
+                  const newUnit = e.target.value
+                  setSelectedUnitName(newUnit)
+                  if (selectedProduct) {
+                    const retailPriceC = getRetailPriceForUnit(selectedProduct, newUnit)
+                    if (retailPriceC > 0) {
+                      setUnitCostPesos((retailPriceC / 100).toFixed(2))
+                    }
+                  }
+                }}
                 disabled={!selectedProduct}
               >
                 {selectedProduct?.units.map((u) => (
@@ -490,7 +539,7 @@ export function StoreUseModal({
               />
             </div>
 
-            {/* Landed Cost Input */}
+            {/* Retail Price / Valuation Input */}
             <div className="md:col-span-2">
               <div className="relative">
                 <span className="absolute left-2.5 top-2 text-xs font-bold text-slate-400">₱</span>
@@ -499,11 +548,12 @@ export function StoreUseModal({
                   type="number"
                   min="0.01"
                   step="any"
-                  placeholder="Cost"
+                  placeholder="Retail ₱"
                   className="input w-full pl-6 font-mono text-xs"
                   value={unitCostPesos}
                   onChange={(e) => setUnitCostPesos(e.target.value)}
                   disabled={!selectedProduct}
+                  title="Retail selling price (automatically follows retail price; editable if needed)"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault()
@@ -547,7 +597,7 @@ export function StoreUseModal({
                   <th className="py-2.5 font-semibold">Product Description</th>
                   <th className="py-2.5 font-semibold text-right">Qty</th>
                   <th className="py-2.5 font-semibold">Unit</th>
-                  <th className="py-2.5 font-semibold text-right">Unit Cost</th>
+                  <th className="py-2.5 font-semibold text-right">Unit Price</th>
                   <th className="py-2.5 font-semibold text-right">Subtotal (OPEX)</th>
                   <th className="py-2.5 pr-3 text-center font-semibold">Action</th>
                 </tr>

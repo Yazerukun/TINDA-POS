@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.8 (Full Setup.exe Clean Auto-Download & Instant 3s Silent Auto-Restart Edition)
+- **Current Stable Version:** v2.2.9 (Store Use Automatic Retail Price & Resilient Full Setup.exe Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** 100% Clean Full Setup.exe Auto-Download with Pre-Update SQLite Safety Snapshot & 3-Second Silent Auto-Restart (`quitAndInstall(true, true)`)
+- **Latest Feature:** Store Use auto-populates retail selling price across all units, rawInvoke IPC fallback prevents missing function crashes, and 100% clean Full Setup installer build.

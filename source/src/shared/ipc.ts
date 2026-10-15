@@ -586,6 +586,7 @@ export interface TindaApi {
   telemetry: {
     getSummary: (options?: { forceRefresh?: boolean }) => Promise<import('./types').StoreTelemetrySummary>
   }
+  rawInvoke?: (channel: string, ...args: unknown[]) => Promise<unknown>
 }
 
 export type SupplierInput = {

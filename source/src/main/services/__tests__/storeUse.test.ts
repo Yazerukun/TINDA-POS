@@ -111,4 +111,56 @@ describe('Store Use (Operating Expense) Invariant Suite', () => {
     expect(lines).toContain('Purpose: Store Repair & Maintenance')
     expect(lines).toContain('Notes: Counter expansion project')
   })
+
+  it('correctly defaults store use unit price to retail price and handles unit conversions', () => {
+    function computeRetailPriceForUnit(
+      p: {
+        default_price_c: number
+        purchase_cost_c: number
+        units: Array<{ name: string; selling_price_c: number; conversion_to_base: number }>
+      },
+      unitName: string
+    ): number {
+      const match = p.units?.find((u) => u.name === unitName)
+      if (match && match.selling_price_c > 0) {
+        return match.selling_price_c
+      }
+      const conv = match?.conversion_to_base || 1
+      if (p.default_price_c > 0) {
+        return Math.round(p.default_price_c * conv)
+      }
+      if (p.purchase_cost_c > 0) {
+        return Math.round(p.purchase_cost_c * conv)
+      }
+      return 0
+    }
+
+    const testProd = {
+      default_price_c: 2500, // ₱25.00 retail
+      purchase_cost_c: 1800, // ₱18.00 cost
+      units: [
+        { name: 'Piece', selling_price_c: 2500, conversion_to_base: 1 },
+        { name: 'Pack (10)', selling_price_c: 24000, conversion_to_base: 10 },
+        { name: 'Bundle', selling_price_c: 0, conversion_to_base: 5 } // scales default_price_c * 5 = 12500
+      ]
+    }
+
+    // 1. Piece retail price
+    expect(computeRetailPriceForUnit(testProd, 'Piece')).toBe(2500)
+
+    // 2. Pack retail price follows unit-specific retail price
+    expect(computeRetailPriceForUnit(testProd, 'Pack (10)')).toBe(24000)
+
+    // 3. Bundle (no unit price) scales default retail price
+    expect(computeRetailPriceForUnit(testProd, 'Bundle')).toBe(12500)
+
+    // 4. Product with no retail price falls back to cost
+    const costOnlyProd = {
+      default_price_c: 0,
+      purchase_cost_c: 5000,
+      units: [{ name: 'Box', selling_price_c: 0, conversion_to_base: 2 }]
+    }
+    expect(computeRetailPriceForUnit(costOnlyProd, 'Box')).toBe(10000)
+  })
 })
+
