@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Barcode Description Wrapping & Dynamic Auto-Fit Label Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Store Use Solid Opaque Search & Zero-Bleed Dropdown Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,10 +162,10 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Chiteng CT221B Barcode Description & Specs Printing**: Product description (\`activeProduct.description\`) is now rendered directly underneath the product title on thermal barcode price tags and sticker rolls.
-- **Multi-Line Title Auto-Wrapping**: Eliminated hardcoded 22px height cutoff; long product names now wrap cleanly across up to 5 lines with natural hyphenation and word-break preservation.
-- **Dynamic Auto-Fit Font Scaling**: Automatically downscales font size (Auto, Small, Medium, Large) based on text length to prevent line-wrapping overflow or barcode occlusion.
-- **Interactive WYSIWYG Label Preview**: Real-time 1:1 simulation reflects exact line wrapping and product specs before sending to the thermal print head.
+    releaseNotes = `- **Store Use Solid Opaque Product Search**: Completely eliminated transparent background bleed-through in Store Use item search modal. Replaced unmapped CSS utility classes with deep solid ink palette (\`bg-ink-950\`, \`bg-ink-900\`, \`bg-ink-850\`) and explicit fallback \`backgroundColor: #111418\`.
+- **Zero-Bleed High-Contrast Dropdown**: Elevated search results with \`z-50\`, emerald border glow, black outer ring, and pure white product titles with vibrant emerald prices for instant readability in any store lighting.
+- **Sticky Matching Products Header**: Added top pinned header counter showing matching product count and keyboard guidance (\`Matching Products (N) | Use ↑↓ & Enter to Select\`).
+- **Smooth Mouse & Keyboard Interaction**: Added synchronized hover and arrow key item tracking for effortless product selection.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 
