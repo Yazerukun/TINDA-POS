@@ -174,5 +174,46 @@ describe('LicenseService — Hardware-Locked Machine ID & VIP Pro Activation', (
       expect(licenseSvc.getMachineId()).toBe(targetLegacyId)
     }
   })
+
+  it('generates, activates and enforces 24-hour expiration for VIP Demo keys', () => {
+    const machineId = licenseSvc.getMachineId()
+    const demoKey = licenseSvc.generateKeyForMachine(machineId, 'VIP_DEMO')
+
+    expect(demoKey).toMatch(/^DEMO-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/)
+    expect(licenseSvc.verifyKey(demoKey, machineId)).toBe(true)
+
+    // Activate the demo key
+    const actResult = licenseSvc.activate(demoKey, 'Trial Customer Store')
+    expect(actResult.ok).toBe(true)
+    expect(actResult.status.isVip).toBe(true)
+    expect(actResult.status.tier).toBe('VIP_DEMO')
+    expect(actResult.status.isDemo).toBe(true)
+    expect(actResult.status.demoExpiresAt).toBeTruthy()
+
+    // Status check
+    const status = licenseSvc.getStatus()
+    expect(status.isVip).toBe(true)
+    expect(status.tier).toBe('VIP_DEMO')
+    expect(status.isDemo).toBe(true)
+
+    // Simulate expiration by rewriting payload with past date
+    const payload = licenseSvc.readPrimaryPayload()!
+    payload.demoExpiresAt = new Date(Date.now() - 1000).toISOString()
+    payload.tamperProofHash = licenseSvc.computeTamperHash(
+      payload.machineId,
+      payload.licenseKey,
+      payload.activatedAt,
+      payload.customerName,
+      payload.demoExpiresAt
+    )
+    fs.writeFileSync(testLicensePath, JSON.stringify(payload), 'utf8')
+
+    // Restart/re-evaluate service
+    const expiredSvc = new LicenseService(testLicensePath)
+    const expiredStatus = expiredSvc.getStatus()
+    expect(expiredStatus.isVip).toBe(false)
+    expect(expiredStatus.tier).toBe('COMMUNITY')
+    expect(expiredStatus.statusMessage).toContain('Expired')
+  })
 })
 

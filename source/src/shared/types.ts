@@ -849,11 +849,13 @@ export interface PriceSyncResult {
   is_offline?: boolean
 }
 
-export type LicenseTier = 'COMMUNITY' | 'VIP_PRO'
+export type LicenseTier = 'COMMUNITY' | 'VIP_PRO' | 'VIP_DEMO'
 
 export interface LicenseStatus {
   tier: LicenseTier
   isVip: boolean
+  isDemo?: boolean
+  demoExpiresAt?: string | null
   machineId: string
   activatedAt: string | null
   customerName: string | null

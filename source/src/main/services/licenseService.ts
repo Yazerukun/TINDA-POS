@@ -32,6 +32,7 @@ export interface StoredLicensePayload {
   licenseKey: string
   customerName: string | null
   activatedAt: string
+  demoExpiresAt?: string | null
   tamperProofHash: string
 }
 
@@ -139,16 +140,16 @@ export class LicenseService {
   /**
    * Tamper-proofing HMAC signature calculation
    */
-  public computeTamperHash(machineId: string, key: string, activatedAt: string, customerName?: string | null): string {
+  public computeTamperHash(machineId: string, key: string, activatedAt: string, customerName?: string | null, demoExpiresAt?: string | null): string {
     const secret = getInternalSecret()
     return crypto.createHmac('sha256', secret)
-      .update(`FILE_TAMPER_GUARD::${machineId}::${key}::${activatedAt}::${customerName ?? ''}`)
+      .update(`FILE_TAMPER_GUARD::${machineId}::${key}::${activatedAt}::${customerName ?? ''}::${demoExpiresAt ?? ''}`)
       .digest('hex')
   }
 
   /**
    * Core Cryptographic Signature Validator:
-   * Generates or validates an unforgeable VIP License Key for a target Machine ID.
+   * Generates or validates an unforgeable VIP or Demo License Key for a target Machine ID.
    */
   public generateKeyForMachine(machineId: string, tier: LicenseTier = 'VIP_PRO'): string {
     const normMachine = machineId.trim().toUpperCase()
@@ -164,10 +165,13 @@ export class LicenseService {
     const chunk3 = fullSig.substring(8, 12)
 
     // 4-char CRC-like checksum
-    const checksumHash = crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}`).digest('hex').toUpperCase()
+    const checksumHash = tier === 'VIP_DEMO'
+      ? crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}:${tier}`).digest('hex').toUpperCase()
+      : crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}`).digest('hex').toUpperCase()
     const checksum = checksumHash.substring(0, 4)
 
-    return `VIP-${chunk1}-${chunk2}-${chunk3}-${checksum}`
+    const prefix = tier === 'VIP_DEMO' ? 'DEMO' : 'VIP'
+    return `${prefix}-${chunk1}-${chunk2}-${chunk3}-${checksum}`
   }
 
   /**
@@ -176,7 +180,8 @@ export class LicenseService {
   public verifyKey(key: string, machineId: string): boolean {
     if (!key || typeof key !== 'string') return false
     const cleanKey = key.trim().toUpperCase()
-    const expected = this.generateKeyForMachine(machineId, 'VIP_PRO')
+    const tier: LicenseTier = cleanKey.startsWith('DEMO-') ? 'VIP_DEMO' : 'VIP_PRO'
+    const expected = this.generateKeyForMachine(machineId, tier)
 
     if (cleanKey.length !== expected.length) return false
 
@@ -662,12 +667,18 @@ export class LicenseService {
 
     const vaults = this.readAllVaults()
 
-    // 1. Look for any valid VIP license across all vaults
+    // 1. Look for any valid VIP or Demo license across all vaults
     for (const stored of vaults) {
       if (!stored.licenseKey || !stored.machineId) continue
 
       // Tamper-Proof Signature Check
-      const expectedTamperHash = this.computeTamperHash(stored.machineId, stored.licenseKey, stored.activatedAt, stored.customerName)
+      const expectedTamperHash = this.computeTamperHash(
+        stored.machineId,
+        stored.licenseKey,
+        stored.activatedAt,
+        stored.customerName,
+        stored.demoExpiresAt
+      )
       if (stored.tamperProofHash !== expectedTamperHash) {
         continue // Tampered payload, check next vault
       }
@@ -678,17 +689,43 @@ export class LicenseService {
         continue // Invalid mathematical key, check next vault
       }
 
+      // Check if this is a DEMO key and whether it has expired
+      const isDemo = stored.tier === 'VIP_DEMO' || stored.licenseKey.startsWith('DEMO-')
+      if (isDemo && stored.demoExpiresAt) {
+        const now = Date.now()
+        const expTime = new Date(stored.demoExpiresAt).getTime()
+        if (now > expTime) {
+          // Demo has expired! Fall back to Community
+          this.currentStatus = {
+            tier: 'COMMUNITY',
+            isVip: false,
+            isDemo: true,
+            demoExpiresAt: stored.demoExpiresAt,
+            machineId: canonicalMachineId,
+            activatedAt: stored.activatedAt,
+            customerName: stored.customerName,
+            licenseKey: stored.licenseKey,
+            statusMessage: '24-Hour VIP Demo Expired. Upgrade to Lifetime VIP Pro (₱500).'
+          }
+          return this.currentStatus
+        }
+      }
+
       // Hardware match check
       if (stored.machineId === canonicalMachineId) {
         this.syncToAllVaults(stored)
         this.currentStatus = {
-          tier: 'VIP_PRO',
+          tier: isDemo ? 'VIP_DEMO' : 'VIP_PRO',
           isVip: true,
+          isDemo,
+          demoExpiresAt: stored.demoExpiresAt ?? null,
           machineId: canonicalMachineId,
           activatedAt: stored.activatedAt,
           customerName: stored.customerName,
           licenseKey: stored.licenseKey,
-          statusMessage: 'VIP Pro Lifetime Activated (Hardware Locked & Multi-Vault Protected)'
+          statusMessage: isDemo
+            ? '24-Hour VIP Demo Active'
+            : 'VIP Pro Lifetime Activated (Hardware Locked & Multi-Vault Protected)'
         }
         return this.currentStatus
       }
@@ -700,13 +737,17 @@ export class LicenseService {
         this.syncAnchoredMachineId(stored.machineId)
         this.syncToAllVaults(stored)
         this.currentStatus = {
-          tier: 'VIP_PRO',
+          tier: isDemo ? 'VIP_DEMO' : 'VIP_PRO',
           isVip: true,
+          isDemo,
+          demoExpiresAt: stored.demoExpiresAt ?? null,
           machineId: stored.machineId,
           activatedAt: stored.activatedAt,
           customerName: stored.customerName,
           licenseKey: stored.licenseKey,
-          statusMessage: 'VIP Pro Lifetime Activated (Hardware Locked & Multi-Vault Protected)'
+          statusMessage: isDemo
+            ? '24-Hour VIP Demo Active'
+            : 'VIP Pro Lifetime Activated (Hardware Locked & Multi-Vault Protected)'
         }
         return this.currentStatus
       }
@@ -810,17 +851,32 @@ export class LicenseService {
     this.cachedMachineId = matchedMid
     this.syncAnchoredMachineId(matchedMid)
 
+    const isDemoKey = cleanKey.startsWith('DEMO-')
     const activatedAt = new Date().toISOString()
     const normCustomerName = customerName?.trim() || null
-    const tamperProofHash = this.computeTamperHash(matchedMid, cleanKey, activatedAt, normCustomerName)
+
+    let demoExpiresAt: string | null = null
+    let tier: LicenseTier = 'VIP_PRO'
+    let successMessage = 'VIP Pro successfully activated! All premium features are unlocked.'
+
+    if (isDemoKey) {
+      tier = 'VIP_DEMO'
+      // 24 Hours from this exact millisecond
+      const expDate = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      demoExpiresAt = expDate.toISOString()
+      successMessage = '24-Hour VIP Demo successfully activated! Enjoy full premium features with live countdown.'
+    }
+
+    const tamperProofHash = this.computeTamperHash(matchedMid, cleanKey, activatedAt, normCustomerName, demoExpiresAt)
 
     const payload: StoredLicensePayload = {
       version: 1,
-      tier: 'VIP_PRO',
+      tier,
       machineId: matchedMid,
       licenseKey: cleanKey,
       customerName: normCustomerName,
       activatedAt,
+      demoExpiresAt,
       tamperProofHash
     }
 
@@ -829,7 +885,7 @@ export class LicenseService {
 
     return {
       ok: true,
-      message: 'TINDA POS VIP Pro has been successfully activated. All VIP features are now permanently unlocked across all updates and restarts for your store.',
+      message: successMessage,
       status: newStatus
     }
   }

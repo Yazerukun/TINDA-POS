@@ -157,8 +157,26 @@ export function VipUpgradeModal({ open, onClose, onActivated }: VipUpgradeModalP
         {/* Scrollable Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 custom-scrollbar text-xs">
           
-          {/* Active VIP State */}
-          {isVip ? (
+          {/* Active VIP or Demo State */}
+          {isVip && status?.isDemo && status?.demoExpiresAt ? (
+            <div className="rounded-xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-ink-900 to-ink-900 p-5 text-center space-y-3">
+              <div className="flex items-center justify-center gap-2 text-amber-300 font-bold text-base">
+                <Sparkles className="h-5 w-5 text-amber-400 animate-spin" /> 24-Hour VIP Demo Active
+              </div>
+              <div className="p-3 rounded-lg bg-ink-950 border border-amber-500/30 inline-block">
+                <span className="text-[11px] text-slate-400 block uppercase font-medium">Demo Time Remaining:</span>
+                <span className="text-xl font-mono font-black text-amber-400">
+                  {new Date(status.demoExpiresAt).toLocaleString()}
+                </span>
+              </div>
+              <p className="text-slate-300 text-xs max-w-md mx-auto">
+                You are currently enjoying full VIP Pro features. After 24 hours, the app will return to Community Edition. To keep these features permanent, pay ₱500 via Maya below.
+              </p>
+              <div className="inline-block bg-ink-950 px-3 py-1 rounded-lg font-mono text-xs text-slate-400 border border-ink-line">
+                Machine ID: {status?.machineId}
+              </div>
+            </div>
+          ) : isVip ? (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
               <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold text-base">
                 <CheckCircle2 className="h-5 w-5" /> VIP Pro License Active

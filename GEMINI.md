@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.15 (Direct Store Portal & Antivirus-Resilient Cloud Sync Edition)
+- **Current Stable Version:** v2.2.16 (24-Hour VIP Demo Licensing & Real-Time Countdown Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Frictionless 1-Click Direct Store Portal with 4-Digit Security PIN (`https://tinda-owner-dashboard.pages.dev/?store=:slug`) allowing store owners to view live real-time sales on mobile without pairing or credentials, hardened Electron `net.fetch` Chromium HTTP stack to bypass third-party antivirus firewall blocks (e.g. Avast/McAfee), customizable portal slugs and PIN management in Cloud Settings.
+- **Latest Feature:** Dedicated 24-Hour VIP Demo Licensing with unforgeable cryptographic hardware-bound `DEMO-XXXX-XXXX-XXXX-XXXX` keys, real-time live seconds countdown timer in sidebar and modal, developer desktop shortcut tool (`TINDA-POS-Demo-Keygen.bat`), anti-clock tamper protection, and seamless automatic downgrade to Community Edition after 24 hours.

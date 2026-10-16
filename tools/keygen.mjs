@@ -44,15 +44,20 @@ function generateKeyForMachine(machineId, tier = 'VIP_PRO') {
   const chunk2 = fullSig.substring(4, 8)
   const chunk3 = fullSig.substring(8, 12)
 
-  const checksumHash = crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}`).digest('hex').toUpperCase()
+  const checksumHash = crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}:${tier}`).digest('hex').toUpperCase()
   const checksum = checksumHash.substring(0, 4)
 
-  return `VIP-${chunk1}-${chunk2}-${chunk3}-${checksum}`
+  const prefix = tier === 'VIP_DEMO' ? 'DEMO' : 'VIP'
+  return `${prefix}-${chunk1}-${chunk2}-${chunk3}-${checksum}`
 }
 
 function verifyKey(key, machineId) {
   if (!key || !machineId) return false
   const cleanKey = key.trim().toUpperCase()
+  if (cleanKey.startsWith('DEMO-')) {
+    const expected = generateKeyForMachine(machineId, 'VIP_DEMO')
+    return cleanKey === expected
+  }
   const expected = generateKeyForMachine(machineId, 'VIP_PRO')
   return cleanKey === expected
 }
@@ -137,6 +142,51 @@ All VIP features are now permanently unlocked for your store:
 • Daily Loss Prevention & Cash Drawer Variance Auditing
 
 Thank you for choosing TINDA POS. Have a great and prosperous day!
+========================================================================
+`)
+} else if (cmd === 'demo') {
+  const machine = getArg('--machine') || getArg('-m')
+  const name = getArg('--name') || getArg('-n') || 'Valued Store Owner'
+
+  if (!machine) {
+    console.error('❌ Error: Missing --machine argument.')
+    console.error('Example: node tools/keygen.mjs demo --machine TNDA-8F42-99B1-204A-E7C1')
+    process.exit(1)
+  }
+
+  const key = generateKeyForMachine(machine, 'VIP_DEMO')
+
+  console.log(`
+========================================================================
+⏱️ TINDA POS 24-HOUR VIP DEMO KEY GENERATED
+========================================================================
+Customer Name : ${name}
+Machine ID    : ${machine.toUpperCase()}
+License Tier  : 24-HOUR VIP DEMO (Full Unlocked Experience)
+Duration      : 24 Hours from Moment of Activation
+
+>>> 24-HOUR DEMO LICENSE KEY:
+    ${key}
+
+------------------------------------------------------------------------
+Copy-Paste Message to Customer on Facebook (https://www.facebook.com/Ukauru):
+------------------------------------------------------------------------
+Hello ${name}! Here is your 24-Hour VIP Demo Access Key for TINDA POS:
+
+🔑 24-HOUR DEMO KEY: ${key}
+
+How to activate:
+1. Open TINDA POS -> Click Settings -> "VIP Pro License".
+2. Paste the Demo Key into the box and click "Activate".
+3. Your 24-Hour VIP Pro trial will start immediately with a live countdown!
+
+Test all premium features for free:
+• Executive Cloud Owner Dashboard & Mobile Live Sales Sync
+• Multi-Terminal LAN Hub & Secondary Cashier Terminal
+• VIP Store Use OPEX Ledger & Deduction Vouchers
+• Custom Thermal Spacing Studio & Chiteng Label Barcode Printing
+
+Enjoy testing! To keep these features lifetime permanent after 24 hours, Maya only ₱500 to 0991 225 5156.
 ========================================================================
 `)
 } else if (cmd === 'verify') {

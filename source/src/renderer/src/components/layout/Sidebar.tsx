@@ -96,11 +96,39 @@ const SECTIONS: NavSection[] = [
   }
 ]
 
+function DemoCountdown({ expiry, onExpired }: { expiry: string; onExpired: () => void }): React.JSX.Element {
+  const [timeLeft, setTimeLeft] = useState('')
+
+  useEffect(() => {
+    const update = () => {
+      const remainingMs = new Date(expiry).getTime() - Date.now()
+      if (remainingMs <= 0) {
+        setTimeLeft('Expired')
+        onExpired()
+        return
+      }
+      const hrs = Math.floor(remainingMs / (1000 * 60 * 60))
+      const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))
+      const secs = Math.floor((remainingMs % (1000 * 60)) / 1000)
+      setTimeLeft(`${hrs}h ${mins}m ${secs}s`)
+    }
+    update()
+    const t = setInterval(update, 1000)
+    return () => clearInterval(t)
+  }, [expiry, onExpired])
+
+  return (
+    <span className="font-mono font-black text-amber-200 text-xs tracking-wider">
+      ⏱️ {timeLeft}
+    </span>
+  )
+}
+
 export function Sidebar(): React.JSX.Element {
   const { page, setPage } = useNav()
   const { user, logout } = useAuth()
   const { settings } = useSettings()
-  const { isVip } = useLicense()
+  const { isVip, status, loadLicense } = useLicense()
   const { event, checking, check, download, install, showModal, openHub } = useUpdate()
   const [printerStudioOpen, setPrinterStudioOpen] = useState(false)
 
@@ -316,7 +344,15 @@ export function Sidebar(): React.JSX.Element {
         </div>
 
         {/* VIP Status or Upgrade Callout */}
-        {isVip ? (
+        {isVip && status?.isDemo && status?.demoExpiresAt ? (
+          <div className="flex flex-col items-center justify-center gap-1 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 py-2 px-2.5 border border-amber-500/40 text-center shadow-sm">
+            <div className="flex items-center gap-1.5 text-amber-300 font-bold text-[11px] uppercase tracking-wider">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-spin" />
+              <span>VIP Demo Active</span>
+            </div>
+            <DemoCountdown expiry={status.demoExpiresAt} onExpired={() => void loadLicense()} />
+          </div>
+        ) : isVip ? (
           <div className="flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500/10 via-amber-400/10 to-amber-500/10 py-1 px-2 border border-amber-500/25">
             <Crown className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span className="text-[10px] font-bold text-amber-300 tracking-wide uppercase">
