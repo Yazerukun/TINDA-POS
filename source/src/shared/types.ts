@@ -544,6 +544,8 @@ export interface StoreSettings {
   cloud_sync_key: string
   cloud_last_synced_at: string | null
   cloud_sync_pending: boolean
+  cloud_portal_pin?: string
+  cloud_portal_slug?: string
   pos_pinned_categories: number[]
   // Printer Alignment & Studio Customization
   receipt_offset_left_mm?: number

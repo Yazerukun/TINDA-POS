@@ -2286,6 +2286,82 @@ function CloudSettingsTab({ isVip, onUpgradeClick }: { isVip?: boolean; onUpgrad
             </div>
           </div>
 
+          {/* New Feature: 1-Click Direct Portal Link & 4-Digit Owner PIN */}
+          <div className="bg-gradient-to-r from-emerald-500/15 via-teal-600/10 to-sky-500/15 border border-emerald-500/30 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl">
+                  🚀
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    1-Click Direct Portal (Zero-Pairing & 4-Digit PIN)
+                    <span className="badge bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px]">
+                      New v2.2.15
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Store owners can simply click this link on Messenger/SMS and enter their 4-digit PIN. No registration or QR pairing required!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const slug = (settings.cloud_portal_slug || settings.store_name || 'store')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]/g, '')
+                  const directUrl = `https://tinda-owner-dashboard.pages.dev/?store=${slug}`
+                  navigator.clipboard.writeText(directUrl)
+                  toastSuccess('Direct Link Copied', `Copied: ${directUrl}`)
+                }}
+                className="btn-primary flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-0 shadow-md shadow-emerald-600/20"
+              >
+                <Copy className="w-3.5 h-3.5" /> Copy Direct Portal Link
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-emerald-500/20">
+              <div>
+                <label className="label text-emerald-300">Store Direct Portal Slug (URL Name)</label>
+                <input
+                  type="text"
+                  value={settings.cloud_portal_slug || ''}
+                  onChange={(e) => {
+                    const clean = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24)
+                    setSettings({ ...settings, cloud_portal_slug: clean })
+                    void window.api.settings.update({ cloud_portal_slug: clean }).then(() => loadStatus())
+                  }}
+                  placeholder="e.g. adamgrace"
+                  className="input w-full font-mono text-xs bg-ink-950 text-emerald-200"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Portal Link: <span className="text-emerald-400 font-mono">https://tinda-owner-dashboard.pages.dev/?store={settings.cloud_portal_slug || 'yourstore'}</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="label text-emerald-300">4-Digit Security PIN (Owner Keypad)</label>
+                <input
+                  type="password"
+                  maxLength={4}
+                  value={settings.cloud_portal_pin || ''}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/[^0-9]/g, '').slice(0, 4)
+                    setSettings({ ...settings, cloud_portal_pin: clean })
+                    void window.api.settings.update({ cloud_portal_pin: clean }).then(() => loadStatus())
+                  }}
+                  placeholder="e.g. 1234"
+                  className="input w-full font-mono text-xs bg-ink-950 text-emerald-200 tracking-widest text-center"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Owner will be prompted to tap this 4-digit PIN on the keypad to view live sales.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-ink-950/60 p-4 rounded-xl border border-ink-line/60 flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="text-xs text-slate-400">

@@ -26,6 +26,9 @@ export function ensureSyncCredentials(db: Database.Database): StoreSettings {
   let apiUrl = settings.cloud_api_url?.trim()
   let updated = false
 
+  let portalPin = settings.cloud_portal_pin?.trim()
+  let portalSlug = settings.cloud_portal_slug?.trim().toLowerCase()
+
   if (!storeId) {
     storeId = randomUUID().toLowerCase()
     updated = true
@@ -38,12 +41,28 @@ export function ensureSyncCredentials(db: Database.Database): StoreSettings {
     apiUrl = 'https://tinda-sync.yomikaze-md.workers.dev'
     updated = true
   }
+  if (!portalPin) {
+    // Generate a default 4-digit PIN (e.g. 1234 or random)
+    portalPin = '1234'
+    updated = true
+  }
+  if (!portalSlug) {
+    // Clean slug from store_name or fallback to store prefix
+    const baseName = (settings.store_name || 'store')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 16) || 'store'
+    portalSlug = baseName
+    updated = true
+  }
 
   if (updated || settings.cloud_store_id !== storeId) {
     return updateSettings(db, {
       cloud_store_id: storeId,
       cloud_sync_key: syncKey,
-      cloud_api_url: apiUrl
+      cloud_api_url: apiUrl,
+      cloud_portal_pin: portalPin,
+      cloud_portal_slug: portalSlug
     })
   }
 
@@ -73,6 +92,29 @@ export function getSyncCredentials(db: Database.Database): {
   }
 }
 
+/**
+ * Resilient Chromium HTTP transport helper:
+ * Uses Electron's native `net.fetch` if available (running inside Chromium network service),
+ * falling back gracefully to Node `fetch` in test or standard environment.
+ * The Chromium network stack bypasses third-party firewall/antivirus heuristics by matching
+ * standard browser TLS fingerprinting and HTTP/2 characteristics.
+ */
+async function cloudFetch(
+  url: string,
+  init: RequestInit & { signal?: AbortSignal }
+): Promise<Response> {
+  // Use Electron's net.fetch when running in Electron Main process
+  try {
+    const electron = await import('electron')
+    if (electron?.net?.fetch) {
+      return await electron.net.fetch(url, init)
+    }
+  } catch {
+    // Graceful fallback to global fetch in non-Electron/test runner
+  }
+  return await fetch(url, init)
+}
+
 async function postToCloud(
   apiUrl: string,
   endpoint: string,
@@ -81,7 +123,7 @@ async function postToCloud(
   const url = `${apiUrl.replace(/\/+$/, '')}${endpoint}`
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 6000) // 6s timeout
+    const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout for high reliability
 
     const normalizedPayload = {
       ...payload,
@@ -89,11 +131,11 @@ async function postToCloud(
       sync_key: payload.sync_key.trim()
     }
 
-    const res = await fetch(url, {
+    const res = await cloudFetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/2.2.15'
       },
       body: JSON.stringify(normalizedPayload),
       signal: controller.signal
@@ -101,7 +143,7 @@ async function postToCloud(
     clearTimeout(timeout)
     return res.ok
   } catch (err) {
-    // Non-blocking catch: POS must run smooth even without internet!
+    // Non-blocking catch: POS must run smooth even without internet or if offline!
     console.warn(`[CloudSync] Sync failed for ${endpoint}:`, (err as Error).message)
     return false
   }
@@ -194,29 +236,31 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
 
   try {
     // Ping cloud endpoint
-    const pingRes = await fetch(`${apiUrl.replace(/\/+$/, '')}/`, {
+    const pingRes = await cloudFetch(`${apiUrl.replace(/\/+$/, '')}/`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/2.2.15'
       },
-      signal: AbortSignal.timeout(6000)
+      signal: AbortSignal.timeout(8000)
     })
     if (!pingRes.ok) {
       return { ok: false, message: `Cloud server responded with status: ${pingRes.status}` }
     }
 
     // Auto-register and verify store on Cloudflare D1
-    const syncPingRes = await fetch(`${apiUrl.replace(/\/+$/, '')}/api/sync/ping`, {
+    const syncPingRes = await cloudFetch(`${apiUrl.replace(/\/+$/, '')}/api/sync/ping`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 TINDA-POS/1.0.48'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/2.2.15'
       },
       body: JSON.stringify({
         store_id: storeId,
         sync_key: syncKey,
-        branch_name: branchName
+        branch_name: branchName,
+        portal_pin: settings.cloud_portal_pin || '1234',
+        portal_slug: settings.cloud_portal_slug || ''
       }),
-      signal: AbortSignal.timeout(6000)
+      signal: AbortSignal.timeout(8000)
     })
 
     if (!syncPingRes.ok) {

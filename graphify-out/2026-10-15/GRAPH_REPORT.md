@@ -1,7 +1,7 @@
 # Graph Report - TINDA-POS-Desktop  (2026-10-15)
 
 ## Corpus Check
-- 771 files · ~700,006 words
+- 771 files · ~700,539 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 44 file(s) not represented in the graph (top: .blockmap 29, (none) 8, .bat 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cd7ce014`
+- Built from commit: `5c462e0d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1369,7 +1369,7 @@ Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAs
 
 ### Community 190 - "🏪 TINDA POS (Desktop Master Edition)"
 Cohesion: 0.20
-Nodes (10): ⌨️ Cashier High-Speed Keyboard Shortcuts, 💻 Developer Quickstart, 🏛️ Development Team & The 9 Elite Specialists, Installation & Development, 📄 License, Prerequisites, ⚡ Quick Download & Release Assets (v2.2.12 Full Windows Release), 🗂️ Repository Directory Structure (+2 more)
+Nodes (10): ⌨️ Cashier High-Speed Keyboard Shortcuts, 💻 Developer Quickstart, 🏛️ Development Team & The 9 Elite Specialists, Installation & Development, 📄 License, Prerequisites, ⚡ Quick Download & Release Assets (v2.2.13 Full Windows Release), 🗂️ Repository Directory Structure (+2 more)
 
 ### Community 191 - "ref_node_child_process"
 Cohesion: 0.12

@@ -43,6 +43,8 @@ export const defaultSettings: StoreSettings = {
   cloud_sync_key: '',
   cloud_last_synced_at: null,
   cloud_sync_pending: false,
+  cloud_portal_pin: '',
+  cloud_portal_slug: '',
   pos_pinned_categories: [],
   label_printer: '',
   label_paper_size: '40x30',

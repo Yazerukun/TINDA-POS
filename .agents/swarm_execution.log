@@ -34,3 +34,27 @@
 2026-10-15 15:58:47 | Jin Engine Dispatched | Task: Separate Store Use expenses from Dashboard cash expenses and profit calculations so Store Use is not subtracted on Dashboard
 2026-10-15 16:31:41 | Jin Engine Dispatched | Task: Make Bills Payment Billers editable (excluding E-Load) in E-Wallet / Bills Payment Hub
 2026-10-15 16:38:19 | Jin Engine Dispatched | Task: Make utility billers editable and customizable with presets manager while preserving eload, bump v2.2.14, compile full build
+2026-10-16 08:51:26 | Jin Engine Dispatched | Task: Session initialization & greeting
+2026-10-16 08:51:44 | Jin Engine Dispatched | Task: Investigate duplicate GOOGLE_API_KEY and GEMINI_API_KEY environment warning
+2026-10-16 08:52:47 | Jin Engine Dispatched | Task: Check current project status and provide overview of TINDA-POS-Desktop workspace
+2026-10-16 08:53:20 | Jin Engine Dispatched | Task: Fix Gemini API Key mode - remove modelProvider from settings.json to restore normal sign-in
+2026-10-16 08:55:44 | Jin Engine Dispatched | Task: Fix Antigravity CLI agy Gemini API Key mode - find and fix modelProvider in settings.json
+2026-10-16 08:57:16 | Jin Engine Dispatched | Task: Recommend architectural and stack additions for TINDA POS Desktop (Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3)
+2026-10-16 08:58:11 | Jin Engine Dispatched | Task: Evaluate complementary programming languages to add alongside TypeScript/Node/SQL for TINDA POS Desktop (Electron + React 19)
+2026-10-16 09:00:54 | Jin Engine Dispatched | Task: Recommend 100% free, open-source zero-cost programming languages, runtimes, and local toolchains to complement Electron+TypeScript+SQLite
+2026-10-16 09:03:40 | Jin Engine Dispatched | Task: Investigate sync failure for ADAMGRACE MINIMART to tinda-owner-dashboard.pages.dev and root-cause database/store sync issue
+2026-10-16 09:16:08 | Jin Engine Dispatched | Task: Draft clear, friendly, foolproof Bisaya/Tagalog/English step-by-step troubleshooting guide for Ma'am Grace of Adamgrace Minimart to restore cloud dashboard sync
+2026-10-16 09:16:43 | Jin Engine Dispatched | Task: Translate and polish step-by-step troubleshooting guide for Ma'am Grace into professional, warm, clear English
+2026-10-16 09:19:57 | Jin Engine Dispatched | Task: Verify iOS Safari iPhone compatibility for tinda-owner-dashboard and QR code scanning
+2026-10-16 09:22:04 | Jin Engine Dispatched | Task: Investigate why ADAMGRACE MINIMART is connected with sync key updated but no data is showing on dashboard
+2026-10-16 09:35:48 | Jin Engine Dispatched | Task: Recall previous discussion regarding 100% free complementary programming languages to add to TINDA POS stack
+2026-10-16 09:43:03 | Jin Engine Dispatched | Task: Analyze antivirus popup on Adamgrace Minimart PC, diagnose potential false positive or blocked cloud sync traffic
+2026-10-16 09:52:37 | Jin Engine Dispatched | Task: Design foolproof strategies to bypass antivirus false positives and ensure uninterrupted cloud sync in Electron desktop POS
+2026-10-16 09:54:54 | Jin Engine Dispatched | Task: Implement Electron net.request Chromium network stack for cloud sync to bypass antivirus firewalls, test, verify master invariants, bump version to v2.2.15, and produce build artifacts
+2026-10-16 09:58:07 | Jin Engine Dispatched | Task: Evaluate architecture for Auto-Claim Pre-Linked Owner Web Portal removing manual pairing, zero-config Store Code or Magic Auto-Register
+2026-10-16 09:58:27 | Jin Engine Dispatched | Task: Design 1-Click Zero-Pairing Auto-Connected Store Portal architecture: auto-provisioned store subdomains or persistent store code portals where owners simply click to view without pairing
+2026-10-16 10:00:39 | Jin Engine Dispatched | Task: Design 1-Click Direct Store Portal with Apple-Grade 4-Digit Security PIN modal, preserving existing sync infrastructure as dual-mode feature
+2026-10-16 10:12:34 | Jin Engine Dispatched | Task: Implement Direct Store Portal with Apple-Grade 4-Digit Security PIN across tinda-sync worker, tinda-owner-dashboard, and TINDA POS Desktop
+2026-10-16 10:13:57 | Jin Engine Dispatched | Task: Implement full end-to-end Direct Portal with 4-Digit Security PIN & Slug: 1) TINDA POS Desktop (settings, repository, IPC, UI with copy link & PIN manager), 2) tinda-sync worker (endpoints for PIN validation & direct store telemetry), 3) tinda-owner-dashboard (Apple-grade PIN keypad modal & auto-direct view), and 4) full Windows production build v2.2.15
+2026-10-16 10:20:58 | Jin Engine Dispatched | Task: Fix Settings.tsx loader, run typecheck & tests, update docs, and execute full production build v2.2.15
+2026-10-16 10:53:11 | Jin Engine Dispatched | Task: Check GitHub release status for v2.2.15 and publish official release assets

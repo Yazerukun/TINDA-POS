@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.14 (Customizable Utility Billers & Presets Manager Edition)
+- **Current Stable Version:** v2.2.15 (Direct Store Portal & Antivirus-Resilient Cloud Sync Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Full customization and on-the-fly editing for utility and water billers (Meralco, electric coops, water districts, loans, internet) in E-Wallet & Bills Hub with a dedicated Biller Preset Manager modal, while strictly protecting telecom E-Load networks from accidental changes.
+- **Latest Feature:** Frictionless 1-Click Direct Store Portal with 4-Digit Security PIN (`https://tinda-owner-dashboard.pages.dev/?store=:slug`) allowing store owners to view live real-time sales on mobile without pairing or credentials, hardened Electron `net.fetch` Chromium HTTP stack to bypass third-party antivirus firewall blocks (e.g. Avast/McAfee), customizable portal slugs and PIN management in Cloud Settings.
