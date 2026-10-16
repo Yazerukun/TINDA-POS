@@ -44,7 +44,9 @@ function generateKeyForMachine(machineId, tier = 'VIP_PRO') {
   const chunk2 = fullSig.substring(4, 8)
   const chunk3 = fullSig.substring(8, 12)
 
-  const checksumHash = crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}:${tier}`).digest('hex').toUpperCase()
+  const checksumHash = tier === 'VIP_DEMO'
+    ? crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}:${tier}`).digest('hex').toUpperCase()
+    : crypto.createHash('sha256').update(`${normMachine}:${chunk1}${chunk2}${chunk3}`).digest('hex').toUpperCase()
   const checksum = checksumHash.substring(0, 4)
 
   const prefix = tier === 'VIP_DEMO' ? 'DEMO' : 'VIP'

@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.16 (24-HOUR VIP DEMO LICENSING & REAL-TIME COUNTDOWN EDITION)
+- v2.2.17 (LEGACY VIP RESTORATION & BACKWARD-COMPATIBLE SELF-HEALING EDITION)
 
 TARGET:
 - v2.3.0 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v2.2.16 24-Hour VIP Demo Licensing & Real-Time Countdown Edition compiling Full Windows Executables
+- Production Release Ready — v2.2.17 Legacy VIP Restoration & Backward-Compatible Self-Healing Edition compiling Full Windows Executables
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -52,6 +52,7 @@ COMPLETED:
 - Stage 40: v2.2.14 Customizable Utility Billers & Presets Manager Edition official release. Added dynamic biller customization (billerCustomization.ts), ManageBillersModal.tsx for adding, renaming, adjusting default fees and categorizing local billers, on-the-fly editable biller name in EwalletAudit.tsx and BillsLoadHub.tsx, and strict protection for telecom E-Load networks. 553 unit tests passing across 86 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.14.exe + TindaPOS-Portable-2.2.14.exe).
 - Stage 41: v2.2.15 Direct Store Portal & Antivirus-Resilient Cloud Sync Edition official release. Frictionless 1-Click Direct Store Portal with 4-Digit Security PIN (`https://tinda-owner-dashboard.pages.dev/?store=:slug`) allowing store owners to view live real-time sales on mobile without pairing or credentials, hardened Electron `net.fetch` Chromium HTTP stack to bypass third-party antivirus firewall blocks (e.g. Avast/McAfee), customizable portal slugs and PIN management in Cloud Settings. Full Windows binaries (TindaPOS-Setup-2.2.15.exe + TindaPOS-Portable-2.2.15.exe).
 - Stage 42: v2.2.16 24-Hour VIP Demo Licensing & Real-Time Countdown Edition official release. Added cryptographic 24-hour VIP demo keys (`DEMO-XXXX-XXXX-XXXX-XXXX`) tied strictly to hardware motherboard/machine GUID to prevent multi-device piracy, live ticking countdown timer in Sidebar and VipUpgradeModal, desktop shortcut generator (`TINDA-POS-Demo-Keygen.bat`) on Bossing's desktop, and automatic non-destructive fallback to Community tier upon expiration. Vitest unit tests passing, 0 TypeScript errors, master invariants verified. Full Windows binaries (TindaPOS-Setup-2.2.16.exe + TindaPOS-Portable-2.2.16.exe).
+- Stage 43: v2.2.17 Legacy VIP Restoration & Backward-Compatible Self-Healing Edition official release. Preserved original HMAC signature compatibility across all 4 license vaults (Windows Registry, AppData, User Home, and SQLite), eliminating accidental downgrade for existing VIP customers who updated to v2.2.16, restored seamless backward-compatible key generation and verification, and confirmed 100% automatic recovery of lifetime VIP Pro access. Full Windows binaries (TindaPOS-Setup-2.2.17.exe + TindaPOS-Portable-2.2.17.exe).
 
 PENDING APPROVAL:
 - None (Approved by Owner).

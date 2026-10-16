@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.16 (24-Hour VIP Demo Licensing & Real-Time Countdown Edition)
+- **Current Stable Version:** v2.2.17 (Legacy VIP Restoration & Backward-Compatible Self-Healing Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Dedicated 24-Hour VIP Demo Licensing with unforgeable cryptographic hardware-bound `DEMO-XXXX-XXXX-XXXX-XXXX` keys, real-time live seconds countdown timer in sidebar and modal, developer desktop shortcut tool (`TINDA-POS-Demo-Keygen.bat`), anti-clock tamper protection, and seamless automatic downgrade to Community Edition after 24 hours.
+- **Latest Feature:** Automatic self-healing and restoration of all existing VIP Pro lifetime licenses after the 24-Hour Demo update. Preserves original HMAC signature compatibility across all 4 license vaults (Windows Registry, AppData, User Home, and SQLite), ensuring 100% uninterrupted VIP access for all paying customers while keeping 24-hour demo keys active.

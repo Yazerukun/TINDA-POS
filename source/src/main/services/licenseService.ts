@@ -138,12 +138,15 @@ export class LicenseService {
   }
 
   /**
-   * Tamper-proofing HMAC signature calculation
+   * Tamper-proofing HMAC signature calculation.
+   * Backward compatible: if demoExpiresAt is not provided, uses original format without trailing delimiter.
    */
   public computeTamperHash(machineId: string, key: string, activatedAt: string, customerName?: string | null, demoExpiresAt?: string | null): string {
     const secret = getInternalSecret()
+    const base = `FILE_TAMPER_GUARD::${machineId}::${key}::${activatedAt}::${customerName ?? ''}`
+    const payloadStr = demoExpiresAt ? `${base}::${demoExpiresAt}` : base
     return crypto.createHmac('sha256', secret)
-      .update(`FILE_TAMPER_GUARD::${machineId}::${key}::${activatedAt}::${customerName ?? ''}::${demoExpiresAt ?? ''}`)
+      .update(payloadStr)
       .digest('hex')
   }
 
@@ -611,7 +614,7 @@ export class LicenseService {
 
     for (const v of vaults) {
       if (v.licenseKey && v.machineId) {
-        const expectedHash = this.computeTamperHash(v.machineId, v.licenseKey, v.activatedAt, v.customerName)
+        const expectedHash = this.computeTamperHash(v.machineId, v.licenseKey, v.activatedAt, v.customerName, v.demoExpiresAt)
         if (v.tamperProofHash === expectedHash && this.verifyKey(v.licenseKey, v.machineId)) {
           // Verify that this license actually matches THIS physical device (or legacy candidate on this device)
           if (
