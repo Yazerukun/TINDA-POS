@@ -682,6 +682,8 @@ export function POS(): React.JSX.Element {
   }, [categoryMenuOpen])
 
   const lastScanRef = useRef<{ code: string; time: number }>({ code: '', time: 0 })
+  const lastScanTimestampRef = useRef<number>(0)
+  const userNavigatedWithArrows = useRef<boolean>(false)
 
   const handleScan = async (scannedBarcode: string, explicitQty?: number, action?: string) => {
     try {
@@ -694,6 +696,8 @@ export function POS(): React.JSX.Element {
         return
       }
       lastScanRef.current = { code, time: now }
+      lastScanTimestampRef.current = now
+      userNavigatedWithArrows.current = false
 
       // Parse multiplier prefix if any (e.g. "5*BARCODE" or "10*48000123" or "5*egg")
       let qtyMultiplier = typeof explicitQty === 'number' && explicitQty > 0 ? explicitQty : 1
@@ -706,28 +710,31 @@ export function POS(): React.JSX.Element {
 
       const res = await window.api.products.search(cleanCode, { status: 'ACTIVE', limit: 20 })
       const target = cleanCode.toLowerCase()
-      // Smart matching priority:
+      // Strict matching priority (Zero blind fallbacks):
       // 1. Exact Barcode match
-      // 2. Exact SKU match
-      // 3. Multi-unit barcode match
+      // 2. Multi-unit barcode match
+      // 3. Exact SKU match
       // 4. Exact product name match
-      // 5. First item in search results if user pressed Enter on query
+      // 5. If query uniquely matches only 1 product that starts with or contains cleanCode
       let found = res.rows.find(
         (p) =>
           p.barcode?.toLowerCase() === target ||
-          p.sku?.toLowerCase() === target ||
           p.units?.some((u) => u.barcode?.toLowerCase() === target)
       )
 
       if (!found) {
+        found = res.rows.find((p) => p.sku?.toLowerCase() === target)
+      }
+      if (!found) {
         found = res.rows.find((p) => p.name.toLowerCase() === target)
       }
       if (!found && res.rows.length === 1) {
+        // If there's only exactly 1 search result and it matches the name/sku/barcode
         found = res.rows[0]
       }
-      if (!found && res.rows.length > 0) {
-        // Find product starting with or containing cleanCode
-        found = res.rows.find((p) => p.name.toLowerCase().startsWith(target)) || res.rows[0]
+      if (!found && res.rows.length > 1) {
+        // Only pick if product name starts exactly with query, NEVER fall back to rows[0] blindly!
+        found = res.rows.find((p) => p.name.toLowerCase().startsWith(target))
       }
 
       if (found) {
@@ -774,10 +781,20 @@ export function POS(): React.JSX.Element {
   const [phoneConnected, setPhoneConnected] = useState(false)
   const [cameraScannerInitialTab, setCameraScannerInitialTab] = useState<'phone' | 'camera' | 'guide' | 'cfd'>('phone')
 
+  const [hardwareScannerDetected, setHardwareScannerDetected] = useState(false)
+  const hardwareScannerToastShown = useRef(false)
+
   useEffect(() => {
     const scannerListener = createScannerListener({
       onScan: (code) => {
         void handleScan(code)
+      },
+      onDeviceDetected: () => {
+        setHardwareScannerDetected(true)
+        if (!hardwareScannerToastShown.current) {
+          hardwareScannerToastShown.current = true
+          toastSuccess('Hardware Barcode Scanner Detected', 'Automatic Wedge Mode Active & Ready')
+        }
       }
     })
 
@@ -863,6 +880,7 @@ export function POS(): React.JSX.Element {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag === 'textarea') return
         e.preventDefault()
+        userNavigatedWithArrows.current = true
         setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
         return
       }
@@ -870,12 +888,18 @@ export function POS(): React.JSX.Element {
         const tag = (document.activeElement?.tagName || '').toLowerCase()
         if (tag === 'textarea') return
         e.preventDefault()
+        userNavigatedWithArrows.current = true
         setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
         return
       }
       if (e.key === 'Enter') {
         const activeTag = (document.activeElement?.tagName || '').toLowerCase()
         if (activeTag !== 'input' && activeTag !== 'textarea') {
+          // Block ghost trailing scanner Enter or un-navigated default selection
+          const now = Date.now()
+          if (now - lastScanTimestampRef.current < 600 || !userNavigatedWithArrows.current) {
+            return
+          }
           if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
             const p = displayedProducts[selectedRowIndex]
             if (p) {
@@ -897,6 +921,7 @@ export function POS(): React.JSX.Element {
         }
         if (q) {
           setQ('')
+          userNavigatedWithArrows.current = false
           searchInputRef.current?.blur()
           void search('', catFilter === 'ALL' ? null : catFilter)
         }
@@ -910,6 +935,7 @@ export function POS(): React.JSX.Element {
     setCatFilter(categoryId)
     setCategoryMenuOpen(false)
     setQ('')
+    userNavigatedWithArrows.current = false
     void search('', categoryId === 'ALL' ? null : categoryId)
   }
 
@@ -924,7 +950,11 @@ export function POS(): React.JSX.Element {
               <input
                 ref={searchInputRef}
                 value={q}
-                onChange={(e) => { setQ(e.target.value); void search(e.target.value, catFilter === 'ALL' ? null : catFilter) }}
+                onChange={(e) => {
+                  setQ(e.target.value)
+                  userNavigatedWithArrows.current = false
+                  void search(e.target.value, catFilter === 'ALL' ? null : catFilter)
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const trimmed = q.trim()
@@ -935,23 +965,33 @@ export function POS(): React.JSX.Element {
                     } else if (trimmed) {
                       e.preventDefault()
                       void handleScan(trimmed)
-                    } else if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
-                      const p = displayedProducts[selectedRowIndex]
-                      if (p) {
+                    } else {
+                      // Block ghost scanner trailing Enter on empty search box
+                      const now = Date.now()
+                      if (now - lastScanTimestampRef.current < 600 || !userNavigatedWithArrows.current) {
                         e.preventDefault()
-                        if (saleStock(p) > 0) {
-                          usePosCart.getState().add(p)
-                          warnIfNearExpiry(p)
-                        } else {
-                          toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                        return
+                      }
+                      if (selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
+                        const p = displayedProducts[selectedRowIndex]
+                        if (p) {
+                          e.preventDefault()
+                          if (saleStock(p) > 0) {
+                            usePosCart.getState().add(p)
+                            warnIfNearExpiry(p)
+                          } else {
+                            toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                          }
                         }
                       }
                     }
                   } else if (e.key === 'ArrowDown') {
                     e.preventDefault()
+                    userNavigatedWithArrows.current = true
                     setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.min(prev + 1, displayedProducts.length - 1) : -1))
                   } else if (e.key === 'ArrowUp') {
                     e.preventDefault()
+                    userNavigatedWithArrows.current = true
                     setSelectedRowIndex((prev) => (displayedProducts.length > 0 ? Math.max(prev - 1, 0) : -1))
                   }
                 }}

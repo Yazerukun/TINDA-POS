@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v2.2.19 (SMART MOBILE PHONE SCANNER WITH QUANTITY, REAL-TIME STOCK & HARDWARE QUOTATION EDITION)
+- v3.0.2 (ULTRA-FAST HARDWARE BARCODE SCANNER & INSTANT AUTO-DETECT EDITION)
 
 TARGET:
-- v2.3.0 (NEXT CYCLE)
+- v3.0.3 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v2.2.19 Smart Mobile Phone Scanner with Quantity, Real-Time Stock & Hardware Quotation Edition compiling Full Windows Executables
+- Production Release Ready — v3.0.2 Ultra-Fast Hardware Barcode Scanner & Instant Auto-Detect Edition compiling Full Windows Executables
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

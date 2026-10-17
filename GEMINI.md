@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.19 (Smart Mobile Phone Scanner with Quantity, Real-Time Stock & Hardware Quotation Edition)
+- **Current Stable Version:** v3.0.2 (Ultra-Fast Hardware Barcode Scanner & Instant Auto-Detect Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Wireless phone scanner with interactive Quantity Bottom Sheet modal (stepper input, quick hardware increment chips: `+1`, `+5`, `+10`, `+25`, `+50`, `+100`), real-time stock and price preview on phone, live subtotal computation with automatic bulk wholesale tier support, quotation cart push for roving sales staff, dual scan modes (`📦 Bulk Qty` vs `⚡ Rapid`), and Web Audio scanner chimes + device haptic feedback.
+- **Latest Feature:** Zero-error hardware barcode scanner protection against secondary carriage return / line feed (CR+LF) trailing Enter bursts. Eliminates cross-product scanning conflicts (Pantene vs Surf Powder). Strict exact barcode, SKU, and multi-unit matching priority in SQLite without blind fallbacks. Real-time automatic hardware scanner detection with non-blocking feedback. Instant thermal printer detection. Mobile scanner retained independently for quotation/roving staff. Full Windows Setup & Portable production release.

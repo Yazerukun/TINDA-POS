@@ -10,6 +10,7 @@ export interface ScannerListenerOptions {
   maxIntervalMs?: number
   minBarcodeLength?: number
   onScan: (barcode: string) => void
+  onDeviceDetected?: () => void
   enabled?: boolean
 }
 
@@ -18,6 +19,7 @@ export function createScannerListener(options: ScannerListenerOptions): (e: Keyb
   const minLength = options.minBarcodeLength ?? 3
   let buffer = ''
   let lastKeyTime = 0
+  let lastScanCompleteTime = 0
 
   return function handleKeyDown(e: KeyboardEvent): void {
     if (options.enabled === false) return
@@ -32,11 +34,18 @@ export function createScannerListener(options: ScannerListenerOptions): (e: Keyb
         const scannedCode = buffer.trim()
         buffer = ''
         if (scannedCode) {
+          lastScanCompleteTime = now
           e.preventDefault()
           e.stopPropagation()
+          options.onDeviceDetected?.()
           options.onScan(scannedCode)
         }
       } else {
+        // Shield against trailing CR+LF or secondary scanner Enter within 450ms
+        if (now - lastScanCompleteTime < 450) {
+          e.preventDefault()
+          e.stopPropagation()
+        }
         buffer = ''
       }
       return

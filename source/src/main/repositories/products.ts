@@ -134,9 +134,27 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const total = (db.prepare(`SELECT COUNT(*) AS c FROM products p ${whereSql}`).get(...params) as { c: number }).c
+
+  let orderBySql = 'p.name COLLATE NOCASE'
+  const queryParams = [...params]
+  if (q && q.trim()) {
+    const trimmed = q.trim()
+    orderBySql = `
+      (CASE
+        WHEN p.barcode = ? COLLATE NOCASE THEN 0
+        WHEN EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND pu.barcode = ? COLLATE NOCASE) THEN 1
+        WHEN p.sku = ? COLLATE NOCASE THEN 2
+        WHEN p.name = ? COLLATE NOCASE THEN 3
+        WHEN p.name LIKE ? COLLATE NOCASE THEN 4
+        ELSE 5
+      END), p.name COLLATE NOCASE
+    `
+    queryParams.push(trimmed, trimmed, trimmed, trimmed, `${trimmed}%`)
+  }
+
   const rows = db
-    .prepare(`${BASE_SELECT} ${whereSql} ORDER BY p.name COLLATE NOCASE LIMIT ? OFFSET ?`)
-    .all(...params, limit, offset) as Record<string, unknown>[]
+    .prepare(`${BASE_SELECT} ${whereSql} ORDER BY ${orderBySql} LIMIT ? OFFSET ?`)
+    .all(...queryParams, limit, offset) as Record<string, unknown>[]
   return { rows: rows.map((r) => rowToProduct(db, r)), total }
 }
 
