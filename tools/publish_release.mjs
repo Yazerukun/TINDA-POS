@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Customizable Utility Billers & Presets Manager Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Smart Mobile Phone Scanner with Quantity & Hardware Quotation Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,13 +162,12 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Product Barcode Duplicate & Constraint Collision Fix**: Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving or editing products with multi-unit packaging. Primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Empty barcodes are cleanly sanitized to null.
-- **Item Sales Reporting Resilience**: Added multi-tier fallback resilience for \`window.api.reports.itemSales\` preventing UI crashes and "is not a function" errors in Sales Reports.
-- **High-Velocity POS Cashier Shortcuts**:
-  - \`Alt + C\` or \`Ctrl + Delete\`: Instantly clear the entire cart basket with live toast feedback and visual badge indicator.
-  - \`Shift + F9\` or \`Alt + U\`: Fast-track Utang credit checkout directly from cart and toggle Utang method inside Checkout modal.
-- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly directly in the transaction form, with full presets management and telecom E-Load protection.
-- **554 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+    releaseNotes = `- **Smart Mobile Phone Roving Scanner with Quantity Selector**: Cashiers and floor staff can now use their mobile phone as a wireless barcode scanner with an instant interactive Quantity Bottom Sheet modal (stepper input, hardware quick chips: \`+1\`, \`+5\`, \`+10\`, \`+25\`, \`+50\`, \`+100\`) designed specifically for hardware and wholesale stores.
+- **Real-Time Product Price & Stock Preview**: Scanning any item on the phone immediately displays the product name, price, remaining stock status, and bulk wholesale tiers on the mobile screen before adding to the cart.
+- **Roving Hardware Quotation & Cart Push**: Staff walking with customers on the sales floor can instantly send items with custom quantities directly into the active desktop POS cart or mark items for quotation and parked sales.
+- **Audio Chimes & Physical Haptic Feedback**: Crisp Web Audio synthesized scanner beeps and dual-tone success chimes paired with device vibration on phone scans without external audio files.
+- **Togglable Scan Modes**: One-tap switcher between **📦 Bulk Qty Mode** (for roving hardware & bulk orders) and **⚡ Rapid 1x Mode** (for high-velocity grocery retail).
+- **557 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 

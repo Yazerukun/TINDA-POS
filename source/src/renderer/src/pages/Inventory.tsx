@@ -268,7 +268,8 @@ export function Inventory(): React.JSX.Element {
 
     window.addEventListener('keydown', scannerListener)
 
-    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((payload) => {
+      const code = typeof payload === 'object' && payload !== null ? payload.barcode : payload
       handleInventoryScan(code)
     })
 
@@ -1408,7 +1409,8 @@ function ProductModal({
     window.addEventListener('keydown', listener)
 
     // Also support Wi-Fi companion phone camera scans while ProductModal is open
-    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((payload) => {
+      const code = typeof payload === 'object' && payload !== null ? payload.barcode : payload
       applyScannedBarcode(code, targetUnitIndex)
     })
 

@@ -506,7 +506,7 @@ export interface TindaApi {
     getCfdState: () => Promise<Record<string, unknown>>
     updateCfd: (partial: Record<string, unknown>) => Promise<Record<string, unknown>>
     getCfdUrl: () => Promise<{ url: string; httpsUrl: string }>
-    onScan: (cb: (barcode: string) => void) => () => void
+    onScan: (cb: (payload: { barcode: string; quantity?: number; action?: string } | string) => void) => () => void
     onStatus: (cb: (status: { connected: boolean; device?: string }) => void) => () => void
   }
   lan: {

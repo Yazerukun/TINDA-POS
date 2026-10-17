@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.18 (Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition)
+- **Current Stable Version:** v2.2.19 (Smart Mobile Phone Scanner with Quantity, Real-Time Stock & Hardware Quotation Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Full resolution of SQLite unique constraint and duplicate barcode errors on product creation and editing, allowing primary products to share base unit barcodes without conflicting. Resilient itemSales reporting API fallback, and high-velocity POS cashier hotkeys (`Alt+C` for Clear Basket, `Shift+F9` / `Alt+U` for Utang checkout).
+- **Latest Feature:** Wireless phone scanner with interactive Quantity Bottom Sheet modal (stepper input, quick hardware increment chips: `+1`, `+5`, `+10`, `+25`, `+50`, `+100`), real-time stock and price preview on phone, live subtotal computation with automatic bulk wholesale tier support, quotation cart push for roving sales staff, dual scan modes (`📦 Bulk Qty` vs `⚡ Rapid`), and Web Audio scanner chimes + device haptic feedback.

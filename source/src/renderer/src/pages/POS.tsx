@@ -683,7 +683,7 @@ export function POS(): React.JSX.Element {
 
   const lastScanRef = useRef<{ code: string; time: number }>({ code: '', time: 0 })
 
-  const handleScan = async (scannedBarcode: string) => {
+  const handleScan = async (scannedBarcode: string, explicitQty?: number, action?: string) => {
     try {
       const code = scannedBarcode.trim()
       if (!code) return
@@ -696,7 +696,7 @@ export function POS(): React.JSX.Element {
       lastScanRef.current = { code, time: now }
 
       // Parse multiplier prefix if any (e.g. "5*BARCODE" or "10*48000123" or "5*egg")
-      let qtyMultiplier = 1
+      let qtyMultiplier = typeof explicitQty === 'number' && explicitQty > 0 ? explicitQty : 1
       let cleanCode = code
       const multiMatch = code.match(/^(\d+(?:\.\d+)?)\s*[*xX]\s*(.+)$/)
       if (multiMatch && multiMatch[1] && multiMatch[2]) {
@@ -738,12 +738,19 @@ export function POS(): React.JSX.Element {
         } else {
           const existing = usePosCart.getState().items.find((i) => i.product_id === found.id)
           usePosCart.getState().add(found, qtyMultiplier)
+          const isQuotation = action === 'quotation'
           if (existing) {
             playDuplicateScanChime()
-            toastSuccess(`Incremented: ${found.name} (Qty: ${existing.qty + qtyMultiplier})`)
+            toastSuccess(
+              isQuotation ? `📋 Quotation updated: ${found.name}` : `Incremented: ${found.name}`,
+              `Qty in cart: ${existing.qty + qtyMultiplier}`
+            )
           } else {
             playScanSuccess()
-            toastSuccess(`Added to cart: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`)
+            toastSuccess(
+              isQuotation ? `📋 Added to Quotation Cart` : `Added to cart: ${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name}`,
+              isQuotation ? `${qtyMultiplier > 1 ? `${qtyMultiplier}x ` : ''}${found.name} (Roving Floor)` : undefined
+            )
           }
           // Proactive low-stock notification
           if (stockLeft <= found.low_stock_threshold) {
@@ -781,9 +788,13 @@ export function POS(): React.JSX.Element {
       if (status?.connected) setPhoneConnected(true)
     })
 
-    // Listen for phone scanner scans over Wi-Fi
-    const cleanupPhoneScan = window.api.phoneScanner?.onScan((code) => {
-      void handleScan(code)
+    // Listen for phone scanner scans over Wi-Fi (supports quantity & quotation mode)
+    const cleanupPhoneScan = window.api.phoneScanner?.onScan((payload) => {
+      if (typeof payload === 'object' && payload !== null && 'barcode' in payload) {
+        void handleScan(payload.barcode, payload.quantity, payload.action)
+      } else if (typeof payload === 'string') {
+        void handleScan(payload)
+      }
     })
 
     // Listen for phone connection state changes

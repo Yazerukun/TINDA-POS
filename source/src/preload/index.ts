@@ -290,7 +290,7 @@ const api: TindaApi = {
     updateCfd: (partial: Record<string, unknown>) => invoke<Record<string, unknown>>('phoneScanner:updateCfd', partial),
     getCfdUrl: () => invoke<{ url: string; httpsUrl: string }>('phoneScanner:getCfdUrl'),
     onScan: (cb) => {
-      const listener = (_e: IpcRendererEvent, data: { barcode: string }): void => cb(data.barcode)
+      const listener = (_e: IpcRendererEvent, data: { barcode: string; quantity?: number; action?: string } | string): void => cb(data)
       ipcRenderer.on('phoneScanner:scan', listener)
       return () => {
         ipcRenderer.removeListener('phoneScanner:scan', listener)

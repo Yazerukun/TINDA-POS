@@ -3,6 +3,8 @@ import https from 'node:https'
 import os from 'node:os'
 import fs from 'node:fs'
 import { BrowserWindow } from 'electron'
+import { getDb } from '../database/connection'
+import { findByBarcode, findBySku } from '../repositories/products'
 
 export interface PhoneScannerStatus {
   running: boolean
@@ -314,12 +316,12 @@ function notifyStatusChange(): void {
   }
 }
 
-function notifyBarcodeScan(barcode: string): void {
+function notifyBarcodeScan(barcode: string, quantity = 1, action = 'cart'): void {
   try {
     const wins = typeof BrowserWindow?.getAllWindows === 'function' ? BrowserWindow.getAllWindows() : []
     for (const win of wins) {
       if (!win.isDestroyed()) {
-        win.webContents.send('phoneScanner:scan', { barcode })
+        win.webContents.send('phoneScanner:scan', { barcode, quantity, action })
       }
     }
   } catch {
@@ -638,6 +640,257 @@ function generateMobileHtml(): string {
       color: #94a3b8;
       text-align: center;
     }
+
+    /* Mode Switcher Pill */
+    .mode-switch {
+      display: inline-flex;
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 9999px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mode-btn.active {
+      background: #10b981;
+      color: #042f2e;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    /* Bottom Sheet Modal */
+    .bottom-sheet-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .bottom-sheet-backdrop.show {
+      display: flex;
+      opacity: 1;
+    }
+    .bottom-sheet {
+      width: 100%;
+      max-width: 480px;
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      border-radius: 24px 24px 0 0;
+      padding: 16px 20px env(safe-area-inset-bottom, 20px);
+      box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bottom-sheet-backdrop.show .bottom-sheet {
+      transform: translateY(0);
+    }
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #475569;
+      border-radius: 9999px;
+      margin: -4px auto 4px;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .sheet-product-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.25;
+    }
+    .sheet-product-meta {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sheet-price-tag {
+      font-size: 16px;
+      font-weight: 800;
+      color: #10b981;
+    }
+    .badge-stock {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-stock.low {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .badge-stock.out {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    .wholesale-banner {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #38bdf8;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .qty-stepper-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 2px 0;
+    }
+    .btn-stepper {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      font-size: 26px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .btn-stepper:active {
+      background: #334155;
+      transform: scale(0.95);
+    }
+    .input-qty-display {
+      flex: 1;
+      max-width: 140px;
+      height: 52px;
+      background: #020617;
+      border: 2px solid #3b82f6;
+      border-radius: 14px;
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+    }
+    .quick-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+    .chip-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      border-radius: 8px;
+      padding: 9px 0;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      touch-action: manipulation;
+    }
+    .chip-btn:active {
+      background: #10b981;
+      color: #0f172a;
+      border-color: #10b981;
+    }
+    .sheet-subtotal-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 10px;
+      border: 1px solid #1e293b;
+    }
+    .subtotal-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+    .subtotal-val { font-size: 17px; color: #10b981; font-weight: 800; }
+    .sheet-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-sheet-cart {
+      flex: 1.3;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      touch-action: manipulation;
+    }
+    .btn-sheet-cart:active { transform: scale(0.98); }
+    .btn-sheet-quote {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 13px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      touch-action: manipulation;
+    }
+    .btn-sheet-quote:active { background: rgba(56, 189, 248, 0.15); }
+    .btn-sheet-cancel {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+    }
   </style>
   <script src="/zxing.min.js"></script>
   <script>
@@ -653,6 +906,10 @@ function generateMobileHtml(): string {
     <div class="brand">
       <span>TINDA POS</span>
       <div class="status-pill"><div class="status-dot"></div> Connected</div>
+    </div>
+    <div class="mode-switch">
+      <button type="button" class="mode-btn active" id="btnModeBulk" title="Hardware Roving & Bulk Mode (Prompt Quantity)">📦 Bulk Qty</button>
+      <button type="button" class="mode-btn" id="btnModeRapid" title="Continuous 1x Rapid Scanning">⚡ Rapid</button>
     </div>
     <div class="header-actions">
       <button class="btn-icon" id="btnTorch" style="display:none">🔦 Light</button>
@@ -693,6 +950,66 @@ function generateMobileHtml(): string {
       <div class="snap-hint" id="snapHint">Opens phone camera directly. Zero certificate setup required.</div>
     </div>
 
+    <!-- Hardware Bulk Quantity Bottom Sheet Modal -->
+    <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div style="flex:1;">
+            <div id="sheetProductTitle" class="sheet-product-title">Scanning product…</div>
+            <div class="sheet-product-meta">
+              <span id="sheetBarcodeLabel" style="font-family:monospace; color:#94a3b8;">--</span>
+              <span>•</span>
+              <span id="sheetPriceTag" class="sheet-price-tag">₱0.00</span>
+              <span id="sheetStockBadge" class="badge-stock">Checking stock…</span>
+            </div>
+          </div>
+          <button type="button" class="btn-sheet-cancel" id="btnSheetClose" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Wholesale Tier Banner (Conditional) -->
+        <div id="sheetWholesaleBanner" class="wholesale-banner" style="display:none;">
+          <span style="font-size:14px;">💡</span>
+          <span id="sheetWholesaleText">Wholesale tier available</span>
+        </div>
+
+        <!-- Stepper Input -->
+        <div class="qty-stepper-container">
+          <button type="button" class="btn-stepper" id="btnQtyMinus" aria-label="Decrease quantity">−</button>
+          <input type="text" inputmode="numeric" class="input-qty-display" id="sheetQtyInput" value="1" />
+          <button type="button" class="btn-stepper" id="btnQtyPlus" aria-label="Increase quantity">+</button>
+        </div>
+
+        <!-- Hardware Quick Increment Chips -->
+        <div class="quick-chips-grid">
+          <button type="button" class="chip-btn" data-add="1">+1</button>
+          <button type="button" class="chip-btn" data-add="5">+5</button>
+          <button type="button" class="chip-btn" data-add="10">+10</button>
+          <button type="button" class="chip-btn" data-add="25">+25</button>
+          <button type="button" class="chip-btn" data-add="50">+50</button>
+          <button type="button" class="chip-btn" data-add="100">+100</button>
+        </div>
+
+        <!-- Dynamic Subtotal Bar -->
+        <div class="sheet-subtotal-bar">
+          <span class="subtotal-label">Subtotal Estimate:</span>
+          <span id="sheetSubtotalDisplay" class="subtotal-val">₱0.00</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="sheet-actions">
+          <button type="button" class="btn-sheet-cart" id="btnSheetAddToCart">
+            <span>🛒</span>
+            <span id="btnSheetCartText">Add to Cart</span>
+          </button>
+          <button type="button" class="btn-sheet-quote" id="btnSheetAddToQuote">
+            <span>📋</span>
+            <span>Quotation</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="feedback-toast" id="toast"></div>
   </div>
 
@@ -722,6 +1039,25 @@ function generateMobileHtml(): string {
     const manualForm = document.getElementById('manualForm');
     const manualInput = document.getElementById('manualInput');
 
+    // Bottom Sheet & Mode Switcher Elements
+    const btnModeBulk = document.getElementById('btnModeBulk');
+    const btnModeRapid = document.getElementById('btnModeRapid');
+    const bottomSheetBackdrop = document.getElementById('bottomSheetBackdrop');
+    const sheetProductTitle = document.getElementById('sheetProductTitle');
+    const sheetBarcodeLabel = document.getElementById('sheetBarcodeLabel');
+    const sheetPriceTag = document.getElementById('sheetPriceTag');
+    const sheetStockBadge = document.getElementById('sheetStockBadge');
+    const sheetWholesaleBanner = document.getElementById('sheetWholesaleBanner');
+    const sheetWholesaleText = document.getElementById('sheetWholesaleText');
+    const sheetQtyInput = document.getElementById('sheetQtyInput');
+    const btnQtyMinus = document.getElementById('btnQtyMinus');
+    const btnQtyPlus = document.getElementById('btnQtyPlus');
+    const sheetSubtotalDisplay = document.getElementById('sheetSubtotalDisplay');
+    const btnSheetAddToCart = document.getElementById('btnSheetAddToCart');
+    const btnSheetCartText = document.getElementById('btnSheetCartText');
+    const btnSheetAddToQuote = document.getElementById('btnSheetAddToQuote');
+    const btnSheetClose = document.getElementById('btnSheetClose');
+
     let currentStream = null;
     let currentTrack = null;
     let torchState = false;
@@ -733,6 +1069,38 @@ function generateMobileHtml(): string {
     let isScanning = false;
     let scanCanvas = document.createElement('canvas');
 
+    // Scanner Mode: 'bulk' (prompt quantity bottom sheet) vs 'rapid' (instant 1x)
+    let scanMode = localStorage.getItem('tinda_scan_mode') || 'bulk';
+    function updateModeButtons() {
+      if (scanMode === 'rapid') {
+        btnModeRapid.classList.add('active');
+        btnModeBulk.classList.remove('active');
+        statusTip.textContent = '⚡ Rapid Mode: Scans immediately add 1x to cart';
+      } else {
+        btnModeBulk.classList.add('active');
+        btnModeRapid.classList.remove('active');
+        statusTip.textContent = '📦 Hardware Mode: Prompt quantity & quotation on scan';
+      }
+    }
+    updateModeButtons();
+
+    btnModeBulk.addEventListener('click', () => {
+      scanMode = 'bulk';
+      localStorage.setItem('tinda_scan_mode', 'bulk');
+      updateModeButtons();
+      showToast('📦 Bulk Quantity Mode Active', 'info');
+    });
+    btnModeRapid.addEventListener('click', () => {
+      scanMode = 'rapid';
+      localStorage.setItem('tinda_scan_mode', 'rapid');
+      updateModeButtons();
+      showToast('⚡ 1x Rapid Mode Active', 'info');
+    });
+
+    let activeSheetBarcode = '';
+    let activeProduct = null;
+    let sheetOpen = false;
+
     // Official GS1 Modulo-10 Checksum Validator & Strict Format Verifier
     function isValidBarcode(text) {
       if (!text) return false;
@@ -740,7 +1108,7 @@ function generateMobileHtml(): string {
       if (clean.length < 4 || clean.length > 32) return false;
 
       // Retail linear barcodes with GS1 check digit (EAN-8, UPC-E/A, EAN-13, ITF-14)
-      if (/^\\d{8}$|^\\d{12}$|^\\d{13}$|^\\d{14}$/.test(clean)) {
+      if (/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(clean)) {
         let sum = 0;
         let multiplier = 3;
         for (let i = clean.length - 2; i >= 0; i--) {
@@ -752,7 +1120,7 @@ function generateMobileHtml(): string {
       }
 
       // Pure digits 4-32 chars
-      if (/^\\d{4,32}$/.test(clean)) return true;
+      if (/^\d{4,32}$/.test(clean)) return true;
 
       // Alphanumeric barcodes (Code 128, Code 39, custom alphanumeric SKU)
       if (/^[A-Za-z0-9_-]{4,32}$/.test(clean)) return true;
@@ -785,6 +1153,33 @@ function generateMobileHtml(): string {
       } catch (e) {}
     }
 
+    function playSuccessChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.frequency.setValueAtTime(1046, now);
+        gain1.gain.setValueAtTime(0.25, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.12);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.frequency.setValueAtTime(1318, now + 0.08);
+        gain2.gain.setValueAtTime(0.3, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.25);
+      } catch (e) {}
+    }
+
     function showToast(msg, type = 'success') {
       if (type === 'success') {
         if (navigator.vibrate) navigator.vibrate(80);
@@ -795,20 +1190,171 @@ function generateMobileHtml(): string {
       toast.className = 'feedback-toast show ' + type;
       setTimeout(() => {
         toast.className = 'feedback-toast';
-      }, 2000);
+      }, 2200);
     }
 
-    async function sendScan(code) {
+    function updateSubtotal() {
+      const qty = Math.max(1, parseInt(sheetQtyInput.value, 10) || 1);
+      btnSheetCartText.textContent = 'Add ' + qty + 'x to Cart';
+      if (!activeProduct) {
+        sheetSubtotalDisplay.textContent = '--';
+        return;
+      }
+      let unitPriceC = activeProduct.price_c || 0;
+      if (activeProduct.wholesale_min_qty && qty >= activeProduct.wholesale_min_qty && activeProduct.wholesale_price_c) {
+        unitPriceC = activeProduct.wholesale_price_c;
+      }
+      const totalC = Math.round(unitPriceC * qty);
+      sheetSubtotalDisplay.textContent = '₱' + (totalC / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    async function openQuantitySheet(barcode) {
+      if (sheetOpen) return;
+      sheetOpen = true;
+      activeSheetBarcode = barcode;
+      activeProduct = null;
+
+      // Haptic and audio feedback
+      playBeep();
+      if (navigator.vibrate) navigator.vibrate([40, 50, 40]);
+      triggerScanVisual();
+
+      // Reset Sheet UI
+      sheetProductTitle.textContent = 'Loading product…';
+      sheetBarcodeLabel.textContent = barcode;
+      sheetPriceTag.textContent = '₱0.00';
+      sheetStockBadge.textContent = 'Checking stock…';
+      sheetStockBadge.className = 'badge-stock';
+      sheetWholesaleBanner.style.display = 'none';
+      sheetQtyInput.value = '1';
+      updateSubtotal();
+
+      bottomSheetBackdrop.classList.add('show');
+
+      // Fetch live product details from POS
+      try {
+        const res = await fetch('/api/product?barcode=' + encodeURIComponent(barcode));
+        const data = await res.json();
+        if (data && data.ok && data.product) {
+          activeProduct = data.product;
+          sheetProductTitle.textContent = activeProduct.name;
+          sheetPriceTag.textContent = '₱' + activeProduct.price + (activeProduct.base_unit ? ' / ' + activeProduct.base_unit : '');
+          const stock = activeProduct.stock ?? 0;
+          if (stock <= 0) {
+            sheetStockBadge.textContent = '❌ Out of stock';
+            sheetStockBadge.className = 'badge-stock out';
+          } else if (stock <= 5) {
+            sheetStockBadge.textContent = '⚠️ ' + stock + ' ' + activeProduct.base_unit + ' left';
+            sheetStockBadge.className = 'badge-stock low';
+          } else {
+            sheetStockBadge.textContent = '📦 ' + stock + ' ' + activeProduct.base_unit + ' in stock';
+            sheetStockBadge.className = 'badge-stock';
+          }
+
+          if (activeProduct.wholesale_min_qty && activeProduct.wholesale_price) {
+            sheetWholesaleBanner.style.display = 'flex';
+            sheetWholesaleText.textContent = 'Wholesale: ₱' + activeProduct.wholesale_price + ' each for ' + activeProduct.wholesale_min_qty + '+ ' + activeProduct.base_unit;
+          }
+        } else {
+          sheetProductTitle.textContent = 'Uncatalogued Item';
+          sheetStockBadge.textContent = 'Not in catalog';
+          sheetStockBadge.className = 'badge-stock low';
+        }
+      } catch (err) {
+        sheetProductTitle.textContent = 'Barcode: ' + barcode;
+        sheetStockBadge.textContent = 'Offline check';
+      }
+      updateSubtotal();
+
+      // Select quantity input for quick editing
+      setTimeout(() => {
+        sheetQtyInput.focus();
+        sheetQtyInput.select();
+      }, 100);
+    }
+
+    function closeQuantitySheet() {
+      bottomSheetBackdrop.classList.remove('show');
+      sheetOpen = false;
+      setTimeout(() => {
+        sheetQtyInput.blur();
+      }, 200);
+    }
+
+    btnQtyMinus.addEventListener('click', () => {
+      const cur = parseInt(sheetQtyInput.value, 10) || 1;
+      sheetQtyInput.value = Math.max(1, cur - 1);
+      updateSubtotal();
+    });
+
+    btnQtyPlus.addEventListener('click', () => {
+      const cur = parseInt(sheetQtyInput.value, 10) || 1;
+      sheetQtyInput.value = Math.min(99999, cur + 1);
+      updateSubtotal();
+    });
+
+    sheetQtyInput.addEventListener('input', () => {
+      sheetQtyInput.value = sheetQtyInput.value.replace(/[^0-9]/g, '');
+      updateSubtotal();
+    });
+
+    document.querySelectorAll('.chip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const add = parseInt(btn.dataset.add, 10) || 1;
+        const cur = parseInt(sheetQtyInput.value, 10) || 0;
+        sheetQtyInput.value = Math.min(99999, cur + add);
+        updateSubtotal();
+      });
+    });
+
+    btnSheetAddToCart.addEventListener('click', () => {
+      const qty = Math.max(1, parseInt(sheetQtyInput.value, 10) || 1);
+      const code = activeSheetBarcode;
+      closeQuantitySheet();
+      sendScan(code, qty, 'cart');
+    });
+
+    btnSheetAddToQuote.addEventListener('click', () => {
+      const qty = Math.max(1, parseInt(sheetQtyInput.value, 10) || 1);
+      const code = activeSheetBarcode;
+      closeQuantitySheet();
+      sendScan(code, qty, 'quotation');
+    });
+
+    btnSheetClose.addEventListener('click', closeQuantitySheet);
+    bottomSheetBackdrop.addEventListener('click', (e) => {
+      if (e.target === bottomSheetBackdrop) closeQuantitySheet();
+    });
+
+    async function sendScan(code, quantity = 1, action = 'cart') {
       const trimmed = code.trim();
       if (!trimmed || !isValidBarcode(trimmed)) return;
-      showToast('✅ Scanned: ' + trimmed, 'success');
+      const safeQty = Math.max(1, Math.round(quantity));
+      const actionName = action === 'quotation' ? 'Quotation' : 'Cart';
+      const prodName = activeProduct && activeProduct.name ? activeProduct.name : trimmed;
+      showToast('✅ Added ' + safeQty + 'x ' + prodName + ' to ' + actionName, 'success');
+      playSuccessChime();
+      if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
       try {
         await fetch('/api/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ barcode: trimmed, session: session })
+          body: JSON.stringify({ barcode: trimmed, quantity: safeQty, action, session })
         });
       } catch (e) {}
+    }
+
+    function handleDetectedBarcode(code) {
+      if (sheetOpen) return;
+      const trimmed = code.trim();
+      if (!trimmed || !isValidBarcode(trimmed)) return;
+
+      if (scanMode === 'rapid') {
+        sendScan(trimmed, 1, 'cart');
+      } else {
+        openQuantitySheet(trimmed);
+      }
     }
 
     manualForm.addEventListener('submit', (e) => {
@@ -819,7 +1365,7 @@ function generateMobileHtml(): string {
         showToast('⚠️ Invalid barcode format (min 4 characters)', 'error');
         return;
       }
-      sendScan(code);
+      handleDetectedBarcode(code);
       manualInput.value = '';
     });
 
@@ -910,7 +1456,7 @@ function generateMobileHtml(): string {
             ctx.drawImage(img, 0, 0, w, h);
             const detected = await decodeCanvas(scanCanvas);
             if (detected) {
-              sendScan(detected);
+              handleDetectedBarcode(detected);
             } else {
               showToast('❌ No barcode detected. Please ensure barcode is well lit and snap again.', 'error');
             }
@@ -1005,7 +1551,7 @@ function generateMobileHtml(): string {
               if (detected !== lastScanned || now - lastScanTime > 3500) {
                 lastScanned = detected;
                 lastScanTime = now;
-                sendScan(detected);
+                handleDetectedBarcode(detected);
               }
             }
           } else {
@@ -1143,6 +1689,48 @@ function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse):
     return
   }
 
+  if (pathname === '/api/product') {
+    const barcode = url.searchParams.get('barcode')?.trim() || ''
+    if (!barcode) {
+      res.writeHead(400, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ ok: false, error: 'Barcode parameter required' }))
+      return
+    }
+    try {
+      const db = getDb()
+      if (db) {
+        const p = findByBarcode(db, barcode) || findBySku(db, barcode)
+        if (p) {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              ok: true,
+              product: {
+                id: p.id,
+                name: p.name,
+                barcode: p.barcode,
+                sku: p.sku,
+                base_unit: p.base_unit || 'pc',
+                price_c: p.default_price_c,
+                price: (p.default_price_c / 100).toFixed(2),
+                stock: p.stock,
+                wholesale_price_c: p.wholesale_price_c,
+                wholesale_price: p.wholesale_price_c ? (p.wholesale_price_c / 100).toFixed(2) : null,
+                wholesale_min_qty: p.wholesale_min_qty || null
+              }
+            })
+          )
+          return
+        }
+      }
+    } catch {
+      // Vitest or headless environment without active db
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ ok: false, error: 'Product not found' }))
+    return
+  }
+
   if (pathname === '/api/scan' && req.method === 'POST') {
     let body = ''
     req.on('data', (chunk) => {
@@ -1153,11 +1741,14 @@ function handleHttpRequest(req: http.IncomingMessage, res: http.ServerResponse):
       try {
         const data = JSON.parse(body)
         const barcode = typeof data.barcode === 'string' ? data.barcode.trim() : ''
+        const rawQty = typeof data.quantity === 'number' ? data.quantity : parseFloat(data.quantity)
+        const quantity = Number.isFinite(rawQty) && rawQty > 0 ? Math.min(Math.max(1, Math.round(rawQty)), 99999) : 1
+        const action = typeof data.action === 'string' && data.action === 'quotation' ? 'quotation' : 'cart'
         if (barcode && isValidBarcodeServer(barcode)) {
           lastClientPing = Date.now()
-          notifyBarcodeScan(barcode)
+          notifyBarcodeScan(barcode, quantity, action)
           res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({ ok: true, barcode }))
+          res.end(JSON.stringify({ ok: true, barcode, quantity, action }))
           return
         }
       } catch {

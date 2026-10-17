@@ -150,7 +150,8 @@ export function CameraScannerModal({
       }))
     })
 
-    const cleanupScan = window.api.phoneScanner?.onScan((barcode) => {
+    const cleanupScan = window.api.phoneScanner?.onScan((payload) => {
+      const barcode = typeof payload === 'object' && payload !== null ? payload.barcode : payload
       playBeep()
       setLastScanned(barcode)
       onScan(barcode)

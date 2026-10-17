@@ -30,25 +30,24 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.18 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v2.2.19 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.18.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/TindaPOS-Setup-2.2.18.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-2.2.18.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/TindaPOS-Portable-2.2.18.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.18.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/SHA256SUMS-v2.2.18.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Setup-2.2.19.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Portable-2.2.19.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.19.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/SHA256SUMS-v2.2.19.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## ✨ What's New in v2.2.18: Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition
-- **Product Barcode Duplicate & Constraint Collision Fix**: Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving or editing products with multi-unit packaging. Primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Empty barcodes are cleanly sanitized to `null`.
-- **Item Sales Reporting Resilience**: Added multi-tier fallback resilience for `window.api.reports.itemSales` preventing UI crashes and "is not a function" errors in Sales Reports.
-- **High-Velocity POS Cashier Shortcuts**:
-  - `Alt + C` or `Ctrl + Delete`: Instantly clear the entire cart basket with live toast feedback and visual badge indicator.
-  - `Shift + F9` or `Alt + U`: Fast-track Utang credit checkout directly from cart and toggle Utang method inside Checkout modal.
-- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly directly in the transaction form, with full presets management and telecom E-Load protection.
-- **554 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+## ✨ What's New in v2.2.19: Smart Mobile Phone Scanner with Quantity & Hardware Quotation Edition
+- **Smart Mobile Phone Roving Scanner with Quantity Selector**: Cashiers and floor staff can now use their mobile phone as a wireless barcode scanner with an instant interactive Quantity Bottom Sheet modal (stepper input, hardware quick chips: `+1`, `+5`, `+10`, `+25`, `+50`, `+100`) designed specifically for hardware and wholesale stores.
+- **Real-Time Product Price & Stock Preview**: Scanning any item on the phone immediately displays the product name, price, remaining stock status, and bulk wholesale tiers on the mobile screen before adding to the cart.
+- **Roving Hardware Quotation & Cart Push**: Staff walking with customers on the sales floor can instantly send items with custom quantities directly into the active desktop POS cart or mark items for quotation and parked sales.
+- **Audio Chimes & Physical Haptic Feedback**: Crisp Web Audio synthesized scanner beeps and dual-tone success chimes paired with device vibration on phone scans without external audio files.
+- **Togglable Scan Modes**: One-tap switcher between **📦 Bulk Qty Mode** (for roving hardware & bulk orders) and **⚡ Rapid 1x Mode** (for high-velocity grocery retail).
+- **557 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.
 
 ---

@@ -54,7 +54,7 @@ export function Login(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-ink-950 p-6">
+    <div className="flex min-h-[100svh] w-screen items-center justify-center bg-ink-950 p-6 supports-[height:100dvh]:min-h-[100dvh]">
       <div className="card w-full max-w-sm p-8">
         {/* Header */}
         <div className="mb-5 flex flex-col items-center text-center">
