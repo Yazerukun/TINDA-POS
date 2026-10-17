@@ -1,0 +1,6 @@
+8d82ca8889ff86f33b29307774b472ec3cb81644574bc109cdac6cc0bc3dbbed  TindaPOS-Setup-3.0.2.exe
+716c0df57528d372531a468759abfd2c66b70d6be611edf17502a6f1f7e42ea4  TindaPOS-Portable-3.0.2.exe
+514c8143dcc02f7b445ca7b93799008e80078ff16609bbf3342dc9d0ce287a23  TindaPOS-Setup-3.0.2.exe.blockmap
+25ef1684936db7b6543fd70b6d5bdff20a8d232b1fba227642b43ca9f2fa9502  TindaPOS-3.0.2.AppImage
+bf95d936cfebabc9e30d76c2bad70b932de61b9fd4a56bc81def31593837c6c4  latest.yml
+4c5b5fd42af70ab0e17f166357726f87bb5b553d46f6aff7d589f07f65aeb8e4  latest-linux.yml

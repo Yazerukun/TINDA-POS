@@ -8,6 +8,10 @@ binding = "DB"
 database_name = "tinda-sync-db"
 database_id = "74f850c3-d414-4ae6-9cd9-23a1448a887b"
 
+[[r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "tinda-pos-snapshots"
+
 [vars]
 ENVIRONMENT = "development"
 SESSION_SECRET = "change-this-in-production-use-wrangler-secret"

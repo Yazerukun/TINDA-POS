@@ -149,12 +149,24 @@ async function postToCloud(
   }
 }
 
+export function ensureSyncSchema(db: Database.Database): void {
+  try {
+    const cols = db.prepare("PRAGMA table_info(sales)").all() as Array<{ name: string }>
+    if (cols && cols.length > 0 && !cols.some((c) => c.name === 'cloud_synced_at')) {
+      db.exec('ALTER TABLE sales ADD COLUMN cloud_synced_at TEXT;')
+    }
+  } catch (err) {
+    console.warn('[CloudSync] ensureSyncSchema notice:', (err as Error).message)
+  }
+}
+
 /**
  * Push an individual sale to cloud immediately upon checkout
  */
 export async function pushSaleToCloud(db: Database.Database, saleData: CloudSaleSyncPayload): Promise<void> {
   const creds = getSyncCredentials(db)
   if (!creds) return
+  ensureSyncSchema(db)
 
   const ok = await postToCloud(creds.apiUrl, '/api/sync/sale', {
     store_id: creds.storeId,
@@ -164,6 +176,9 @@ export async function pushSaleToCloud(db: Database.Database, saleData: CloudSale
   })
 
   if (ok) {
+    try {
+      db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?").run(saleData.local_sale_id)
+    } catch {}
     updateSettings(db, {
       cloud_last_synced_at: new Date().toISOString(),
       cloud_sync_pending: false
@@ -275,49 +290,100 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       return { ok: false, message: `Cloud authentication failed (${syncPingRes.status})${errDetail}` }
     }
 
-    // Push recent sales so cloud dashboard displays live data immediately
+    // Push pending/recent sales so cloud dashboard displays live data immediately
     let pushedCount = 0
     try {
+      ensureSyncSchema(db)
       const hasSalesTable = Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sales'").get())
       if (hasSalesTable) {
-        const recent = listSales(db, { limit: 50 }).rows.filter((s: any) => s.status !== 'VOIDED')
-        for (const s of recent) {
+        let candidateSales: any[] = []
+        try {
+          const pending = listSales(db, { limit: 100 }).rows.filter((s: any) => !s.cloud_synced_at && s.status !== 'VOIDED')
+          candidateSales = pending.length > 0 ? pending : listSales(db, { limit: 50 }).rows.filter((s: any) => s.status !== 'VOIDED')
+        } catch {
+          candidateSales = listSales(db, { limit: 50 }).rows.filter((s: any) => s.status !== 'VOIDED')
+        }
+
+        const toPush = candidateSales.slice(0, 100)
+        const payloadList = toPush.map((s: any) => {
           const payments = (s as any).payments || []
           const getAmt = (m: string): number =>
             payments.filter((p: any) => p.method === m).reduce((sum: number, p: any) => sum + (p.amount_c || 0), 0)
           const nonCash = getAmt('GCASH') + getAmt('MAYA') + getAmt('MARIBANK') + getAmt('UTANG')
           const actualCash = Math.max(0, s.total_c - nonCash)
+          return {
+            local_sale_id: s.id,
+            transaction_no: s.transaction_no,
+            cashier_name: null,
+            customer_name: (s as any).customer_name || null,
+            subtotal_c: s.subtotal_c,
+            discount_c: s.discount_c,
+            total_c: s.total_c,
+            status: s.status,
+            cash_c: actualCash,
+            gcash_c: getAmt('GCASH'),
+            maya_c: getAmt('MAYA'),
+            utang_c: getAmt('UTANG'),
+            net_sales_c: Math.max(0, s.total_c - getAmt('UTANG')),
+            local_shift_id: s.shift_id,
+            sold_at: s.created_at,
+            items: ((s as any).items || []).map((it: any) => ({
+              product_name: it.product_name || it.name || 'Item',
+              unit_name: it.unit_name || 'pc',
+              qty: it.qty,
+              unit_price_c: it.unit_price_c,
+              subtotal_c: it.subtotal_c
+            }))
+          }
+        })
+
+        if (payloadList.length > 1) {
+          // Attempt batch sync for multi-sale payloads
+          const batchOk = await postToCloud(apiUrl, '/api/sync/batch', {
+            store_id: storeId,
+            sync_key: syncKey,
+            branch_name: branchName,
+            sales: payloadList
+          } as any)
+
+          if (batchOk) {
+            pushedCount = payloadList.length
+            try {
+              const markStmt = db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?")
+              for (const item of payloadList) {
+                markStmt.run(item.local_sale_id)
+              }
+            } catch {}
+          } else {
+            // Fallback to sequential /api/sync/sale
+            for (const sPayload of payloadList) {
+              const success = await postToCloud(apiUrl, '/api/sync/sale', {
+                store_id: storeId,
+                sync_key: syncKey,
+                branch_name: branchName,
+                data: sPayload
+              })
+              if (success) {
+                pushedCount++
+                try {
+                  db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?").run(sPayload.local_sale_id)
+                } catch {}
+              }
+            }
+          }
+        } else if (payloadList.length === 1) {
+          const sPayload = payloadList[0]
           const success = await postToCloud(apiUrl, '/api/sync/sale', {
             store_id: storeId,
             sync_key: syncKey,
             branch_name: branchName,
-            data: {
-              local_sale_id: s.id,
-              transaction_no: s.transaction_no,
-              cashier_name: null,
-              customer_name: (s as any).customer_name || null,
-              subtotal_c: s.subtotal_c,
-              discount_c: s.discount_c,
-              total_c: s.total_c,
-              status: s.status,
-              cash_c: actualCash,
-              gcash_c: getAmt('GCASH'),
-              maya_c: getAmt('MAYA'),
-              utang_c: getAmt('UTANG'),
-              net_sales_c: Math.max(0, s.total_c - getAmt('UTANG')),
-              local_shift_id: s.shift_id,
-              sold_at: s.created_at,
-              items: ((s as any).items || []).map((it: any) => ({
-                product_name: it.product_name || it.name || 'Item',
-                unit_name: it.unit_name || 'pc',
-                qty: it.qty,
-                unit_price_c: it.unit_price_c,
-                subtotal_c: it.subtotal_c
-              }))
-            }
+            data: sPayload
           })
           if (success) {
             pushedCount++
+            try {
+              db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?").run(sPayload.local_sale_id)
+            } catch {}
           }
         }
       }
