@@ -212,28 +212,39 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
     const dupe = db.prepare(`SELECT id FROM products WHERE sku = ? COLLATE NOCASE ${ex}`).get(...args) as { id: number } | undefined
     if (dupe) throw new Error('Duplicate SKU.')
   }
-  if (input.barcode?.trim()) {
-    const dupe = db.prepare(`SELECT p.id FROM products p WHERE p.barcode = ? AND p.id != ?`).get(input.barcode.trim(), excludeId ?? -1) as
+  const trimmedBarcode = input.barcode?.trim() || null
+  if (trimmedBarcode) {
+    const dupe = db.prepare(`SELECT p.id FROM products p WHERE p.barcode = ? AND p.id != ?`).get(trimmedBarcode, excludeId ?? -1) as
       | { id: number }
       | undefined
     if (dupe) throw new Error('Duplicate barcode.')
     const unitEx = excludeId ? 'AND product_id != ?' : ''
-    const unitDupe = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(input.barcode.trim(), ...(excludeId ? [excludeId] : [])) as
+    const unitDupe = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(trimmedBarcode, ...(excludeId ? [excludeId] : [])) as
       | { id: number }
       | undefined
     if (unitDupe) throw new Error('Duplicate barcode on a product unit.')
   }
   if (!input.units || input.units.length === 0) throw new Error('At least one selling unit is required.')
   let foundBase = false
+  const seenUnitBarcodes = new Set<string>()
   for (const u of input.units) {
     if (!u.name?.trim()) throw new Error('Please enter a name for the selling unit.')
     if (!Number.isInteger(u.conversion_to_base) || u.conversion_to_base < 1) throw new Error('Invalid unit conversion.')
     if (u.selling_price_c < 0) throw new Error('Unit price cannot be negative.')
     if (u.conversion_to_base === 1) foundBase = true
-    if (u.barcode?.trim()) {
+    const trimmedUnitBarcode = u.barcode?.trim() || null
+    if (trimmedUnitBarcode) {
+      if (seenUnitBarcodes.has(trimmedUnitBarcode)) {
+        throw new Error(`Duplicate barcode "${trimmedUnitBarcode}" assigned to multiple selling units.`)
+      }
+      seenUnitBarcodes.add(trimmedUnitBarcode)
+      // Check if unit barcode is used by another product's unit
       const unitEx = excludeId ? 'AND product_id != ?' : ''
-      const dup = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(u.barcode.trim(), ...(excludeId ? [excludeId] : []))
-      if (dup) throw new Error(`Barcode ${u.barcode} already in use.`)
+      const dup = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(trimmedUnitBarcode, ...(excludeId ? [excludeId] : []))
+      if (dup) throw new Error(`Barcode ${trimmedUnitBarcode} already in use.`)
+      // Check if unit barcode is used by another product as primary barcode
+      const prodDup = db.prepare(`SELECT id FROM products WHERE barcode = ? AND id != ?`).get(trimmedUnitBarcode, excludeId ?? -1)
+      if (prodDup) throw new Error(`Barcode ${trimmedUnitBarcode} is already used as a product primary barcode.`)
     }
   }
   if (!foundBase) throw new Error('One unit must convert to exactly 1 base unit.')

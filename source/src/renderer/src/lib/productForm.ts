@@ -129,41 +129,51 @@ export function firstUnitError(units: ProductUnitInput[]): string | null {
 // has_expiration is intentionally NOT sent: the backend merges undefined
 // fields from the stored product, so editing never flips that flag.
 export function updateProductInput(form: ProductFormData): Partial<ProductInput> {
+  const sanitizedUnits = (form.units || []).map((u) => ({
+    ...u,
+    name: u.name.trim(),
+    barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
+  }))
   return {
-    name: form.name,
-    sku: form.sku,
-    barcode: form.barcode || null,
+    name: form.name?.trim(),
+    sku: form.sku?.trim(),
+    barcode: form.barcode && form.barcode.trim() ? form.barcode.trim() : null,
     item_type: form.item_type,
     category_id: form.category_id,
-    base_unit: form.base_unit,
+    base_unit: form.base_unit?.trim(),
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
     srp_c: form.srp_c,
     wholesale_price_c: form.wholesale_price_c,
     wholesale_min_qty: form.wholesale_min_qty,
     low_stock_threshold: form.low_stock_threshold,
-    description: form.description,
+    description: form.description?.trim() || null,
     supplier_id: form.supplier_id,
     image_path: form.image_path,
-    notes: form.notes,
+    notes: form.notes?.trim() || null,
     ...(form.expiration_mode !== undefined ? { expiration_mode: form.expiration_mode, expiration_date: form.expiration_date || null } : {}),
-    units: form.units
+    units: sanitizedUnits
   }
 }
 
 // Create payload: unchanged behavior from v1.0.6 (a single selling unit named
 // after the base unit when no units were configured in the form).
 export function createProductInput(form: ProductFormData): ProductInput {
-  const units = form.units.length > 0
+  const rawUnits = form.units.length > 0
     ? form.units
     : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: 0, is_default: true }]
+  const sanitizedUnits = rawUnits.map((u) => ({
+    ...u,
+    name: u.name.trim(),
+    barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
+  }))
   return {
-    name: form.name,
-    sku: form.sku,
-    barcode: form.barcode || null,
+    name: form.name?.trim(),
+    sku: form.sku?.trim(),
+    barcode: form.barcode && form.barcode.trim() ? form.barcode.trim() : null,
     item_type: form.item_type ?? 'STANDARD',
     category_id: form.category_id,
-    base_unit: form.base_unit,
+    base_unit: form.base_unit?.trim(),
     purchase_cost_c: form.purchase_cost_c,
     default_price_c: form.default_price_c,
     srp_c: form.srp_c,
@@ -171,14 +181,14 @@ export function createProductInput(form: ProductFormData): ProductInput {
     wholesale_min_qty: form.wholesale_min_qty,
     low_stock_threshold: form.low_stock_threshold,
     initial_stock_base: form.initial_stock_base,
-    description: form.description,
+    description: form.description?.trim() || null,
     supplier_id: form.supplier_id,
     has_expiration: false,
     expiration_mode: form.expiration_mode ?? 'NONE',
     expiration_date: form.expiration_date || null,
     image_path: form.image_path,
-    notes: form.notes,
-    units
+    notes: form.notes?.trim() || null,
+    units: sanitizedUnits
   }
 }
 

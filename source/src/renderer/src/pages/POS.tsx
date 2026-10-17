@@ -2209,6 +2209,25 @@ function CartPanel({
         }
         return
       }
+
+      // Keyboard shortcut for Utang Checkout: Shift+F9 or Alt+U
+      if (((e.shiftKey && e.key === 'F9') || (e.altKey && (e.key === 'u' || e.key === 'U'))) && items.length > 0 && !stockConflict) {
+        e.preventDefault()
+        setCheckoutMethod('UTANG')
+        setCheckoutOpen(true)
+        return
+      }
+
+      // Keyboard shortcut for Clear Basket / Cart: Alt+C or Ctrl+Delete or Alt+Delete
+      if (((e.altKey && (e.key === 'c' || e.key === 'C')) || ((e.ctrlKey || e.altKey) && (e.key === 'Delete' || e.key === 'Backspace'))) && items.length > 0) {
+        const activeTag = (document.activeElement?.tagName || '').toLowerCase()
+        if (activeTag !== 'input' && activeTag !== 'textarea') {
+          e.preventDefault()
+          usePosCart.getState().clear()
+          toastSuccess('Basket cleared')
+          return
+        }
+      }
     }
 
     window.addEventListener('keydown', handleCartHotkeys)
@@ -2640,12 +2659,18 @@ function CartPanel({
           )}
           <button
             disabled={items.length === 0}
-            onClick={() => usePosCart.getState().clear()}
+            onClick={() => {
+              usePosCart.getState().clear()
+              toastSuccess('Basket cleared')
+            }}
             className="btn-ghost flex items-center justify-center gap-1 py-1.5 text-xs text-slate-400 hover:text-danger-400 disabled:opacity-40"
-            title="Clear all cart items"
+            title="Clear all cart items (Alt+C)"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Clear</span>
+            <span className="hidden sm:inline">Clear</span>
+            <span className="text-[10px] font-mono font-bold text-slate-400 bg-ink-800 px-1 py-0.2 rounded border border-ink-line">
+              Alt+C
+            </span>
           </button>
         </div>
         <button
@@ -2662,7 +2687,7 @@ function CartPanel({
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </div>
           <span className="mt-0.5 text-[11px] font-normal text-emerald-100/80">
-            F9 Cash · F10 GCash · F11 Maya · F12 MariBank
+            F9 Cash · F10 GCash · F11 Maya · F12 MariBank · ⇧F9 Utang
           </span>
         </button>
       </div>
@@ -3203,6 +3228,11 @@ function CheckoutModal({
           setTimeout(() => { refInputRef.current?.focus(); refInputRef.current?.select() }, 50)
           return
         }
+        if ((e.shiftKey && e.key === 'F9') || (e.altKey && (e.key === 'u' || e.key === 'U'))) {
+          e.preventDefault()
+          setMethod('UTANG')
+          return
+        }
       }
     }
 
@@ -3277,7 +3307,7 @@ function CheckoutModal({
     { key: 'GCASH', label: 'GCash', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F10', activeClass: '!border-sky-500 !text-sky-400 font-semibold bg-sky-500/10 shadow-[0_0_12px_rgba(14,165,233,0.15)]' },
     { key: 'MAYA', label: 'Maya', icon: <Smartphone className="h-4 w-4" />, shortcut: 'F11', activeClass: '!border-teal-500 !text-teal-300 font-semibold bg-teal-500/10 shadow-[0_0_12px_rgba(20,184,166,0.15)]' },
     { key: 'MARIBANK', label: 'MariBank', icon: <Landmark className="h-4 w-4 text-[#FF8533]" />, shortcut: 'F12', activeClass: '!border-[#FF6A00] !text-[#FF8533] font-semibold bg-[#FF6A00]/10 shadow-[0_0_12px_rgba(255,106,0,0.2)]' },
-    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" />, shortcut: '', activeClass: '!border-violet-500 !text-violet-400 font-semibold bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]' }
+    { key: 'UTANG', label: 'Utang', icon: <Wallet className="h-4 w-4" />, shortcut: 'Shift+F9', activeClass: '!border-violet-500 !text-violet-400 font-semibold bg-violet-500/10 shadow-[0_0_12px_rgba(139,92,246,0.15)]' }
   ]
 
   return (

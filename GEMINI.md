@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v2.2.17 (Legacy VIP Restoration & Backward-Compatible Self-Healing Edition)
+- **Current Stable Version:** v2.2.18 (Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Automatic self-healing and restoration of all existing VIP Pro lifetime licenses after the 24-Hour Demo update. Preserves original HMAC signature compatibility across all 4 license vaults (Windows Registry, AppData, User Home, and SQLite), ensuring 100% uninterrupted VIP access for all paying customers while keeping 24-hour demo keys active.
+- **Latest Feature:** Full resolution of SQLite unique constraint and duplicate barcode errors on product creation and editing, allowing primary products to share base unit barcodes without conflicting. Resilient itemSales reporting API fallback, and high-velocity POS cashier hotkeys (`Alt+C` for Clear Basket, `Shift+F9` / `Alt+U` for Utang checkout).

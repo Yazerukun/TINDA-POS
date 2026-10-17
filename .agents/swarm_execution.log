@@ -73,3 +73,20 @@
 2026-10-16 14:03:59 | Jin Engine Dispatched | Task: Investigate why customer VIP disappeared and restore VIP status immediately
 2026-10-16 14:09:17 | Jin Engine Dispatched | Task: Investigate why existing VIP customers lost VIP status in update and restore automatically
 2026-10-16 14:14:49 | Jin Engine Dispatched | Task: Release v2.2.17 with backward-compatible license self-healing to automatically restore VIP status for all existing customers
+2026-10-16 14:35:07 | Jin Engine Dispatched | Task: Investigate and fix network error invalid json response on Cloudflare dashboard and sync backend
+2026-10-16 15:06:16 | Jin Engine Dispatched | Task: Design and evaluate free architectural alternatives to eliminate Cloudflare D1 row read exhaustion without paying
+2026-10-16 15:10:21 | Jin Engine Dispatched | Task: Architect R2 edge cache snapshot engine for tinda-sync to eliminate D1 row read limit
+2026-10-16 15:11:10 | Jin Engine Dispatched | Task: Create R2 bucket tinda-pos-snapshots, bind to tinda-sync worker, and implement R2 edge snapshot cache
+2026-10-16 15:18:54 | Jin Engine Dispatched | Task: Investigate why user still sees Cloudflare D1 daily free limit and implement zero-D1 fallback using R2 and in-memory caches
+2026-10-16 15:58:37 | Jin Engine Dispatched | Task: Investigate and fix 500 Internal Server Error on /api/owner/login during Cloudflare D1 quota limit
+2026-10-16 15:59:50 | Jin Engine Dispatched | Task: Fix 500 error on owner login with Cloudflare D1 quota fallback and R2 auth session
+2026-10-16 16:10:43 | Jin Engine Dispatched | Task: Fix 404 on /api/announcements and 500 on /api/owner/branch/link with R2 fallback
+2026-10-16 16:25:24 | Jin Engine Dispatched | Task: Fix SqliteError UNIQUE constraint failed products.unit_barcode on product create/update with selling units
+2026-10-16 16:32:37 | Jin Engine Dispatched | Task: Investigate and fix cash sales inaccuracy on tinda-sync worker for owner Annie Ann
+2026-10-16 16:40:45 | Jin Engine Dispatched | Task: Investigate and fix inaccurate cash sales for Annie Ann on tinda-sync and tinda-owner-dashboard
+2026-10-17 08:16:43 | Jin Engine Dispatched | Task: Investigate owner cloud dashboard sync issue: 10 transactions in POS dashboard (9088 cash sales) but only 4 transactions read in owner cloud
+2026-10-17 08:54:01 | Jin Engine Dispatched | Task: Fix products create/update unique constraint on unit_barcode and duplicate barcode, fix window.api.reports.itemSales missing method in IPC, check/add shortcut keys for basket clear and utang
+2026-10-17 08:56:01 | Jin Engine Dispatched | Task: Fix product barcode duplicate/constraint errors, implement missing reports.itemSales IPC, and verify/add POS shortcuts for clear basket and utang
+2026-10-17 09:05:18 | Jin Engine Dispatched | Task: Fix login screen disappearing on window maximize/restore/minimize on tindapos-web.pages.dev and improve login dashboard design
+2026-10-17 09:09:00 | Jin Engine Dispatched | Task: Build and stable release v2.2.18 with product barcode fixes, reports.itemSales resilience, and POS shortcuts
+2026-10-17 09:15:27 | Jin Engine Dispatched | Task: Reproduce login screen disappearing on window resize/maximize/restore/minimize on tindapos-web.pages.dev using BrowserSkill CLI, diagnose layout/viewport CSS causing it, and fix the web app (TINDA-POS-Web) login UI + design. Also improve login dashboard aesthetics.

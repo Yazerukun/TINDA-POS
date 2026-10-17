@@ -122,13 +122,34 @@ export function Reports(): React.JSX.Element {
           setFrom(sevenDaysAgo)
         }
       }
-      const res = await window.api.reports.itemSales({
-        from: fromDate,
-        to,
-        search: itemSearch.trim() || undefined,
-        category_id: itemCategoryFilter === 'ALL' ? undefined : itemCategoryFilter
-      })
-      setItemData(res)
+      if (typeof window.api?.reports?.itemSales === 'function') {
+        const res = await window.api.reports.itemSales({
+          from: fromDate,
+          to,
+          search: itemSearch.trim() || undefined,
+          category_id: itemCategoryFilter === 'ALL' ? undefined : itemCategoryFilter
+        })
+        setItemData(res)
+      } else if (typeof (window.api as unknown as { rawInvoke?: (ch: string, ...args: unknown[]) => Promise<ItemSalesReport> })?.rawInvoke === 'function') {
+        const res = await (window.api as unknown as { rawInvoke: (ch: string, ...args: unknown[]) => Promise<ItemSalesReport> }).rawInvoke('reports:itemSales', {
+          from: fromDate,
+          to,
+          search: itemSearch.trim() || undefined,
+          category_id: itemCategoryFilter === 'ALL' ? undefined : itemCategoryFilter
+        })
+        setItemData(res)
+      } else {
+        setItemData({
+          rows: [],
+          summary: {
+            total_items_sold: 0,
+            total_sales_c: 0,
+            total_cost_c: 0,
+            total_profit_c: 0,
+            unique_products_count: 0
+          }
+        })
+      }
     } catch (e) {
       toastError('Failed to load item sales', String((e as Error)?.message || e))
     } finally {
