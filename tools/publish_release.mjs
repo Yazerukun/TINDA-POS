@@ -162,10 +162,13 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly (e.g. Meralco, Electric Cooperatives, BENECO, Maynilad, PrimeWater, MCWD) directly in the transaction form.
-- **Manage Billers Modal**: Full Biller Preset Manager modal to add new custom local billers, rename existing billers, and configure default convenience fees, persisted reactively across sessions.
-- **Telco E-Load Protection**: Strict protection for Globe/TM, Smart/TNT, and DITO networks — keeping telecom load denominations and network identifiers secure from accidental renaming.
-- **553 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+    releaseNotes = `- **Product Barcode Duplicate & Constraint Collision Fix**: Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving or editing products with multi-unit packaging. Primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Empty barcodes are cleanly sanitized to null.
+- **Item Sales Reporting Resilience**: Added multi-tier fallback resilience for \`window.api.reports.itemSales\` preventing UI crashes and "is not a function" errors in Sales Reports.
+- **High-Velocity POS Cashier Shortcuts**:
+  - \`Alt + C\` or \`Ctrl + Delete\`: Instantly clear the entire cart basket with live toast feedback and visual badge indicator.
+  - \`Shift + F9\` or \`Alt + U\`: Fast-track Utang credit checkout directly from cart and toggle Utang method inside Checkout modal.
+- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly directly in the transaction form, with full presets management and telecom E-Load protection.
+- **554 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
   }
 

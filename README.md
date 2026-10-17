@@ -30,14 +30,26 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.16 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v2.2.18 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.16.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.16/TindaPOS-Setup-2.2.16.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-2.2.16.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.16/TindaPOS-Portable-2.2.16.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.16/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.16.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.16/SHA256SUMS-v2.2.16.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.18.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/TindaPOS-Setup-2.2.18.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.18.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/TindaPOS-Portable-2.2.18.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.18.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.18/SHA256SUMS-v2.2.18.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## ✨ What's New in v2.2.18: Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition
+- **Product Barcode Duplicate & Constraint Collision Fix**: Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving or editing products with multi-unit packaging. Primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Empty barcodes are cleanly sanitized to `null`.
+- **Item Sales Reporting Resilience**: Added multi-tier fallback resilience for `window.api.reports.itemSales` preventing UI crashes and "is not a function" errors in Sales Reports.
+- **High-Velocity POS Cashier Shortcuts**:
+  - `Alt + C` or `Ctrl + Delete`: Instantly clear the entire cart basket with live toast feedback and visual badge indicator.
+  - `Shift + F9` or `Alt + U`: Fast-track Utang credit checkout directly from cart and toggle Utang method inside Checkout modal.
+- **Customizable Utility & Water Billers**: Cashiers can now edit utility and water biller names on-the-fly directly in the transaction form, with full presets management and telecom E-Load protection.
+- **554 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.
 
 ---
 
