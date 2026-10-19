@@ -68,6 +68,41 @@ export interface VoidPayload {
   reason: string
 }
 
+export interface ExchangeItemPayload {
+  sale_id: number
+  sale_item_id: number
+  returned_qty: number
+  replacement_product_id: number
+  replacement_qty: number
+  reason: string
+  cash_tendered_c?: number
+}
+
+export interface ExchangeResult {
+  ok: boolean
+  sale_id: number
+  returned_item: {
+    sale_item_id: number
+    product_id: number
+    product_name: string
+    qty: number
+    unit_name: string
+    credit_c: number
+  }
+  replacement_item: {
+    product_id: number
+    product_name: string
+    qty: number
+    unit_name: string
+    unit_price_c: number
+    total_c: number
+  }
+  difference_c: number // positive = customer pays abono, negative = customer change/sukli, 0 = even
+  cash_tendered_c: number
+  change_c: number
+  receipt_lines: string[]
+}
+
 export interface LoginResult {
   user: SessionUser
   firstRun: boolean
@@ -389,6 +424,7 @@ export interface TindaApi {
     get: (id: number) => Promise<import('./types').Sale>
     refund: (payload: RefundPayload) => Promise<Refund>
     void: (payload: VoidPayload) => Promise<import('./types').Sale>
+    exchangeItem: (payload: ExchangeItemPayload) => Promise<ExchangeResult>
     delete: (saleId: number, options?: { restoreStock?: boolean }) => Promise<{ ok: boolean; transaction_no: string }>
     updateItemPrice?: (saleItemId: number, newUnitPriceC: number) => Promise<{ ok: boolean; saleId: number; deltaC: number }>
     onChanged: (handler: (payload: unknown) => void) => () => void

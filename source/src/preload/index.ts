@@ -191,6 +191,8 @@ const api: TindaApi = {
     get: (id) => invoke<import('@shared/types').Sale>('transactions:get', id),
     refund: (payload: RefundPayload) => invoke<import('@shared/types').Refund>('transactions:refund', payload),
     void: (payload: VoidPayload) => invoke<import('@shared/types').Sale>('transactions:void', payload),
+    exchangeItem: (payload: import('@shared/ipc').ExchangeItemPayload) =>
+      invoke<import('@shared/ipc').ExchangeResult>('transactions:exchangeItem', payload),
     delete: (saleId: number, options?: { restoreStock?: boolean }) =>
       invoke<{ ok: boolean; transaction_no: string }>('transactions:delete', saleId, options),
     updateItemPrice: (saleItemId: number, newUnitPriceC: number) =>

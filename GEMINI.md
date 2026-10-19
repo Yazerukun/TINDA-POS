@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v3.0.2 (Ultra-Fast Hardware Barcode Scanner & Instant Auto-Detect Edition)
+- **Current Stable Version:** v3.0.3 (Item-Level Void & Instant Item Exchange Studio Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Zero-error hardware barcode scanner protection against secondary carriage return / line feed (CR+LF) trailing Enter bursts. Eliminates cross-product scanning conflicts (Pantene vs Surf Powder). Strict exact barcode, SKU, and multi-unit matching priority in SQLite without blind fallbacks. Real-time automatic hardware scanner detection with non-blocking feedback. Instant thermal printer detection. Mobile scanner retained independently for quotation/roving staff. Full Windows Setup & Portable production release.
+- **Latest Feature:** Single-Item Void & Instant Item Exchange Studio. Direct item-level void/return with proportional discount computation preserving store profitability, live Item Exchange Studio modal with barcode scanner auto-focus, real-time math matrix (Old Credit vs Replacement Price, Abono / Sukli / Even calculation), atomic SQLite transaction (restock old item, deduct replacement, drawer cash reconciliation), and auto-printed thermal 'ITEM EXCHANGE RECEIPT'. Fully verified with 0 TypeScript errors and 564 automated Vitest unit tests.

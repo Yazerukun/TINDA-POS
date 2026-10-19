@@ -951,6 +951,20 @@ handle('transactions:void', (_e: IpcMainInvokeEvent, payload: unknown) => {
     release()
   }
 })
+handle('transactions:exchangeItem', (_e: IpcMainInvokeEvent, payload: unknown) => {
+  const release = beginCriticalOperation('EXCHANGE_ITEM')
+  try {
+    const result = txSvc.processItemExchange(payload as Parameters<typeof txSvc.processItemExchange>[0])
+    emitInventoryChanged({
+      reason: 'EXCHANGE',
+      product_ids: [result.returned_item.product_id, result.replacement_item.product_id].filter(Boolean)
+    })
+    emitTransactionsChanged({ reason: 'EXCHANGE', sale_id: result.sale_id })
+    return result
+  } finally {
+    release()
+  }
+})
 handle('transactions:delete', (_e: IpcMainInvokeEvent, saleId: number, options?: { restoreStock?: boolean }) => {
   const release = beginCriticalOperation('DELETE_TRANSACTION')
   try {

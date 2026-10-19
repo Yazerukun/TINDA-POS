@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v3.0.2 (ULTRA-FAST HARDWARE BARCODE SCANNER & INSTANT AUTO-DETECT EDITION)
+- v3.0.3 (ITEM-LEVEL VOID & INSTANT ITEM EXCHANGE STUDIO EDITION)
 
 TARGET:
-- v3.0.3 (NEXT CYCLE)
+- v3.0.4 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v3.0.2 Ultra-Fast Hardware Barcode Scanner & Instant Auto-Detect Edition compiling Full Windows Executables
+- Production Release Ready — v3.0.3 Item-Level Void & Instant Item Exchange Studio Edition
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -54,6 +54,7 @@ COMPLETED:
 - Stage 42: v2.2.16 24-Hour VIP Demo Licensing & Real-Time Countdown Edition official release. Added cryptographic 24-hour VIP demo keys (`DEMO-XXXX-XXXX-XXXX-XXXX`) tied strictly to hardware motherboard/machine GUID to prevent multi-device piracy, live ticking countdown timer in Sidebar and VipUpgradeModal, desktop shortcut generator (`TINDA-POS-Demo-Keygen.bat`) on Bossing's desktop, and automatic non-destructive fallback to Community tier upon expiration. Vitest unit tests passing, 0 TypeScript errors, master invariants verified. Full Windows binaries (TindaPOS-Setup-2.2.16.exe + TindaPOS-Portable-2.2.16.exe).
 - Stage 43: v2.2.17 Legacy VIP Restoration & Backward-Compatible Self-Healing Edition official release. Preserved original HMAC signature compatibility across all 4 license vaults (Windows Registry, AppData, User Home, and SQLite), eliminating accidental downgrade for existing VIP customers who updated to v2.2.16, restored seamless backward-compatible key generation and verification, and confirmed 100% automatic recovery of lifetime VIP Pro access. Full Windows binaries (TindaPOS-Setup-2.2.17.exe + TindaPOS-Portable-2.2.17.exe).
 - Stage 44: v2.2.18 Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition official release. Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving/editing products with selling units; primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Added multi-tier fallback resilience for `window.api.reports.itemSales` preventing UI crashes on item sales reports. Added high-velocity cashier keyboard shortcuts: `Alt+C` / `Ctrl+Delete` to instantly clear the cart basket, and `Shift+F9` / `Alt+U` to immediately tender Utang (credit) transactions. 554/554 tests passing across 86 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.18.exe + TindaPOS-Portable-2.2.18.exe).
+- Stage 45: v3.0.3 Single-Item Void & Instant Item Exchange Studio Edition official release. Direct item-level void/return with proportional discount computation preserving store profitability, live Item Exchange Studio modal (`ItemExchangeModal.tsx`) with barcode scanner auto-focus, real-time math matrix (Old Credit vs Replacement Price, Abono / Sukli / Even calculation), atomic SQLite transaction (restock old item, deduct replacement, drawer cash reconciliation), and auto-printed thermal 'ITEM EXCHANGE RECEIPT'. Fully verified with 0 TypeScript errors and 564 automated Vitest unit tests.
 
 PENDING APPROVAL:
 - None (Approved by Owner).

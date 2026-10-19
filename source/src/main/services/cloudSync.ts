@@ -379,7 +379,7 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
             branch_name: branchName,
             data: sPayload
           })
-          if (success) {
+          if (success && sPayload) {
             pushedCount++
             try {
               db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?").run(sPayload.local_sale_id)

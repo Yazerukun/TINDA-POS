@@ -619,7 +619,7 @@ export interface DiscoveredMaster {
 }
 
 export interface InventoryChangedEvent {
-  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE'
+  reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE' | 'EXCHANGE'
   product_ids: number[]
 }
 

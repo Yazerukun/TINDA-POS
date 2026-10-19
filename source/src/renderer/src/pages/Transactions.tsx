@@ -16,12 +16,14 @@ import {
   ArrowUpRight,
   RefreshCw
 } from 'lucide-react'
-import type { Sale, EwalletTransactionRecord } from '@shared/types'
+import type { Sale, SaleItem, EwalletTransactionRecord } from '@shared/types'
 import { money, shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
 import { EmptyState, StatusBadge } from '../components/ui/EmptyState'
 import { Modal } from '../components/ui/Modal'
 import { ReceiptPaper } from '../components/ReceiptPaper'
+import { SingleItemVoidModal } from '../components/SingleItemVoidModal'
+import { ItemExchangeModal } from '../components/ItemExchangeModal'
 import { toastSuccess, toastError } from '../stores/toast'
 import type { BillRecord } from './EwalletAudit'
 
@@ -59,6 +61,8 @@ export function Transactions(): React.JSX.Element {
   const [refund, setRefund] = useState<Sale | null>(null)
   const [voider, setVoider] = useState<Sale | null>(null)
   const [deleter, setDeleter] = useState<Sale | null>(null)
+  const [singleVoidItem, setSingleVoidItem] = useState<{ sale: Sale; item: SaleItem } | null>(null)
+  const [exchangeItem, setExchangeItem] = useState<{ sale: Sale; item: SaleItem } | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
 
   // E-Wallet & Bills Center State
@@ -492,32 +496,66 @@ export function Transactions(): React.JSX.Element {
                                   <table className="w-full table-fixed text-xs">
                                     <thead>
                                       <tr className="border-b border-ink-line bg-ink-950/70">
-                                        <th className="w-[46%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Product</th>
-                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Qty</th>
-                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Unit Price</th>
-                                        <th className="w-[18%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Subtotal</th>
+                                        <th className="w-[36%] py-2.5 px-3 text-center align-middle font-semibold text-slate-400">Product</th>
+                                        <th className="w-[14%] py-2.5 px-2 text-center align-middle font-semibold text-slate-400">Qty</th>
+                                        <th className="w-[16%] py-2.5 px-2 text-center align-middle font-semibold text-slate-400">Unit Price</th>
+                                        <th className="w-[16%] py-2.5 px-2 text-center align-middle font-semibold text-slate-400">Subtotal</th>
+                                        <th className="w-[18%] py-2.5 px-2 text-center align-middle font-semibold text-slate-400">Item Action</th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {s.items.map((i) => (
-                                        <tr key={i.id} className="border-b border-ink-line/50 last:border-0 hover:bg-ink-800/40">
-                                          <td className="w-[46%] py-2 px-3 text-center align-middle text-slate-200 truncate" title={i.product_name}>
-                                            <span className="font-medium">{i.product_name}</span>
-                                            {i.refunded_qty_base > 0 && (
-                                              <span className="ml-1.5 text-amber-400 text-[11px] font-normal">(ref {i.refunded_qty_base})</span>
-                                            )}
-                                          </td>
-                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
-                                            {i.qty} <span className="font-sans text-[11px] text-slate-500">{i.unit_name}</span>
-                                          </td>
-                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums text-slate-300">
-                                            {money(i.unit_price_c)}
-                                          </td>
-                                          <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-semibold text-slate-100">
-                                            {money(i.subtotal_c)}
-                                          </td>
-                                        </tr>
-                                      ))}
+                                      {s.items.map((i) => {
+                                        const canAct = (s.status === 'COMPLETED' || s.status === 'PARTIALLY_REFUNDED') && (i.qty_base - i.refunded_qty_base > 0)
+                                        return (
+                                          <tr key={i.id} className="border-b border-ink-line/50 last:border-0 hover:bg-ink-800/40">
+                                            <td className="w-[36%] py-2 px-3 text-center align-middle text-slate-200 truncate" title={i.product_name}>
+                                              <span className="font-medium">{i.product_name}</span>
+                                              {i.refunded_qty_base > 0 && (
+                                                <span className="ml-1.5 text-amber-400 text-[11px] font-normal">(ref {i.refunded_qty_base})</span>
+                                              )}
+                                            </td>
+                                            <td className="w-[14%] py-2 px-2 text-center align-middle font-mono tabular-nums text-slate-300">
+                                              {i.qty} <span className="font-sans text-[11px] text-slate-500">{i.unit_name}</span>
+                                            </td>
+                                            <td className="w-[16%] py-2 px-2 text-center align-middle font-mono tabular-nums text-slate-300">
+                                              {money(i.unit_price_c)}
+                                            </td>
+                                            <td className="w-[16%] py-2 px-2 text-center align-middle font-mono tabular-nums font-semibold text-slate-100">
+                                              {money(i.subtotal_c)}
+                                            </td>
+                                            <td className="w-[18%] py-2 px-2 text-center align-middle">
+                                              {canAct ? (
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation()
+                                                      setSingleVoidItem({ sale: s, item: i })
+                                                    }}
+                                                    className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition shadow-sm"
+                                                    title="Void / Return this single item"
+                                                  >
+                                                    ↩ Return
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation()
+                                                      setExchangeItem({ sale: s, item: i })
+                                                    }}
+                                                    className="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition shadow-sm"
+                                                    title="Exchange this item with another"
+                                                  >
+                                                    🔄 Change
+                                                  </button>
+                                                </div>
+                                              ) : (
+                                                <span className="text-[10px] text-slate-500 font-mono">—</span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        )
+                                      })}
                                     </tbody>
                                     <tfoot>
                                       {s.discount_c > 0 && (
@@ -525,9 +563,10 @@ export function Transactions(): React.JSX.Element {
                                           <td colSpan={3} className="py-1.5 px-3 text-center align-middle text-slate-400">
                                             Discount
                                           </td>
-                                          <td className="w-[18%] py-1.5 px-3 text-center align-middle font-mono tabular-nums text-amber-400">
+                                          <td className="w-[16%] py-1.5 px-2 text-center align-middle font-mono tabular-nums text-amber-400">
                                             −{money(s.discount_c)}
                                           </td>
+                                          <td className="w-[18%] py-1.5 px-2"></td>
                                         </tr>
                                       )}
                                       <tr className="border-t border-ink-line bg-ink-950/60 text-xs font-semibold">
@@ -539,9 +578,10 @@ export function Transactions(): React.JSX.Element {
                                             </span>
                                           </div>
                                         </td>
-                                        <td className="w-[18%] py-2 px-3 text-center align-middle font-mono tabular-nums font-bold text-white">
+                                        <td className="w-[16%] py-2 px-2 text-center align-middle font-mono tabular-nums font-bold text-white">
                                           {money(s.total_c)}
                                         </td>
+                                        <td className="w-[18%] py-2 px-2"></td>
                                       </tr>
                                     </tfoot>
                                   </table>
@@ -762,7 +802,36 @@ export function Transactions(): React.JSX.Element {
         </>
       )}
 
-      {view && <ViewSale sale={view} onClose={() => setView(null)} />}
+      {view && (
+        <ViewSale
+          sale={view}
+          onClose={() => setView(null)}
+          onSingleVoid={(s, i) => setSingleVoidItem({ sale: s, item: i })}
+          onExchange={(s, i) => setExchangeItem({ sale: s, item: i })}
+        />
+      )}
+      {singleVoidItem && (
+        <SingleItemVoidModal
+          sale={singleVoidItem.sale}
+          item={singleVoidItem.item}
+          onClose={() => setSingleVoidItem(null)}
+          onDone={() => {
+            setSingleVoidItem(null)
+            void load()
+          }}
+        />
+      )}
+      {exchangeItem && (
+        <ItemExchangeModal
+          sale={exchangeItem.sale}
+          item={exchangeItem.item}
+          onClose={() => setExchangeItem(null)}
+          onDone={() => {
+            setExchangeItem(null)
+            void load()
+          }}
+        />
+      )}
       {refund && <RefundModal sale={refund} onClose={() => setRefund(null)} onDone={() => { setRefund(null); void load() }} />}
       {voider && <VoidModal sale={voider} onClose={() => setVoider(null)} onDone={() => { setVoider(null); void load() }} />}
       {deleter && <DeleteTransactionModal sale={deleter} onClose={() => setDeleter(null)} onDone={() => { setDeleter(null); void load() }} />}
@@ -778,7 +847,17 @@ export function Transactions(): React.JSX.Element {
   )
 }
 
-function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React.JSX.Element {
+function ViewSale({
+  sale,
+  onClose,
+  onSingleVoid,
+  onExchange
+}: {
+  sale: Sale
+  onClose: () => void
+  onSingleVoid?: (sale: Sale, item: SaleItem) => void
+  onExchange?: (sale: Sale, item: SaleItem) => void
+}): React.JSX.Element {
   const [receiptLines, setReceiptLines] = useState<string[] | null>(null)
   const print = async (manual = false) => {
     try {
@@ -817,13 +896,54 @@ function ViewSale({ sale, onClose }: { sale: Sale; onClose: () => void }): React
         <span>{shortDateTime(sale.created_at)}</span><span>{sale.cashier_name}</span>
       </div>
       {sale.customer_name && <p className="mb-2 text-sm text-slate-400">Customer: <span className="text-slate-200">{sale.customer_name}</span></p>}
-      <div className="max-h-56 space-y-1 overflow-y-auto">
-        {sale.items.map((i) => (
-          <div key={i.id} className="flex justify-between rounded-lg border border-ink-line px-3 py-1.5 text-sm">
-            <span className="text-slate-300">{i.product_name} <span className="text-slate-500">×{i.qty} {i.unit_name}</span>{i.refunded_qty_base > 0 && <span className="ml-1 text-amber-400">(ref {i.refunded_qty_base})</span>}</span>
-            <span className="font-bold text-slate-200">{money(i.subtotal_c)}</span>
-          </div>
-        ))}
+      <div className="max-h-60 space-y-1.5 overflow-y-auto pr-0.5">
+        {sale.items.map((i) => {
+          const canAct = (sale.status === 'COMPLETED' || sale.status === 'PARTIALLY_REFUNDED') && (i.qty_base - i.refunded_qty_base > 0)
+          return (
+            <div key={i.id} className="flex items-center justify-between rounded-lg border border-ink-line p-2 text-xs gap-2 bg-ink-950/40">
+              <div className="flex-1 min-w-0">
+                <span className="text-slate-200 font-medium truncate block">{i.product_name}</span>
+                <span className="text-[11px] text-slate-400">
+                  {money(i.unit_price_c)} × {i.qty} {i.unit_name}
+                  {i.refunded_qty_base > 0 && <span className="ml-1 text-amber-400 font-semibold">(ref {i.refunded_qty_base})</span>}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-bold text-slate-200 font-mono">{money(i.subtotal_c)}</span>
+                {canAct && (onSingleVoid || onExchange) && (
+                  <div className="flex items-center gap-1 ml-1">
+                    {onSingleVoid && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose()
+                          onSingleVoid(sale, i)
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 transition shadow-sm"
+                        title="Void / Return this item"
+                      >
+                        ↩ Return
+                      </button>
+                    )}
+                    {onExchange && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose()
+                          onExchange(sale, i)
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 transition shadow-sm"
+                        title="Exchange / Change this item"
+                      >
+                        🔄 Change
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
       <div className="mt-3 space-y-1 border-t border-ink-line pt-2 text-sm">
         <div className="flex justify-between text-slate-400"><span>Subtotal</span><span>{money(sale.subtotal_c)}</span></div>

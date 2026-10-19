@@ -1,13 +1,14 @@
 import { getDb } from '../database/connection'
 import { getSale, markVoided, updateSaleStatus, addRefundedQty } from '../repositories/sales'
-import { adjustStock } from '../repositories/products'
+import { adjustStock, getProduct } from '../repositories/products'
+import { getSettings } from '../repositories/settings'
 import { createRefund } from '../repositories/refunds'
 import { applyCreditEntry, getCustomer } from '../repositories/customers'
-import { currentShiftFor } from '../repositories/shifts'
+import { currentShiftFor, updateShiftTotals } from '../repositories/shifts'
 import { audit } from '../repositories/audit'
 import { requirePermission, requireUser } from './session'
-import { updateShiftTotals } from '../repositories/shifts'
-import type { RefundPayload, VoidPayload } from '@shared/ipc'
+import { formatReceiptDate } from '../../shared/receiptHtml'
+import type { ExchangeItemPayload, ExchangeResult, RefundPayload, VoidPayload } from '@shared/ipc'
 
 export function processRefund(payload: RefundPayload): import('@shared/types').Refund {
   const db = getDb()
@@ -310,6 +311,227 @@ export function deleteTransaction(saleId: number, options?: { restoreStock?: boo
     } catch {}
 
     return { ok: true, transaction_no: sale.transaction_no, product_ids }
+  })
+  return tx()
+}
+
+export function processItemExchange(payload: ExchangeItemPayload): ExchangeResult {
+  const db = getDb()
+  const tx = db.transaction(() => {
+    const user = requireUser()
+    requirePermission('pos:refund')
+
+    // 1. Validate payload basics
+    const saleId = payload.sale_id
+    const saleItemId = payload.sale_item_id ?? (payload as any).returned_item?.sale_item_id
+    const returnedQty = payload.returned_qty ?? (payload as any).returned_item?.qty_base ?? (payload as any).returned_item?.qty
+    const replacementProductId = payload.replacement_product_id ?? (payload as any).replacement_item?.product_id
+    const replacementQty = payload.replacement_qty ?? (payload as any).replacement_item?.qty
+    const reason = (payload.reason ?? (payload as any).reason ?? '').trim()
+
+    if (!saleId) throw new Error('Sale ID is required.')
+    if (!saleItemId) throw new Error('Sale item ID is required.')
+    if (!replacementProductId) throw new Error('Replacement product ID is required.')
+    if (!reason) throw new Error('Exchange reason is required.')
+    if (!Number.isFinite(returnedQty) || returnedQty <= 0) {
+      throw new Error('Returned quantity must be greater than zero.')
+    }
+    if (!Number.isFinite(replacementQty) || replacementQty <= 0) {
+      throw new Error('Replacement quantity must be greater than zero.')
+    }
+
+    // 2. Validate sale exists and is not VOIDED or fully REFUNDED
+    const sale = getSale(db, saleId)
+    if (!sale) throw new Error('Sale not found.')
+    if (sale.status === 'VOIDED') throw new Error('Cannot exchange items from a voided sale.')
+    if (sale.status === 'REFUNDED') throw new Error('This sale is already fully refunded.')
+
+    // 3. Validate sale_item exists, belongs to sale, and returned_qty <= available (qty_base - refunded_qty_base)
+    const saleItem = sale.items.find((si) => si.id === saleItemId)
+    if (!saleItem) throw new Error('Sale item does not belong to this sale.')
+    const available = saleItem.qty_base - saleItem.refunded_qty_base
+    if (returnedQty > available) {
+      throw new Error(`Cannot return ${returnedQty}. Only ${available} available.`)
+    }
+
+    // 4. Validate replacement product exists, check allow_negative_inventory if stock < replacement_qty
+    const replacementProduct = getProduct(db, replacementProductId)
+    if (!replacementProduct) throw new Error('Replacement product not found.')
+    const settings = getSettings(db)
+    if (!settings.allow_negative_inventory && replacementProduct.stock < replacementQty) {
+      throw new Error(`Insufficient stock for "${replacementProduct.name}". Available: ${replacementProduct.stock} ${replacementProduct.base_unit}.`)
+    }
+
+    // 5. Compute proportional credit for returned item using discountRatio = sale.total_c / sale.subtotal_c
+    const discountRatio = (sale.subtotal_c > 0 && sale.total_c < sale.subtotal_c)
+      ? (sale.total_c / sale.subtotal_c)
+      : (sale.subtotal_c > 0 ? (sale.total_c / sale.subtotal_c) : 1)
+    const effectiveLineSubtotal = Math.round(saleItem.subtotal_c * discountRatio)
+    const returnedCreditC = Math.round((returnedQty / saleItem.qty_base) * effectiveLineSubtotal)
+
+    // 6. Compute replacement price total (replacementProduct.retail_price_c * replacement_qty)
+    const replacementUnitPriceC = (replacementProduct as any).retail_price_c ?? replacementProduct.default_price_c ?? (replacementProduct.units?.[0]?.selling_price_c ?? 0)
+    const replacementTotalC = Math.round(replacementUnitPriceC * replacementQty)
+    const replacementUnitName = replacementProduct.base_unit || replacementProduct.units?.[0]?.name || 'pc'
+
+    // 7. Calculate difference_c = replacementTotalC - returnedCreditC
+    // positive = customer pays abono, negative = customer change/sukli, 0 = even
+    const differenceC = replacementTotalC - returnedCreditC
+
+    // 8. Calculate change_c and validate cash_tendered_c if difference_c > 0
+    let changeC = 0
+    const cashTenderedC = payload.cash_tendered_c ?? (payload as any).cash_tendered_c ?? 0
+    if (differenceC > 0) {
+      if (cashTenderedC < differenceC) {
+        throw new Error(`Cash tendered is less than additional balance due (tendered: ₱${(cashTenderedC / 100).toFixed(2)}, due: ₱${(differenceC / 100).toFixed(2)}).`)
+      }
+      changeC = cashTenderedC - differenceC
+    } else if (differenceC < 0) {
+      changeC = Math.abs(differenceC)
+    } else {
+      changeC = 0
+    }
+
+    // 9. Restock returned product with adjustStock(..., returned_qty, 'RETURN', ...)
+    if (saleItem.product_id) {
+      adjustStock(
+        db,
+        saleItem.product_id,
+        returnedQty,
+        'RETURN',
+        `Exchange: Returned item from sale ${sale.transaction_no} - ${reason}`,
+        user.id,
+        sale.transaction_no,
+        { return_reference: sale.transaction_no, sale_item_id: saleItem.id }
+      )
+    }
+
+    // 10. Add refunded quantity to sale item with addRefundedQty(db, saleItem.id, payload.returned_qty)
+    addRefundedQty(db, saleItem.id, returnedQty)
+
+    // 11. Deduct replacement product with adjustStock(..., -replacement_qty, 'SALE', ...)
+    adjustStock(
+      db,
+      replacementProduct.id,
+      -replacementQty,
+      'SALE',
+      `Exchange: Replacement item for sale ${sale.transaction_no} - ${reason}`,
+      user.id,
+      sale.transaction_no
+    )
+
+    // 12. Create refund record in refunds table with createRefund for audit & financial trail
+    const refund = createRefund(db, {
+      sale_id: sale.id,
+      user_id: user.id,
+      reason: `Exchange: ${reason}`,
+      total_c: returnedCreditC,
+      items: [
+        {
+          sale_item_id: saleItem.id,
+          product_id: saleItem.product_id ?? 0,
+          qty: returnedQty,
+          qty_base: returnedQty,
+          unit_name: saleItem.unit_name,
+          amount_c: returnedCreditC
+        }
+      ]
+    })
+
+    // 13. Update sale status to PARTIALLY_REFUNDED (or REFUNDED if all items refunded)
+    const updatedSale = getSale(db, sale.id)
+    const allRefunded = updatedSale.items.every((si) => si.qty_base <= si.refunded_qty_base)
+    if (allRefunded) {
+      updateSaleStatus(db, sale.id, 'REFUNDED')
+    } else {
+      updateSaleStatus(db, sale.id, 'PARTIALLY_REFUNDED')
+    }
+
+    // 14. If shift exists, update shift totals
+    if (sale.shift_id) {
+      updateShiftTotals(db, sale.shift_id)
+    }
+    const currentShift = currentShiftFor(db, user.id)
+    if (currentShift && currentShift.id !== sale.shift_id) {
+      updateShiftTotals(db, currentShift.id)
+    }
+
+    // 15. Log audit action 'EXCHANGE_ITEM'
+    audit(db, {
+      action: 'EXCHANGE_ITEM',
+      user_id: user.id,
+      entity_type: 'SALE',
+      entity_id: sale.id,
+      reason: reason,
+      new_value: `Exchange sale #${sale.id}: returned item #${saleItem.id} (${returnedQty} ${saleItem.unit_name}), replacement #${replacementProduct.id} (${replacementQty} ${replacementUnitName}), diff: ${differenceC}c, refund: ${refund.refund_no}`
+    })
+
+    // 16. Build thermal receipt lines for 'ITEM EXCHANGE RECEIPT'
+    const receiptLines: string[] = []
+    if (settings.receipt_header?.trim()) receiptLines.push(...settings.receipt_header.trim().split(/\r?\n/))
+    if (settings.store_name) receiptLines.push(settings.store_name)
+    if (settings.address) receiptLines.push(settings.address)
+    if (settings.phone) receiptLines.push(`Tel: ${settings.phone}`)
+    receiptLines.push('--------------------------------')
+    receiptLines.push('ITEM EXCHANGE RECEIPT')
+    receiptLines.push(`Sale Ref: ${sale.transaction_no}`)
+    receiptLines.push(`Date: ${formatReceiptDate(new Date())}`)
+    receiptLines.push(`Cashier: ${user.full_name || user.username}`)
+    if (sale.customer_name) receiptLines.push(`Customer: ${sale.customer_name}`)
+    receiptLines.push('--------------------------------')
+    receiptLines.push('RETURNED ITEM:')
+    receiptLines.push(`${saleItem.product_name}`)
+    const retQtyStr = returnedQty % 1 === 0 ? String(returnedQty) : Number(returnedQty.toFixed(3)).toString()
+    receiptLines.push(`  ${retQtyStr} ${saleItem.unit_name} (Credit: ${(returnedCreditC / 100).toFixed(2)})`)
+    receiptLines.push('--------------------------------')
+    receiptLines.push('REPLACEMENT ITEM:')
+    receiptLines.push(`${replacementProduct.name}`)
+    const repQtyStr = replacementQty % 1 === 0 ? String(replacementQty) : Number(replacementQty.toFixed(3)).toString()
+    receiptLines.push(`  ${repQtyStr} ${replacementUnitName} @ ${(replacementUnitPriceC / 100).toFixed(2)}    ${(replacementTotalC / 100).toFixed(2)}`)
+    receiptLines.push('================================')
+    receiptLines.push(`Replacement Total   ${(replacementTotalC / 100).toFixed(2)}`)
+    receiptLines.push(`Returned Credit    -${(returnedCreditC / 100).toFixed(2)}`)
+    receiptLines.push('--------------------------------')
+    if (differenceC > 0) {
+      receiptLines.push(`AMOUNT DUE          ${(differenceC / 100).toFixed(2)}`)
+      receiptLines.push(`Cash Tendered       ${(cashTenderedC / 100).toFixed(2)}`)
+      receiptLines.push(`SUKLI               ${(changeC / 100).toFixed(2)}`)
+    } else if (differenceC < 0) {
+      receiptLines.push(`SUKLI               ${(changeC / 100).toFixed(2)}`)
+    } else {
+      receiptLines.push(`EVEN EXCHANGE       0.00`)
+    }
+    receiptLines.push('--------------------------------')
+    receiptLines.push(`Reason: ${reason}`)
+    if (settings.receipt_footer?.trim()) receiptLines.push(settings.receipt_footer.trim())
+    receiptLines.push('--------------------------------')
+
+    const result: ExchangeResult = {
+      ok: true,
+      sale_id: sale.id,
+      returned_item: {
+        sale_item_id: saleItem.id,
+        product_id: saleItem.product_id ?? 0,
+        product_name: saleItem.product_name,
+        qty: returnedQty,
+        unit_name: saleItem.unit_name,
+        credit_c: returnedCreditC
+      },
+      replacement_item: {
+        product_id: replacementProduct.id,
+        product_name: replacementProduct.name,
+        qty: replacementQty,
+        unit_name: replacementUnitName,
+        unit_price_c: replacementUnitPriceC,
+        total_c: replacementTotalC
+      },
+      difference_c: differenceC,
+      cash_tendered_c: cashTenderedC,
+      change_c: changeC,
+      receipt_lines: receiptLines
+    }
+
+    return result
   })
   return tx()
 }
