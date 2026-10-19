@@ -16,7 +16,7 @@ export function validateBackupFile(file: TindaBackupFile): ValidationResult {
   if (file.manifest.format !== FORMAT_ID) fail('bad-format', `Unsupported format "${file.manifest.format}".`)
   if (file.manifest.formatVersion !== FORMAT_VERSION)
     fail('bad-version', `Unsupported format version ${file.manifest.formatVersion}; this build supports ${FORMAT_VERSION}.`)
-  if (file.manifest.source.platform !== 'windows' && file.manifest.source.platform !== 'android')
+  if (file.manifest.source.platform !== 'windows' && file.manifest.source.platform !== 'android' && file.manifest.source.platform !== 'web')
     fail('bad-source', `Unsupported source platform "${file.manifest.source.platform}".`)
   if (typeof file.manifest.createdAt !== 'string' || Number.isNaN(Date.parse(file.manifest.createdAt)))
     fail('bad-date', 'Invalid createdAt date.')
@@ -86,7 +86,7 @@ const ANDROID_CANONICAL_MAP: Record<string, string> = {
 }
 
 export function supportedCanonicalTables(platform: BackupSourcePlatform): Set<string> {
-  if (platform === 'windows') return new Set(WINDOWS_TABLES)
+  if (platform === 'windows' || platform === 'web') return new Set(WINDOWS_TABLES)
   return new Set(Object.values(ANDROID_CANONICAL_MAP))
 }
 

@@ -1186,6 +1186,26 @@ export function POS(): React.JSX.Element {
               </span>
             </button>
 
+            {/* Real-time Hardware Barcode Scanner Auto-Detect Indicator */}
+            <div
+              className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all shrink-0 cursor-default ${
+                hardwareScannerDetected
+                  ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                  : 'border-brand-500/40 bg-brand-500/10 text-brand-300'
+              }`}
+              title={
+                hardwareScannerDetected
+                  ? 'Hardware Barcode Scanner Detected & Active (Keyboard Wedge Mode)'
+                  : 'Barcode Scanner Ready (Wedge Auto-Detect Active - Scan any barcode)'
+              }
+            >
+              <span className={`h-2 w-2 rounded-full ${hardwareScannerDetected ? 'bg-emerald-400 animate-pulse' : 'bg-brand-400'}`} />
+              <Barcode className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline font-mono text-[11px]">
+                {hardwareScannerDetected ? 'Scanner Active' : 'Scanner Ready'}
+              </span>
+            </div>
+
             {/* Quick Audio Beep Mute/Unmute Toggle */}
             <button
               type="button"

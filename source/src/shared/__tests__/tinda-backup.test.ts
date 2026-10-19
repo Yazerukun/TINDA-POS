@@ -66,10 +66,18 @@ describe('tinda-backup format', () => {
     expect(report.unsupportedTables.some((u) => u.name === 'products')).toBe(false)
   })
 
-  it('supportedCanonicalTables covers both platforms', () => {
+  it('supportedCanonicalTables covers windows, android, and web platforms', () => {
     expect(supportedCanonicalTables('windows').has('product_units')).toBe(true)
+    expect(supportedCanonicalTables('web').has('product_units')).toBe(true)
     expect(supportedCanonicalTables('android').has('stock_batches')).toBe(true)
     expect(supportedCanonicalTables('android').has('product_units')).toBe(false)
+  })
+
+  it('validates web platform backup files without error', async () => {
+    const webBackup = await buildBackupFile(sampleData(), { platform: 'web', appVersion: '1.0.3', schemaVersion: 1 })
+    const result = validateBackupFile(webBackup)
+    expect(result.ok).toBe(true)
+    expect(webBackup.manifest.source.platform).toBe('web')
   })
 
   it('computeChecksum is stable regardless of key order', async () => {

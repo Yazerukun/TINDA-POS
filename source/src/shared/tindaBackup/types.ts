@@ -1,4 +1,4 @@
-export type BackupSourcePlatform = 'windows' | 'android'
+export type BackupSourcePlatform = 'windows' | 'android' | 'web'
 
 export interface TindaBackupManifest {
   format: 'tinda-pos-backup'

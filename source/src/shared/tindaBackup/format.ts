@@ -19,7 +19,7 @@ export async function computeChecksum(data: TindaBackupData): Promise<string> {
 }
 
 export function buildManifest(source: {
-  platform: 'windows' | 'android'
+  platform: 'windows' | 'android' | 'web'
   appVersion: string
   schemaVersion: number
   createdAt?: string
@@ -38,7 +38,7 @@ export function buildManifest(source: {
 
 export async function buildBackupFile(
   data: TindaBackupData,
-  source: { platform: 'windows' | 'android'; appVersion: string; schemaVersion: number; createdAt?: string }
+  source: { platform: 'windows' | 'android' | 'web'; appVersion: string; schemaVersion: number; createdAt?: string }
 ): Promise<TindaBackupFile> {
   return {
     manifest: buildManifest(source),
