@@ -40,7 +40,7 @@ Report back as Jin, summarizing the verified output and confirming **0 Errors** 
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v3.0.3 (Item-Level Void & Instant Item Exchange Studio Edition)
+- **Current Stable Version:** v3.0.4 (Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Single-Item Void & Instant Item Exchange Studio. Direct item-level void/return with proportional discount computation preserving store profitability, live Item Exchange Studio modal with barcode scanner auto-focus, real-time math matrix (Old Credit vs Replacement Price, Abono / Sukli / Even calculation), atomic SQLite transaction (restock old item, deduct replacement, drawer cash reconciliation), and auto-printed thermal 'ITEM EXCHANGE RECEIPT'. Fully verified with 0 TypeScript errors and 564 automated Vitest unit tests.
+- **Latest Feature:** Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition. Solves the VIP client feedback on fast buttons: upgraded CustomizeFastButtonsModal with direct asynchronous SQLite database search querying all products across the entire store inventory by name, barcode, or SKU without artificial 10-item limits; displays real-time stock and barcode status; added prominent Linked Inventory Item card with 1-click Unlink capability; introduced in-place Edit mode (Pencil icon) for existing speed keys to seamlessly re-link and customize buttons without deletion; and enhanced FastButtonsBar with direct database lookup fallbacks so clicking any speed key instantly matches its inventory item even when POS pagination or category filtering is active. Fully verified with 0 TypeScript errors and 100% passing automated Vitest unit tests.

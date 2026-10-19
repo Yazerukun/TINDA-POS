@@ -40,13 +40,43 @@ export function FastButtonsBar({
   const handleKeyClick = async (key: SpeedKeyItem) => {
     playScanBeep(1200, 0.05)
 
-    // 1. Check for product matched by explicit ID
+    // 1. Check for product matched by explicit ID in current memory
     let matched = key.productId ? products.find((p) => p.id === key.productId) : null
 
-    // 2. Fallback: match by name case-insensitively
+    // 1b. If key has explicit productId, but it's not in current paginated view, query DB directly
+    if (!matched && key.productId) {
+      try {
+        const dbProduct = await window.api.products.get(key.productId)
+        if (dbProduct && dbProduct.status === 'ACTIVE') {
+          matched = dbProduct
+        }
+      } catch {
+        // Product might have been archived or removed
+      }
+    }
+
+    // 2. Fallback: match by name case-insensitively in memory
     if (!matched) {
       const cleanKeyName = key.name.trim().toLowerCase()
       matched = products.find((p) => p.name.trim().toLowerCase() === cleanKeyName)
+    }
+
+    // 2b. If not in memory, search database for exact name match across entire store catalog
+    if (!matched) {
+      try {
+        const cleanKeyName = key.name.trim().toLowerCase()
+        const res = await window.api.products.search(key.name.trim(), { status: 'ACTIVE', limit: 10 })
+        const exact = (res.rows || []).find((p) => p.name.trim().toLowerCase() === cleanKeyName)
+        if (exact) {
+          matched = exact
+          // Auto-link key so next time it's linked directly to the product ID
+          const updatedKeys = keys.map((k) => (k.id === key.id ? { ...k, productId: exact.id } : k))
+          saveSpeedKeys(updatedKeys)
+          setKeys(updatedKeys)
+        }
+      } catch {
+        // Fallback gracefully
+      }
     }
 
     if (matched) {

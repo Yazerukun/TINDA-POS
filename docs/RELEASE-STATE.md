@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v3.0.3 (ITEM-LEVEL VOID & INSTANT ITEM EXCHANGE STUDIO EDITION)
+- v3.0.4 (FAST BUTTONS UNIVERSAL INVENTORY SEARCH & IN-PLACE LINKER STUDIO EDITION)
 
 TARGET:
-- v3.0.4 (NEXT CYCLE)
+- v3.0.5 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v3.0.3 Item-Level Void & Instant Item Exchange Studio Edition
+- Production Release Ready — v3.0.4 Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

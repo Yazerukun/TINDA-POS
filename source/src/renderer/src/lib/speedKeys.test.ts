@@ -80,6 +80,39 @@ describe('Speed Keys (Fast Buttons) System', () => {
     expect(def[1]!.name).toContain('Yosi')
   })
 
+  it('supports linking, editing in-place, and unlinking products on speed keys', () => {
+    const initialKeys: import('../utils/speedKeys').SpeedKeyItem[] = [
+      {
+        id: 'sk-1',
+        name: 'Generic Ice',
+        price_c: 500,
+        color: 'cyan',
+        unit_name: 'bag'
+      }
+    ]
+
+    saveSpeedKeys(initialKeys)
+    let current = getStoredSpeedKeys()
+    expect(current[0]!.productId).toBeUndefined()
+
+    // 1. Link to Product #101
+    const linked = current.map((k) =>
+      k.id === 'sk-1' ? { ...k, productId: 101, name: 'Purified Tube Ice 1kg', price_c: 600 } : k
+    )
+    saveSpeedKeys(linked)
+    current = getStoredSpeedKeys()
+    expect(current[0]!.productId).toBe(101)
+    expect(current[0]!.name).toBe('Purified Tube Ice 1kg')
+    expect(current[0]!.price_c).toBe(600)
+
+    // 2. Unlink from Product (retains custom values)
+    const unlinked = current.map((k) => (k.id === 'sk-1' ? { ...k, productId: null } : k))
+    saveSpeedKeys(unlinked)
+    current = getStoredSpeedKeys()
+    expect(current[0]!.productId).toBeNull()
+    expect(current[0]!.name).toBe('Purified Tube Ice 1kg')
+  })
+
   it('has comprehensive color styles with high-contrast text and border', () => {
     expect(SPEED_KEY_COLORS.cyan).toBeDefined()
     expect(SPEED_KEY_COLORS.amber).toBeDefined()

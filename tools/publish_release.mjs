@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Single-Item Void & Instant Item Exchange Studio Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,12 +162,12 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Single-Item Void & Proportional Refund Computation**: Cashiers can now void/return a single item from a multi-item transaction with automated proportional discount recalculation, preserving accurate gross margins and ledger balance.
-- **Instant Item Exchange Studio Modal**: Interactive modal with live barcode scanner auto-focus, real-time product search, and live stock validation for rapid in-store item swaps.
-- **Real-Time Financial Math Matrix**: Automatically calculates old credit vs replacement item price, providing an instant status banner for Abono (+₱XX.XX to pay), Sukli (-₱XX.XX change), or Even Exchange (₱0.00).
-- **Atomic SQLite Transaction & Ledger Integrity**: Atomic execution of return restock, replacement inventory deduction, refund audit entry, and shift drawer cash reconciliation in a single database transaction.
-- **Automated Thermal Exchange Slip Printing**: Auto-prints formatted 58mm/80mm thermal receipt slip detailing returned item credit, replacement details, cash tendered, and change.
-- **564 Automated Tests Passing**: 100% test coverage across all transaction, refund, exchange, and inventory test suites with 0 TypeScript errors.
+    releaseNotes = `- **Universal Inventory Search for Fast Buttons**: Upgraded the Fast Buttons Customization modal with direct, real-time asynchronous search across the entire SQLite store inventory by product name, barcode, or SKU without artificial 10-item pagination limits.
+- **Real-Time Stock & Barcode Preview in Search**: Live search results display product photos, names, barcode badges, stock availability status (\`X in stock\` in emerald or rose), base unit, and exact retail price.
+- **Prominent Linked Inventory Item Card**: Selecting a product generates a high-contrast Linked Card displaying linked product metadata, stock status, and a 1-click \`[Unlink Product]\` button to convert between inventory-linked and custom fast buttons.
+- **In-Place Edit & Re-link Mode**: Cashiers and store owners can now edit existing speed keys directly with a dedicated **Edit** (\`Pencil\`) action button without needing to delete and recreate buttons.
+- **Robust Database Lookup Fallback on Tap**: Tapping a fast button in \`FastButtonsBar\` now automatically queries the SQLite database directly if the linked item is outside the currently active POS page or category filter, eliminating accidental duplicate product creation.
+- **565 Automated Tests Passing**: 100% test coverage across all fast keys, inventory, transactions, and store operations with 0 TypeScript errors.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.`
   }
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v3.0.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v3.0.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Setup-3.0.3.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Portable-3.0.3.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.4_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Setup-3.0.4.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.4_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Portable-3.0.4.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,24 +30,24 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v3.0.3 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v3.0.4 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-3.0.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Setup-3.0.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-3.0.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Portable-3.0.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v3.0.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/SHA256SUMS-v3.0.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-3.0.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Setup-3.0.4.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-3.0.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Portable-3.0.4.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v3.0.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/SHA256SUMS-v3.0.4.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## ✨ What's New in v3.0.3: Single-Item Void & Instant Item Exchange Studio Edition
-- **Single-Item Void & Proportional Refund Computation**: Cashiers can now void/return a single item from a multi-item transaction with automated proportional discount recalculation, preserving accurate gross margins and ledger balance.
-- **Instant Item Exchange Studio Modal**: Interactive modal with live barcode scanner auto-focus, real-time product search, and live stock validation for rapid in-store item swaps.
-- **Real-Time Financial Math Matrix**: Automatically calculates old credit vs replacement item price, providing an instant status banner for Abono (+₱XX.XX to pay), Sukli (-₱XX.XX change), or Even Exchange (₱0.00).
-- **Atomic SQLite Transaction & Ledger Integrity**: Atomic execution of return restock, replacement inventory deduction, refund audit entry, and shift drawer cash reconciliation in a single database transaction.
-- **Automated Thermal Exchange Slip Printing**: Auto-prints formatted 58mm/80mm thermal receipt slip detailing returned item credit, replacement details, cash tendered, and change.
-- **564 Automated Tests Passing**: 100% test coverage across all transaction, refund, exchange, and inventory test suites with 0 TypeScript errors.
+## ✨ What's New in v3.0.4: Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition
+- **Universal Inventory Search for Fast Buttons**: Upgraded the Fast Buttons Customization modal with direct, real-time asynchronous search across the entire SQLite store inventory by product name, barcode, or SKU without artificial 10-item pagination limits.
+- **Real-Time Stock & Barcode Preview in Search**: Live search results display product photos, names, barcode badges, stock availability status (`X in stock` in emerald or rose), base unit, and exact retail price.
+- **Prominent Linked Inventory Item Card**: Selecting a product generates a high-contrast Linked Card displaying linked product metadata, stock status, and a 1-click `[Unlink Product]` button to convert between inventory-linked and custom fast buttons.
+- **In-Place Edit & Re-link Mode**: Cashiers and store owners can now edit existing speed keys directly with a dedicated **Edit** (`Pencil`) action button without needing to delete and recreate buttons.
+- **Robust Database Lookup Fallback on Tap**: Tapping a fast button in `FastButtonsBar` now automatically queries the SQLite database directly if the linked item is outside the currently active POS page or category filter, eliminating accidental duplicate product creation.
+- **565 Automated Tests Passing**: 100% test coverage across all fast keys, inventory, transactions, and store operations with 0 TypeScript errors.
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
 
 ---
