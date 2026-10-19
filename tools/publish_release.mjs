@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Smart Mobile Phone Scanner with Quantity & Hardware Quotation Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Single-Item Void & Instant Item Exchange Studio Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -162,13 +162,13 @@ async function main() {
   } catch {}
 
   if (!releaseNotes) {
-    releaseNotes = `- **Smart Mobile Phone Roving Scanner with Quantity Selector**: Cashiers and floor staff can now use their mobile phone as a wireless barcode scanner with an instant interactive Quantity Bottom Sheet modal (stepper input, hardware quick chips: \`+1\`, \`+5\`, \`+10\`, \`+25\`, \`+50\`, \`+100\`) designed specifically for hardware and wholesale stores.
-- **Real-Time Product Price & Stock Preview**: Scanning any item on the phone immediately displays the product name, price, remaining stock status, and bulk wholesale tiers on the mobile screen before adding to the cart.
-- **Roving Hardware Quotation & Cart Push**: Staff walking with customers on the sales floor can instantly send items with custom quantities directly into the active desktop POS cart or mark items for quotation and parked sales.
-- **Audio Chimes & Physical Haptic Feedback**: Crisp Web Audio synthesized scanner beeps and dual-tone success chimes paired with device vibration on phone scans without external audio files.
-- **Togglable Scan Modes**: One-tap switcher between **📦 Bulk Qty Mode** (for roving hardware & bulk orders) and **⚡ Rapid 1x Mode** (for high-velocity grocery retail).
-- **557 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
-- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.`
+    releaseNotes = `- **Single-Item Void & Proportional Refund Computation**: Cashiers can now void/return a single item from a multi-item transaction with automated proportional discount recalculation, preserving accurate gross margins and ledger balance.
+- **Instant Item Exchange Studio Modal**: Interactive modal with live barcode scanner auto-focus, real-time product search, and live stock validation for rapid in-store item swaps.
+- **Real-Time Financial Math Matrix**: Automatically calculates old credit vs replacement item price, providing an instant status banner for Abono (+₱XX.XX to pay), Sukli (-₱XX.XX change), or Even Exchange (₱0.00).
+- **Atomic SQLite Transaction & Ledger Integrity**: Atomic execution of return restock, replacement inventory deduction, refund audit entry, and shift drawer cash reconciliation in a single database transaction.
+- **Automated Thermal Exchange Slip Printing**: Auto-prints formatted 58mm/80mm thermal receipt slip detailing returned item credit, replacement details, cash tendered, and change.
+- **564 Automated Tests Passing**: 100% test coverage across all transaction, refund, exchange, and inventory test suites with 0 TypeScript errors.
+- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.`
   }
 
   const body = `## 🚀 TINDA POS ${TAG} — Official Full Windows Release
