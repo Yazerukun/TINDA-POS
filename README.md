@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v3.0.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v3.0.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.4_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Setup-3.0.4.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.4_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Portable-3.0.4.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.5_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/TindaPOS-Setup-3.0.5.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.5_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/TindaPOS-Portable-3.0.5.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +30,22 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v3.0.4 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v3.0.5 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-3.0.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Setup-3.0.4.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-3.0.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/TindaPOS-Portable-3.0.4.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v3.0.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.4/SHA256SUMS-v3.0.4.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-3.0.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/TindaPOS-Setup-3.0.5.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-3.0.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/TindaPOS-Portable-3.0.5.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v3.0.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.5/SHA256SUMS-v3.0.5.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## ✨ What's New in v3.0.5: Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition
+- **Floating Receiving Dock (Modal-Level Window Minimize)**: Cashiers can click `[ – Minimize ]` in the Purchase Invoice modal header to collapse the invoice into a sleek Cupertino dock at `fixed bottom-5 right-6 z-50`. All line items, supplier selections, and calculations remain intact in memory while cashiers freely inspect inventory stock or sales tabs. Displays draft line count, supplier badge, net total, `[ ⤢ Restore ]`, and discard protection.
+- **Collapsible Header Details Panel (Panel-Level Workspace Expansion)**: Added `[ ▴ Minimize Details ]` / `[ ▾ Show Details ]` toggle in the invoice header bar. Collapses Supplier, Invoice #, Receipt #, Date, and Notes into a compact 1-line badge and dynamically expands the Line Items Table from `max-h-[36vh]` to `max-h-[54vh]`, giving cashiers maximum screen real estate during high-volume wholesale deliveries.
+- **565+ Automated Tests Passing**: Verified with 0 TypeScript compilation errors and 100% test pass rate across all sales, purchases, and inventory modules.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
 
 ---
 
