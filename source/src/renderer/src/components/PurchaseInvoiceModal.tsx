@@ -18,7 +18,11 @@ import {
   Hash,
   Percent,
   Tag,
-  Layers
+  Layers,
+  Minus,
+  Maximize2,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react'
 import type { Product, Supplier, Purchase, ProductUnit } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
@@ -71,6 +75,8 @@ export function PurchaseInvoiceModal({
   onSuccess
 }: PurchaseInvoiceModalProps): React.JSX.Element | null {
   const [activeTab, setActiveTab] = useState<'create' | 'history'>('create')
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [isHeaderPanelMinimized, setIsHeaderPanelMinimized] = useState(false)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [loadingInitial, setLoadingInitial] = useState(false)
@@ -157,6 +163,7 @@ export function PurchaseInvoiceModal({
 
   useEffect(() => {
     if (open) {
+      setIsMinimized(false)
       void loadData()
       if (activeTab === 'history') {
         void loadHistory()
@@ -478,6 +485,7 @@ export function PurchaseInvoiceModal({
         `Invoice ${res.purchase_no} recorded! ${items.length} product(s) stock incremented.`
       )
 
+      setIsMinimized(false)
       onSuccess()
       onClose()
     } catch (err) {
@@ -487,9 +495,21 @@ export function PurchaseInvoiceModal({
     }
   }
 
+  // Handle modal / dock close with discard protection
+  const handleClose = () => {
+    if (items.length > 0) {
+      const confirmDiscard = window.confirm(
+        `You have ${items.length} unsaved item${items.length === 1 ? '' : 's'} in this purchase invoice. Are you sure you want to discard this draft?`
+      )
+      if (!confirmDiscard) return
+    }
+    setIsMinimized(false)
+    onClose()
+  }
+
   // Global Keyboard Shortcuts
   useEffect(() => {
-    if (!open) return
+    if (!open || isMinimized) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // F1: Focus Search/Item Code
@@ -541,70 +561,146 @@ export function PurchaseInvoiceModal({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, selectedProduct, qtyInput, unitCostPesos, selectedUnitName, items, supplierId, invoiceNo, receiptNo, isPaid, termsDays, discountC, notes, updateProductCosts])
+  }, [open, isMinimized, selectedProduct, qtyInput, unitCostPesos, selectedUnitName, items, supplierId, invoiceNo, receiptNo, isPaid, termsDays, discountC, notes, updateProductCosts])
 
   if (!open) return null
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title=""
-      maxWidth="max-w-7xl"
-      zIndex="z-50"
-    >
-      <div className="-mt-3 flex flex-col gap-4">
-        {/* Header Tabs & Title */}
-        <div className="flex flex-wrap items-center justify-between border-b border-ink-line pb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-inner">
-              <FileSpreadsheet className="h-5 w-5" />
+    <>
+      {/* Floating Receiving Dock (Minimized State) */}
+      {isMinimized && (
+        <div
+          className="fixed bottom-5 right-6 z-50 flex items-center gap-4 rounded-2xl border border-white/10 bg-ink-900/95 p-4 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-300 select-none cursor-pointer hover:border-emerald-500/30 transition-all"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('button[data-action="discard"]')) return
+            setIsMinimized(false)
+          }}
+        >
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner">
+            <FileSpreadsheet className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                Receiving Invoice in Progress
+              </span>
+              <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-300">
+                {items.length} line item{items.length === 1 ? '' : 's'}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white tracking-tight">Purchase Invoice</h2>
-                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
-                  Batch Stock-In Receiving
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Receive vendor shipments, batch update stocks, and register supplier costs.
-              </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span
+                className="text-sm font-bold text-white truncate max-w-[180px]"
+                title={currentSupplier?.name || 'Walk-in / Direct'}
+              >
+                {currentSupplier?.name || 'Walk-in / Direct'}
+              </span>
+              <span className="text-xs text-slate-500">•</span>
+              <span className="font-mono text-sm font-bold text-emerald-400">
+                {money(netTotalC)}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border border-ink-line bg-ink-950 p-1">
-              <button
-                type="button"
-                onClick={() => setActiveTab('create')}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-                  activeTab === 'create'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                New Invoice
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('history')
-                  void loadHistory()
-                }}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-                  activeTab === 'history'
-                    ? 'bg-ink-700 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <History className="h-3.5 w-3.5" />
-                Invoices History
-              </button>
-            </div>
+          <div className="flex items-center gap-1.5 pl-2 border-l border-white/10">
+            <button
+              type="button"
+              onClick={() => setIsMinimized(false)}
+              title="Restore Invoice Modal"
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-2 text-xs font-bold text-white shadow-md transition-all active:scale-95"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              <span>Restore</span>
+            </button>
+
+            <button
+              type="button"
+              data-action="discard"
+              onClick={handleClose}
+              title="Discard / Close Invoice"
+              className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
+      )}
+
+      {/* Full Modal Dialog */}
+      {!isMinimized && (
+        <Modal
+          open={open}
+          onClose={handleClose}
+          title=""
+          maxWidth="max-w-7xl"
+          zIndex="z-50"
+        >
+          <div className="-mt-3 flex flex-col gap-4">
+            {/* Header Tabs & Title */}
+            <div className="flex flex-wrap items-center justify-between border-b border-ink-line pb-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-inner">
+                  <FileSpreadsheet className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-white tracking-tight">Purchase Invoice</h2>
+                    <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                      Batch Stock-In Receiving
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Receive vendor shipments, batch update stocks, and register supplier costs.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg border border-ink-line bg-ink-950 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('create')}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                      activeTab === 'create'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    New Invoice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('history')
+                      void loadHistory()
+                    }}
+                    className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                      activeTab === 'history'
+                        ? 'bg-ink-700 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <History className="h-3.5 w-3.5" />
+                    Invoices History
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMinimized(true)}
+                  title="Minimize to Floating Dock"
+                  className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center"
+                >
+                  <Minus className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
         {activeTab === 'history' ? (
           /* HISTORY TAB */
@@ -776,128 +872,193 @@ export function PurchaseInvoiceModal({
           /* CREATE INVOICE WORKFLOW */
           <>
             {/* 1. Header Information Panel (Supplier & Invoice Metadata) */}
-            <div className="rounded-xl border border-ink-line bg-ink-950/70 p-4 backdrop-blur shadow-sm space-y-3">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                {/* Supplier Picker */}
-                <div className="md:col-span-2">
-                  <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
-                    <span className="flex items-center gap-1.5">
-                      <Truck className="h-3.5 w-3.5 text-emerald-400" />
-                      Supplier <span className="text-danger-400">*</span>
+            <div className="rounded-xl border border-ink-line bg-ink-950/70 p-3.5 backdrop-blur shadow-sm space-y-3 transition-all">
+              <div className="flex items-center justify-between pb-2 border-b border-ink-line/50">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-4 w-4 text-emerald-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Invoice Details & Supplier
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsHeaderPanelMinimized(!isHeaderPanelMinimized)}
+                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-white hover:bg-ink-800 transition-colors"
+                  title={isHeaderPanelMinimized ? 'Show Details' : 'Minimize Details'}
+                >
+                  {isHeaderPanelMinimized ? (
+                    <>
+                      <ChevronDown className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Show Details</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
+                      <span>Minimize Details</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {isHeaderPanelMinimized ? (
+                /* Collapsed 1-line horizontal summary chip bar */
+                <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                      <span className="text-slate-400">Supplier:</span>
+                      <strong className="text-emerald-300 font-semibold">{currentSupplier?.name || 'None'}</strong>
                     </span>
-                    {currentSupplier?.address && (
-                      <span className="truncate max-w-[200px] text-[11px] font-normal text-slate-400">
-                        {currentSupplier.address}
-                      </span>
-                    )}
-                  </label>
-                  <select
-                    className="input w-full font-medium"
-                    value={supplierId}
-                    onChange={(e) => setSupplierId(Number(e.target.value))}
-                  >
-                    <option value="">— Select Supplier —</option>
-                    {suppliers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} {s.contact_person ? `(${s.contact_person})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Receipt Number (VIP requested) */}
-                <div>
-                  <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
-                    <Hash className="h-3.5 w-3.5 text-sky-400" />
-                    Receipt No.
-                  </label>
-                  <input
-                    type="text"
-                    value={receiptNo}
-                    onChange={(e) => setReceiptNo(e.target.value)}
-                    placeholder="e.g. SI0000002966"
-                    className="input w-full font-mono text-xs uppercase"
-                  />
-                </div>
-
-                {/* Invoice Number / Transaction # (VIP requested) */}
-                <div>
-                  <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
-                    <FileSpreadsheet className="h-3.5 w-3.5 text-amber-400" />
-                    Invoice No. / Trans #
-                  </label>
-                  <input
-                    type="text"
-                    value={invoiceNo}
-                    onChange={(e) => setInvoiceNo(e.target.value)}
-                    placeholder="e.g. BS-2024-017"
-                    className="input w-full font-mono text-xs uppercase"
-                  />
-                </div>
-              </div>
-
-              {/* Second row of meta */}
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 items-center pt-1 border-t border-ink-line/60">
-                {/* Date */}
-                <div>
-                  <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                    <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    Invoice Date
-                  </label>
-                  <input
-                    type="date"
-                    value={purchaseDate}
-                    onChange={(e) => setPurchaseDate(e.target.value)}
-                    className="input w-full text-xs"
-                  />
-                </div>
-
-                {/* Payment Status & Terms */}
-                <div>
-                  <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                    <CreditCard className="h-3.5 w-3.5 text-slate-400" />
-                    Payment Status
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1.5 cursor-pointer text-xs text-white">
-                      <input
-                        type="checkbox"
-                        checked={isPaid}
-                        onChange={(e) => setIsPaid(e.target.checked)}
-                        className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
-                      />
-                      <span>Paid</span>
-                    </label>
-                    {!isPaid && (
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="number"
-                          min="0"
-                          value={termsDays}
-                          onChange={(e) => setTermsDays(e.target.value)}
-                          placeholder="Days"
-                          className="input w-16 py-0.5 text-xs font-mono text-center"
-                        />
-                        <span className="text-[11px] text-slate-400">Days</span>
-                      </div>
-                    )}
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                      <span className="text-slate-400">Inv:</span>
+                      <span className="font-mono">{invoiceNo || '—'}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                      <span className="text-slate-400">Ref:</span>
+                      <span className="font-mono">{receiptNo || '—'}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                      <span className="text-slate-400">Date:</span>
+                      <span>{purchaseDate}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 font-semibold text-emerald-300 text-[11px]">
+                      <span>Status:</span>
+                      <span>Draft ({isPaid ? 'Paid' : `Terms ${termsDays || 0}D`})</span>
+                    </span>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsHeaderPanelMinimized(false)}
+                    className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded hover:bg-emerald-500/10 transition-colors"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    <span>Expand</span>
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                    {/* Supplier Picker */}
+                    <div className="md:col-span-2">
+                      <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
+                        <span className="flex items-center gap-1.5">
+                          <Truck className="h-3.5 w-3.5 text-emerald-400" />
+                          Supplier <span className="text-danger-400">*</span>
+                        </span>
+                        {currentSupplier?.address && (
+                          <span className="truncate max-w-[200px] text-[11px] font-normal text-slate-400">
+                            {currentSupplier.address}
+                          </span>
+                        )}
+                      </label>
+                      <select
+                        className="input w-full font-medium"
+                        value={supplierId}
+                        onChange={(e) => setSupplierId(Number(e.target.value))}
+                      >
+                        <option value="">— Select Supplier —</option>
+                        {suppliers.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} {s.contact_person ? `(${s.contact_person})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                {/* Memo / Notes */}
-                <div className="md:col-span-2">
-                  <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                    Memo / Delivery Notes
-                  </label>
-                  <input
-                    type="text"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. CUS.BOOKING / Van delivery / Supplier rep"
-                    className="input w-full text-xs"
-                  />
-                </div>
-              </div>
+                    {/* Receipt Number (VIP requested) */}
+                    <div>
+                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                        <Hash className="h-3.5 w-3.5 text-sky-400" />
+                        Receipt No.
+                      </label>
+                      <input
+                        type="text"
+                        value={receiptNo}
+                        onChange={(e) => setReceiptNo(e.target.value)}
+                        placeholder="e.g. SI0000002966"
+                        className="input w-full font-mono text-xs uppercase"
+                      />
+                    </div>
+
+                    {/* Invoice Number / Transaction # (VIP requested) */}
+                    <div>
+                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                        <FileSpreadsheet className="h-3.5 w-3.5 text-amber-400" />
+                        Invoice No. / Trans #
+                      </label>
+                      <input
+                        type="text"
+                        value={invoiceNo}
+                        onChange={(e) => setInvoiceNo(e.target.value)}
+                        placeholder="e.g. BS-2024-017"
+                        className="input w-full font-mono text-xs uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Second row of meta */}
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4 items-center pt-1 border-t border-ink-line/60">
+                    {/* Date */}
+                    <div>
+                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
+                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                        Invoice Date
+                      </label>
+                      <input
+                        type="date"
+                        value={purchaseDate}
+                        onChange={(e) => setPurchaseDate(e.target.value)}
+                        className="input w-full text-xs"
+                      />
+                    </div>
+
+                    {/* Payment Status & Terms */}
+                    <div>
+                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
+                        <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+                        Payment Status
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-white">
+                          <input
+                            type="checkbox"
+                            checked={isPaid}
+                            onChange={(e) => setIsPaid(e.target.checked)}
+                            className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
+                          />
+                          <span>Paid</span>
+                        </label>
+                        {!isPaid && (
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min="0"
+                              value={termsDays}
+                              onChange={(e) => setTermsDays(e.target.value)}
+                              placeholder="Days"
+                              className="input w-16 py-0.5 text-xs font-mono text-center"
+                            />
+                            <span className="text-[11px] text-slate-400">Days</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Memo / Notes */}
+                    <div className="md:col-span-2">
+                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
+                        Memo / Delivery Notes
+                      </label>
+                      <input
+                        type="text"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="e.g. CUS.BOOKING / Van delivery / Supplier rep"
+                        className="input w-full text-xs"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* 2. FAST ITEM ENTRY BAR (VIP: Arrow point to Qty box then F2 mapupunta sa stocks sya) */}
@@ -1212,7 +1373,7 @@ export function PurchaseInvoiceModal({
                 </div>
               </div>
 
-              <div className="max-h-[36vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60">
+              <div className={`${isHeaderPanelMinimized ? 'max-h-[54vh] min-h-[360px]' : 'max-h-[36vh] min-h-[160px]'} overflow-auto rounded-xl border border-ink-line bg-ink-950/60 transition-[max-height] duration-300`}>
                 {items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-500 space-y-1">
                     <Barcode className="h-8 w-8 text-slate-600" />
@@ -1376,13 +1537,24 @@ export function PurchaseInvoiceModal({
 
             {/* Modal Actions Footer */}
             <div className="flex items-center justify-between pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-ghost text-xs text-slate-400 hover:text-white"
-              >
-                Cancel
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="btn-ghost text-xs text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMinimized(true)}
+                  className="btn-ghost text-xs text-zinc-400 hover:text-white flex items-center gap-1"
+                  title="Minimize to Floating Dock"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                  Minimize
+                </button>
+              </div>
 
               <div className="flex items-center gap-2">
                 <button
@@ -1400,5 +1572,7 @@ export function PurchaseInvoiceModal({
         )}
       </div>
     </Modal>
+  )}
+</>
   )
 }

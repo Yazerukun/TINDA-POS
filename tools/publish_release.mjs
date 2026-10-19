@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {

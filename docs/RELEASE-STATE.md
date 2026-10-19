@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v3.0.4 (FAST BUTTONS UNIVERSAL INVENTORY SEARCH & IN-PLACE LINKER STUDIO EDITION)
+- v3.0.5 (PURCHASE INVOICE MINIMIZABLE DOCK & COLLAPSIBLE HEADER STUDIO EDITION)
 
 TARGET:
-- v3.0.5 (NEXT CYCLE)
+- v3.0.6 (NEXT CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v3.0.4 Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition
+- Production Release Ready — v3.0.5 Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -55,6 +55,8 @@ COMPLETED:
 - Stage 43: v2.2.17 Legacy VIP Restoration & Backward-Compatible Self-Healing Edition official release. Preserved original HMAC signature compatibility across all 4 license vaults (Windows Registry, AppData, User Home, and SQLite), eliminating accidental downgrade for existing VIP customers who updated to v2.2.16, restored seamless backward-compatible key generation and verification, and confirmed 100% automatic recovery of lifetime VIP Pro access. Full Windows binaries (TindaPOS-Setup-2.2.17.exe + TindaPOS-Portable-2.2.17.exe).
 - Stage 44: v2.2.18 Product Barcode Integrity, Item Sales Resilience & High-Velocity POS Edition official release. Fully resolved SQLite UNIQUE constraint and duplicate barcode collision errors when saving/editing products with selling units; primary product barcodes can now seamlessly share identical codes with their base selling units without throwing self-conflict errors. Added multi-tier fallback resilience for `window.api.reports.itemSales` preventing UI crashes on item sales reports. Added high-velocity cashier keyboard shortcuts: `Alt+C` / `Ctrl+Delete` to instantly clear the cart basket, and `Shift+F9` / `Alt+U` to immediately tender Utang (credit) transactions. 554/554 tests passing across 86 test suites, 0 TypeScript errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-2.2.18.exe + TindaPOS-Portable-2.2.18.exe).
 - Stage 45: v3.0.3 Single-Item Void & Instant Item Exchange Studio Edition official release. Direct item-level void/return with proportional discount computation preserving store profitability, live Item Exchange Studio modal (`ItemExchangeModal.tsx`) with barcode scanner auto-focus, real-time math matrix (Old Credit vs Replacement Price, Abono / Sukli / Even calculation), atomic SQLite transaction (restock old item, deduct replacement, drawer cash reconciliation), and auto-printed thermal 'ITEM EXCHANGE RECEIPT'. Fully verified with 0 TypeScript errors and 564 automated Vitest unit tests.
+- Stage 46: v3.0.4 Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition official release. Upgraded CustomizeFastButtonsModal with direct asynchronous SQLite database search querying all products across the entire store inventory by name, barcode, or SKU without artificial 10-item limits; displays real-time stock and barcode status; added prominent Linked Inventory Item card with 1-click Unlink capability; introduced in-place Edit mode (Pencil icon) for existing speed keys to seamlessly re-link and customize buttons without deletion; and enhanced FastButtonsBar with direct database lookup fallbacks so clicking any speed key instantly matches its inventory item even when POS pagination or category filtering is active. Fully verified with 0 TypeScript errors and 100% passing automated Vitest unit tests. Windows binaries (`TindaPOS-Setup-3.0.4.exe` + `TindaPOS-Portable-3.0.4.exe`) published to GitHub Releases.
+- Stage 47: v3.0.5 Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition official release. Dual-minimize architecture: (1) Modal-Level Floating Receiving Dock (`fixed bottom-5 right-6 z-50`) allowing cashiers to minimize draft invoices into a sleek Cupertino dock with draft line item count, net total, supplier details, restore, and discard protection; and (2) Panel-Level Collapsible Header Details (`[ ▴ Minimize Details ]` / `[ ▾ Show Details ]`) that collapses Supplier, Invoice #, Receipt #, Date, and Notes into a sleek 1-line badge while dynamically expanding the Line Items Table from `max-h-[36vh]` to `max-h-[54vh]` for maximum table workspace during high-volume deliveries. Fully verified with 0 TypeScript errors and passing automated Vitest unit tests. Windows binaries (`TindaPOS-Setup-3.0.5.exe` + `TindaPOS-Portable-3.0.5.exe`) compiled and published to GitHub Releases.
 
 PENDING APPROVAL:
 - None (Approved by Owner).
