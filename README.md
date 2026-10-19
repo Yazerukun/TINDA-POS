@@ -1,9 +1,9 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v2.2.1-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v3.0.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
-<img src="https://img.shields.io/badge/Tests-532%2F532_Passing-10b981?style=for-the-badge" alt="Tests">
+<img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
 <img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
@@ -14,13 +14,12 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Suki Utang Ledger · Wholesale Invoices · Daily E-Wallet Reconciliation · 1-Tap QR Cloud Sync**
+**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v2.2.1_NSIS_(~111.5MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Setup-2.2.1.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v2.2.1_Standalone_(~110.6MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Portable-2.2.1.exe)
-[![Download Patch](https://img.shields.io/badge/⚡_Live_Hot_Patch-v2.2.1_(~0.98MB)-e11d48?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Feature-Patch-2.2.1.zip)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.2_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.2/TindaPOS-Setup-3.0.2.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.2_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.2/TindaPOS-Portable-3.0.2.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,15 +30,25 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.1 Full Release)
+## ⚡ Quick Download & Release Assets (v2.2.19 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Setup-2.2.1.exe) | `~111.5 MB` | **Windows Setup Installer (NSIS)** | Standard Windows installer with desktop shortcut, Start Menu entry, and auto-updater. |
-| [**TindaPOS-Portable-2.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Portable-2.2.1.exe) | `~110.6 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-Feature-Patch-2.2.1.zip**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/TindaPOS-Feature-Patch-2.2.1.zip) | `0.98 MB` | **In-App Live Hot Patch (v2.2.1)** | Applied automatically in `0.3s` via "Check for Updates" with zero downtime. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.1.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.1/SHA256SUMS-v2.2.1.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Setup-2.2.19.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Portable-2.2.19.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v2.2.19.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/SHA256SUMS-v2.2.19.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## ✨ What's New in v2.2.19: Smart Mobile Phone Scanner with Quantity & Hardware Quotation Edition
+- **Smart Mobile Phone Roving Scanner with Quantity Selector**: Cashiers and floor staff can now use their mobile phone as a wireless barcode scanner with an instant interactive Quantity Bottom Sheet modal (stepper input, hardware quick chips: `+1`, `+5`, `+10`, `+25`, `+50`, `+100`) designed specifically for hardware and wholesale stores.
+- **Real-Time Product Price & Stock Preview**: Scanning any item on the phone immediately displays the product name, price, remaining stock status, and bulk wholesale tiers on the mobile screen before adding to the cart.
+- **Roving Hardware Quotation & Cart Push**: Staff walking with customers on the sales floor can instantly send items with custom quantities directly into the active desktop POS cart or mark items for quotation and parked sales.
+- **Audio Chimes & Physical Haptic Feedback**: Crisp Web Audio synthesized scanner beeps and dual-tone success chimes paired with device vibration on phone scans without external audio files.
+- **Togglable Scan Modes**: One-tap switcher between **📦 Bulk Qty Mode** (for roving hardware & bulk orders) and **⚡ Rapid 1x Mode** (for high-velocity grocery retail).
+- **557 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
+- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.
 
 ---
 
@@ -205,6 +214,62 @@ npm run publish:patch
 ---
 
 ## ✨ Release Changelog
+
+### 🏷️ v2.2.14 (Customizable Utility Billers & Presets Manager Edition) · Oct 15, 2026
+- **⚡ Customizable Utility & Water Billers (`EwalletAudit.tsx`, `BillsLoadHub.tsx`, `billerCustomization.ts`)**:
+  - Cashiers can now edit utility and water biller names on-the-fly directly in the Express Bills form (e.g. BENECO, CANORECO, Visayan Electric, Maynilad, Manila Water, PrimeWater, Local Water Districts, Home Credit, PLDT, Converge).
+  - Immediate propagation across all transaction records, SQLite e-wallet mirroring, cashier cart line items, thermal receipt printing, and customer-facing CFD displays.
+- **⚙️ Dedicated Biller Preset Manager Modal (`ManageBillersModal.tsx`)**:
+  - Full-featured modal accessible with one tap from the Biller selector to add new local billers, rename presets, adjust default convenience fees, filter by utility category, and delete obsolete entries.
+  - Reactive persistence via `localStorage` (`tinda_custom_biller_presets_v1`) with instant multi-window and multi-tab synchronization.
+- **🛡️ Strict Telco E-Load Protection**:
+  - Standard telecom mobile load networks (Globe/TM, Smart/TNT, DITO Telecommunity) are strictly protected with an E-Load indicator badge and cannot be accidentally renamed or corrupted.
+- **🧪 553 Automated Tests Passing & Master Invariant Verification**:
+  - 100% test passing across all 86 test suites including new utility customization suite (`billerCustomization.test.ts`), 0 TypeScript errors.
+
+### 🏷️ v2.2.5 (VIP Store Use & Operating Expense Edition) · Oct 14, 2026
+- **📦 VIP Store Use / Internal Consumption Feature (`StoreUseModal.tsx`, `Inventory.tsx`, `Expenses.tsx`, `ipc/index.ts`)**:
+  - Double-Entry Accounting Ledger: Automatically deducts item quantities from inventory at **Landed Purchase Cost** (`purchase_cost_c`) rather than retail selling price, and simultaneously creates an atomic Operating Expense under *Store Use / Internal Consumption*.
+  - Dual Entry UI: Seamless access from both **Inventory** (top bar button, grid card action, and table row action) and **Expenses** ("Store Use (From Stock)").
+  - Anti-Kupit & Anti-Pilferage Armor (Dr. Aegis): Requires mandatory department/purpose assignment with quick-purpose chips (*Store Repair & Maintenance*, *Counter & Shelving Build*, *Store Cleaning Supplies*, *Office & Admin Use*), zero-cost edge case warnings, and optional Manager PIN authorization check.
+  - Stock History Integration: Added dedicated `STORE_USE` badge in `StockHistoryView` with distinct amber styling and reference tracking (`SU-YYYYMMDD-XXXX`).
+- **🖨️ 58mm/80mm Thermal Store Use Expense Voucher (`receiptHtml.ts`)**:
+  - Engineered `formatStoreUseSlipLines` with official audit sign-off blanks (`Requested By: ___`, `Approved By: ___`) so store owners can file physical slips for BIR tax deduction auditing.
+  - Audio Confirmation: Integrated pleasant Web Audio chime (`playScanSuccess`) upon successful store use deduction.
+
+### 🏷️ v2.2.4 (Strictly Daily E-Wallet & Cash Drawer Reconciliation Edition) · Oct 14, 2026
+- **🛡️ Strictly Daily Cash Drawer Reconciliation in E-Wallet Audit Sheet (`EwalletAudit.tsx`)**:
+  - Permanently locked Expected Drawer Cash default initialization strictly to Today's Daily Target: Float + POS Net Cash + E-Wallet Net Delta.
+  - Guaranteed reset handler resets strictly to Today's Daily Target.
+  - Re-titled section to "1. Daily Cash Drawer Reconciliation (Today)" with prominent "[ Strictly Daily Recon ]" pill badge.
+  - Made "[ 🎯 Today's Daily Target (₱X.XX) ]" the primary glowing emerald preset button.
+  - Replaced multi-day confusion with an expandable disclaimer for past unclosed shifts, completely eliminating cashier shortage panics.
+  - Added clean, transparent formula breakdown card directly under the input field.
+- **🖨️ Thermal Print Audit Report (`receiptHtml.ts`)**:
+  - Updated audit slip title to "DAILY E-WALLET & CASH AUDIT REPORT" and "PHYSICAL CASH DRAWER (DAILY RECON)".
+
+### 🏷️ v2.2.3 (Dedicated POS F9 Cash Checkout & Multi-Day Shift Isolation Edition) · Oct 14, 2026
+- **⚡ F9 Shortcut Collision Elimination & Dedicated Cash Checkout (`NotificationBellDrawer.tsx`, `POS.tsx`)**:
+  - Removed conflicting global F9 listener in `NotificationBellDrawer.tsx`, isolating the notification drawer hotkey exclusively to `Ctrl+B / Cmd+B`.
+  - Dedicated F9 100% exclusively to retail Cash Checkout and Cash Tendered input refocus in `POS.tsx`, allowing cashiers to checkout instantly with zero key collisions or drawer interference.
+- **🛡️ Multi-Day Shift Isolation & Daily Cash Reconciliation (`readReports.ts`, `cashCounts.ts`, `EwalletAudit.tsx`)**:
+  - Engineered `calculateDailyExpected` in `readReports.ts` and exposed via IPC `reports:dailyCashExpected` to isolate today's retail cash sales, refunds, expenses, and movements.
+  - Multi-Day Shift Safety Shield: Prevents shifts left unclosed from previous days from inflating or distorting today's cash count balancing.
+  - Added Multi-Day Shift amber warning banner and 1-click Quick Presets (`[ ₱0.00 (Zero Float) ]`, `[ Today Only ]`, `[ Full Shift ]`, `[ E-Wallet Net ]`) in `EwalletAudit.tsx`.
+  - Verified with 3 comprehensive unit tests in `dailyCashExpected.test.ts`.
+
+### 🏷️ v2.2.2 (Universal Custom Thermal Spacing Studio & Receipt Persistence Edition) · Oct 14, 2026
+- **🖨️ Universal Thermal Custom Spacing Studio (`receiptHtml.ts`, `PrinterStudioModal.tsx`)**:
+  - Continuous fine-grained controls for physical thermal printing margins and vertical layout density.
+  - Top Header Offset / Margin (0 to 15mm) eliminating cutter blade or tear bar clipping on physical paper rolls.
+  - Row Item-to-Item Gap (0 to 8px) allowing cashiers to stretch or compact product lines to conserve thermal roll paper.
+  - Divider / Separator Gap (0 to 8px) controlling vertical margins around dashed and double separator lines.
+  - Global Line Height Multiplier (1.00x to 2.00x) providing continuous height stretching for maximum text legibility on low-contrast thermal print heads.
+- **🔄 Cross-Receipt System-Wide Persistence Architecture (`types.ts`, `settings.ts`, `printerCustomization.ts`, `printing.ts`)**:
+  - Custom spacing options persist seamlessly across all receipt generation paths: checkout sales, reprints, express slips, e-wallet transactions, bill payments, and cash count reports.
+  - Three-tier reconciliation priority: SQLite StoreSettings -> localStorage persistent fallback -> factory defaults.
+- **👁️ 1:1 Live Engine Preview (`ReceiptPaper.tsx`, `PrinterStudioModal.tsx`)**:
+  - Embeds `ReceiptPaper` directly in the studio live preview, guaranteeing that on-screen preview renders the exact HTML and CSS sent to the physical print spooler.
 
 ### 🏷️ v2.2.1 (In-App Full Setup Downloader & Tesla Cyber-Emerald Telemetry Edition) · Oct 13, 2026
 - **📥 In-App Full Build Downloader & 1-Click Auto-Restart (`updateService.ts`, `UnifiedUpdateCapsule.tsx`)**:

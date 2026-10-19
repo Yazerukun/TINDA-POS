@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TINDA POS Desktop (v2.2.9) — Doktoral na Gabay at Opisyal na Presentasyon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+      user-select: none;
+      overflow-x: hidden;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .slide-container {
+      display: none;
+      animation: fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .slide-container.active {
+      display: flex;
+    }
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.98) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .slide-container { display: flex !important; page-break-after: always; height: 100vh; background: white !important; color: black !important; border: 1px solid #ccc; padding: 2rem; }
+      .glass-panel, .glass-card { background: white !important; border: 1px solid #ddd !important; color: black !important; box-shadow: none !important; }
+      h1, h2, h3, p, span, div { color: black !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP HEADER / NAV BAR -->
+  <header class="no-print h-16 border-b border-slate-800/80 px-6 flex items-center justify-between glass-panel sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 font-black text-xl text-white">
+        🏪
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-sm tracking-tight text-white">TINDA POS Desktop</h1>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v2.2.9 STABLE</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Doktoral na Gabay at Opisyal na Presentasyon sa Tagalog</p>
+      </div>
+    </div>
+
+    <!-- Slide Navigation & Quick Tools -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center glass-card rounded-lg p-1 border border-slate-700/60 text-xs font-mono">
+        <button id="prevBtn" onclick="prevSlide()" class="px-3 py-1.5 rounded hover:bg-slate-700/80 transition-all font-bold text-slate-300 hover:text-white flex items-center gap-1">
+          ◀ <span class="hidden sm:inline">Nakaraan</span>
+        </button>
+        <span id="slideIndicator" class="px-3 text-emerald-400 font-semibold">Slide 1 / 12</span>
+        <button id="nextBtn" onclick="nextSlide()" class="px-3 py-1.5 rounded hover:bg-slate-700/80 transition-all font-bold text-slate-300 hover:text-white flex items-center gap-1">
+          <span class="hidden sm:inline">Susunod</span> ▶
+        </button>
+      </div>
+
+      <button onclick="toggleFullscreen()" title="I-fullscreen (Pindutin ang F)" class="h-9 w-9 rounded-lg glass-card flex items-center justify-center hover:bg-slate-700 text-slate-300 transition-colors">
+        ⛶
+      </button>
+
+      <button onclick="window.print()" title="I-print bilang Dokumento o PDF" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-colors">
+        🖨️ <span class="hidden sm:inline">I-print sa PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PROGRESS BAR -->
+  <div class="no-print w-full bg-slate-900 h-1">
+    <div id="progressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300" style="width: 8.33%;"></div>
+  </div>
+
+  <!-- MAIN SLIDES CONTAINER -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-8 max-w-6xl mx-auto w-full">
+
+    <!-- SLIDE 1: COVER & TITLE -->
+    <section class="slide-container active flex-col justify-center items-center text-center py-10 w-full" data-slide="1">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-6">
+        ✨ Opisyal na Gabay sa Paggamit (Bersyon 2.2.9)
+      </div>
+      <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white max-w-4xl leading-tight">
+        TINDA POS Desktop <br/>
+        <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+          Doktoral na Gabay at Manwal ng Kahera
+        </span>
+      </h2>
+      <p class="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
+        Ang komprehensibong master handbook sa Tagalog para sa mga may-ari, kahera, at tauhan ng tindahan. Lahat ng kailangan mong malaman mula sa pagbenta, imbentaryo, utang, hanggang sa closing audit.
+      </p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 w-full max-w-3xl text-left">
+        <div class="glass-card p-4 rounded-xl border border-slate-700/60">
+          <div class="text-2xl mb-1">🛡️</div>
+          <div class="font-bold text-sm text-white">100% Offline</div>
+          <div class="text-xs text-slate-400">Walang internet kailangan</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-700/60">
+          <div class="text-2xl mb-1">⚡</div>
+          <div class="font-bold text-sm text-white">F9 Quick Cash</div>
+          <div class="text-xs text-slate-400">1-segundong checkout</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-700/60">
+          <div class="text-2xl mb-1">👥</div>
+          <div class="font-bold text-sm text-white">Suki Utang</div>
+          <div class="text-xs text-slate-400">Credit limit & SOA</div>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-700/60">
+          <div class="text-2xl mb-1">🏬</div>
+          <div class="font-bold text-sm text-white">Store Use</div>
+          <div class="text-xs text-slate-400">Awtomatikong retail presyo</div>
+        </div>
+      </div>
+
+      <div class="mt-8 text-xs text-slate-400 flex items-center gap-2">
+        <span>Gamitin ang</span>
+        <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 font-mono text-slate-300">Space</kbd>
+        <span>o</span>
+        <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 font-mono text-slate-300">→</kbd>
+        <span>para magpalit ng slide</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: 100% OFFLINE ARCHITECTURE -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="2">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 1</span> · <span>Arkitektura</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Bakit 100% Offline-First ang TINDA POS?</h2>
+      <p class="text-slate-300 text-sm mt-1">Hindi kailanman titigil ang iyong pagbenta kahit mawalan ng WiFi o signal.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <div class="text-3xl mb-3">💾</div>
+          <h3 class="font-bold text-base text-white">Lokal na SQLite Database</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Ang lahat ng datos—mga produkto, benta, listahan ng utang, at shift history—ay nakaimbak direkta sa hard drive ng iyong kompyuter gamit ang Better-SQLite3.
+          </p>
+          <div class="mt-3 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 p-2 rounded">
+            ✓ 0ms Network Latency<br>
+            ✓ Walang Loading Spinner
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-cyan-500">
+          <div class="text-3xl mb-3">⚡</div>
+          <h3 class="font-bold text-base text-white">Write-Ahead Logging (WAL)</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Kahit biglang mamatay ang kompyuter dahil sa brownout, hindi masisira ang database. Nakasulat agad ang bawat transaksyon bago pa man mag-print ang resibo.
+          </p>
+          <div class="mt-3 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 p-2 rounded">
+            ✓ Brownout-Proof Recovery<br>
+            ✓ 0% Data Corruption
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500">
+          <div class="text-3xl mb-3">🪙</div>
+          <h3 class="font-bold text-base text-white">Tiyak Hanggang Sentimo</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Ang lahat ng pananalapi ay gumagamit ng Integer Centavos (`_c`). Walang floating-point rounding errors na magdudulot ng labis o kulang sa pera ng kahera.
+          </p>
+          <div class="mt-3 text-[11px] font-mono text-amber-400 bg-amber-500/10 p-2 rounded">
+            ✓ 100% Mathematical Proof<br>
+            ✓ Walang Nawawalang Barya
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: POS CASHIERING & F9 CHECKOUT -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="3">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 2</span> · <span>Mabilisang Pagbenta</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">POS Cashiering at ang Makapangyarihang F9 Key</h2>
+      <p class="text-slate-300 text-sm mt-1">Tatlong hakbang lamang para sa kidlat na bilis ng transaksyon sa kahera.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="glass-card p-5 rounded-2xl border border-slate-700/60 relative">
+          <span class="absolute top-4 right-4 text-xs font-mono font-bold bg-slate-800 text-emerald-400 px-2 py-0.5 rounded">HAKBANG 1</span>
+          <div class="text-2xl mb-2">🔍</div>
+          <h3 class="font-bold text-base text-white">I-scan o Hanapin</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Itutok ang barcode scanner sa produkto, o pindutin ang <kbd class="px-1.5 py-0.5 rounded bg-slate-800 font-mono text-emerald-400">/</kbd> sa keyboard at i-type ang pangalan (hal. <i>Coke</i>).
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-700/60 relative">
+          <span class="absolute top-4 right-4 text-xs font-mono font-bold bg-slate-800 text-emerald-400 px-2 py-0.5 rounded">HAKBANG 2</span>
+          <div class="text-2xl mb-2">📦</div>
+          <h3 class="font-bold text-base text-white">Ayusin ang Dami / Unit</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Gamitin ang <kbd class="px-1.5 py-0.5 rounded bg-slate-800 font-mono">+</kbd> o <kbd class="px-1.5 py-0.5 rounded bg-slate-800 font-mono">-</kbd>. Kung bulto, piliin ang Unit (Piraso, Pakete, Kahon) para kusa mag-update ang presyo.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-emerald-500/40 bg-emerald-950/20 relative shadow-xl">
+          <span class="absolute top-4 right-4 text-xs font-mono font-bold bg-emerald-500 text-white px-2 py-0.5 rounded">HAKBANG 3</span>
+          <div class="text-2xl mb-2">⚡</div>
+          <h3 class="font-bold text-base text-emerald-300">Pindutin ang F9</h3>
+          <p class="text-xs text-slate-200 mt-2 leading-relaxed">
+            Pindutin ang <b>F9</b> sa keyboard. I-type ang inabot na bayad (hal. ₱500) o i-click ang quick bills. Lalabas agad ang Sukli, puputok ang cash drawer, at lalabas ang resibo!
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 glass-panel p-4 rounded-xl flex items-center justify-between text-xs text-slate-300">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 font-bold">💡 Senior / PWD Tip:</span>
+          <span>Pindutin ang Diskwento button bago mag-checkout para sa awtomatikong 20% VAT exemption alinsunod sa batas.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: MULTI-PACKAGING INVENTORY -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="4">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 3</span> · <span>Imbentaryo</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Multi-Packaging: Tingi at Bulto sa Iisang Produkto</h2>
+      <p class="text-slate-300 text-sm mt-1">Hindi mo na kailangang maghiwalay ng produkto para sa tingi at kahon.</p>
+
+      <div class="mt-6 glass-panel p-5 rounded-2xl overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-700 text-slate-400">
+              <th class="pb-2">Antas ng Packaging</th>
+              <th class="pb-2">Conversion Multiplier</th>
+              <th class="pb-2">Halimbawang Presyo</th>
+              <th class="pb-2">Awtomatikong Bawas sa Stock</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-200">
+            <tr>
+              <td class="py-3 font-bold text-white">Base Unit: Piece (Piraso)</td>
+              <td class="py-3 font-mono">1 Base Unit</td>
+              <td class="py-3 font-mono text-emerald-400">₱15.00</td>
+              <td class="py-3 text-slate-300">Mababawasan ng 1 piraso</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-white">Pack (Balot ng 10)</td>
+              <td class="py-3 font-mono">10 Base Units</td>
+              <td class="py-3 font-mono text-emerald-400">₱140.00</td>
+              <td class="py-3 text-slate-300">Mababawasan ng 10 piraso</td>
+            </tr>
+            <tr>
+              <td class="py-3 font-bold text-white">Box (Kahon ng 100)</td>
+              <td class="py-3 font-mono">100 Base Units</td>
+              <td class="py-3 font-mono text-emerald-400">₱1,350.00</td>
+              <td class="py-3 text-slate-300">Mababawasan ng 100 piraso</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div class="glass-card p-4 rounded-xl border border-slate-700">
+          <h4 class="font-bold text-sm text-amber-300">⚠️ Low Stock Warning</h4>
+          <p class="text-xs text-slate-300 mt-1">Magtakda ng threshold (hal. 5 piraso). Kukulay dilaw/pula ang item upang ipaalala na kailangan nang umorder sa supplier.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-700">
+          <h4 class="font-bold text-sm text-cyan-300">📅 Expiration Alarma</h4>
+          <p class="text-xs text-slate-300 mt-1">May built-in alarma 30 araw bago mag-expire ang pagkain o gamot upang maibenta agad o mai-return sa ahente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: WHOLESALE PURCHASES & DISCOUNTS -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="5">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 4</span> · <span>Pagtanggap ng Delivery</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Cascading Trade Discounts ("Less 5% Less 5%")</h2>
+      <p class="text-slate-300 text-sm mt-1">Tumpak na pagkwenta ng mga kumplikadong diskwento mula sa mga ahente at distributor.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+        <div class="glass-panel p-5 rounded-2xl">
+          <h3 class="font-bold text-base text-white mb-2">Pormula ng Philippine FMCG Distributors</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Kadalasan sa mga distributor tulad ng Nestlé o Unilever, ang resibo ay may sunod-sunod na diskwento tulad ng <code>5+5+2</code> o <code>10/5</code>.
+          </p>
+          <div class="mt-4 p-3 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs text-emerald-400">
+            Halimbawa: ₱1,000 Puhunan na may "Less 5% Less 5%"<br>
+            • 1st Discount (5%): ₱1,000 - ₱50 = ₱950<br>
+            • 2nd Discount (5%): ₱950 - ₱47.50 = ₱902.50 Net<br>
+            <b>Net Landed Cost = ₱902.50</b>
+          </div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-base text-white mb-2">Awtomatikong Catalog Cost Update</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Pagka-save ng Purchase Invoice, kusa nitong ina-update ang puhunan ng produkto batay sa <b>tunay na netong presyo</b> pagkatapos ng lahat ng diskwento.
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+            ✨ Resulta: Laging 100% tumpak ang iyong Gross Profit Margin at kikitain sa bawat piraso!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: SUKI UTANG LEDGER -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="6">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 5</span> · <span>Pautang at Paniningil</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Suki Utang Ledger: Protektahan ang Puhunan</h2>
+      <p class="text-slate-300 text-sm mt-1">Modernong pagpapautang na may credit limit, due date reminders, at pormal na resibo.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="glass-card p-5 rounded-2xl border border-slate-700">
+          <div class="text-3xl mb-2">🛑</div>
+          <h3 class="font-bold text-base text-white">Credit Limit Lock</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Maglagay ng limitasyon (hal. ₱2,000). Kapag lumagpas ang balanse ng suki, haharangin ng system ang karagdagang utang upang hindi ka maubusan ng paninda.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-700">
+          <div class="text-3xl mb-2">📄</div>
+          <h3 class="font-bold text-base text-white">Printable Statement of Account</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            I-print sa thermal printer o A4 ang listahan ng lahat ng kanyang kinuha na may petsa, oras, at pirmahan. Walang pagtatalo sa singilan!
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-700">
+          <div class="text-3xl mb-2">📊</div>
+          <h3 class="font-bold text-base text-white">Master Utang Summary</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Isang pindot lang upang makita ang kabuuang pautang ng buong tindahan (Total Receivables), nakaayos mula sa pinakamalaki hanggang sa pinakamaliit.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: STORE USE (NEW IN V2.2.9) -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="7">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 6</span> · <span>Bagong Feature (v2.2.9)</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Store Use: Gamit ng Tindahan sa Sariling Operasyon</h2>
+      <p class="text-slate-300 text-sm mt-1">Kumuha ng sabon, bombilya, o merienda nang hindi magiging short ang benta sa gabi.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <h3 class="font-bold text-base text-emerald-300 mb-2">⭐ Bago sa v2.2.9: Awtomatikong Retail Presyo</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Inig pili mo sa item, <b>awtomatiko nang susunod ang valuation sa Retail Selling Price</b> nito!
+          </p>
+          <ul class="text-xs text-slate-300 mt-3 space-y-1.5">
+            <li>• Kung palitan ang unit (hal. <i>Piece</i> patungong <i>Box</i>), kusa ring mag-aadjust ang presyo.</li>
+            <li>• Pwede pa ring i-edit nang mano-mano kung nais ng may-ari.</li>
+            <li>• Hindi na kailangang hulaan o kalkulahin ng kahera ang halaga.</li>
+          </ul>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-cyan-500">
+          <h3 class="font-bold text-base text-cyan-300 mb-2">⚖️ Double-Entry Accounting</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Awtomatikong binabalanse ng TINDA POS ang iyong pananalapi:
+          </p>
+          <div class="mt-3 p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono space-y-1">
+            <div class="text-rose-400">[-] Imbentaryo: Nababawasan ang piraso ng stock</div>
+            <div class="text-amber-400">[+] Operating Expense (OPEX): Naidadagdag sa gastusin</div>
+            <div class="text-emerald-400">[✓] Cash Drawer: Walang shortage o nawawalang pera!</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: E-WALLET HUB & DRAWER RECONCILIATION -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="8">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 7</span> · <span>Pananalapi at Closing</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">E-Wallet Hub at Pang-araw-araw na Cash Drawer Audit</h2>
+      <p class="text-slate-300 text-sm mt-1">GCash, Maya, at ang Z-Read Closing Balance sa pagtatapos ng araw.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+        <div class="glass-card p-5 rounded-2xl border border-slate-700">
+          <div class="text-2xl mb-2">📱</div>
+          <h3 class="font-bold text-base text-white">GCash / Maya Cash In & Cash Out</h3>
+          <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+            Madaling itala ang bawat cash in/out kasama ang service fee. Awtomatikong nagre-reset ang counter tuwing <b>12:00 AM (Hatinggabi)</b> para malinis ang bawat bagong araw.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-700">
+          <div class="text-2xl mb-2">💵</div>
+          <h3 class="font-bold text-base text-white">Cash Breakdown Denomination Calculator</h3>
+          <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+            I-type lamang ang bilang ng ₱1,000, ₱500, ₱100, ₱50, ₱20, at barya. Awtomatikong sasabihin ng system kung ikaw ay <b>Exact</b>, <b>Over</b>, o <b>Short</b>.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4 p-4 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs text-center text-slate-300">
+        <span class="text-slate-400">Inaasahang Pera sa Drawer =</span> 
+        <span class="text-cyan-400">Starting Float</span> + 
+        <span class="text-emerald-400">POS Net Cash Sales</span> + 
+        <span class="text-amber-400">E-Wallet Delta</span> - 
+        <span class="text-rose-400">Cash Expenses</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: HARDWARE & PRINTERS -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="9">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 8</span> · <span>Koneksyon ng Kagamitan</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Hardware: Thermal Printers at Barcode Sticker Engine</h2>
+      <p class="text-slate-300 text-sm mt-1">Plug-and-play suporta para sa mga standard POS hardware sa Pilipinas.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div class="glass-panel p-5 rounded-2xl">
+          <div class="text-3xl mb-2">🏷️</div>
+          <h3 class="font-bold text-base text-white">Chiteng CT221B Label Printer</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Suportado ang 40×30mm at 50×30mm stickers. Gumagamit ng Code 128 Pure Vector Geometry para sa instant 1st-pass scanning sa murang scanner.
+          </p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl">
+          <div class="text-3xl mb-2">🧾</div>
+          <h3 class="font-bold text-base text-white">58mm & 80mm Receipt Printers</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            ESC/POS printing na may built-in Thermal Studio para maiayos ang margins at line spacing nang walang napuputol na teksto.
+          </p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl">
+          <div class="text-3xl mb-2">🗄️</div>
+          <h3 class="font-bold text-base text-white">Electronic Cash Drawer (RJ11)</h3>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            Isinasaksak sa likod ng resibo printer gamit ang RJ11 cable. Kusa itong bubukas tuwing matatapos ang Cash checkout sa POS.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: 1-TAP QR CLOUD SYNC -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="10">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 9</span> · <span>Koneksyon sa Cellphone</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">1-Tap QR Sync: Silipin ang Benta sa Cellphone</h2>
+      <p class="text-slate-300 text-sm mt-1">Maging updated sa takbo ng tindahan kahit ikaw ay nasa bahay o namamalengke.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 items-center">
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+          <div class="flex items-start gap-3">
+            <span class="flex h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs items-center justify-center shrink-0">1</span>
+            <p class="text-xs text-slate-200">I-click ang <b>Cloud Sync</b> sa TINDA POS para lumabas ang malaking QR Code sa screen.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="flex h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs items-center justify-center shrink-0">2</span>
+            <p class="text-xs text-slate-200">Buksan ang Camera ng iyong iPhone o Android Phone at itutok sa computer screen.</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="flex h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs items-center justify-center shrink-0">3</span>
+            <p class="text-xs text-slate-200">I-tap ang link para magbukas ang Cloud Owner Dashboard sa browser nang walang kailangang i-type na password!</p>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-700/80 text-center">
+          <div class="text-5xl mb-3">📱</div>
+          <h4 class="font-bold text-base text-white">Live Cloudflare D1 Backend</h4>
+          <p class="text-xs text-slate-300 mt-2">
+            Awtomatikong nagpapadala ng benta tuwing 3 minuto kapag may internet. Kung mawalan man ng signal, mananatiling buo ang data sa computer at magsa-sync kapag bumalik ang internet.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: KEYBOARD SHORTCUTS -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="11">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 10</span> · <span>Kodigo ng Bilis</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">Mga Keyboard Shortcuts para sa Mabilis na Kahera</h2>
+      <p class="text-slate-300 text-sm mt-1">Hindi na kailangang hawakan ang mouse habang nagbebenta.</p>
+
+      <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">F1</span>
+          <div class="text-white font-sans font-semibold mt-1">POS Sales Screen</div>
+          <div class="text-[10px] text-slate-400 font-sans">Bumalik sa benta cart</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20">
+          <span class="text-emerald-400 font-bold text-sm">F9</span>
+          <div class="text-white font-sans font-semibold mt-1">Cash Checkout</div>
+          <div class="text-[10px] text-slate-300 font-sans">Diretso bayad screen</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">/ (Slash)</span>
+          <div class="text-white font-sans font-semibold mt-1">Mabilisang Search</div>
+          <div class="text-[10px] text-slate-400 font-sans">Maghanap ng paninda</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">F4</span>
+          <div class="text-white font-sans font-semibold mt-1">Suki Customers</div>
+          <div class="text-[10px] text-slate-400 font-sans">Listahan ng utang</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">F2</span>
+          <div class="text-white font-sans font-semibold mt-1">Products</div>
+          <div class="text-[10px] text-slate-400 font-sans">Imbentaryo at presyo</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">F5</span>
+          <div class="text-white font-sans font-semibold mt-1">E-Wallet Hub</div>
+          <div class="text-[10px] text-slate-400 font-sans">GCash / Maya audit</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">F10</span>
+          <div class="text-white font-sans font-semibold mt-1">POS Tools</div>
+          <div class="text-[10px] text-slate-400 font-sans">Open drawer / tools</div>
+        </div>
+        <div class="glass-card p-3 rounded-xl border border-slate-700">
+          <span class="text-emerald-400 font-bold text-sm">Esc</span>
+          <div class="text-white font-sans font-semibold mt-1">Cancel / Close</div>
+          <div class="text-[10px] text-slate-400 font-sans">Isara ang modal</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12: ZERO-ERROR UPDATES & SUMMARY -->
+    <section class="slide-container flex-col py-6 w-full" data-slide="12">
+      <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <span>Kabanata 11</span> · <span>Ligtas na Updates</span>
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">100% Malinis na Full Setup.exe Mandate</h2>
+      <p class="text-slate-300 text-sm mt-1">Bakit opisyal na Full Setup lamang ang ginagamit para sa zero-error updates.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-rose-500">
+          <h3 class="font-bold text-base text-rose-300 mb-2">❌ Ang Panganib ng mga "Patch"</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Ang mga patch ay screen lamang ang napapalitan. Kapag nagkaroon ng bagong feature tulad ng Store Use, nagkakaroon ng missing functions at crash dahil lumang bersyon pa rin ang background engine.
+          </p>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <h3 class="font-bold text-base text-emerald-300 mb-2">✅ Ang TindaPOS-Setup.exe Solusyon</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Bawat opisyal na update ay isang kumpletong malinis na installer. Awtomatikong kinukunan ng backup ang iyong database bago mag-update, kaya <b>100% ligtas ang lahat ng iyong paninda at pautang!</b>
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm font-bold text-emerald-400">Maraming Salamat sa Pagtitiwala sa TINDA POS!</p>
+        <p class="text-xs text-slate-400 mt-1">Binuo nang buong puso para sa bawat tindahang Pilipino.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER CONTROLS -->
+  <footer class="no-print h-14 border-t border-slate-800/80 px-6 flex items-center justify-between glass-panel text-xs text-slate-400">
+    <div class="flex items-center gap-4">
+      <span>TINDA POS Desktop Engineering Team</span>
+      <span class="text-slate-600">|</span>
+      <span>Dr. Vex · Dr. Kael · Dr. Nyx · Dr. Argus · Jin</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span>I-press ang <b>F</b> para sa Fullscreen</span>
+      <span class="text-slate-600">|</span>
+      <span><b>←</b> o <b>→</b> para mag-navigate</span>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+
+    // Web Audio Sound FX for subtle physical tactile feel
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playClickSound() {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > totalSlides) n = totalSlides;
+      currentSlide = n;
+
+      document.querySelectorAll('.slide-container').forEach(el => {
+        el.classList.remove('active');
+        if (parseInt(el.getAttribute('data-slide')) === currentSlide) {
+          el.classList.add('active');
+        }
+      });
+
+      document.getElementById('slideIndicator').innerText = `Slide ${currentSlide} / ${totalSlides}`;
+      document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+      document.getElementById('prevBtn').disabled = (currentSlide === 1);
+      document.getElementById('nextBtn').disabled = (currentSlide === totalSlides);
+
+      playClickSound();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) showSlide(currentSlide - 1);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        showSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        showSlide(totalSlides);
+      }
+    });
+
+    // Initialize
+    showSlide(1);
+  </script>
+</body>
+</html>
