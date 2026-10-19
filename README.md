@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v3.0.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v3.0.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.2_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.2/TindaPOS-Setup-3.0.2.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.2_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.2/TindaPOS-Portable-3.0.2.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Setup-3.0.3.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Portable-3.0.3.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,25 +30,25 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v2.2.19 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v3.0.3 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Setup-2.2.19.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-2.2.19.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/TindaPOS-Portable-2.2.19.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v2.2.19.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v2.2.19/SHA256SUMS-v2.2.19.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-3.0.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Setup-3.0.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-3.0.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/TindaPOS-Portable-3.0.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v3.0.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.3/SHA256SUMS-v3.0.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## ✨ What's New in v2.2.19: Smart Mobile Phone Scanner with Quantity & Hardware Quotation Edition
-- **Smart Mobile Phone Roving Scanner with Quantity Selector**: Cashiers and floor staff can now use their mobile phone as a wireless barcode scanner with an instant interactive Quantity Bottom Sheet modal (stepper input, hardware quick chips: `+1`, `+5`, `+10`, `+25`, `+50`, `+100`) designed specifically for hardware and wholesale stores.
-- **Real-Time Product Price & Stock Preview**: Scanning any item on the phone immediately displays the product name, price, remaining stock status, and bulk wholesale tiers on the mobile screen before adding to the cart.
-- **Roving Hardware Quotation & Cart Push**: Staff walking with customers on the sales floor can instantly send items with custom quantities directly into the active desktop POS cart or mark items for quotation and parked sales.
-- **Audio Chimes & Physical Haptic Feedback**: Crisp Web Audio synthesized scanner beeps and dual-tone success chimes paired with device vibration on phone scans without external audio files.
-- **Togglable Scan Modes**: One-tap switcher between **📦 Bulk Qty Mode** (for roving hardware & bulk orders) and **⚡ Rapid 1x Mode** (for high-velocity grocery retail).
-- **557 Automated Tests Passing**: Complete regression and invariant test suite verified 100% green with 0 errors across main process and web renderer.
-- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean installation with pre-update SQLite safety snapshots and silent auto-restart.
+## ✨ What's New in v3.0.3: Single-Item Void & Instant Item Exchange Studio Edition
+- **Single-Item Void & Proportional Refund Computation**: Cashiers can now void/return a single item from a multi-item transaction with automated proportional discount recalculation, preserving accurate gross margins and ledger balance.
+- **Instant Item Exchange Studio Modal**: Interactive modal with live barcode scanner auto-focus, real-time product search, and live stock validation for rapid in-store item swaps.
+- **Real-Time Financial Math Matrix**: Automatically calculates old credit vs replacement item price, providing an instant status banner for Abono (+₱XX.XX to pay), Sukli (-₱XX.XX change), or Even Exchange (₱0.00).
+- **Atomic SQLite Transaction & Ledger Integrity**: Atomic execution of return restock, replacement inventory deduction, refund audit entry, and shift drawer cash reconciliation in a single database transaction.
+- **Automated Thermal Exchange Slip Printing**: Auto-prints formatted 58mm/80mm thermal receipt slip detailing returned item credit, replacement details, cash tendered, and change.
+- **564 Automated Tests Passing**: 100% test coverage across all transaction, refund, exchange, and inventory test suites with 0 TypeScript errors.
+- **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
 
 ---
 
