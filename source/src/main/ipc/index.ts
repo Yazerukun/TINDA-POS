@@ -350,7 +350,8 @@ handle('products:restore', (_e: IpcMainInvokeEvent, id: number) => {
   sessionSvc.requirePermission('products:archive')
   return prodRepo.setProductStatus(db(), id, 'ACTIVE', user().id)
 })
-handle('products:count', (_e: IpcMainInvokeEvent, status?: string) => prodRepo.productCount(db(), status))
+handle('products:lookupBarcode', (_e: IpcMainInvokeEvent, barcode: string) => prodRepo.lookupBarcodeDetails(db(), barcode))
+  handle('products:count', (_e: IpcMainInvokeEvent, status?: string) => prodRepo.productCount(db(), status))
 handle('products:getRecipe', (_e: IpcMainInvokeEvent, id: number) => {
   return prodRepo.getRecipe(db(), id)
 })

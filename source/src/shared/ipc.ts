@@ -271,6 +271,7 @@ export interface TindaApi {
       rows: Product[]
       total: number
     }>
+    lookupBarcode: (barcode: string) => Promise<{ exists: boolean; product?: Product; unitName?: string; isArchived?: boolean }>
     get: (id: number) => Promise<Product>
     create: (input: ProductInput) => Promise<Product>
     update: (id: number, input: Partial<ProductInput>) => Promise<Product>

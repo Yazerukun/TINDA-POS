@@ -190,10 +190,58 @@ export function findByBarcode(db: Database.Database, barcode: string): Product |
     .prepare(`${BASE_SELECT} WHERE p.barcode = ? AND p.status = 'ACTIVE'`)
     .get(barcode) as Record<string, unknown> | undefined
   if (row) return rowToProduct(db, row)
-  const unit = db.prepare(`SELECT product_id FROM product_units WHERE barcode = ? LIMIT 1`).get(barcode) as
+  const unit = db.prepare(`SELECT u.product_id FROM product_units u JOIN products p ON u.product_id = p.id WHERE u.barcode = ? AND p.status = 'ACTIVE' LIMIT 1`).get(barcode) as
     | { product_id: number }
     | undefined
   return unit ? getProduct(db, unit.product_id) : undefined
+}
+
+export function lookupBarcodeDetails(db: Database.Database, barcode: string): {
+  exists: boolean
+  product?: Product
+  unitName?: string
+  isArchived?: boolean
+} {
+  const trimmed = barcode?.trim() || ''
+  if (!trimmed) return { exists: false }
+
+  // 1. Check active product primary barcode
+  const activeProd = db.prepare(`${BASE_SELECT} WHERE p.barcode = ? AND p.status = 'ACTIVE'`).get(trimmed) as Record<string, unknown> | undefined
+  if (activeProd) {
+    return { exists: true, product: rowToProduct(db, activeProd), isArchived: false }
+  }
+
+  // 2. Check active product unit barcode
+  const activeUnit = db.prepare(`
+    SELECT u.product_id, u.name as unit_name
+    FROM product_units u
+    JOIN products p ON u.product_id = p.id
+    WHERE u.barcode = ? AND p.status = 'ACTIVE'
+    LIMIT 1
+  `).get(trimmed) as { product_id: number; unit_name: string } | undefined
+  if (activeUnit) {
+    return { exists: true, product: getProduct(db, activeUnit.product_id), unitName: activeUnit.unit_name, isArchived: false }
+  }
+
+  // 3. Check archived product primary barcode
+  const archProd = db.prepare(`${BASE_SELECT} WHERE p.barcode = ? AND p.status = 'ARCHIVED'`).get(trimmed) as Record<string, unknown> | undefined
+  if (archProd) {
+    return { exists: true, product: rowToProduct(db, archProd), isArchived: true }
+  }
+
+  // 4. Check archived product unit barcode
+  const archUnit = db.prepare(`
+    SELECT u.product_id, u.name as unit_name
+    FROM product_units u
+    JOIN products p ON u.product_id = p.id
+    WHERE u.barcode = ? AND p.status = 'ARCHIVED'
+    LIMIT 1
+  `).get(trimmed) as { product_id: number; unit_name: string } | undefined
+  if (archUnit) {
+    return { exists: true, product: getProduct(db, archUnit.product_id), unitName: archUnit.unit_name, isArchived: true }
+  }
+
+  return { exists: false }
 }
 
 export function findBySku(db: Database.Database, sku: string): Product | undefined {
@@ -232,15 +280,25 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
   }
   const trimmedBarcode = input.barcode?.trim() || null
   if (trimmedBarcode) {
-    const dupe = db.prepare(`SELECT p.id FROM products p WHERE p.barcode = ? AND p.id != ?`).get(trimmedBarcode, excludeId ?? -1) as
-      | { id: number }
-      | undefined
-    if (dupe) throw new Error('Duplicate barcode.')
-    const unitEx = excludeId ? 'AND product_id != ?' : ''
-    const unitDupe = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(trimmedBarcode, ...(excludeId ? [excludeId] : [])) as
-      | { id: number }
-      | undefined
-    if (unitDupe) throw new Error('Duplicate barcode on a product unit.')
+    if (input.reassign_barcode) {
+      // Reassign barcode: unbind from any other products or units
+      db.prepare(`UPDATE products SET barcode = NULL WHERE barcode = ? AND id != ?`).run(trimmedBarcode, excludeId ?? -1)
+      db.prepare(`UPDATE product_units SET barcode = NULL WHERE barcode = ? ${excludeId ? 'AND product_id != ?' : ''}`).run(trimmedBarcode, ...(excludeId ? [excludeId] : []))
+    } else {
+      // Auto-free barcode if it was held by an ARCHIVED product so it doesn't block re-adding items
+      db.prepare(`UPDATE products SET barcode = NULL WHERE barcode = ? AND status = 'ARCHIVED' AND id != ?`).run(trimmedBarcode, excludeId ?? -1)
+      db.prepare(`UPDATE product_units SET barcode = NULL WHERE barcode = ? AND product_id IN (SELECT id FROM products WHERE status = 'ARCHIVED' AND id != ?)`).run(trimmedBarcode, excludeId ?? -1)
+
+      const dupe = db.prepare(`SELECT p.id, p.name FROM products p WHERE p.barcode = ? AND p.id != ? AND p.status = 'ACTIVE'`).get(trimmedBarcode, excludeId ?? -1) as
+        | { id: number; name: string }
+        | undefined
+      if (dupe) throw new Error(`Duplicate barcode: already used by "${dupe.name}".`)
+      const unitEx = excludeId ? 'AND u.product_id != ?' : ''
+      const unitDupe = db.prepare(`SELECT u.id, p.name FROM product_units u JOIN products p ON u.product_id = p.id WHERE u.barcode = ? AND p.status = 'ACTIVE' ${unitEx}`).get(trimmedBarcode, ...(excludeId ? [excludeId] : [])) as
+        | { id: number; name: string }
+        | undefined
+      if (unitDupe) throw new Error(`Duplicate barcode: already used on a selling unit of "${unitDupe.name}".`)
+    }
   }
   if (!input.units || input.units.length === 0) throw new Error('At least one selling unit is required.')
   let foundBase = false
@@ -256,13 +314,27 @@ export function validateProductInput(db: Database.Database, input: ProductInput,
         throw new Error(`Duplicate barcode "${trimmedUnitBarcode}" assigned to multiple selling units.`)
       }
       seenUnitBarcodes.add(trimmedUnitBarcode)
-      // Check if unit barcode is used by another product's unit
-      const unitEx = excludeId ? 'AND product_id != ?' : ''
-      const dup = db.prepare(`SELECT id FROM product_units WHERE barcode = ? ${unitEx}`).get(trimmedUnitBarcode, ...(excludeId ? [excludeId] : []))
-      if (dup) throw new Error(`Barcode ${trimmedUnitBarcode} already in use.`)
-      // Check if unit barcode is used by another product as primary barcode
-      const prodDup = db.prepare(`SELECT id FROM products WHERE barcode = ? AND id != ?`).get(trimmedUnitBarcode, excludeId ?? -1)
-      if (prodDup) throw new Error(`Barcode ${trimmedUnitBarcode} is already used as a product primary barcode.`)
+
+      if (input.reassign_barcode) {
+        db.prepare(`UPDATE product_units SET barcode = NULL WHERE barcode = ? ${excludeId ? 'AND product_id != ?' : ''}`).run(trimmedUnitBarcode, ...(excludeId ? [excludeId] : []))
+        db.prepare(`UPDATE products SET barcode = NULL WHERE barcode = ? AND id != ?`).run(trimmedUnitBarcode, excludeId ?? -1)
+      } else {
+        // Auto-free from archived products
+        db.prepare(`UPDATE product_units SET barcode = NULL WHERE barcode = ? AND product_id IN (SELECT id FROM products WHERE status = 'ARCHIVED' AND id != ?)`).run(trimmedUnitBarcode, excludeId ?? -1)
+        db.prepare(`UPDATE products SET barcode = NULL WHERE barcode = ? AND status = 'ARCHIVED' AND id != ?`).run(trimmedUnitBarcode, excludeId ?? -1)
+
+        // Check if unit barcode is used by another ACTIVE product's unit
+        const unitEx = excludeId ? 'AND u.product_id != ?' : ''
+        const dup = db.prepare(`SELECT u.id, p.name FROM product_units u JOIN products p ON u.product_id = p.id WHERE u.barcode = ? AND p.status = 'ACTIVE' ${unitEx}`).get(trimmedUnitBarcode, ...(excludeId ? [excludeId] : [])) as
+          | { id: number; name: string }
+          | undefined
+        if (dup) throw new Error(`Barcode ${trimmedUnitBarcode} already in use on "${dup.name}".`)
+        // Check if unit barcode is used by another ACTIVE product as primary barcode
+        const prodDup = db.prepare(`SELECT id, name FROM products WHERE barcode = ? AND id != ? AND status = 'ACTIVE'`).get(trimmedUnitBarcode, excludeId ?? -1) as
+          | { id: number; name: string }
+          | undefined
+        if (prodDup) throw new Error(`Barcode ${trimmedUnitBarcode} is already used as a product primary barcode on "${prodDup.name}".`)
+      }
     }
   }
   if (!foundBase) throw new Error('One unit must convert to exactly 1 base unit.')
@@ -408,7 +480,8 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
     expiration_date: input.expiration_date !== undefined ? input.expiration_date : cur.expiration_date,
     image_path: input.image_path !== undefined ? input.image_path : cur.image_path,
     notes: input.notes !== undefined ? input.notes : cur.notes,
-    units: input.units ?? cur.units
+    units: input.units ?? cur.units,
+    reassign_barcode: input.reassign_barcode
   }
   validateProductInput(db, merged, id)
   const hasWholesale = hasWholesaleColumns(db)
@@ -499,6 +572,24 @@ export function updateProduct(db: Database.Database, id: number, input: Partial<
 }
 
 export function setProductStatus(db: Database.Database, id: number, status: ProductStatus, _userId: number): Product {
+  if (status === 'ACTIVE') {
+    // Safety guard: if product has a barcode that is now taken by another ACTIVE product, null it so restoration doesn't fail
+    const cur = db.prepare('SELECT barcode FROM products WHERE id = ?').get(id) as { barcode?: string | null } | undefined
+    if (cur?.barcode) {
+      const conflict = db.prepare('SELECT id FROM products WHERE barcode = ? AND id != ? AND status = "ACTIVE"').get(cur.barcode, id)
+      if (conflict) {
+        db.prepare('UPDATE products SET barcode = NULL WHERE id = ?').run(id)
+      }
+    }
+    // Also check product units
+    const units = db.prepare('SELECT id, barcode FROM product_units WHERE product_id = ? AND barcode IS NOT NULL').all(id) as { id: number; barcode: string }[]
+    for (const u of units) {
+      const uConflict = db.prepare('SELECT pu.id FROM product_units pu JOIN products p ON pu.product_id = p.id WHERE pu.barcode = ? AND pu.product_id != ? AND p.status = "ACTIVE"').get(u.barcode, id)
+      if (uConflict) {
+        db.prepare('UPDATE product_units SET barcode = NULL WHERE id = ?').run(u.id)
+      }
+    }
+  }
   db.prepare(`UPDATE products SET status = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(status, id)
   return getProduct(db, id)
 }

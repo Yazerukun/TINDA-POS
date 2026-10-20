@@ -113,4 +113,87 @@ describe('Product creation and editing flow', () => {
     }
     expect(p2Error).toBeNull()
   })
+
+  it('allows re-using barcode from an archived product without duplicate barcode error', () => {
+    // 1. Create product A with barcode '4801111111111'
+    const formA = newProductForm(5)
+    formA.name = 'Old Archived Soda'
+    formA.barcode = '4801111111111'
+    formA.default_price_c = 2000
+    formA.units = [{ name: 'can', conversion_to_base: 1, barcode: '4801111111111', selling_price_c: 2000, is_default: true }]
+    const prodA = products.createProduct(db, createProductInput(formA), 1)
+    expect(prodA.id).toBeGreaterThan(0)
+
+    // 2. Archive product A (simulating deleting/archiving an item)
+    products.setProductStatus(db, prodA.id, 'ARCHIVED', 1)
+
+    // 3. User tries to re-enter / re-use the barcode on a new product B ("i-balik ang barcode")
+    const formB = newProductForm(5)
+    formB.name = 'New Fresh Soda'
+    formB.barcode = '4801111111111'
+    formB.default_price_c = 2200
+    formB.units = [{ name: 'can', conversion_to_base: 1, barcode: '4801111111111', selling_price_c: 2200, is_default: true }]
+
+    let createError: Error | null = null
+    let prodB: any = null
+    try {
+      prodB = products.createProduct(db, createProductInput(formB), 1)
+    } catch (e) {
+      createError = e as Error
+    }
+
+    expect(createError).toBeNull()
+    expect(prodB).not.toBeNull()
+    expect(prodB?.barcode).toBe('4801111111111')
+  })
+
+  it('supports transferring/reassigning barcode when reassign_barcode is true', () => {
+    const form1 = newProductForm(5)
+    form1.name = 'Item One'
+    form1.barcode = '4805555555555'
+    form1.default_price_c = 1000
+    const p1 = products.createProduct(db, createProductInput(form1), 1)
+
+    const form2 = newProductForm(5)
+    form2.name = 'Item Two'
+    form2.barcode = '4807777777777'
+    form2.default_price_c = 2000
+    const p2 = products.createProduct(db, createProductInput(form2), 1)
+
+    // Now reassign barcode '4805555555555' to Item Two
+    const editForm2 = editProductForm(p2)
+    editForm2.barcode = '4805555555555'
+    const updatePayload = {
+      ...updateProductInput(editForm2),
+      reassign_barcode: true
+    }
+
+    const updatedP2 = products.updateProduct(db, p2.id, updatePayload, 1)
+    expect(updatedP2.barcode).toBe('4805555555555')
+
+    // p1 should have its barcode freed (null)
+    const freshP1 = products.getProduct(db, p1.id)
+    expect(freshP1.barcode).toBeNull()
+  })
+
+  it('lookupBarcodeDetails identifies active vs archived items', () => {
+    const form = newProductForm(5)
+    form.name = 'Juice Pack'
+    form.barcode = '4808888888888'
+    form.default_price_c = 1500
+    const p = products.createProduct(db, createProductInput(form), 1)
+
+    const activeLookup = (products as any).lookupBarcodeDetails(db, '4808888888888')
+    expect(activeLookup.exists).toBe(true)
+    expect(activeLookup.isArchived).toBe(false)
+    expect(activeLookup.product?.id).toBe(p.id)
+
+    // Archive product
+    products.setProductStatus(db, p.id, 'ARCHIVED', 1)
+
+    const archivedLookup = (products as any).lookupBarcodeDetails(db, '4808888888888')
+    expect(archivedLookup.exists).toBe(true)
+    expect(archivedLookup.isArchived).toBe(true)
+    expect(archivedLookup.product?.id).toBe(p.id)
+  })
 })

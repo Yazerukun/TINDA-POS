@@ -97,6 +97,7 @@ const api: TindaApi = {
   },
   products: {
     search: (q, opts) => invoke<{ rows: import('@shared/types').Product[]; total: number }>('products:search', q, opts),
+    lookupBarcode: (barcode: string) => invoke<{ exists: boolean; product?: import('@shared/types').Product; unitName?: string; isArchived?: boolean }>('products:lookupBarcode', barcode),
     get: (id) => invoke<import('@shared/types').Product>('products:get', id),
     create: (input) => invoke<import('@shared/types').Product>('products:create', input),
     update: (id, input) => invoke<import('@shared/types').Product>('products:update', id, input),

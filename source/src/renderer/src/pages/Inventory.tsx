@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift, LayoutGrid, LayoutList, Store } from 'lucide-react'
+import { Search, Plus, Pencil, Trash2, RefreshCw, Boxes, Tags, ChevronDown, Check, Upload, PackagePlus, Download, ClipboardList, X, PackageMinus, ArrowDownUp, Image as ImageIcon, Sparkles, HelpCircle, Crown, Barcode, CheckCircle2, AlertTriangle, Camera, Tag, Printer, FileSpreadsheet, Layers, Gift, LayoutGrid, LayoutList, Store, RotateCcw } from 'lucide-react'
 import type { Product, Category, Supplier, StockReceivingRecord, StockReceivingSource, InventoryMovement, WithdrawalReason, PriceReference } from '@shared/types'
 import { money, moneyWholePesos } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -36,7 +36,7 @@ export function Inventory(): React.JSX.Element {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [q, setQ] = useState('')
-  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD'>('ALL')
+  const [catFilter, setCatFilter] = useState<number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD' | 'ARCHIVED'>('ALL')
   const [recipeProduct, setRecipeProduct] = useState<Product | null>(null)
   const [filterMenuOpen, setFilterMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -80,8 +80,9 @@ export function Inventory(): React.JSX.Element {
     const request = ++loadState.current.sequence
     if (showLoading) setLoading(true)
     try {
+      const statusParam = catFilter === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE'
       const [p, c, settings, lic] = await Promise.all([
-        window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
+        window.api.products.search('', { status: statusParam, limit: 1000 }),
         window.api.categories.list(),
         window.api.settings.get(),
         window.api.license?.getStatus?.().catch(() => ({ isVip: true }))
@@ -96,7 +97,7 @@ export function Inventory(): React.JSX.Element {
     } finally {
       if (request === loadState.current.sequence) setLoading(false)
     }
-  }, [])
+  }, [catFilter])
 
   useEffect(() => {
     const state = loadState.current
@@ -140,9 +141,11 @@ export function Inventory(): React.JSX.Element {
                 ? '🛠️ Services'
                 : catFilter === 'STANDARD'
                   ? '📦 Physical Items'
-                  : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
+                  : catFilter === 'ARCHIVED'
+                    ? '🗄️ Archived Items'
+                    : categories.find((category) => category.id === catFilter)?.name ?? 'All categories'
 
-  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD') => {
+  const chooseFilter = (filter: number | 'ALL' | 'LOW' | 'OUT' | 'EXPIRED' | 'EXPIRING_SOON' | 'COMPOSITE' | 'SERVICE' | 'STANDARD' | 'ARCHIVED') => {
     setCatFilter(filter)
     setFilterMenuOpen(false)
   }
@@ -150,6 +153,7 @@ export function Inventory(): React.JSX.Element {
   const filtered = useMemo(() => {
     let list = products
     if (q) list = list.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || (p.barcode || '').toLowerCase().includes(q.toLowerCase()) || p.sku.toLowerCase().includes(q.toLowerCase()))
+    if (catFilter === 'ARCHIVED') return list
     if (catFilter === 'LOW') list = list.filter((p) => p.stock > 0 && p.stock <= p.low_stock_threshold)
     else if (catFilter === 'OUT') list = list.filter((p) => p.stock <= 0)
     else if (catFilter === 'EXPIRED') {
@@ -195,6 +199,15 @@ export function Inventory(): React.JSX.Element {
       toastSuccess('Product archived')
       void load()
     } catch (e) { toastError('Archive failed', String((e as Error)?.message || e)) }
+  }
+
+  const restore = async (id: number) => {
+    if (!confirm('Restore this product back to active inventory?')) return
+    try {
+      await window.api.products.restore(id)
+      toastSuccess('Product restored to active inventory')
+      void load()
+    } catch (e) { toastError('Restore failed', String((e as Error)?.message || e)) }
   }
 
   const saveProduct = async (f: ProductFormData) => {
@@ -376,7 +389,8 @@ export function Inventory(): React.JSX.Element {
                 { value: 'LOW' as const, label: 'Low stock' },
                 { value: 'OUT' as const, label: 'Out of stock' },
                 { value: 'EXPIRED' as const, label: '🔴 Expired items' },
-                { value: 'EXPIRING_SOON' as const, label: '🟠 Expiring soon (<30 days)' }
+                { value: 'EXPIRING_SOON' as const, label: '🟠 Expiring soon (<30 days)' },
+                { value: 'ARCHIVED' as const, label: '🗄️ Archived Items' }
               ]).map((item) => (
                 <button
                   key={item.value}
@@ -491,6 +505,20 @@ export function Inventory(): React.JSX.Element {
           <span className="rounded bg-black/20 px-1 py-0.2 text-[10px]">
             {products.filter((p) => p.item_type === 'SERVICE').length}
           </span>
+        </button>
+        {/* Quick Filter: Archived */}
+        <button
+          type="button"
+          onClick={() => setCatFilter(catFilter === 'ARCHIVED' ? 'ALL' : 'ARCHIVED')}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+            catFilter === 'ARCHIVED'
+              ? 'bg-amber-500 text-ink-950 font-bold shadow'
+              : 'border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
+          }`}
+          title="View and restore archived products"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          <span>Archived Items</span>
         </button>
       </div>
 
@@ -645,13 +673,23 @@ export function Inventory(): React.JSX.Element {
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => void archive(p.id)}
-                            className="btn-ghost-2 rounded-lg p-1.5 text-danger-400 hover:text-danger-300 hover:bg-danger-500/10"
-                            title="Archive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          {p.status === 'ARCHIVED' ? (
+                            <button
+                              onClick={() => void restore(p.id)}
+                              className="btn-ghost-2 rounded-lg p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                              title="Restore to Active Inventory"
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => void archive(p.id)}
+                              className="btn-ghost-2 rounded-lg p-1.5 text-danger-400 hover:text-danger-300 hover:bg-danger-500/10"
+                              title="Archive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -723,7 +761,11 @@ export function Inventory(): React.JSX.Element {
                   <button onClick={() => setRestocking(p)} className="btn-ghost-2 rounded-lg p-2 text-brand-400" title="Restock"><PackagePlus className="h-4 w-4" /></button>
                   <button onClick={() => setStoreUseProduct(p)} className="btn-ghost-2 rounded-lg p-2 text-amber-400 hover:text-amber-300" title="Store Use (Operating Expense)"><Store className="h-4 w-4" /></button>
                   <button onClick={() => setEditing(editProductForm(p))} className="btn-ghost-2 rounded-lg p-2" title="Edit"><Pencil className="h-4 w-4" /></button>
-                  <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
+                  {p.status === 'ARCHIVED' ? (
+                    <button onClick={() => void restore(p.id)} className="btn-ghost-2 rounded-lg p-2 text-emerald-400 hover:text-emerald-300" title="Restore to Active Inventory"><RotateCcw className="h-4 w-4" /></button>
+                  ) : (
+                    <button onClick={() => void archive(p.id)} className="btn-ghost-2 rounded-lg p-2 text-danger-400" title="Archive"><Trash2 className="h-4 w-4" /></button>
+                  )}
                 </div>
               </div>
               <ProductExpiry product={p} />
@@ -1363,6 +1405,7 @@ function ProductModal({
   const [cameraScanTarget, setCameraScanTarget] = useState<'main' | number | null>(null)
   const [autoCapturedCode, setAutoCapturedCode] = useState<string | null>(null)
   const [targetUnitIndex, setTargetUnitIndex] = useState<number | null>(null)
+  const [barcodeConflict, setBarcodeConflict] = useState<{ exists: boolean; product?: Product; unitName?: string; isArchived?: boolean } | null>(null)
 
   const [rows, setRows] = useState<ProductUnitInput[]>(() => form.units.length > 0
     ? form.units
@@ -1436,6 +1479,32 @@ function ProductModal({
       )
     )
   }, [f.barcode, f.id, products])
+
+  useEffect(() => {
+    let active = true
+    const clean = f.barcode?.trim()
+    if (!clean) {
+      setBarcodeConflict(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await window.api.products.lookupBarcode(clean)
+        if (!active) return
+        if (res.exists && res.product && res.product.id !== (f.id ?? 0)) {
+          setBarcodeConflict(res)
+        } else {
+          setBarcodeConflict(null)
+        }
+      } catch {
+        if (active) setBarcodeConflict(null)
+      }
+    }, 200)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [f.barcode, f.id])
 
   useEffect(() => {
     let active = true
@@ -1685,13 +1754,116 @@ function ProductModal({
               </button>
             )}
           </div>
-          {autoCapturedCode && !duplicateProduct && (
+          {autoCapturedCode && !barcodeConflict && !duplicateProduct && (
             <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
               <CheckCircle2 className="h-3 w-3 shrink-0" />
               <span>Auto-captured: <strong>{autoCapturedCode}</strong></span>
             </p>
           )}
-          {duplicateProduct && (
+
+          {f.reassign_barcode && (
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1.5 text-xs text-emerald-300">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                Barcode reassignment confirmed — will be transferred on save
+              </span>
+              <button
+                type="button"
+                onClick={() => set({ reassign_barcode: false })}
+                className="text-[10px] text-slate-400 hover:text-white underline ml-2"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {barcodeConflict && !f.reassign_barcode && (
+            <div className={`mt-2 rounded-lg border p-2.5 text-xs ${barcodeConflict.isArchived ? 'border-amber-500/40 bg-amber-500/10 text-amber-200' : 'border-danger-500/40 bg-danger-500/10 text-red-200'}`}>
+              <div className="flex items-start gap-2">
+                <AlertTriangle className={`h-4 w-4 shrink-0 mt-0.5 ${barcodeConflict.isArchived ? 'text-amber-400' : 'text-danger-400'}`} />
+                <div className="flex-1 min-w-0">
+                  {barcodeConflict.isArchived ? (
+                    <>
+                      <p className="font-semibold text-amber-300">
+                        Barcode belongs to Archived Product: &quot;{barcodeConflict.product?.name}&quot;
+                      </p>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        This barcode was previously registered to an archived product. Restore the product or reuse this barcode.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!barcodeConflict.product) return
+                            try {
+                              await window.api.products.restore(barcodeConflict.product.id)
+                              toastSuccess(`Product "${barcodeConflict.product.name}" restored!`)
+                              setF(editProductForm(barcodeConflict.product))
+                              setBarcodeConflict(null)
+                            } catch (e) {
+                              toastError('Restore failed', String((e as Error)?.message || e))
+                            }
+                          }}
+                          className="btn-primary text-xs py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Restore Product
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            set({ reassign_barcode: true })
+                            toastSuccess('Barcode will be reassigned to this product on save')
+                          }}
+                          className="btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
+                        >
+                          <Check className="h-3 w-3 text-emerald-400" />
+                          Reuse Barcode
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-danger-300">
+                        Barcode in use by Active Product: &quot;{barcodeConflict.product?.name}&quot; ({barcodeConflict.product?.sku})
+                        {barcodeConflict.unitName ? ` [${barcodeConflict.unitName}]` : ''}
+                      </p>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        Transfer this barcode to the current product or open the existing item.
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!barcodeConflict.product) return
+                            setF(editProductForm(barcodeConflict.product))
+                            setBarcodeConflict(null)
+                          }}
+                          className="btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
+                        >
+                          <Boxes className="h-3 w-3 text-sky-400" />
+                          Open Existing Product
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            set({ reassign_barcode: true })
+                            toastSuccess('Barcode will be transferred to this product on save')
+                          }}
+                          className="btn-primary text-xs py-1 px-2.5 bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1"
+                        >
+                          <ArrowDownUp className="h-3 w-3" />
+                          Transfer Barcode
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!barcodeConflict && duplicateProduct && !f.reassign_barcode && (
             <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
               <AlertTriangle className="h-3 w-3 shrink-0" />
               <span>Already used by <strong>{duplicateProduct.name}</strong> ({duplicateProduct.sku})</span>

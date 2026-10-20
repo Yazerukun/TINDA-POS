@@ -38,6 +38,7 @@ export interface ProductFormData {
   expiration_mode?: ProductInput['expiration_mode']
   expiration_date?: string | null
   current_stock?: number
+  reassign_barcode?: boolean
 }
 
 export function unitInputFrom(unit: Product['units'][number]): ProductUnitInput {
@@ -152,7 +153,8 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
     image_path: form.image_path,
     notes: form.notes?.trim() || null,
     ...(form.expiration_mode !== undefined ? { expiration_mode: form.expiration_mode, expiration_date: form.expiration_date || null } : {}),
-    units: sanitizedUnits
+    units: sanitizedUnits,
+    reassign_barcode: form.reassign_barcode
   }
 }
 
@@ -188,7 +190,8 @@ export function createProductInput(form: ProductFormData): ProductInput {
     expiration_date: form.expiration_date || null,
     image_path: form.image_path,
     notes: form.notes?.trim() || null,
-    units: sanitizedUnits
+    units: sanitizedUnits,
+    reassign_barcode: form.reassign_barcode
   }
 }
 

@@ -146,6 +146,7 @@ export interface ProductInput {
   initial_stock_base?: number
   item_type?: ProductItemType
   recipe?: { component_product_id: number; quantity: number; unit_name: string }[]
+  reassign_barcode?: boolean
 }
 
 export type InventoryMovementType =

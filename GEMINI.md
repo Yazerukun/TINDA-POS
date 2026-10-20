@@ -15,7 +15,7 @@
 
 ## 3. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v3.0.5 (Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition)
+- **Current Stable Version:** v3.0.6 (Barcode Conflict Resolution & Archived Restore Studio Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition. Dual-minimize architecture: (1) Modal-Level Floating Receiving Dock (`fixed bottom-5 right-6 z-50`) allowing cashiers to minimize draft invoices into an unobtrusive Cupertino glassmorphic dock with live line item count, net total, supplier details, restore, and discard confirmation so they can check inventory stock, POS tabs, or prices without losing draft data; and (2) Panel-Level Collapsible Header Details (`[ ▴ Minimize Details ]` / `[ ▾ Show Details ]`) that collapses Supplier, Invoice #, Receipt #, Date, and Notes into a sleek 1-line badge while dynamically expanding the Line Items Table from `max-h-[36vh]` to `max-h-[54vh]` for maximum table workspace during high-volume deliveries. Fully verified with 0 TypeScript errors and passing automated Vitest unit tests.
+- **Latest Feature:** Barcode Conflict Resolution & Archived Restore Studio Edition. Fixes duplicate barcode lock for VIP merchants. Automatically frees archived barcodes when new active items register the barcode, prevents duplicate collisions with active items, adds 1-click Barcode Reassignment / Overwrite confirm in ProductModal, provides 1-click Archived Items view & filter in Inventory, and allows instant 1-click Restore of archived products back into active inventory.
