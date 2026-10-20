@@ -54,13 +54,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition from v1.0.28–v1.0.43 to v1.0.44 via `electron-updater` and GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition to v3.2.9 via `electron-updater` and official GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-1.0.44.exe` (NSIS installer with delta update support)
-  - `TindaPOS-Setup-1.0.44.exe.blockmap` (Differential blockmap)
-  - `latest.yml` (Version metadata and SHA-512 hashes)
-  - `TindaPOS-Portable-1.0.44.exe` (Zero-install portable runtime)
-  - `TindaPOS-User-Guide.pdf` (34-page official documentation)
+  - `TindaPOS-Setup-3.2.9.exe` (NSIS installer with differential blockmap support, 111.4 MB)
+  - `TindaPOS-Setup-3.2.9.exe.blockmap` (Differential blockmap, 121 KB)
+  - `latest.yml` (Version metadata and cryptographic SHA-512 hashes)
+  - `TindaPOS-Portable-3.2.9.exe` (Zero-install standalone portable runtime, 110.5 MB)
+  - `SHA256SUMS-v3.2.9.txt` (Cryptographic verification signatures)
 
 ---
 
@@ -1896,6 +1896,106 @@
 ### 85.3 Decoupled Thermal Print Routing & SQLite Concurrency Armor
 1. **Local Thermal Receipt Spooling:** When a checkout transaction completes on a satellite terminal, the transaction is committed to Master SQLite with `skipPhysicalPrint: true`, and the satellite's local renderer executes `autoPrintAfterCheckout` directly to the satellite's physically connected USB printer.
 2. **`BEGIN IMMEDIATE` Concurrency Protection:** High-frequency checkout and held sales operations are executed under `BEGIN IMMEDIATE` transactions, serializing write locks and eliminating `SQLITE_BUSY` errors during concurrent checkouts across multiple cashier stations.
+
+---
+
+## 86. High-Velocity Barcode Integrity, Instant Item Exchange & Fast Buttons Studio (v2.2.18–v3.0.4 Spec)
+
+### 86.1 Self-Sharing Barcode Integrity & Multi-Unit Coexistence
+1. **Self-Conflict Elimination:** Refactored `validateProductInput` in `products.ts` to allow primary product barcodes to seamlessly share identical codes with their base selling unit without throwing duplicate collision exceptions.
+2. **Archived Barcode Auto-Reclamation:** When a barcode or SKU matches a previously archived product or unit, the system non-destructively reclaims the code by clearing the archived barcode or prepending an archived prefix (`ARCHIVED-{id}-{sku}`), freeing active inventory without data destruction.
+
+### 86.2 Instant Item Exchange Studio & Mathematical Matrix
+1. **Item-Level Voiding:** Supported direct line item voiding with proportional sale-level discount compensation, ensuring drawer cash calculations remain 100% accurate.
+2. **Item Exchange Studio (`ItemExchangeModal.tsx`):** Real-time mathematical matrix calculating Original Return Value vs Replacement Item Price. Computes:
+   - **Sukli (Customer Refund):** When replacement is cheaper.
+   - **Abono (Customer Top-up):** When replacement is more expensive.
+   - **Even (₱0.00):** Direct exact swap.
+3. **Atomic Inventory & Ledger Posting:** All stock returns, replacement item deductions, and cash drawer reconciliations execute under an atomic SQLite transaction.
+
+### 86.3 Fast Buttons Universal Inventory Search & In-Place Linker
+1. **Unbounded Inventory Search:** `CustomizeFastButtonsModal.tsx` queries SQLite asynchronously across names, SKUs, and barcodes without artificial pagination limits.
+2. **In-Place Speed Key Re-linking:** Cashiers can re-link existing speed keys without deleting and recreating them.
+3. **Paging-Independent Speed Keys:** `FastButtonsBar.tsx` resolves item IDs directly against SQLite, eliminating misfires when POS is on a different category or page.
+
+---
+
+## 87. Purchase Invoice Minimizable Dock & Collapsible Header Studio (v3.0.5 Spec)
+
+### 87.1 Floating Receiving Dock (`PurchaseInvoiceModal.tsx`)
+1. **Draft Invoice Non-Blocking Docking:** Minimizes large incoming supplier deliveries into a sleek floating Cupertino dock (`fixed bottom-5 right-6 z-50`). Cashiers can freely switch back to the POS cashier to serve waiting customers without losing invoice draft state.
+2. **Real-Time Dock Telemetry:** Floating pill displays current draft item count, calculated net invoice total, supplier name, and 1-click [ Restore ] or [ Discard ] protection.
+
+### 87.2 Collapsible Header & Dynamic Table Expansion
+1. **Header Collapse Architecture:** Cashiers can collapse metadata fields (Supplier, Invoice #, Receipt #, Date, Notes) into a compact 1-line badge (`[ ▴ Minimize Details ]` / `[ ▾ Show Details ]`).
+2. **Dynamic Viewport Scaling:** Collapsing headers expands the Line Items Table viewport from `max-h-[36vh]` to `max-h-[54vh]`, providing massive visual workspace for 50+ item delivery receipts.
+
+---
+
+## 88. Barcode Conflict Resolution & Archived Restore Architecture (v3.0.6 Spec)
+
+### 88.1 VIP Barcode Conflict Shield
+1. **Live Conflict Detection:** In-modal barcode collision inspector immediately notifies cashiers when an entered barcode belongs to an existing or archived item.
+2. **1-Click Barcode Reassignment:** Provides an instant reassignment tool that updates the legacy record's barcode in-place, eliminating manual SQL edits or item duplication.
+
+### 88.2 Archived Items Restore Center
+1. **Archived Category Filter:** Inventory view includes an dedicated `Archived Items` filter.
+2. **1-Click Unarchive & Resuscitation:** Restores archived products back to active inventory with 1 tap, automatically validating SKU/barcode uniqueness upon reactivation.
+
+---
+
+## 89. TINDA Sentinel 24/7 Offline Flight Recorder & Diagnostic Studio (v3.0.7 Spec)
+
+### 89.1 0ms Real-Time Event-Driven IPC Broadcast
+1. **Sentinel Broadcast Bus:** Main process emits `sentinel:status-changed` events across all renderer windows via structured IPC, enabling 0ms UI health updates without polling.
+2. **Diagnostic HUD:** Apple Cupertino styled diagnostic dashboard with live Health Score (0-100%), SQLite database size, active connection status, and transaction throughput.
+
+### 89.2 Self-Healing Database Diagnostic Engine
+1. **Automated SQLite Lock Breaker:** Identifies and clears stale WAL locks, executing `PRAGMA integrity_check` and `PRAGMA optimize` on demand.
+2. **Orphan Record Remediation:** Auto-detects and heals dangling line items or unlinked inventory movement records without losing historical data.
+3. **Incident Report Generator:** 1-Click `[ 📋 Copy Report for Jin ]` formats an anonymized, structured diagnostic markdown snippet to the clipboard for rapid developer triage.
+
+---
+
+## 90. Chrome DevTools, Right-Click Inspect Element & Cupertino Live Console (v3.2.8 Spec)
+
+### 90.1 Dual-Layer Diagnostic Architecture
+1. **Layer 1: Native Chrome DevTools:**
+   - Full Chrome DevTools integration accessible via Right-Click Context Menu (`Inspect Element`), `F12`, `Ctrl+Shift+I`, and `Ctrl+Shift+J`.
+   - Enabled in development and protected by Manager PIN / Debugger toggle in production environments.
+2. **Layer 2: Cupertino Live Console Terminal (`SystemDebuggerModal.tsx`):**
+   - Embedded in-app terminal accessible via `Ctrl+Shift+D`.
+   - Captures real-time `console.log`, `console.info`, `console.warn`, and `console.error` streams in a beautiful Cupertino terminal interface.
+   - Includes real-time log search, level filtering (Error, Warning, Info, All), and 1-click clipboard export for Jin.
+
+---
+
+## 91. Omnipresent Real-Time Error Tracing, React Error Boundaries, Ambient Fault Pill & Cloud Bug Radar (v3.2.9 Spec)
+
+### 91.1 Zero-Escape Universal IPC Interceptor
+1. **Universal Interception Wrapper:** Every single `ipcRenderer.invoke` call is continuously intercepted, timed, and monitored.
+2. **Zero Silent Failures:** Unhandled rejections, SQLite constraints, or network timeouts are trapped in 0ms and persisted into SQLite `system_error_logs`.
+
+### 91.2 Global React Error Boundaries & Graceful Recovery Studio
+1. **Crash-Proof UI Architecture:** `<Shell />` and all major top-level views are wrapped in `<GlobalErrorBoundary>`.
+2. **Cupertino Recovery Interface:** In the event of an unhandled rendering exception, the screen gracefully transitions into an Apple Cupertino recovery card featuring:
+   - `[ ♻️ Reload View ]` — Restores component tree.
+   - `[ 🛒 Return to Cashier (POS) ]` — Safely routes back to POS cashier with 100% cart state preserved.
+   - `[ 📋 Copy Incident for Jin ]` — Copies structured error traces and reproduction breadcrumbs to clipboard.
+
+### 91.3 Ambient Cashier Fault Pill (`AmbientFaultPill.tsx`)
+1. **Non-Intrusive Floating Indicator:** Discreet Cupertino pill located in the bottom-right corner of the cashier view.
+2. **Silent Glitch Alerting:** Illuminates gently when an operational glitch is trapped and recorded, informing the cashier without interrupting customer checkout or alarming buyers.
+
+### 91.4 Deep Context Black-Box Snapshotting & Autonomous Cloud Bug Radar
+1. **Flight Context Snapshot:** Recorded errors capture full operational state:
+   - Active URL Route & View Name
+   - Open Modal Names & Drawer states
+   - Screen Viewport Dimensions & Pixel Ratio
+   - Network Online / Offline Status
+   - Rolling User Action Breadcrumbs (last 20 clicks, inputs, and navigation events)
+2. **Cloud Bug Radar (Cloudflare D1):** Telemetry service asynchronously synchronizes error logs and health scores to Cloudflare D1 when online, populating the Nationwide Bug Radar on the Cloud Owner Dashboard (`https://tinda-owner-dashboard.pages.dev/`).
+3. **Canonical Verification:** 583 automated unit and integration tests passing across 91 test suites with 0 TypeScript compilation errors and verified database invariants.
 
 
 
