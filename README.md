@@ -41,7 +41,18 @@
 
 ---
 
-## ✨ What's New in v3.0.6: Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition
+## ✨ What's New in v3.0.6: Barcode Conflict Resolution & Archived Restore Studio Edition
+- **Automatic Barcode Unlock for Archived Items**: When adding products or inputting barcodes, barcodes previously locked by archived/deleted products are automatically unblocked and freed, permanently fixing the *"duplicate barcode cannot be returned"* error for merchants.
+- **Interactive Barcode Conflict Resolution in Product Modal**: Live real-time barcode collision lookup with intelligent resolution banners:
+  - For **Archived Product Conflicts**: Offers 1-click `[ ♻️ Restore Product ]` (instantly restores and populates the product into the editor) or `[ 🏷️ Reuse Barcode ]` (reassigns barcode to the new product on save).
+  - For **Active Product Conflicts**: Offers 1-click `[ 📦 Open Existing Product ]` or `[ 🔄 Transfer Barcode ]` with clear confirmation and ownership transfer.
+- **Archived Items Category Filter & 1-Click Restore**: Added `🗄️ Archived Items` filter in both the category dropdown and quick filter bar in Inventory, allowing cashiers and store owners to review archived catalogs and restore any archived item with a single click (`[ ♻️ Restore ]`).
+- **568 Automated Tests Passing**: 100% test pass rate across all 87 test suites with 0 TypeScript compilation errors and verified database invariants.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
+
+---
+
+## ✨ What's New in v3.0.5: Purchase Invoice Minimizable Dock & Collapsible Header Studio Edition
 - **Floating Receiving Dock (Modal-Level Window Minimize)**: Cashiers can click `[ – Minimize ]` in the Purchase Invoice modal header to collapse the invoice into a sleek Cupertino dock at `fixed bottom-5 right-6 z-50`. All line items, supplier selections, and calculations remain intact in memory while cashiers freely inspect inventory stock or sales tabs. Displays draft line count, supplier badge, net total, `[ ⤢ Restore ]`, and discard protection.
 - **Collapsible Header Details Panel (Panel-Level Workspace Expansion)**: Added `[ ▴ Minimize Details ]` / `[ ▾ Show Details ]` toggle in the invoice header bar. Collapses Supplier, Invoice #, Receipt #, Date, and Notes into a compact 1-line badge and dynamically expands the Line Items Table from `max-h-[36vh]` to `max-h-[54vh]`, giving cashiers maximum screen real estate during high-volume wholesale deliveries.
 - **565+ Automated Tests Passing**: Verified with 0 TypeScript compilation errors and 100% test pass rate across all sales, purchases, and inventory modules.
