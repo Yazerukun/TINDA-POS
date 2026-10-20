@@ -9,6 +9,7 @@ import type {
 import { getSettings, updateSettings } from '../repositories/settings'
 import { listSales } from '../repositories/sales'
 import { licenseService } from './licenseService'
+import { getDiagnosticReport } from './errorSentinel'
 
 export function isVipActive(_settings?: StoreSettings): boolean {
   if (process.env.NODE_ENV === 'test') return true
@@ -179,6 +180,8 @@ export async function pushSaleToCloud(db: Database.Database, saleData: CloudSale
     try {
       db.prepare("UPDATE sales SET cloud_synced_at = datetime('now','localtime') WHERE id = ?").run(saleData.local_sale_id)
     } catch {}
+    void pushDiagnosticTelemetryToCloud(db).catch(() => {})
+
     updateSettings(db, {
       cloud_last_synced_at: new Date().toISOString(),
       cloud_sync_pending: false
@@ -389,6 +392,8 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       }
     } catch {}
 
+    void pushDiagnosticTelemetryToCloud(db).catch(() => {})
+
     updateSettings(db, {
       cloud_last_synced_at: new Date().toISOString(),
       cloud_sync_pending: false
@@ -446,3 +451,45 @@ export function startCloudSyncLoop(db: Database.Database): () => void {
   }
 }
 
+
+
+/**
+ * Push Error Sentinel Telemetry & Health to Cloud Bug Radar
+ */
+export async function pushDiagnosticTelemetryToCloud(db: Database.Database): Promise<boolean> {
+  const creds = getSyncCredentials(db)
+  if (!creds || !creds.enabled) return false
+
+  try {
+    const report = getDiagnosticReport(db)
+    if (!report) return false
+
+    if (report.healthScore === 100 && report.errorStats.unresolvedCount === 0) {
+      return true
+    }
+
+    const errorRows = db.prepare(`
+      SELECT id, severity, subsystem, error_signature, message, stack, metadata_json, count, last_seen_at, first_seen_at
+      FROM system_error_logs
+      WHERE resolved_at IS NULL
+      ORDER BY id DESC
+      LIMIT 20
+    `).all() as any[]
+
+    return await postToCloud(creds.apiUrl, '/api/sync/telemetry', {
+      store_id: creds.storeId,
+      sync_key: creds.syncKey,
+      branch_name: creds.branchName,
+      data: {
+        health_score: report.healthScore,
+        unresolved_count: report.errorStats.unresolvedCount,
+        errors: errorRows,
+        database_check: report.database.quickCheck,
+        memory_rss_mb: report.memory.rssMb,
+        app_version: '3.2.9'
+      }
+    })
+  } catch {
+    return false
+  }
+}

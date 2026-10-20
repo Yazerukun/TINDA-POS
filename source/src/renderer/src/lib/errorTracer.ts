@@ -13,6 +13,28 @@ function triggerRealtimeSync(): void {
   } catch {}
 }
 
+export function getFlightContextSnapshot(): Record<string, unknown> {
+  const meta: Record<string, unknown> = {
+    url: typeof window !== 'undefined' ? window.location.href : '',
+    online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    screen: typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'unknown',
+    timestamp: new Date().toISOString()
+  }
+
+  try {
+    if (typeof document !== 'undefined') {
+      const openModals = Array.from(document.querySelectorAll('[role="dialog"], .fixed.inset-0'))
+        .map((el) => (el as HTMLElement).getAttribute('aria-label') || (el as HTMLElement).id || 'Active Modal')
+        .filter(Boolean)
+      if (openModals.length > 0) {
+        meta.openModals = openModals.slice(0, 3)
+      }
+    }
+  } catch {}
+
+  return meta
+}
+
 /**
  * Record a breadcrumb in the client flight recorder.
  */
@@ -65,7 +87,7 @@ export function initFrontendErrorTracer(): void {
           stack,
           breadcrumbs: getClientBreadcrumbs(),
           metadata: {
-            url: window.location.href,
+            ...getFlightContextSnapshot(),
             line: event.lineno,
             col: event.colno
           }
@@ -95,7 +117,8 @@ export function initFrontendErrorTracer(): void {
           subsystem: 'RENDERER',
           message: `Unhandled Promise: ${message}`,
           stack,
-          breadcrumbs: getClientBreadcrumbs()
+          breadcrumbs: getClientBreadcrumbs(),
+          metadata: getFlightContextSnapshot()
         })
         .then(() => triggerRealtimeSync())
         .catch(() => undefined)

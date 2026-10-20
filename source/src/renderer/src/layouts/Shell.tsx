@@ -29,6 +29,8 @@ import { FloatingWidgetsDock } from '../components/common/FloatingWidgetsDock'
 import { NotificationBellDrawer } from '../components/notifications/NotificationBellDrawer'
 import { useNotificationDrawer } from '../stores/notificationDrawer'
 import { SystemDebuggerModal } from '../components/SystemDebuggerModal'
+import { GlobalErrorBoundary } from '../components/GlobalErrorBoundary'
+import { AmbientFaultPill } from '../components/AmbientFaultPill'
 import { useSystemDebugger } from '../stores/systemDebugger'
 
 export function Shell(): React.JSX.Element {
@@ -106,21 +108,23 @@ export function Shell(): React.JSX.Element {
       <main className="flex min-w-0 flex-1 flex-col">
         {user && <ExpirationAlerts key={user.id} remind />}
         <div className={`min-h-0 flex-1 ${page === 'pos' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'}`}>
-        {user && page === 'dashboard' && <Dashboard />}
-        {user && page === 'pos' && <POS />}
-        {user && page === 'inventory' && <Inventory />}
-        {user && page === 'customers' && <Customers />}
-        {user && page === 'utang' && <Utang />}
-        {user && page === 'expenses' && <Expenses />}
-        {user && page === 'suppliers' && <Suppliers />}
-        {user && page === 'transactions' && <Transactions />}
-        {user && page === 'reports' && <Reports />}
-        {user && page === 'backup' && <Backup />}
-        {user && page === 'settings' && <Settings />}
-        {user && page === 'ewallet' && <EwalletAudit />}
-        {user && page === 'bills' && <EwalletAudit />}
-        {user && page === 'printing' && <PrintingHub />}
-        {user && page === 'handbook' && <Handbook />}
+          <GlobalErrorBoundary viewName={page}>
+            {user && page === 'dashboard' && <Dashboard />}
+            {user && page === 'pos' && <POS />}
+            {user && page === 'inventory' && <Inventory />}
+            {user && page === 'customers' && <Customers />}
+            {user && page === 'utang' && <Utang />}
+            {user && page === 'expenses' && <Expenses />}
+            {user && page === 'suppliers' && <Suppliers />}
+            {user && page === 'transactions' && <Transactions />}
+            {user && page === 'reports' && <Reports />}
+            {user && page === 'backup' && <Backup />}
+            {user && page === 'settings' && <Settings />}
+            {user && page === 'ewallet' && <EwalletAudit />}
+            {user && page === 'bills' && <EwalletAudit />}
+            {user && page === 'printing' && <PrintingHub />}
+            {user && page === 'handbook' && <Handbook />}
+          </GlobalErrorBoundary>
         </div>
       </main>
       <ToastHost />
@@ -131,6 +135,7 @@ export function Shell(): React.JSX.Element {
       <TindaAiAssistantModal />
       <NotificationBellDrawer />
       <SystemDebuggerModal />
+      <AmbientFaultPill />
     </div>
   )
 }

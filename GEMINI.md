@@ -17,9 +17,12 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v3.2.8 (Chrome DevTools, Right-Click Inspect Element & Cupertino Live Console Studio Edition)
+- **Current Stable Version:** v3.2.9 (Omnipresent Real-Time Error Tracing, React Error Boundaries, Ambient Fault Pill & Cloud Bug Radar Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Dual-Layer Debugging Architecture:
-  1. **Layer 1 (Native Chrome DevTools & Right-Click Inspect)**: Right-click anywhere inside TINDA POS to inspect elements, toggle Chrome DevTools via `F12` or `Ctrl + Shift + I` / `Ctrl + Shift + J`, and view the real-time Chrome Console.
-  2. **Layer 2 (In-App Cupertino Live Console Terminal)**: Built into TINDA Sentinel (`Ctrl + Shift + D`). Features a dark obsidian console stream capturing all `console.error`, `console.warn`, `console.info`, and `console.log` entries with search filter, severity badges, and a 1-click glowing `[ 📋 Copy Logs for Jin ]` button.
+- **Latest Features:**
+  1. **Zero-Escape Universal IPC Interceptor**: In `src/preload/index.ts`, all IPC invocations are continuously measured and guarded; any thrown error, rejected promise, or `{ ok: false }` payload is automatically captured in 0ms into SQLite `system_error_logs`.
+  2. **Global React Error Boundary & Graceful Recovery UI**: Wrapped root `<Shell />` and all page views in `<GlobalErrorBoundary>`; rendering glitches display an Apple Cupertino recovery card with 1-click `[ ♻️ Reload View ]`, `[ 🛒 Return to Cashier ]`, and `[ 📋 Copy Incident for Jin ]`.
+  3. **Ambient Cashier Glitch Pill**: Floating Cupertino pill at bottom-right automatically notifies cashiers when background errors are caught without interrupting checkout flow.
+  4. **Deep Context Black-Box Snapshot**: Error logs record active route, open modals, screen dimensions, online status, and rolling user action breadcrumbs.
+  5. **Cloudflare D1 Bug Radar Telemetry**: Auto-syncs unresolved diagnostic errors and health score telemetry to Cloudflare D1 and Cloud Dashboard.

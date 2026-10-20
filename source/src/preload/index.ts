@@ -4,7 +4,60 @@ import type { IpcRendererEvent } from 'electron'
 import type { CheckoutPayload, RefundPayload, VoidPayload, CompleteSetupPayload } from '@shared/ipc'
 import type { UpdateStatusEvent } from '@shared/update'
 
-const invoke = <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => ipcRenderer.invoke(channel, ...args)
+const safeSerialize = (val: unknown): unknown => {
+  if (val === null || val === undefined) return val
+  if (typeof val === 'function') return '[Function]'
+  if (typeof val === 'object') {
+    try {
+      return JSON.parse(JSON.stringify(val))
+    } catch {
+      return String(val)
+    }
+  }
+  return val
+}
+
+const invoke = async <T = unknown>(channel: string, ...args: unknown[]): Promise<T> => {
+  const start = Date.now()
+  try {
+    const result = await ipcRenderer.invoke(channel, ...args)
+    if (result && typeof result === 'object' && 'ok' in result && (result as any).ok === false && 'message' in result) {
+      if (channel !== 'diagnostics:record') {
+        const msg = String((result as any).message || 'Operation returned failure status')
+        void ipcRenderer.invoke('diagnostics:record', {
+          severity: 'WARN',
+          subsystem: 'IPC',
+          message: `[${channel}] ${msg}`,
+          metadata: {
+            channel,
+            durationMs: Date.now() - start,
+            args: args.map(safeSerialize)
+          }
+        }).catch(() => undefined)
+      }
+    }
+    return result
+  } catch (err: any) {
+    const durationMs = Date.now() - start
+    const errMsg = err?.message || String(err)
+    const stack = err?.stack
+
+    if (channel !== 'diagnostics:record') {
+      void ipcRenderer.invoke('diagnostics:record', {
+        severity: 'ERROR',
+        subsystem: 'IPC',
+        message: `[${channel} Exception] ${errMsg}`,
+        stack,
+        metadata: {
+          channel,
+          durationMs,
+          args: args.map(safeSerialize)
+        }
+      }).catch(() => undefined)
+    }
+    throw err
+  }
+}
 const api: TindaApi = {
   app: {
     startup: (enabled?: boolean) => invoke<{ supported: boolean; enabled: boolean }>('app:startup', enabled),
