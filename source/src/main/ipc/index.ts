@@ -1,5 +1,5 @@
 import type { IpcMainInvokeEvent } from 'electron'
-import { ipcMain } from 'electron'
+import { ipcMain, BrowserWindow } from 'electron'
 import { promises as fs } from 'node:fs'
 import { getDb, getDbFile, appDirs } from '../database/connection'
 import * as authSvc from '../services/auth'
@@ -1638,6 +1638,22 @@ handle('diagnostics:clearLogs', () => {
   sessionSvc.requirePermission('settings:manage')
   const sentinel = require('../services/errorSentinel')
   sentinel.clearErrorLogs(db())
+  return { ok: true }
+})
+
+handle('diagnostics:openDevTools', () => {
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+  if (win) {
+    win.webContents.openDevTools({ mode: 'detach' })
+  }
+  return { ok: true }
+})
+
+handle('diagnostics:toggleDevTools', () => {
+  const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+  if (win) {
+    win.webContents.toggleDevTools()
+  }
   return { ok: true }
 })
 

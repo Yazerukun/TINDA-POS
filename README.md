@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v3.0.7-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v3.2.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.0.7_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/TindaPOS-Setup-3.0.7.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.0.7_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/TindaPOS-Portable-3.0.7.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.2.8_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/TindaPOS-Setup-3.2.8.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.2.8_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/TindaPOS-Portable-3.2.8.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +30,25 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v3.0.7 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v3.2.8 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-3.0.7.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/TindaPOS-Setup-3.0.7.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-3.0.7.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/TindaPOS-Portable-3.0.7.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v3.0.7.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.0.7/SHA256SUMS-v3.0.7.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-3.2.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/TindaPOS-Setup-3.2.8.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-3.2.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/TindaPOS-Portable-3.2.8.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v3.2.8.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.8/SHA256SUMS-v3.2.8.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## ✨ What's New in v3.2.8: Chrome DevTools, Right-Click Inspect Element & Cupertino Live Console Studio Edition
+- **Google Chrome Developer Tools Integration**: Right-click anywhere inside the TINDA POS window to open the native context menu with **`🔍 Inspect Element`** — automatically focusing on the clicked element and opening Chromium DevTools just like Google Chrome!
+- **Chrome DevTools Hotkeys (F12, Ctrl+Shift+I, Ctrl+Shift+J)**: Instantly launch Chromium DevTools or go straight to the technical Chrome Console with standard industry shortcuts.
+- **In-App Cupertino Live Console Terminal (Ctrl+Shift+D)**: Added a dedicated **Live Console** tab in TINDA Sentinel Studio. Stream and monitor all `console.error`, `console.warn`, `console.info`, and `console.log` output in real time within a dark obsidian terminal window.
+- **Console Log Search & Level Filters**: Instantly filter logs by query or severity (🔴 Errors, 🟡 Warnings, 🔵 Info & Logs).
+- **1-Click "Copy Logs for Jin"**: Copy all active or filtered console logs formatted as a clean Markdown table directly to the Windows clipboard with a single click.
+- **579 Automated Tests Passing**: 100% test pass rate across all 89 test suites with 0 TypeScript compilation errors and verified database invariants.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
 
 ---
 

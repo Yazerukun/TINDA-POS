@@ -644,6 +644,9 @@ export interface TindaApi {
     autoFix: () => Promise<{ ok: boolean; actionsTaken: string[]; message: string }>
     clearLogs: () => Promise<void>
     onChanged?: (handler: () => void) => () => void
+    openDevTools?: () => Promise<void>
+    toggleDevTools?: () => Promise<void>
+    onOpenModal?: (handler: () => void) => () => void
   }
   rawInvoke?: (channel: string, ...args: unknown[]) => Promise<unknown>
 }

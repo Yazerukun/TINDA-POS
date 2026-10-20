@@ -86,9 +86,14 @@ export function Shell(): React.JSX.Element {
     window.addEventListener('online', onOnline)
     window.addEventListener('keydown', onGlobalF3)
 
+    const unsubOpen = window.api?.diagnostics?.onOpenModal?.(() => {
+      useSystemDebugger.getState().openDebugger()
+    })
+
     return () => {
       clearTimeout(initTimer)
       clearInterval(interval)
+      unsubOpen?.()
       window.removeEventListener('focus', onFocus)
       window.removeEventListener('online', onOnline)
       window.removeEventListener('keydown', onGlobalF3)

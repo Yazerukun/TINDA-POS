@@ -19,7 +19,8 @@ import {
   ExternalLink,
   CheckCircle2,
   RefreshCw,
-  ShieldCheck
+  ShieldCheck,
+  Terminal
 } from 'lucide-react'
 import { useSystemDebugger } from '../stores/systemDebugger'
 import { Modal } from './ui/Modal'
@@ -387,7 +388,7 @@ export function PosToolsModal({
         </div>
 
         {/* Section 3: Cashier Guide, System Updates & Diagnostics */}
-        <div className="pt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           <button
             type="button"
             onClick={() => {
@@ -409,6 +410,30 @@ export function PosToolsModal({
               Debug →
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              void window.api?.diagnostics?.toggleDevTools?.()
+            }}
+            className="flex items-center justify-between p-3 rounded-xl border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-200 transition-all text-left group"
+            title="Open Google Chrome Developer Tools & Console (F12)"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-500/20 text-violet-300 shrink-0 group-hover:scale-105 transition-transform">
+                <Terminal className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm leading-tight truncate">Chrome DevTools</p>
+                <p className="text-[11px] text-violet-300/80 truncate">F12 · Right-Click Inspect</p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-violet-400 group-hover:underline shrink-0">
+              Launch →
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -446,7 +471,7 @@ export function PosToolsModal({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm leading-tight truncate">Check for Updates</p>
-                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '3.0.7'} · Live Check</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '3.2.8'} · Live Check</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-emerald-400 group-hover:underline shrink-0">

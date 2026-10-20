@@ -389,6 +389,13 @@ const api: TindaApi = {
       const sub = () => handler()
       ipcRenderer.on('diagnostics:changed', sub)
       return () => ipcRenderer.removeListener('diagnostics:changed', sub)
+    },
+    openDevTools: () => invoke<void>('diagnostics:openDevTools'),
+    toggleDevTools: () => invoke<void>('diagnostics:toggleDevTools'),
+    onOpenModal: (handler: () => void) => {
+      const sub = () => handler()
+      ipcRenderer.on('diagnostics:open', sub)
+      return () => ipcRenderer.removeListener('diagnostics:open', sub)
     }
   },
   rawInvoke: (channel: string, ...args: unknown[]) => invoke(channel, ...args)

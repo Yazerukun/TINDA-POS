@@ -9,9 +9,11 @@ import { Shell } from './layouts/Shell'
 import { useConnectionNotifications } from './hooks/useOnlineStatus'
 import { SalesMonitorScreen } from './pages/SalesMonitor'
 import { initFrontendErrorTracer } from './lib/errorTracer'
+import { initConsoleInterceptor } from './lib/consoleInterceptor'
 
 // Initialize client-side error interceptor & user action flight recorder
 initFrontendErrorTracer()
+initConsoleInterceptor()
 
 export default function App(): React.JSX.Element {
   if (

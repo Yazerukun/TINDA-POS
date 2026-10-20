@@ -74,6 +74,57 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // Chrome-Style Right-Click Context Menu & Inspect Element
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Inspect Element',
+        click: () => {
+          if (!mainWindow?.webContents.isDevToolsOpened()) {
+            mainWindow?.webContents.openDevTools({ mode: 'detach' })
+          }
+          mainWindow?.webContents.inspectElement(params.x, params.y)
+        }
+      },
+      {
+        label: 'Open DevTools Console',
+        accelerator: 'F12',
+        click: () => {
+          mainWindow?.webContents.toggleDevTools()
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Open TINDA Sentinel (Flight Recorder)',
+        accelerator: 'Ctrl+Shift+D',
+        click: () => {
+          mainWindow?.webContents.send('diagnostics:open')
+        }
+      },
+      {
+        label: 'Reload View',
+        accelerator: 'CmdOrCtrl+R',
+        click: () => {
+          mainWindow?.webContents.reload()
+        }
+      }
+    ])
+    contextMenu.popup()
+  })
+
+  // Global Hotkeys for Chrome DevTools: F12, Ctrl+Shift+I, Ctrl+Shift+J
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown') {
+      if (input.key === 'F12') {
+        mainWindow?.webContents.toggleDevTools()
+        event.preventDefault()
+      } else if (input.control && input.shift && (input.key.toLowerCase() === 'i' || input.key.toLowerCase() === 'j')) {
+        mainWindow?.webContents.toggleDevTools()
+        event.preventDefault()
+      }
+    }
+  })
+
   // Load renderer (dev server vs built files vs verified feature patch).
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])

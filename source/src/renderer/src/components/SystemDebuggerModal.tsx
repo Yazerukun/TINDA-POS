@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   ShieldCheck,
   AlertTriangle,
@@ -9,27 +9,65 @@ import {
   RefreshCw,
   Trash2,
   Database,
-  Cpu,
   Footprints,
-  ExternalLink,
-  HelpCircle,
-  Activity
+  Activity,
+  Terminal,
+  Search,
+  ExternalLink
 } from 'lucide-react'
 import { Modal } from './ui/Modal'
 import { useSystemDebugger } from '../stores/systemDebugger'
 import { toastSuccess, toastError } from '../stores/toast'
+import {
+  getCapturedConsoleLogs,
+  clearCapturedConsoleLogs,
+  subscribeToConsoleLogs,
+  formatConsoleLogsAsMarkdown,
+  type ConsoleLogEntry
+} from '../lib/consoleInterceptor'
 
 export function SystemDebuggerModal(): React.JSX.Element | null {
   const { isOpen, closeDebugger, report, loading, autoFixing, fetchReport, runAutoFix, clearLogs } =
     useSystemDebugger()
   const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState<'issues' | 'breadcrumbs' | 'database'>('issues')
+  const [consoleCopied, setConsoleCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState<'issues' | 'console' | 'breadcrumbs' | 'database'>('issues')
+  const [consoleLogs, setConsoleLogs] = useState<ConsoleLogEntry[]>(() => getCapturedConsoleLogs())
+  const [consoleSearch, setConsoleSearch] = useState('')
+  const [consoleLevelFilter, setConsoleLevelFilter] = useState<'all' | 'error' | 'warn' | 'info'>('all')
 
   useEffect(() => {
     if (isOpen) {
       void fetchReport()
+      setConsoleLogs(getCapturedConsoleLogs())
     }
   }, [isOpen, fetchReport])
+
+  // Subscribe to live console events in real-time
+  useEffect(() => {
+    const unsub = subscribeToConsoleLogs((newEntry) => {
+      setConsoleLogs((prev) => [...prev.slice(-499), newEntry])
+    })
+    return () => unsub()
+  }, [])
+
+  const filteredConsoleLogs = useMemo(() => {
+    return consoleLogs.filter((entry) => {
+      if (consoleLevelFilter === 'error' && entry.level !== 'error') return false
+      if (consoleLevelFilter === 'warn' && entry.level !== 'warn') return false
+      if (consoleLevelFilter === 'info' && entry.level !== 'info' && entry.level !== 'log') return false
+
+      if (consoleSearch.trim()) {
+        const q = consoleSearch.toLowerCase()
+        return (
+          entry.message.toLowerCase().includes(q) ||
+          entry.level.toLowerCase().includes(q) ||
+          (entry.stack && entry.stack.toLowerCase().includes(q))
+        )
+      }
+      return true
+    })
+  }, [consoleLogs, consoleLevelFilter, consoleSearch])
 
   if (!isOpen) return null
 
@@ -46,6 +84,31 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
     } catch {
       toastError('Copy Failed', 'Please manually copy the text from the report.')
     }
+  }
+
+  const handleCopyConsole = async () => {
+    try {
+      const markdown = formatConsoleLogsAsMarkdown(filteredConsoleLogs)
+      await navigator.clipboard.writeText(markdown)
+      setConsoleCopied(true)
+      toastSuccess(
+        'Console Logs Copied!',
+        `Exported ${filteredConsoleLogs.length} logs to clipboard for Jin.`
+      )
+      setTimeout(() => setConsoleCopied(false), 3000)
+    } catch {
+      toastError('Copy Failed', 'Could not access clipboard.')
+    }
+  }
+
+  const handleClearConsole = () => {
+    clearCapturedConsoleLogs()
+    setConsoleLogs([])
+    toastSuccess('Console Cleared', 'In-app console feed has been cleared.')
+  }
+
+  const handleOpenChromeDevTools = () => {
+    void window.api?.diagnostics?.toggleDevTools?.()
   }
 
   const handleAutoFix = async () => {
@@ -74,7 +137,6 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
   const health = report?.healthScore ?? 100
   const isHealthy = health >= 90
   const isWarning = health >= 70 && health < 90
-  const isCritical = health < 70
 
   const statusBg = isHealthy
     ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-300'
@@ -82,21 +144,34 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
       ? 'border-amber-500/35 bg-amber-500/10 text-amber-300'
       : 'border-danger-500/35 bg-danger-500/10 text-danger-300'
 
+  const errorCount = consoleLogs.filter((l) => l.level === 'error').length
+  const warnCount = consoleLogs.filter((l) => l.level === 'warn').length
+  const infoCount = consoleLogs.filter((l) => l.level === 'info' || l.level === 'log').length
+
   return (
     <Modal
       open={isOpen}
       onClose={closeDebugger}
-      title="TINDA Sentinel — System Health & Diagnostics"
-      maxWidth="max-w-3xl"
+      title="TINDA Sentinel — System Health, DevTools & Console Studio"
+      maxWidth="max-w-4xl"
       footer={
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              Offline Flight Recorder Active
+              Real-Time Flight Recorder & Chrome DevTools Active
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleOpenChromeDevTools}
+              className="btn-secondary flex items-center gap-1.5 border-violet-500/35 text-violet-300 hover:bg-violet-500/15 text-xs py-2 px-3 active:scale-95 transition-all"
+              title="Launch official Google Chrome Developer Tools (F12)"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>Chrome DevTools (F12)</span>
+            </button>
             <button
               type="button"
               onClick={handleCopyReport}
@@ -216,6 +291,23 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('console')}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
+                activeTab === 'console'
+                  ? 'bg-brand-500 font-bold text-ink-950 shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Terminal className="h-3.5 w-3.5" />
+              <span>Live Console ({consoleLogs.length})</span>
+              {errorCount > 0 && (
+                <span className="rounded-full bg-danger-500 px-1.5 py-0.2 text-[10px] font-bold text-white">
+                  {errorCount}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('breadcrumbs')}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${
                 activeTab === 'breadcrumbs'
@@ -240,17 +332,31 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
             </button>
           </div>
 
-          {report?.errorStats.totalErrors ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1 transition"
-              title="Clear all logs"
-            >
-              <Trash2 className="h-3 w-3" />
-              <span>Clear Logs</span>
-            </button>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {activeTab === 'console' && (
+              <button
+                type="button"
+                onClick={handleClearConsole}
+                className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1 transition"
+                title="Clear in-app console logs"
+              >
+                <Trash2 className="h-3 w-3" />
+                <span>Clear Console</span>
+              </button>
+            )}
+
+            {activeTab === 'issues' && report?.errorStats.totalErrors ? (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1 transition"
+                title="Clear all logs"
+              >
+                <Trash2 className="h-3 w-3" />
+                <span>Clear Logs</span>
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {/* Tab 1: Traced Issues */}
@@ -299,7 +405,149 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
           </div>
         )}
 
-        {/* Tab 2: User Action Trail (Breadcrumbs) */}
+        {/* Tab 2: Live Console Terminal Studio */}
+        {activeTab === 'console' && (
+          <div className="space-y-2.5 max-h-[46vh] flex flex-col">
+            {/* Filter and Action Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 flex-1 min-w-[200px]">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={consoleSearch}
+                    onChange={(e) => setConsoleSearch(e.target.value)}
+                    placeholder="Filter console logs or stack traces…"
+                    className="w-full rounded-lg border border-ink-line bg-black/40 py-1.5 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 rounded-lg border border-ink-line bg-ink-900/50 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setConsoleLevelFilter('all')}
+                  className={`px-2 py-1 rounded text-[11px] font-medium transition ${
+                    consoleLevelFilter === 'all'
+                      ? 'bg-slate-700 text-white font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  All ({consoleLogs.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConsoleLevelFilter('error')}
+                  className={`px-2 py-1 rounded text-[11px] font-medium transition flex items-center gap-1 ${
+                    consoleLevelFilter === 'error'
+                      ? 'bg-danger-500 text-white font-bold'
+                      : 'text-danger-400 hover:bg-danger-500/10'
+                  }`}
+                >
+                  <span>🔴</span> Errors ({errorCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConsoleLevelFilter('warn')}
+                  className={`px-2 py-1 rounded text-[11px] font-medium transition flex items-center gap-1 ${
+                    consoleLevelFilter === 'warn'
+                      ? 'bg-amber-500 text-ink-950 font-bold'
+                      : 'text-amber-400 hover:bg-amber-500/10'
+                  }`}
+                >
+                  <span>🟡</span> Warns ({warnCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConsoleLevelFilter('info')}
+                  className={`px-2 py-1 rounded text-[11px] font-medium transition flex items-center gap-1 ${
+                    consoleLevelFilter === 'info'
+                      ? 'bg-sky-600 text-white font-bold'
+                      : 'text-sky-400 hover:bg-sky-500/10'
+                  }`}
+                >
+                  <span>🔵</span> Info ({infoCount})
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyConsole}
+                className="btn-secondary flex items-center gap-1.5 border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/15 text-xs py-1.5 px-3 active:scale-95 transition"
+                title="Copy all currently filtered console entries to clipboard"
+              >
+                {consoleCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{consoleCopied ? 'Copied Logs!' : '📋 Copy Logs for Jin'}</span>
+              </button>
+            </div>
+
+            {/* Apple Obsidian Terminal Box */}
+            <div className="flex-1 overflow-y-auto max-h-[38vh] rounded-xl border border-ink-line/60 bg-[#070a0e] p-3 font-mono text-[11px] scrollbar-thin">
+              {filteredConsoleLogs.length === 0 ? (
+                <div className="py-12 text-center text-slate-500">
+                  <Terminal className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p>No console entries matching your filter.</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">
+                    Trigger actions or scan barcodes to view live console logs.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {filteredConsoleLogs.map((entry) => {
+                    const isErr = entry.level === 'error'
+                    const isWrn = entry.level === 'warn'
+                    const isInf = entry.level === 'info'
+
+                    const badgeColor = isErr
+                      ? 'bg-danger-500/20 text-danger-300 border-danger-500/30'
+                      : isWrn
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        : isInf
+                          ? 'bg-sky-500/20 text-sky-300 border-sky-500/30'
+                          : 'bg-slate-700/30 text-slate-400 border-slate-700/40'
+
+                    const textColor = isErr
+                      ? 'text-danger-200'
+                      : isWrn
+                        ? 'text-amber-200'
+                        : isInf
+                          ? 'text-sky-200'
+                          : 'text-slate-300'
+
+                    return (
+                      <div
+                        key={entry.id}
+                        className="group flex flex-col gap-0.5 rounded-lg border border-transparent hover:border-slate-800 hover:bg-white/[0.02] p-1.5 transition"
+                      >
+                        <div className="flex items-start gap-2">
+                          <span className="text-[10px] text-slate-500 select-none shrink-0 pt-0.5">
+                            {entry.timeFormatted}
+                          </span>
+                          <span
+                            className={`rounded border px-1.5 py-0.2 text-[9px] font-bold uppercase shrink-0 select-none ${badgeColor}`}
+                          >
+                            {entry.level}
+                          </span>
+                          <span className={`break-all select-all flex-1 ${textColor}`}>
+                            {entry.message}
+                          </span>
+                        </div>
+
+                        {entry.stack && (
+                          <div className="mt-1 ml-6 rounded bg-black/60 p-2 text-[10px] text-slate-400 whitespace-pre-wrap font-mono border border-black/40 select-all">
+                            {entry.stack}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: User Action Trail (Breadcrumbs) */}
         {activeTab === 'breadcrumbs' && (
           <div className="space-y-2 max-h-[44vh] overflow-y-auto pr-1 scrollbar-thin">
             <p className="text-xs text-slate-400">
@@ -328,7 +576,7 @@ export function SystemDebuggerModal(): React.JSX.Element | null {
           </div>
         )}
 
-        {/* Tab 3: Database & OS Health */}
+        {/* Tab 4: Database & OS Health */}
         {activeTab === 'database' && (
           <div className="space-y-3 max-h-[44vh] overflow-y-auto pr-1 scrollbar-thin text-xs">
             <div className="grid grid-cols-2 gap-2">
