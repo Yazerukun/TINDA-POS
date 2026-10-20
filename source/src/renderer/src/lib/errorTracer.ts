@@ -5,6 +5,14 @@ const breadcrumbs: DiagnosticBreadcrumb[] = []
 let lastErrorSig = ''
 let lastErrorTime = 0
 
+function triggerRealtimeSync(): void {
+  try {
+    import('../stores/systemDebugger')
+      .then((m) => m.useSystemDebugger.getState().fetchReport())
+      .catch(() => undefined)
+  } catch {}
+}
+
 /**
  * Record a breadcrumb in the client flight recorder.
  */
@@ -49,18 +57,21 @@ export function initFrontendErrorTracer(): void {
       lastErrorTime = now
 
       recordBreadcrumb('ui', `Unhandled Window Error: ${message.slice(0, 80)}`)
-      window.api?.diagnostics?.recordError?.({
-        severity: 'ERROR',
-        subsystem: 'RENDERER',
-        message,
-        stack,
-        breadcrumbs: getClientBreadcrumbs(),
-        metadata: {
-          url: window.location.href,
-          line: event.lineno,
-          col: event.colno
-        }
-      }).catch(() => undefined)
+      window.api?.diagnostics
+        ?.recordError?.({
+          severity: 'ERROR',
+          subsystem: 'RENDERER',
+          message,
+          stack,
+          breadcrumbs: getClientBreadcrumbs(),
+          metadata: {
+            url: window.location.href,
+            line: event.lineno,
+            col: event.colno
+          }
+        })
+        .then(() => triggerRealtimeSync())
+        .catch(() => undefined)
     } catch {}
   })
 
@@ -78,13 +89,16 @@ export function initFrontendErrorTracer(): void {
       lastErrorTime = now
 
       recordBreadcrumb('ui', `Unhandled Promise Rejection: ${message.slice(0, 80)}`)
-      window.api?.diagnostics?.recordError?.({
-        severity: 'ERROR',
-        subsystem: 'RENDERER',
-        message: `Unhandled Promise: ${message}`,
-        stack,
-        breadcrumbs: getClientBreadcrumbs()
-      }).catch(() => undefined)
+      window.api?.diagnostics
+        ?.recordError?.({
+          severity: 'ERROR',
+          subsystem: 'RENDERER',
+          message: `Unhandled Promise: ${message}`,
+          stack,
+          breadcrumbs: getClientBreadcrumbs()
+        })
+        .then(() => triggerRealtimeSync())
+        .catch(() => undefined)
     } catch {}
   })
 
@@ -97,7 +111,13 @@ export function initFrontendErrorTracer(): void {
         if (!target) return
         const btn = target.closest('button, a, input[type="submit"]') as HTMLElement | null
         if (btn) {
-          const text = (btn.innerText || btn.getAttribute('aria-label') || btn.title || btn.id || 'Action Button').trim()
+          const text = (
+            btn.innerText ||
+            btn.getAttribute('aria-label') ||
+            btn.title ||
+            btn.id ||
+            'Action Button'
+          ).trim()
           recordBreadcrumb('action', `Clicked: "${text.slice(0, 40)}"`)
         }
       } catch {}

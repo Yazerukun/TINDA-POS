@@ -34,10 +34,11 @@ export const useSystemDebugger = create<SystemDebuggerState>((set, get) => ({
   },
 
   fetchReport: async () => {
-    set({ loading: true })
     try {
-      const rep = await window.api.diagnostics.getReport()
-      set({ report: rep })
+      if (window.api?.diagnostics) {
+        const rep = await window.api.diagnostics.getReport()
+        set({ report: rep })
+      }
     } catch (e) {
       console.error('[useSystemDebugger] Failed to fetch report:', e)
     } finally {
@@ -66,3 +67,27 @@ export const useSystemDebugger = create<SystemDebuggerState>((set, get) => ({
     }
   }
 }))
+
+// Real-Time Event-Driven Sync: listen to main process diagnostic updates
+if (typeof window !== 'undefined') {
+  // Pre-fetch report on initial client load
+  setTimeout(() => {
+    if (window.api?.diagnostics) {
+      void useSystemDebugger.getState().fetchReport()
+    }
+  }, 1500)
+
+  // Subscribe to real-time IPC event broadcasts
+  if (window.api?.diagnostics?.onChanged) {
+    window.api.diagnostics.onChanged(() => {
+      void useSystemDebugger.getState().fetchReport()
+    })
+  }
+
+  // Fallback heartbeat poll every 30 seconds
+  setInterval(() => {
+    if (document.visibilityState === 'visible' && window.api?.diagnostics) {
+      void useSystemDebugger.getState().fetchReport()
+    }
+  }, 30_000)
+}

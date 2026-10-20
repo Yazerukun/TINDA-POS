@@ -643,6 +643,7 @@ export interface TindaApi {
     runCheckup: () => Promise<import('./types').SystemDiagnosticReport>
     autoFix: () => Promise<{ ok: boolean; actionsTaken: string[]; message: string }>
     clearLogs: () => Promise<void>
+    onChanged?: (handler: () => void) => () => void
   }
   rawInvoke?: (channel: string, ...args: unknown[]) => Promise<unknown>
 }

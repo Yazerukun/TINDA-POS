@@ -2,7 +2,7 @@ import type Database from 'better-sqlite3'
 import fs from 'node:fs'
 import os from 'node:os'
 import { join } from 'node:path'
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { appDirs, getDb } from '../database/connection'
 import type {
   DiagnosticSeverity,
@@ -11,6 +11,22 @@ import type {
   SystemErrorLog,
   DiagnosticBreadcrumb
 } from '@shared/types'
+
+
+/**
+ * Broadcast real-time diagnostics changed event to all active renderer windows.
+ */
+export function broadcastDiagnosticsChanged(): void {
+  try {
+    if (typeof BrowserWindow !== 'undefined' && BrowserWindow.getAllWindows) {
+      for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+          win.webContents.send('diagnostics:changed')
+        }
+      }
+    }
+  } catch {}
+}
 
 let memoryBreadcrumbs: DiagnosticBreadcrumb[] = []
 const MAX_BREADCRUMBS = 20
@@ -166,6 +182,7 @@ export function recordSystemError(
         metadataJson,
         existing.id
       )
+      broadcastDiagnosticsChanged()
       return { id: existing.id, count: existing.count + 1 }
     } else {
       const info = db
@@ -195,6 +212,7 @@ export function recordSystemError(
          )`
       ).run(MAX_ERROR_LOGS_RETENTION)
 
+      broadcastDiagnosticsChanged()
       return { id: Number(info.lastInsertRowid), count: 1 }
     }
   } catch (err) {
@@ -473,6 +491,7 @@ export function autoFixSystem(db: Database.Database): {
       actionsTaken.push('Triggered manual memory heap cleanup')
     }
 
+    broadcastDiagnosticsChanged()
     return {
       ok: true,
       actionsTaken,
@@ -494,6 +513,7 @@ export function autoFixSystem(db: Database.Database): {
 export function clearErrorLogs(db: Database.Database): void {
   ensureErrorLogsTable(db)
   db.prepare('DELETE FROM system_error_logs').run()
+  broadcastDiagnosticsChanged()
 }
 
 /**

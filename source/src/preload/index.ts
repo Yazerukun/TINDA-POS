@@ -384,7 +384,12 @@ const api: TindaApi = {
     }) => invoke<{ id: number }>('diagnostics:record', payload),
     runCheckup: () => invoke<import('@shared/types').SystemDiagnosticReport>('diagnostics:runCheckup'),
     autoFix: () => invoke<{ ok: boolean; actionsTaken: string[]; message: string }>('diagnostics:autoFix'),
-    clearLogs: () => invoke<void>('diagnostics:clearLogs')
+    clearLogs: () => invoke<void>('diagnostics:clearLogs'),
+    onChanged: (handler: () => void) => {
+      const sub = () => handler()
+      ipcRenderer.on('diagnostics:changed', sub)
+      return () => ipcRenderer.removeListener('diagnostics:changed', sub)
+    }
   },
   rawInvoke: (channel: string, ...args: unknown[]) => invoke(channel, ...args)
 }
