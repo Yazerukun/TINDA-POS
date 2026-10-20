@@ -372,6 +372,20 @@ const api: TindaApi = {
     getSummary: (options?: { forceRefresh?: boolean }) =>
       invoke<import('@shared/types').StoreTelemetrySummary>('telemetry:getSummary', options)
   },
+  diagnostics: {
+    getReport: () => invoke<import('@shared/types').SystemDiagnosticReport>('diagnostics:getReport'),
+    recordError: (payload: {
+      severity: import('@shared/types').DiagnosticSeverity
+      subsystem: import('@shared/types').DiagnosticSubsystem
+      message: string
+      stack?: string
+      breadcrumbs?: import('@shared/types').DiagnosticBreadcrumb[]
+      metadata?: Record<string, unknown>
+    }) => invoke<{ id: number }>('diagnostics:record', payload),
+    runCheckup: () => invoke<import('@shared/types').SystemDiagnosticReport>('diagnostics:runCheckup'),
+    autoFix: () => invoke<{ ok: boolean; actionsTaken: string[]; message: string }>('diagnostics:autoFix'),
+    clearLogs: () => invoke<void>('diagnostics:clearLogs')
+  },
   rawInvoke: (channel: string, ...args: unknown[]) => invoke(channel, ...args)
 }
 

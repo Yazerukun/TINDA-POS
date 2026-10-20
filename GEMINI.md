@@ -21,7 +21,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v3.0.6 (Barcode Conflict Resolution & Archived Restore Studio Edition)
+- **Current Stable Version:** v3.0.7 (Barcode Conflict Resolution & Archived Restore Studio Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
-- **Latest Feature:** Barcode Conflict Resolution & Archived Restore Studio Edition. Fixes duplicate barcode lock for VIP merchants. Automatically frees archived barcodes when new active items register the barcode, prevents duplicate collisions with active items, adds 1-click Barcode Reassignment / Overwrite confirm in ProductModal, provides 1-click Archived Items view & filter in Inventory, and allows instant 1-click Restore of archived products back into active inventory.
+- **Latest Feature:** TINDA Sentinel Offline System Health, Error Tracer & Diagnostic Studio Edition. Features 24/7 background error interceptor in Electron Main & Renderer, automatic action breadcrumb tracing (captures cashier clicks, scans, and page navigation before errors), SQLite error log clustering & frequency counting, Apple-grade Cupertino Diagnostic HUD with live Health Score, 1-click Auto-Fix for SQLite locks and orphan records, and prominent 1-click "[ 📋 Copy Report for Jin ]" button that copies clean, pre-formatted Markdown directly to the clipboard.

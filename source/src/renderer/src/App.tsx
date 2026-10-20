@@ -8,6 +8,10 @@ import { Login } from './pages/Login'
 import { Shell } from './layouts/Shell'
 import { useConnectionNotifications } from './hooks/useOnlineStatus'
 import { SalesMonitorScreen } from './pages/SalesMonitor'
+import { initFrontendErrorTracer } from './lib/errorTracer'
+
+// Initialize client-side error interceptor & user action flight recorder
+initFrontendErrorTracer()
 
 export default function App(): React.JSX.Element {
   if (

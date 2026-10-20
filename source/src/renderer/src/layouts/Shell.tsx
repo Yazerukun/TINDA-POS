@@ -28,6 +28,8 @@ import { TindaAiAssistantModal } from '../components/ai/TindaAiAssistantModal'
 import { FloatingWidgetsDock } from '../components/common/FloatingWidgetsDock'
 import { NotificationBellDrawer } from '../components/notifications/NotificationBellDrawer'
 import { useNotificationDrawer } from '../stores/notificationDrawer'
+import { SystemDebuggerModal } from '../components/SystemDebuggerModal'
+import { useSystemDebugger } from '../stores/systemDebugger'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -74,6 +76,9 @@ export function Shell(): React.JSX.Element {
           useNav.getState().setPage('pos')
         }
         window.dispatchEvent(new CustomEvent('tinda-open-calculator'))
+      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        e.preventDefault()
+        useSystemDebugger.getState().toggleDebugger()
       }
     }
 
@@ -120,6 +125,7 @@ export function Shell(): React.JSX.Element {
       <TindaCommunityChat />
       <TindaAiAssistantModal />
       <NotificationBellDrawer />
+      <SystemDebuggerModal />
     </div>
   )
 }

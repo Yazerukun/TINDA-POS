@@ -630,6 +630,20 @@ export interface TindaApi {
   telemetry: {
     getSummary: (options?: { forceRefresh?: boolean }) => Promise<import('./types').StoreTelemetrySummary>
   }
+  diagnostics: {
+    getReport: () => Promise<import('./types').SystemDiagnosticReport>
+    recordError: (payload: {
+      severity: import('./types').DiagnosticSeverity
+      subsystem: import('./types').DiagnosticSubsystem
+      message: string
+      stack?: string
+      breadcrumbs?: import('./types').DiagnosticBreadcrumb[]
+      metadata?: Record<string, unknown>
+    }) => Promise<{ id: number }>
+    runCheckup: () => Promise<import('./types').SystemDiagnosticReport>
+    autoFix: () => Promise<{ ok: boolean; actionsTaken: string[]; message: string }>
+    clearLogs: () => Promise<void>
+  }
   rawInvoke?: (channel: string, ...args: unknown[]) => Promise<unknown>
 }
 

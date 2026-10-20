@@ -1094,3 +1094,78 @@ export interface StoreTelemetrySummary {
   last_sync_at: string | null
 }
 
+
+// ==========================================
+// System Health, Error Tracer & Sentinel
+// ==========================================
+
+export type DiagnosticSeverity = 'CRITICAL' | 'ERROR' | 'WARNING' | 'INFO'
+export type DiagnosticSubsystem = 'DATABASE' | 'HARDWARE' | 'IPC' | 'RENDERER' | 'NETWORK'
+
+export interface SystemErrorLog {
+  id: number
+  severity: DiagnosticSeverity
+  subsystem: DiagnosticSubsystem
+  error_signature: string
+  message: string
+  stack?: string | null
+  breadcrumbs_json?: string | null
+  metadata_json?: string | null
+  count: number
+  first_seen_at: string
+  last_seen_at: string
+  resolved_at?: string | null
+}
+
+export interface DiagnosticBreadcrumb {
+  timestamp: string
+  category: 'ui' | 'scan' | 'nav' | 'action' | 'db' | 'hardware'
+  message: string
+  data?: Record<string, unknown>
+}
+
+export interface SystemDiagnosticReport {
+  healthScore: number // 0-100
+  status: 'HEALTHY' | 'WARNING' | 'CRITICAL'
+  generatedAt: string
+  appVersion: string
+  platform: string
+  arch: string
+  uptimeSeconds: number
+  database: {
+    quickCheck: string
+    integrityCheck: string
+    foreignKeyCheck: string[]
+    diskSizeBytes: number
+    journalMode: string
+  }
+  memory: {
+    heapUsedMb: number
+    heapTotalMb: number
+    rssMb: number
+  }
+  hardware: {
+    thermalPrinterStatus: string
+    cashDrawerStatus: string
+  }
+  network: {
+    cloudSyncPending: number
+    lanHubStatus: string
+  }
+  errorStats: {
+    totalErrors: number
+    unresolvedCount: number
+    criticalCount: number
+    warningCount: number
+    topIssues: {
+      signature: string
+      message: string
+      subsystem: DiagnosticSubsystem
+      count: number
+      lastSeen: string
+      plainSummary: string
+    }[]
+  }
+  recentBreadcrumbs: DiagnosticBreadcrumb[]
+  formattedMarkdownReport: string
+}

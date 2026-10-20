@@ -18,8 +18,10 @@ import {
   Sparkles,
   ExternalLink,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react'
+import { useSystemDebugger } from '../stores/systemDebugger'
 import { Modal } from './ui/Modal'
 import { useGuide } from '../stores/guide'
 import { useNav } from '../stores/nav'
@@ -384,8 +386,29 @@ export function PosToolsModal({
           </div>
         </div>
 
-        {/* Section 3: Cashier Guide & System Updates */}
-        <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {/* Section 3: Cashier Guide, System Updates & Diagnostics */}
+        <div className="pt-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              useSystemDebugger.getState().openDebugger()
+            }}
+            className="flex items-center justify-between p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 transition-all text-left group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500/20 text-sky-300 shrink-0 group-hover:scale-105 transition-transform">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-sm leading-tight truncate">Diagnostics</p>
+                <p className="text-[11px] text-sky-300/80 truncate">Ctrl+Shift+D · Tracer</p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-sky-400 group-hover:underline shrink-0">
+              Debug →
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -423,7 +446,7 @@ export function PosToolsModal({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm leading-tight truncate">Check for Updates</p>
-                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '3.0.6'} · Live Check</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '3.0.7'} · Live Check</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-emerald-400 group-hover:underline shrink-0">

@@ -24,13 +24,9 @@ protocol.registerSchemesAsPrivileged([
 
 let mainWindow: BrowserWindow | null = null
 
-// Gracefully catch unexpected main process errors to prevent modal crash dialogs
-process.on('uncaughtException', (err) => {
-  console.error('[TINDA POS] Uncaught Exception in main process:', err)
-})
-process.on('unhandledRejection', (reason) => {
-  console.error('[TINDA POS] Unhandled Rejection in main process:', reason)
-})
+// Initialize TINDA Sentinel Flight Recorder & Deep Error Interceptor
+import { initMainProcessErrorHandlers } from './services/errorSentinel'
+initMainProcessErrorHandlers()
 
 // Single-instance lock: a second launch must not open a second writer against
 // the same SQLite file. If we don't hold the lock, quit immediately.

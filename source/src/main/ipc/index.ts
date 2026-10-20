@@ -1612,6 +1612,35 @@ handle('telemetry:getSummary', (_e: IpcMainInvokeEvent, options?: { forceRefresh
   }
 })
 
+// ---- System Diagnostics & Error Sentinel ----
+handle('diagnostics:getReport', () => {
+  const sentinel = require('../services/errorSentinel')
+  return sentinel.getDiagnosticReport(db())
+})
+
+handle('diagnostics:record', (_e: IpcMainInvokeEvent, payload: any) => {
+  const sentinel = require('../services/errorSentinel')
+  return sentinel.recordSystemError(db(), payload)
+})
+
+handle('diagnostics:runCheckup', () => {
+  const sentinel = require('../services/errorSentinel')
+  return sentinel.getDiagnosticReport(db())
+})
+
+handle('diagnostics:autoFix', () => {
+  sessionSvc.requirePermission('settings:manage')
+  const sentinel = require('../services/errorSentinel')
+  return sentinel.autoFixSystem(db())
+})
+
+handle('diagnostics:clearLogs', () => {
+  sessionSvc.requirePermission('settings:manage')
+  const sentinel = require('../services/errorSentinel')
+  sentinel.clearErrorLogs(db())
+  return { ok: true }
+})
+
 export function registerIpcHandlers(): void {
   void router // router populated by handle() calls at module load
 }

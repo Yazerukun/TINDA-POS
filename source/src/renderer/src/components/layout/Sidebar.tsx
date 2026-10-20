@@ -37,6 +37,8 @@ import { ConnectionStatus } from '../ConnectionStatus'
 import { AppLogo } from '../AppLogo'
 import { PrinterStudioModal } from '../PrinterStudioModal'
 import { NotificationBellButton } from '../notifications/NotificationBellDrawer'
+import { ShieldCheck } from 'lucide-react'
+import { useSystemDebugger } from '../../stores/systemDebugger'
 
 interface NavItem {
   key: PageKey | 'updates' | 'printerStudio'
@@ -124,6 +126,37 @@ function DemoCountdown({ expiry, onExpired }: { expiry: string; onExpired: () =>
   )
 }
 
+
+function SystemSentinelButton(): React.JSX.Element {
+  const { openDebugger, report } = useSystemDebugger()
+  const unresolved = report?.errorStats.unresolvedCount ?? 0
+
+  return (
+    <button
+      type="button"
+      onClick={openDebugger}
+      className={`relative flex h-8 w-8 items-center justify-center rounded-lg border transition-all active:scale-95 ${
+        unresolved > 0
+          ? 'border-amber-500/50 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25'
+          : 'border-ink-line bg-ink-850 text-slate-400 hover:text-emerald-300 hover:border-emerald-500/40'
+      }`}
+      title={
+        unresolved > 0
+          ? `TINDA Sentinel: ${unresolved} active issue(s) traced (Ctrl+Shift+D)`
+          : 'TINDA Sentinel: System 100% Healthy (Ctrl+Shift+D)'
+      }
+      aria-label="System Sentinel & Diagnostics"
+    >
+      <ShieldCheck className={`h-4 w-4 ${unresolved > 0 ? 'text-amber-400 animate-pulse' : 'text-emerald-400'}`} />
+      {unresolved > 0 && (
+        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger-500 text-[9px] font-black font-mono text-white ring-2 ring-ink-950">
+          {unresolved > 9 ? '9+' : unresolved}
+        </span>
+      )}
+    </button>
+  )
+}
+
 export function Sidebar(): React.JSX.Element {
   const { page, setPage } = useNav()
   const { user, logout } = useAuth()
@@ -159,7 +192,10 @@ export function Sidebar(): React.JSX.Element {
             {settings?.store_name || 'Sari-Sari Store'}
           </p>
         </div>
-        <NotificationBellButton />
+        <div className="flex items-center gap-1 shrink-0">
+          <SystemSentinelButton />
+          <NotificationBellButton />
+        </div>
       </div>
 
       {/* Network / Offline Indicator */}
