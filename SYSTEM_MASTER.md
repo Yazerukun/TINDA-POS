@@ -2019,7 +2019,7 @@
 
 ---
 
-## 93. Punctuation- & Hyphen-Agnostic Product Search Normalization (v4.1.1 Spec)
+## 93. Punctuation- & Hyphen-Agnostic Product Search Normalization (v4.1.2 Spec)
 
 ### 93.1 Universal Hyphen & Space Agnostic Search Matcher
 1. **Alphanumeric Normalization Invariant:** Both SQLite query engine (`searchProducts`, `searchProductsSimple`) and frontend filters (`matchesProductSearch`) strip hyphens, underscores, spaces, and punctuation when matching products (`REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?`).

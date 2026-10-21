@@ -5179,8 +5179,8 @@
   },
   "tools/cloudflare-worker/schema-chat.sql": {
     "mtime": 1792109883.3354,
-    "seen": 1792590880.6279979,
-    "ast_hash": "",
+    "seen": 1792593184.7106643,
+    "ast_hash": "3577e6dc59e1195bff263955b2f526ee",
     "semantic_hash": ""
   },
   "source/src/shared/__tests__/searchUtils.test.ts": {
