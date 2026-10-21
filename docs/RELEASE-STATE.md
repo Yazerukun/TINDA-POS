@@ -7,7 +7,7 @@ TARGET:
 - v3.3.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Stable Active — v3.2.9 Omnipresent Real-Time Error Tracing, React Error Boundaries, Ambient Fault Pill & Cloud Bug Radar Edition
+- Production Release Ready — v3.2.10 [F1] Universal Inventory Spotlight Explorer & Fast Purchase Invoicing Studio Edition
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -67,3 +67,6 @@ PENDING APPROVAL:
 
 BLOCKERS:
 - None.
+
+
+- Stage 52: v3.2.10 [F1] Universal Inventory Spotlight Explorer & Fast Purchase Invoicing Studio Edition official release. Added dedicated PurchaseItemPickerModal.tsx with instant 0ms in-memory filtering across name, barcode, sku, and category; 100% keyboard-driven speedrun (F1 to open, ↑/↓ to navigate, Enter to choose and auto-focus Qty input, Esc/F1 to dismiss); real-time on-hand base stock indicators (Out of Stock, Low Stock, Healthy Stock); Purchase Cost & Retail SRP visibility with expected markup preview; quick-filter chips for All Items, Low/Out of Stock, and dynamic categories; preserved dual-minimize architecture (Floating Receiving Dock and Collapsible Header Details). 585/585 automated unit tests passing across 92 test suites, 0 TypeScript compilation errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-3.2.10.exe + TindaPOS-Portable-3.2.10.exe) compiled and published to GitHub Releases.

@@ -22,11 +22,13 @@ import {
   Minus,
   Maximize2,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  PackageSearch
 } from 'lucide-react'
 import type { Product, Supplier, Purchase, ProductUnit } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
 import { Modal } from './ui/Modal'
+import { PurchaseItemPickerModal } from './PurchaseItemPickerModal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { playScanBeep } from '../lib/barcodeScanner'
 import { calculateChainDiscount } from '../utils/supplierDiscount'
@@ -104,6 +106,7 @@ export function PurchaseInvoiceModal({
   const [itemDiscountInput, setItemDiscountInput] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [dropdownIndex, setDropdownIndex] = useState(0)
+  const [showItemPicker, setShowItemPicker] = useState(false)
 
   // Line items
   const [items, setItems] = useState<InvoiceLineItem[]>([])
@@ -512,11 +515,10 @@ export function PurchaseInvoiceModal({
     if (!open || isMinimized) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // F1: Focus Search/Item Code
+      // F1: Toggle Universal Inventory Spotlight Explorer Modal
       if (e.key === 'F1') {
         e.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
+        setShowItemPicker((prev) => !prev)
         return
       }
 
@@ -1068,7 +1070,7 @@ export function PurchaseInvoiceModal({
                   <Barcode className="h-4 w-4 text-emerald-400" />
                   Fast Item Entry
                   <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-300 font-mono">
-                    F1 to search · F2 in Qty to commit
+                    F1 Explorer · F2 in Qty to commit
                   </span>
                 </span>
                 {selectedProduct && (
@@ -1082,7 +1084,18 @@ export function PurchaseInvoiceModal({
                 {/* Search / Barcode Input (F1) */}
                 <div className="relative md:col-span-3">
                   <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                    <span>Item Code / Barcode / Name</span>
+                    <span className="flex items-center gap-1.5">
+                      <span>Item Code / Barcode</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowItemPicker(true)}
+                        className="inline-flex items-center gap-1 rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-bold text-emerald-300 hover:bg-emerald-500/25 transition-colors"
+                        title="Open Inventory Spotlight Explorer (F1)"
+                      >
+                        <PackageSearch className="h-3 w-3" />
+                        <span>F1 Explorer</span>
+                      </button>
+                    </span>
                     <kbd className="rounded bg-ink-800 px-1 text-[10px] font-mono text-slate-400 border border-ink-line">
                       F1
                     </kbd>
@@ -1470,7 +1483,7 @@ export function PurchaseInvoiceModal({
                   <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
                     F1
                   </kbd>
-                  Search
+                  Inventory Explorer
                 </span>
                 <span className="flex items-center gap-1 text-emerald-400 font-semibold">
                   <kbd className="rounded bg-emerald-900 border border-emerald-600 px-1.5 py-0.5 font-mono text-white">
@@ -1573,6 +1586,17 @@ export function PurchaseInvoiceModal({
       </div>
     </Modal>
   )}
+
+  {/* Universal Inventory Spotlight Explorer Modal (F1) */}
+  <PurchaseItemPickerModal
+    open={showItemPicker}
+    onClose={() => setShowItemPicker(false)}
+    products={allProducts}
+    onSelectProduct={(prod) => {
+      setShowItemPicker(false)
+      handleSelectProduct(prod)
+    }}
+  />
 </>
   )
 }
