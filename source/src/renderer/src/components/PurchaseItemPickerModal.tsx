@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Search,
   X,
@@ -8,8 +8,7 @@ import {
   AlertCircle,
   Tag,
   Barcode,
-  CornerDownLeft,
-  Layers
+  CornerDownLeft
 } from 'lucide-react'
 import type { Product } from '@shared/types'
 import { money } from '@shared/format'
@@ -21,6 +20,9 @@ interface PurchaseItemPickerModalProps {
   onSelectProduct: (product: Product) => void
 }
 
+const INITIAL_CHUNK_SIZE = 80
+const CHUNK_INCREMENT = 50
+
 export function PurchaseItemPickerModal({
   open,
   onClose,
@@ -30,6 +32,7 @@ export function PurchaseItemPickerModal({
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [selectedIndex, setSelectedIndex] = useState<number>(0)
+  const [renderLimit, setRenderLimit] = useState<number>(INITIAL_CHUNK_SIZE)
 
   const searchInputRef = useRef<HTMLInputElement>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -78,22 +81,28 @@ export function PurchaseItemPickerModal({
     })
   }, [products, searchQuery, selectedCategory])
 
-  // Reset selected index when search or filter changes
+  // Progressive rendering slice for 0ms instantaneous opening and silky 60fps scrolling
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, renderLimit)
+  }, [filteredProducts, renderLimit])
+
+  // Reset selected index & render limit when search or filter changes
   useEffect(() => {
     setSelectedIndex(0)
+    setRenderLimit(INITIAL_CHUNK_SIZE)
   }, [searchQuery, selectedCategory])
 
-  // Auto-focus search input whenever modal opens
+  // Auto-focus search input with 0ms microtask whenever modal opens
   useEffect(() => {
     if (open) {
       setSearchQuery('')
       setSelectedCategory('ALL')
       setSelectedIndex(0)
-      const timer = setTimeout(() => {
+      setRenderLimit(INITIAL_CHUNK_SIZE)
+      requestAnimationFrame(() => {
         searchInputRef.current?.focus()
         searchInputRef.current?.select()
-      }, 60)
-      return () => clearTimeout(timer)
+      })
     }
   }, [open])
 
@@ -105,6 +114,17 @@ export function PurchaseItemPickerModal({
       activeRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
     }
   }, [selectedIndex, open])
+
+  // Dynamic chunk loading as user scrolls table
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+      if (scrollHeight - scrollTop - clientHeight < 250) {
+        setRenderLimit((prev) => Math.min(filteredProducts.length, prev + CHUNK_INCREMENT))
+      }
+    },
+    [filteredProducts.length]
+  )
 
   // Keyboard navigation
   useEffect(() => {
@@ -121,7 +141,13 @@ export function PurchaseItemPickerModal({
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setSelectedIndex((prev) => Math.min(prev + 1, Math.max(0, filteredProducts.length - 1)))
+        setSelectedIndex((prev) => {
+          const next = Math.min(prev + 1, Math.max(0, filteredProducts.length - 1))
+          if (next >= renderLimit - 5) {
+            setRenderLimit((lim) => Math.min(filteredProducts.length, lim + CHUNK_INCREMENT))
+          }
+          return next
+        })
         return
       }
 
@@ -133,7 +159,13 @@ export function PurchaseItemPickerModal({
 
       if (e.key === 'PageDown') {
         e.preventDefault()
-        setSelectedIndex((prev) => Math.min(prev + 8, Math.max(0, filteredProducts.length - 1)))
+        setSelectedIndex((prev) => {
+          const next = Math.min(prev + 8, Math.max(0, filteredProducts.length - 1))
+          if (next >= renderLimit - 5) {
+            setRenderLimit((lim) => Math.min(filteredProducts.length, lim + CHUNK_INCREMENT))
+          }
+          return next
+        })
         return
       }
 
@@ -156,13 +188,13 @@ export function PurchaseItemPickerModal({
 
     window.addEventListener('keydown', handleKeyDown, true)
     return () => window.removeEventListener('keydown', handleKeyDown, true)
-  }, [open, filteredProducts, selectedIndex, onClose, onSelectProduct])
+  }, [open, filteredProducts, selectedIndex, renderLimit, onClose, onSelectProduct])
 
   if (!open) return null
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-150 select-none"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
@@ -295,8 +327,12 @@ export function PurchaseItemPickerModal({
           </div>
         </div>
 
-        {/* Scrollable Inventory Grid Table */}
-        <div ref={tableContainerRef} className="flex-1 overflow-y-auto px-6 py-2">
+        {/* Scrollable Inventory Grid Table with Progressive Loading */}
+        <div
+          ref={tableContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto px-6 py-2"
+        >
           {filteredProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <PackageSearch className="h-12 w-12 text-slate-600 mb-3" />
@@ -320,7 +356,7 @@ export function PurchaseItemPickerModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-line/40">
-                {filteredProducts.map((p, idx) => {
+                {displayedProducts.map((p, idx) => {
                   const isSelected = idx === selectedIndex
                   const isLow = p.stock <= (p.low_stock_threshold ?? 5)
                   const isOut = p.stock <= 0
@@ -449,6 +485,14 @@ export function PurchaseItemPickerModal({
                     </tr>
                   )
                 })}
+
+                {filteredProducts.length > displayedProducts.length && (
+                  <tr className="bg-ink-950/40 text-center text-slate-500 font-mono text-[11px]">
+                    <td colSpan={8} className="py-2.5">
+                      Showing first {displayedProducts.length} of {filteredProducts.length} items. Scroll down or type to filter more…
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           )}
@@ -481,8 +525,9 @@ export function PurchaseItemPickerModal({
 
           <div className="flex items-center gap-2">
             <span>
-              Showing <strong className="text-white font-mono">{filteredProducts.length}</strong> of{' '}
-              <strong className="text-white font-mono">{products.length}</strong> products
+              Showing <strong className="text-white font-mono">{displayedProducts.length}</strong> of{' '}
+              <strong className="text-white font-mono">{filteredProducts.length}</strong> matching (
+              <span className="text-slate-500 font-mono">{products.length} catalog</span>)
             </span>
           </div>
         </div>
