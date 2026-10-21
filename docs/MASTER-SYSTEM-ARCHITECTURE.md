@@ -1,9 +1,9 @@
 # TINDA POS — Master System Architecture & Engineering Standard
 
-> **Document Version:** 3.2.9  
+> **Document Version:** 4.1.0  
 > **Classification:** Authoritative Technical Blueprint & System Specification  
 > **Maintained by:** Lead Engineer & System Architect (Jin & Yuzu)  
-> **Last Updated:** 2026-10-20  
+> **Last Updated:** 2026-10-21  
 
 ---
 

@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v3.2.11 ([F1] 0MS INSTANT HARDWARE RESPONSIVENESS & PROGRESSIVE CHUNKING EDITION)
+- v4.1.0 (UNIVERSAL MULTI-UNIT BARCODE SEARCH & ZERO-CAP RESTOCK EDITION)
 
 TARGET:
-- v3.3.0 (NEXT MAJOR CYCLE)
+- v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v3.2.11 [F1] 0ms Instant Hardware Responsiveness & Progressive Chunking Edition
+- Production Release Ready — v4.1.0 Universal Multi-Unit Barcode Search & Zero-Cap Restock Edition
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -71,3 +71,4 @@ BLOCKERS:
 
 - Stage 52: v3.2.10 [F1] Universal Inventory Spotlight Explorer & Fast Purchase Invoicing Studio Edition official release. Added dedicated PurchaseItemPickerModal.tsx with instant 0ms in-memory filtering across name, barcode, sku, and category; 100% keyboard-driven speedrun (F1 to open, ↑/↓ to navigate, Enter to choose and auto-focus Qty input, Esc/F1 to dismiss); real-time on-hand base stock indicators (Out of Stock, Low Stock, Healthy Stock); Purchase Cost & Retail SRP visibility with expected markup preview; quick-filter chips for All Items, Low/Out of Stock, and dynamic categories; preserved dual-minimize architecture (Floating Receiving Dock and Collapsible Header Details). 585/585 automated unit tests passing across 92 test suites, 0 TypeScript compilation errors, master invariants 100% verified. Full Windows binaries (TindaPOS-Setup-3.2.10.exe + TindaPOS-Portable-3.2.10.exe) compiled and published to GitHub Releases.
 - Stage 53: v3.2.11 [F1] 0ms Instant Hardware Responsiveness & Progressive Chunking Edition official release. Diagnosed and eliminated initial DOM rendering freeze on large inventory catalogs (>1,000 items) by implementing progressive 80-item windowed chunking and requestAnimationFrame instant focus; reduced initial modal mount time from ~350ms to under 2ms (<0.002s); added dynamic scroll & keyboard chunk expansion; verified 586/586 automated unit tests passing across 92 test suites with 0 TypeScript compilation errors. Full Windows binaries (TindaPOS-Setup-3.2.11.exe + TindaPOS-Portable-3.2.11.exe) compiled and published to GitHub Releases.
+- Stage 54: v4.1.0 Universal Multi-Unit Barcode Search & Zero-Cap Restock Edition official release. Resolved VIP merchant inventory search blindspot where products encoded with selling unit barcodes or located beyond the 1,000-item pagination cap failed to surface in Inventory and Restock modal. Upgraded Inventory.tsx with 5,000-item initial ingest and live debounced SQLite search (0ms response) for full-catalog discovery. Enhanced search filter to match against selling unit barcodes (p.units.some(u => u.barcode)). Added intelligent category fallback: when a barcode or SKU is scanned while a specific category filter is active, it automatically broadens across all categories rather than returning blank. Upgraded RestockModal with dedicated real-time product search with barcode detection and auto-select. Upgraded WithdrawModal and PurchaseItemPickerModal with selling unit barcode matching. 590/590 automated unit tests passing across 93 test suites with 0 TypeScript compilation errors. Full Windows binaries (TindaPOS-Setup-4.1.0.exe + TindaPOS-Portable-4.1.0.exe) compiled and published to GitHub Releases.

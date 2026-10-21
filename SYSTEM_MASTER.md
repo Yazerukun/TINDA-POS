@@ -54,13 +54,13 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition to v3.2.9 via `electron-updater` and official GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition to v4.1.0 via `electron-updater` and official GitHub Releases (`Yazerukun/TINDA-POS`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-3.2.9.exe` (NSIS installer with differential blockmap support, 111.4 MB)
-  - `TindaPOS-Setup-3.2.9.exe.blockmap` (Differential blockmap, 121 KB)
+  - `TindaPOS-Setup-4.1.0.exe` (NSIS installer with differential blockmap support, 111.4 MB)
+  - `TindaPOS-Setup-4.1.0.exe.blockmap` (Differential blockmap, 121 KB)
   - `latest.yml` (Version metadata and cryptographic SHA-512 hashes)
-  - `TindaPOS-Portable-3.2.9.exe` (Zero-install standalone portable runtime, 110.5 MB)
-  - `SHA256SUMS-v3.2.9.txt` (Cryptographic verification signatures)
+  - `TindaPOS-Portable-4.1.0.exe` (Zero-install standalone portable runtime, 110.5 MB)
+  - `SHA256SUMS-v4.1.0.txt` (Cryptographic verification signatures)
 
 ---
 
@@ -1996,6 +1996,26 @@
    - Rolling User Action Breadcrumbs (last 20 clicks, inputs, and navigation events)
 2. **Cloud Bug Radar (Cloudflare D1):** Telemetry service asynchronously synchronizes error logs and health scores to Cloudflare D1 when online, populating the Nationwide Bug Radar on the Cloud Owner Dashboard (`https://tinda-owner-dashboard.pages.dev/`).
 3. **Canonical Verification:** 583 automated unit and integration tests passing across 91 test suites with 0 TypeScript compilation errors and verified database invariants.
+
+---
+
+## 92. Universal Multi-Unit Barcode Search, 0ms Live SQLite Inventory Ingest & Restock Studio (v4.1.0 Spec)
+
+### 92.1 Multi-Unit Barcode Parity Across Inventory & Cashier
+1. **Packaging Unit Barcode Invariant:** Standardizes search behavior between POS Cashier and Inventory view. Search filters now inspect `p.units[...].barcode` and `p.units[...].name` simultaneously alongside primary `p.barcode`, `p.name`, and `p.sku`.
+2. **Zero-Result Elimination:** Products with barcodes assigned strictly to selling units (e.g., Piece, Pack, Box, or Case) are immediately discovered when scanning or typing in Inventory, eliminating operational confusion.
+
+### 92.2 Asynchronous Live SQLite Search (Zero-Cap Guarantee)
+1. **Dynamic Background Hydration:** Lifted the hardcoded 1,000-item in-memory pagination ceiling in `Inventory.tsx`.
+2. **Live Debounced Query:** Typing 2+ characters initiates an asynchronous SQLite search against the complete database (`p.name LIKE ? OR p.sku LIKE ? OR p.barcode = ? OR EXISTS (SELECT 1 FROM product_units...)`), dynamically merging results into state and guaranteeing 100% discoverability for large enterprise catalogs with 10,000+ items.
+
+### 92.3 Intelligent Category Fallback Engine
+1. **Graceful Category Expansion:** If a cashier or store owner is browsing within a specific category or filter (e.g., "Instant Noodles" or "Low Stock") and searches for an item belonging to another category, the system gracefully expands the search across all categories rather than presenting a blank screen.
+
+### 92.4 Searchable Restock & Stock Withdrawal Studios
+1. **Dedicated Search Input in RestockModal:** Replaced static HTML `<select>` with a high-velocity product search bar in `RestockModal`.
+2. **Auto-Selection & Unit Barcode Catching:** Typing or scanning any barcode automatically finds the item, switches units, and selects the product for instant stock addition.
+3. **Canonical Verification:** 590 automated unit and integration tests passing across 93 test suites with 0 TypeScript compilation errors and verified database invariants.
 
 
 

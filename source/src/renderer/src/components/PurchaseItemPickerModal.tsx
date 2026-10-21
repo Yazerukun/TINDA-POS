@@ -77,7 +77,12 @@ export function PurchaseItemPickerModal({
       const barcodeMatch = (p.barcode || '').toLowerCase().includes(q)
       const skuMatch = (p.sku || '').toLowerCase().includes(q)
       const catMatch = (p.category_name || '').toLowerCase().includes(q)
-      return nameMatch || barcodeMatch || skuMatch || catMatch
+      const unitBarcodeMatch = p.units?.some(
+        (u) =>
+          (u.barcode && u.barcode.toLowerCase().includes(q)) ||
+          (u.name && u.name.toLowerCase().includes(q))
+      )
+      return nameMatch || barcodeMatch || skuMatch || catMatch || unitBarcodeMatch
     })
   }, [products, searchQuery, selectedCategory])
 

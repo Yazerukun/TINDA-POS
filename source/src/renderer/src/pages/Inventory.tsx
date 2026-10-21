@@ -82,7 +82,7 @@ export function Inventory(): React.JSX.Element {
     try {
       const statusParam = catFilter === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE'
       const [p, c, settings, lic] = await Promise.all([
-        window.api.products.search('', { status: statusParam, limit: 1000 }),
+        window.api.products.search('', { status: statusParam, limit: 5000 }),
         window.api.categories.list(),
         window.api.settings.get(),
         window.api.license?.getStatus?.().catch(() => ({ isVip: true }))
@@ -108,6 +108,32 @@ export function Inventory(): React.JSX.Element {
     const timer = window.setInterval(refresh, 15000)
     return () => { ++state.sequence; unsubscribe(); window.removeEventListener('focus', refresh); window.clearInterval(timer) }
   }, [load])
+
+  // Universal Live Database Search Hook (Zero-Cap & Unit Barcode Guarantee):
+  // When merchant searches, query SQLite directly to immediately discover items beyond the initial limit
+  // and products matched via unit-level barcodes or variations.
+  useEffect(() => {
+    const query = q.trim()
+    if (query.length < 2) return
+    let active = true
+    const timer = setTimeout(async () => {
+      try {
+        const statusParam = catFilter === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE'
+        const res = await window.api.products.search(query, { status: statusParam, limit: 100 })
+        if (!active || !res?.rows?.length) return
+        setProducts((prev) => {
+          const existing = new Set(prev.map((p) => p.id))
+          const missing = res.rows.filter((p) => !existing.has(p.id))
+          if (missing.length === 0) return prev
+          return [...prev, ...missing]
+        })
+      } catch {}
+    }, 200)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [q, catFilter])
 
   useEffect(() => {
     if (!filterMenuOpen) return
@@ -152,25 +178,42 @@ export function Inventory(): React.JSX.Element {
 
   const filtered = useMemo(() => {
     let list = products
-    if (q) list = list.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()) || (p.barcode || '').toLowerCase().includes(q.toLowerCase()) || p.sku.toLowerCase().includes(q.toLowerCase()))
+    if (q) {
+      const term = q.toLowerCase().trim()
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(term) ||
+          (p.barcode || '').toLowerCase().includes(term) ||
+          p.sku.toLowerCase().includes(term) ||
+          p.units?.some(
+            (u) =>
+              (u.barcode && u.barcode.toLowerCase().includes(term)) ||
+              (u.name && u.name.toLowerCase().includes(term))
+          )
+      )
+    }
     if (catFilter === 'ARCHIVED') return list
-    if (catFilter === 'LOW') list = list.filter((p) => p.stock > 0 && p.stock <= p.low_stock_threshold)
-    else if (catFilter === 'OUT') list = list.filter((p) => p.stock <= 0)
-    else if (catFilter === 'EXPIRED') {
-      list = list.filter((p) => productExpirationStatus(p) === 'EXPIRED')
-    } else if (catFilter === 'EXPIRING_SOON') {
-      list = list.filter((p) => {
-        const s = productExpirationStatus(p)
-        return s === 'SOON' || s === 'NEAR'
+
+    // When actively searching with q:
+    // If a category or status filter is selected, check if matches exist in that filter.
+    // If no matches exist in the selected category, gracefully broaden to show the matched product across all categories!
+    if (catFilter !== 'ALL') {
+      const inFilter = list.filter((p) => {
+        if (catFilter === 'LOW') return p.stock > 0 && p.stock <= p.low_stock_threshold
+        if (catFilter === 'OUT') return p.stock <= 0
+        if (catFilter === 'EXPIRED') return productExpirationStatus(p) === 'EXPIRED'
+        if (catFilter === 'EXPIRING_SOON') {
+          const s = productExpirationStatus(p)
+          return s === 'SOON' || s === 'NEAR'
+        }
+        if (catFilter === 'COMPOSITE') return p.item_type === 'COMPOSITE'
+        if (catFilter === 'SERVICE') return p.item_type === 'SERVICE'
+        if (catFilter === 'STANDARD') return !p.item_type || p.item_type === 'STANDARD'
+        return p.category_id === catFilter
       })
-    } else if (catFilter === 'COMPOSITE') {
-      list = list.filter((p) => p.item_type === 'COMPOSITE')
-    } else if (catFilter === 'SERVICE') {
-      list = list.filter((p) => p.item_type === 'SERVICE')
-    } else if (catFilter === 'STANDARD') {
-      list = list.filter((p) => !p.item_type || p.item_type === 'STANDARD')
-    } else if (catFilter !== 'ALL') {
-      list = list.filter((p) => p.category_id === catFilter)
+      if (!q || inFilter.length > 0) {
+        list = inFilter
+      }
     }
     return list
   }, [products, q, catFilter])
@@ -1138,20 +1181,237 @@ function CsvImportModal({ onDone, onClose }: { onDone: () => void; onClose: () =
 function RestockModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
   const [expiry, setExpiry] = useState('')
   const [batchLabel, setBatchLabel] = useState('')
-  const [productId,setProductId]=useState(initial?.id ?? products[0]?.id ?? 0); const [quantity,setQuantity]=useState(''); const [unit,setUnit]=useState(initial?.units[0]?.name ?? initial?.base_unit ?? ''); const [supplierId,setSupplierId]=useState<number|null>(initial?.supplier_id ?? null); const [suppliers,setSuppliers]=useState<Supplier[]>([]); const [cost,setCost]=useState('0'); const [reference,setReference]=useState(''); const [notes,setNotes]=useState(''); const [busy,setBusy]=useState(false)
-  useEffect(()=>{ void window.api.suppliers.list({status:'ACTIVE'}).then(setSuppliers) },[])
-  const product=products.find(p=>p.id===productId); const selectedUnit=product?.units.find(u=>u.name===unit) ?? product?.units[0]; const qty=Number(quantity); const addBase=Number.isFinite(qty) ? qty*(selectedUnit?.conversion_to_base ?? 1):0; const newStock=(product?.stock??0)+addBase
+  const [productSearch, setProductSearch] = useState('')
+  const [productId, setProductId] = useState(initial?.id ?? products[0]?.id ?? 0)
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState(initial?.units[0]?.name ?? initial?.base_unit ?? '')
+  const [supplierId, setSupplierId] = useState<number | null>(initial?.supplier_id ?? null)
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [cost, setCost] = useState('0')
+  const [reference, setReference] = useState('')
+  const [notes, setNotes] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    void window.api.suppliers.list({ status: 'ACTIVE' }).then(setSuppliers)
+  }, [])
+
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products
+    const term = productSearch.toLowerCase().trim()
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(term) ||
+      (p.sku && p.sku.toLowerCase().includes(term)) ||
+      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+      p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(term)) || (u.name && u.name.toLowerCase().includes(term)))
+    )
+  }, [products, productSearch])
+
+  const product = products.find((p) => p.id === productId)
+  const selectedUnit = product?.units.find((u) => u.name === unit) ?? product?.units[0]
+  const qty = Number(quantity)
+  const addBase = Number.isFinite(qty) ? qty * (selectedUnit?.conversion_to_base ?? 1) : 0
+  const newStock = (product?.stock ?? 0) + addBase
   const costNum = Number(cost)
   const isCostDecimal = cost !== '' && (cost.includes('.') || !Number.isInteger(costNum) || costNum < 0)
-  const save=async()=>{if(isCostDecimal) return; setBusy(true);try{await window.api.inventory.restock({product_id:productId,quantity:qty,unit_name:selectedUnit?.name??'',supplier_id:supplierId,cost_c:Math.round(Number(cost)*100),reference,notes,expiration_date:product?.expiration_mode==='BATCH'?expiry:undefined,batch_label:batchLabel});toastSuccess('Restock saved');onDone()}catch(e){toastError('Restock failed',String((e as Error).message||e))}finally{setBusy(false)}}
-  return <Modal open onClose={onClose} title="Restock Inventory" maxWidth="max-w-lg" footer={<><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" disabled={busy || !product || !(qty>0) || isCostDecimal} onClick={()=>void save()}>Save Restock</button></>}><div className="space-y-3">
-    <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={e=>{const id=Number(e.target.value);setProductId(id);const p=products.find(x=>x.id===id);setUnit(p?.units[0]?.name??p?.base_unit??'')}}>{products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-    {product?.expiration_mode === 'BATCH' && <div className="grid grid-cols-2 gap-3"><div><label className="label">Batch label (optional)</label><input aria-label="Batch label" className="input w-full" value={batchLabel} onChange={(e) => setBatchLabel(e.target.value)} /></div><div><label className="label">Batch expiration *</label><input aria-label="Batch expiration" type="date" className="input w-full" value={expiry} onChange={(e) => setExpiry(e.target.value)} /></div></div>}
-    {product?.expiration_mode === 'ITEM' && <p className="text-sm text-amber-300">Per-item expiration: {product.expiration_date}</p>}
-    <div className="rounded-lg border border-ink-line p-3 text-sm">Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b></div><div className="grid grid-cols-2 gap-3"><div><label className="label">Quantity to Add</label><input className="input w-full" type="number" min="0.01" step="any" value={quantity} onChange={e=>setQuantity(e.target.value)}/></div><div><label className="label">Unit</label><select className="input w-full" value={selectedUnit?.name??''} onChange={e=>setUnit(e.target.value)}>{product?.units.map(u=><option key={u.id} value={u.name}>{u.name}</option>)}</select></div></div>
-    <div className="rounded-lg bg-brand-500/10 p-3 text-sm">Conversion: {quantity||0} × {selectedUnit?.conversion_to_base??1} = {addBase||0} {product?.base_unit}<br/><b>New Stock: {newStock||product?.stock||0} {product?.base_unit}</b></div>
-    <div><label className="label">Supplier (optional)</label><select className="input w-full" value={supplierId??''} onChange={e=>setSupplierId(e.target.value?Number(e.target.value):null)}><option value="">None</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div><div><label className="label">Unit Cost (₱)</label><input className={`input w-full ${isCostDecimal ? 'border-danger-500' : ''}`} type="number" min="0" step="1" value={cost} onChange={e=>setCost(e.target.value)}/>{isCostDecimal && <p className="mt-1 text-xs text-danger-400">Unit Cost must be a whole peso amount (e.g. ₱5, ₱10, ₱25 — no centavos).</p>}</div><div><label className="label">Reference (optional)</label><input className="input w-full" value={reference} onChange={e=>setReference(e.target.value)}/></div><div><label className="label">Notes (optional)</label><textarea className="input w-full" value={notes} onChange={e=>setNotes(e.target.value)}/></div>
-  </div></Modal>
+
+  const save = async () => {
+    if (isCostDecimal) return
+    setBusy(true)
+    try {
+      await window.api.inventory.restock({
+        product_id: productId,
+        quantity: qty,
+        unit_name: selectedUnit?.name ?? '',
+        supplier_id: supplierId,
+        cost_c: Math.round(Number(cost) * 100),
+        reference,
+        notes,
+        expiration_date: product?.expiration_mode === 'BATCH' ? expiry : undefined,
+        batch_label: batchLabel
+      })
+      toastSuccess('Restock saved')
+      onDone()
+    } catch (e) {
+      toastError('Restock failed', String((e as Error).message || e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="Restock Inventory"
+      maxWidth="max-w-lg"
+      footer={
+        <>
+          <button className="btn-ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className="btn-primary"
+            disabled={busy || !product || !(qty > 0) || isCostDecimal}
+            onClick={() => void save()}
+          >
+            Save Restock
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <div>
+          <label className="label">Search Product (Name, SKU, or Barcode)</label>
+          <div className="relative mb-2">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input
+              value={productSearch}
+              onChange={(e) => {
+                const val = e.target.value
+                setProductSearch(val)
+                const term = val.toLowerCase().trim()
+                const matched = products.filter((p) =>
+                  p.name.toLowerCase().includes(term) ||
+                  (p.sku && p.sku.toLowerCase().includes(term)) ||
+                  (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+                  p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(term)) || (u.name && u.name.toLowerCase().includes(term)))
+                )
+                if (matched.length > 0 && !matched.some((p) => p.id === productId)) {
+                  const first = matched[0]
+                  if (first) {
+                    setProductId(first.id)
+                    setUnit(first.units[0]?.name ?? first.base_unit ?? '')
+                  }
+                }
+              }}
+              placeholder="Type or scan product name, SKU, or barcode…"
+              className="input w-full pl-9 !text-sm"
+              autoFocus={!initial}
+            />
+          </div>
+          <label className="label">Selected Product</label>
+          <select
+            className="input w-full"
+            value={productId}
+            onChange={(e) => {
+              const id = Number(e.target.value)
+              setProductId(id)
+              const p = products.find((x) => x.id === id)
+              setUnit(p?.units[0]?.name ?? p?.base_unit ?? '')
+            }}
+          >
+            {filteredProducts.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} {p.barcode ? `(${p.barcode})` : ''} — Stock: {p.stock} {p.base_unit}
+              </option>
+            ))}
+          </select>
+        </div>
+        {product?.expiration_mode === 'BATCH' && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Batch label (optional)</label>
+              <input
+                aria-label="Batch label"
+                className="input w-full"
+                value={batchLabel}
+                onChange={(e) => setBatchLabel(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="label">Batch expiration *</label>
+              <input
+                aria-label="Batch expiration"
+                type="date"
+                className="input w-full"
+                value={expiry}
+                onChange={(e) => setExpiry(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+        {product?.expiration_mode === 'ITEM' && (
+          <p className="text-sm text-amber-300">Per-item expiration: {product.expiration_date}</p>
+        )}
+        <div className="rounded-lg border border-ink-line p-3 text-sm">
+          Current Stock: <b>{product?.stock ?? 0} {product?.base_unit}</b>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label">Quantity to Add</label>
+            <input
+              className="input w-full"
+              type="number"
+              min="0.01"
+              step="any"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label">Unit</label>
+            <select
+              className="input w-full"
+              value={selectedUnit?.name ?? ''}
+              onChange={(e) => setUnit(e.target.value)}
+            >
+              {product?.units.map((u) => (
+                <option key={u.id} value={u.name}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="rounded-lg bg-brand-500/10 p-3 text-sm">
+          Conversion: {quantity || 0} × {selectedUnit?.conversion_to_base ?? 1} = {addBase || 0}{' '}
+          {product?.base_unit}
+          <br />
+          <b>New Stock: {newStock || product?.stock || 0} {product?.base_unit}</b>
+        </div>
+        <div>
+          <label className="label">Supplier (optional)</label>
+          <select
+            className="input w-full"
+            value={supplierId ?? ''}
+            onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">None</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label">Unit Cost (₱)</label>
+          <input
+            className={`input w-full ${isCostDecimal ? 'border-danger-500' : ''}`}
+            type="number"
+            min="0"
+            step="1"
+            value={cost}
+            onChange={(e) => setCost(e.target.value)}
+          />
+          {isCostDecimal && (
+            <p className="mt-1 text-xs text-danger-400">
+              Unit Cost must be a whole peso amount (e.g. ₱5, ₱10, ₱25 — no centavos).
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="label">Reference (optional)</label>
+          <input className="input w-full" value={reference} onChange={(e) => setReference(e.target.value)} />
+        </div>
+        <div>
+          <label className="label">Notes (optional)</label>
+          <textarea className="input w-full" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </div>
+      </div>
+    </Modal>
+  )
 }
 
 function WithdrawModal({ products, initial, onDone, onClose }: { products: Product[]; initial: Product | null; onDone: () => void; onClose: () => void }): React.JSX.Element {
@@ -1170,7 +1430,8 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
     return products.filter((p) =>
       p.name.toLowerCase().includes(term) ||
       (p.sku && p.sku.toLowerCase().includes(term)) ||
-      (p.barcode && p.barcode.toLowerCase().includes(term))
+      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
+      p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(term)) || (u.name && u.name.toLowerCase().includes(term)))
     )
   }, [products, productSearch])
 
