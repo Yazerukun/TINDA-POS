@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import type { Product } from '@shared/types'
 import { money } from '@shared/format'
+import { matchesProductSearch } from '@shared/searchUtils'
 
 interface PurchaseItemPickerModalProps {
   open: boolean
@@ -73,16 +74,7 @@ export function PurchaseItemPickerModal({
 
       // Search query filter
       if (!q) return true
-      const nameMatch = (p.name || '').toLowerCase().includes(q)
-      const barcodeMatch = (p.barcode || '').toLowerCase().includes(q)
-      const skuMatch = (p.sku || '').toLowerCase().includes(q)
-      const catMatch = (p.category_name || '').toLowerCase().includes(q)
-      const unitBarcodeMatch = p.units?.some(
-        (u) =>
-          (u.barcode && u.barcode.toLowerCase().includes(q)) ||
-          (u.name && u.name.toLowerCase().includes(q))
-      )
-      return nameMatch || barcodeMatch || skuMatch || catMatch || unitBarcodeMatch
+      return matchesProductSearch(p, q)
     })
   }, [products, searchQuery, selectedCategory])
 

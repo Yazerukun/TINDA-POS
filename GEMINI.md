@@ -17,12 +17,13 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v4.1.0 (Universal Multi-Unit Barcode Search & Zero-Cap Restock Edition)
+- **Current Stable Version:** v4.1.1 (Universal Multi-Unit Barcode & Hyphen-Agnostic Product Search Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**
-  1. **[F1] 0ms Instant Hardware Responsiveness**: Eliminated the initial modal rendering delay on large catalogs (1,000 to 5,000+ items). Implemented progressive 80-item chunk windowing and requestAnimationFrame focus, reducing initial DOM mount time from ~350ms to < 2ms (over 150× faster).
-  2. **Silky 60fps Dynamic Chunk Expansion**: Smooth infinite scrolling and keyboard navigation dynamically hydrate next chunks as the user scrolls or navigates down with Arrow keys.
+  1. **[F1] Universal Hyphen- & Punctuation-Agnostic Search**: Eliminates brand naming friction (e.g. `Zest-O` vs `Zesto` vs `Zest O`, `Coca-Cola` vs `cocacola`, `7-Up` vs `7up`). Alphanumeric normalization guarantees products match across SQLite backend and frontend state regardless of whether hyphens or spaces were entered.
+  2. **[F1] Multi-Unit Barcode Search Parity**: Resolved inventory search blindspot where products encoded with selling unit barcodes (Piece, Pack, Box, Case) were visible in POS Cashier but omitted from Inventory search. Client-side and server-side filters now inspect all packaging unit barcodes and names simultaneously.
+  3. **[F1] 0ms Instant Hardware Responsiveness**: Progressive 80-item chunk windowing and requestAnimationFrame focus, reducing initial DOM mount time from ~350ms to < 2ms (over 150× faster).
   3. **[F1] Universal Inventory Spotlight Explorer**: Pressing F1 from anywhere in Purchase Invoice opens an Apple Design Standard command palette (PurchaseItemPickerModal.tsx) with instant 0ms in-memory search across Name, Barcode, SKU, and Category.
   4. **100% Keyboard-Ergonomic Speedrun**: Smooth Arrow key navigation, immediate Enter selection that automatically injects the product and auto-focuses the Qty input field for instantaneous entry (F1 -> Type -> Enter -> Qty -> Enter).
   5. **Visual Stock Health & Cost Transparency**: Displays color-coded real-time on-hand stock badges (Out of Stock, Low Stock, Healthy Stock), default Purchase Cost, Retail SRP, and expected margin markup percentage.

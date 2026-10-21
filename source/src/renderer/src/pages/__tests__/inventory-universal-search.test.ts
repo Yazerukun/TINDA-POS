@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Product } from '@shared/types'
+import { matchesProductSearch } from '@shared/searchUtils'
 
 describe('Inventory Universal Search & Multi-Unit Barcode Matching', () => {
   const sampleProducts: Product[] = [
@@ -77,6 +78,39 @@ describe('Inventory Universal Search & Multi-Unit Barcode Matching', () => {
       ],
       created_at: '2026-01-01',
       updated_at: '2026-01-01'
+    },
+    {
+      id: 103,
+      name: 'Zesto Apple Drink 200ml',
+      sku: 'ZESTO-APP-200',
+      barcode: '4800049112233',
+      description: null,
+      category_id: 3,
+      category_name: 'Juice & Beverages',
+      base_unit: 'piece',
+      purchase_cost_c: 800,
+      default_price_c: 1100,
+      stock: 100,
+      low_stock_threshold: 15,
+      stock_status: 'IN_STOCK',
+      supplier_id: 1,
+      has_expiration: false,
+      image_path: null,
+      status: 'ACTIVE',
+      notes: null,
+      units: [
+        {
+          id: 4,
+          product_id: 103,
+          name: 'Box of 10',
+          conversion_to_base: 10,
+          selling_price_c: 10500,
+          barcode: '4800049112240',
+          is_default: false
+        }
+      ],
+      created_at: '2026-01-01',
+      updated_at: '2026-01-01'
     }
   ]
 
@@ -88,18 +122,7 @@ describe('Inventory Universal Search & Multi-Unit Barcode Matching', () => {
   ): Product[] {
     let list = products
     if (query) {
-      const term = query.toLowerCase().trim()
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          (p.barcode || '').toLowerCase().includes(term) ||
-          p.sku.toLowerCase().includes(term) ||
-          p.units?.some(
-            (u) =>
-              (u.barcode && u.barcode.toLowerCase().includes(term)) ||
-              (u.name && u.name.toLowerCase().includes(term))
-          )
-      )
+      list = list.filter((p) => matchesProductSearch(p, query))
     }
 
     if (catFilter !== 'ALL') {
@@ -144,5 +167,20 @@ describe('Inventory Universal Search & Multi-Unit Barcode Matching', () => {
     const resultsInCat2 = filterCatalog(sampleProducts, 'Pack', 2)
     expect(resultsInCat2).toHaveLength(1)
     expect(resultsInCat2[0]?.id).toBe(102)
+  })
+
+  it('matches "Zesto" even when user types "zest-o" with a hyphen (VIP Client Fix)', () => {
+    const resultsWithHyphen = filterCatalog(sampleProducts, 'zest-o', 'ALL')
+    expect(resultsWithHyphen).toHaveLength(1)
+    expect(resultsWithHyphen[0]?.id).toBe(103)
+    expect(resultsWithHyphen[0]?.name).toBe('Zesto Apple Drink 200ml')
+
+    const resultsWithSpace = filterCatalog(sampleProducts, 'zest o', 'ALL')
+    expect(resultsWithSpace).toHaveLength(1)
+    expect(resultsWithSpace[0]?.id).toBe(103)
+
+    const resultsUnitBarcode = filterCatalog(sampleProducts, '4800049112240', 'ALL')
+    expect(resultsUnitBarcode).toHaveLength(1)
+    expect(resultsUnitBarcode[0]?.id).toBe(103)
   })
 })

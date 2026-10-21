@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1792577115.4776258,
-    "seen": 1792577205.8950253,
-    "ast_hash": "fa6432d6745d6fa2da1a0d4be2ab174d",
+    "mtime": 1792578409.8856254,
+    "seen": 1792590769.6289034,
+    "ast_hash": "2010a703fa532c54a710fa6487e24be5",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1792577115.4816258,
-    "seen": 1792577205.8966465,
-    "ast_hash": "770923b3663724c5c1a4a7f7011ab810",
+    "mtime": 1792578431.2016253,
+    "seen": 1792590769.992286,
+    "ast_hash": "42da10123325f4b368706dac67c7a88c",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Inventory.tsx": {
-    "mtime": 1792492635.6645455,
-    "seen": 1792577205.8972926,
-    "ast_hash": "a2fe88d37b98df347d048c67fb8ad5a7",
+    "mtime": 1792578240.4896255,
+    "seen": 1792590770.1978252,
+    "ast_hash": "5cca7a72a4b313d4b14347103561c524",
     "semantic_hash": ""
   },
   "source/src/renderer/src/pages/Login.tsx": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1792577115.4616258,
-    "seen": 1792577205.9013283,
-    "ast_hash": "3e69b31823f4214fdac482e39dfa0d0a",
+    "mtime": 1792578449.9136252,
+    "seen": 1792590770.9070213,
+    "ast_hash": "0f98e84f7761590ff4a15629de0a098a",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,15 +3102,15 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792577115.469626,
-    "seen": 1792577205.9013453,
-    "ast_hash": "c88b4b35ea93c6c3ad7715edcd89d08b",
+    "mtime": 1792578487.7976253,
+    "seen": 1792590770.9117901,
+    "ast_hash": "7567a59d6b99aed15c5917a851564044",
     "semantic_hash": ""
   },
   "SYSTEM_MASTER.md": {
-    "mtime": 1792521400.211584,
-    "seen": 1792577205.9013479,
-    "ast_hash": "aa1215d954b933cebe1eff29339cd92f",
+    "mtime": 1792578544.4456253,
+    "seen": 1792590770.9117963,
+    "ast_hash": "ef74876cf1c95974036415547e5666d7",
     "semantic_hash": ""
   },
   "TINDA-POS-LIVE.md": {
@@ -3126,9 +3126,9 @@
     "semantic_hash": ""
   },
   "docs/MASTER-SYSTEM-ARCHITECTURE.md": {
-    "mtime": 1792521417.9115841,
-    "seen": 1792577205.9013612,
-    "ast_hash": "d0d8ac1c36c279fe999612e79952b4bf",
+    "mtime": 1792578897.441625,
+    "seen": 1792590770.9144208,
+    "ast_hash": "b5f5b419df954909ef9640ad4a145437",
     "semantic_hash": ""
   },
   "docs/MULTI_PC_AND_VPS_GUIDE.md": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1792577115.473626,
-    "seen": 1792577205.9013853,
-    "ast_hash": "819c14db8e9bf9182f3381d19d4744e2",
+    "mtime": 1792578890.4576252,
+    "seen": 1792590770.9252815,
+    "ast_hash": "c90af3ceae3a616d840b15ad8063d2e3",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -4968,9 +4968,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PurchaseItemPickerModal.tsx": {
-    "mtime": 1792577115.4936259,
-    "seen": 1792577205.896703,
-    "ast_hash": "6b8e27384fee9d75043ca48f54ac223a",
+    "mtime": 1792578268.4536254,
+    "seen": 1792590770.015692,
+    "ast_hash": "9d3c2783433133e73b7a9e7ee7f637a0",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/SingleItemVoidModal.tsx": {
@@ -5169,6 +5169,18 @@
     "mtime": 1792426351.0778213,
     "seen": 1792577205.901767,
     "ast_hash": "e39d704252a6a255565a233b958658c2",
+    "semantic_hash": ""
+  },
+  "source/src/renderer/src/pages/__tests__/inventory-universal-search.test.ts": {
+    "mtime": 1792578368.6336253,
+    "seen": 1792590770.2169101,
+    "ast_hash": "7ac3500424b8350a2b00b30681fc9a47",
+    "semantic_hash": ""
+  },
+  "tools/cloudflare-worker/schema-chat.sql": {
+    "mtime": 1792109883.3354,
+    "seen": 1792590880.6279979,
+    "ast_hash": "3577e6dc59e1195bff263955b2f526ee",
     "semantic_hash": ""
   }
 }

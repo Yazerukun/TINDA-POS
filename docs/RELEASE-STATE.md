@@ -1,13 +1,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.0 (UNIVERSAL MULTI-UNIT BARCODE SEARCH & ZERO-CAP RESTOCK EDITION)
+- v4.1.1 (UNIVERSAL MULTI-UNIT BARCODE & HYPHEN-AGNOSTIC PRODUCT SEARCH ENGINE)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.0 Universal Multi-Unit Barcode Search & Zero-Cap Restock Edition
+- Production Release Ready — v4.1.1 Universal Multi-Unit Barcode & Hyphen-Agnostic Product Search Engine
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

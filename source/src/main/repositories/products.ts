@@ -120,9 +120,22 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
   const params: unknown[] = []
   if (q && q.trim()) {
     const trimmed = q.trim()
-    where.push(`(p.name LIKE ? OR p.sku LIKE ? OR p.barcode = ? COLLATE NOCASE OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND pu.barcode = ? COLLATE NOCASE))`)
-    const like = `%${trimmed}%`
-    params.push(like, like, trimmed, trimmed)
+    const cleanAlpha = trimmed.replace(/[^a-zA-Z0-9]/g, '')
+    const likeRaw = `%${trimmed}%`
+    const likeClean = `%${cleanAlpha || trimmed}%`
+
+    where.push(`(
+      p.name LIKE ?
+      OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+      OR p.sku LIKE ?
+      OR p.barcode = ? COLLATE NOCASE
+      OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
+        pu.barcode = ? COLLATE NOCASE
+        OR pu.name LIKE ?
+        OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+      ))
+    )`)
+    params.push(likeRaw, likeClean, likeRaw, trimmed, trimmed, likeRaw, likeClean)
   }
   if (category_id) {
     where.push('p.category_id = ?')
@@ -161,17 +174,30 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
 export function searchProductsSimple(db: Database.Database, q: string, limit = 100): Product[] {
   const s = q.trim()
   if (!s) return []
+  const cleanAlpha = s.replace(/[^a-zA-Z0-9]/g, '')
   const isBarcodeLike = /^[0-9A-Z-]{4,}$/i.test(s)
   const rows = db
     .prepare(
       `${BASE_SELECT}
        WHERE p.status = 'ACTIVE' AND (
-         p.name LIKE ? OR p.sku LIKE ? ${isBarcodeLike ? 'OR p.barcode = ?' : ''}
-         OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND pu.barcode = ?)
+         p.name LIKE ?
+         OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+         OR p.sku LIKE ? ${isBarcodeLike ? 'OR p.barcode = ?' : ''}
+         OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
+           pu.barcode = ? OR pu.name LIKE ? OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+         ))
        )
        ORDER BY p.name COLLATE NOCASE LIMIT ?`
     )
-    .all(`%${s}%`, `%${s}%`, ...(isBarcodeLike ? [s, s] : [s]), limit) as Record<string, unknown>[]
+    .all(
+      `%${s}%`,
+      `%${cleanAlpha || s}%`,
+      `%${s}%`,
+      ...(isBarcodeLike ? [s, s] : [s]),
+      `%${s}%`,
+      `%${cleanAlpha || s}%`,
+      limit
+    ) as Record<string, unknown>[]
   return rows.map((r) => rowToProduct(db, r))
 }
 

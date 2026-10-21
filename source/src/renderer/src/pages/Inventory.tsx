@@ -10,6 +10,7 @@ import { useGuide } from '../stores/guide'
 import { useSettings } from '../stores/settings'
 import { ProductExpiry, ExpirationList } from '../components/Expiration'
 import { expirationStatus, productExpirationStatus } from '@shared/expiration'
+import { matchesProductSearch } from '@shared/searchUtils'
 import { ProductImage } from '../components/ui/ProductImage'
 import { PriceReferenceCard } from '../components/ui/PriceReferenceCard'
 import { PriceGuideModal } from '../components/PriceGuideModal'
@@ -179,18 +180,7 @@ export function Inventory(): React.JSX.Element {
   const filtered = useMemo(() => {
     let list = products
     if (q) {
-      const term = q.toLowerCase().trim()
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          (p.barcode || '').toLowerCase().includes(term) ||
-          p.sku.toLowerCase().includes(term) ||
-          p.units?.some(
-            (u) =>
-              (u.barcode && u.barcode.toLowerCase().includes(term)) ||
-              (u.name && u.name.toLowerCase().includes(term))
-          )
-      )
+      list = list.filter((p) => matchesProductSearch(p, q))
     }
     if (catFilter === 'ARCHIVED') return list
 
@@ -1198,13 +1188,7 @@ function RestockModal({ products, initial, onDone, onClose }: { products: Produc
 
   const filteredProducts = useMemo(() => {
     if (!productSearch.trim()) return products
-    const term = productSearch.toLowerCase().trim()
-    return products.filter((p) =>
-      p.name.toLowerCase().includes(term) ||
-      (p.sku && p.sku.toLowerCase().includes(term)) ||
-      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
-      p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(term)) || (u.name && u.name.toLowerCase().includes(term)))
-    )
+    return products.filter((p) => matchesProductSearch(p, productSearch))
   }, [products, productSearch])
 
   const product = products.find((p) => p.id === productId)
@@ -1426,13 +1410,7 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
 
   const filteredProducts = useMemo(() => {
     if (!productSearch.trim()) return products
-    const term = productSearch.toLowerCase().trim()
-    return products.filter((p) =>
-      p.name.toLowerCase().includes(term) ||
-      (p.sku && p.sku.toLowerCase().includes(term)) ||
-      (p.barcode && p.barcode.toLowerCase().includes(term)) ||
-      p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(term)) || (u.name && u.name.toLowerCase().includes(term)))
-    )
+    return products.filter((p) => matchesProductSearch(p, productSearch))
   }, [products, productSearch])
 
   const product = products.find((p) => p.id === productId)

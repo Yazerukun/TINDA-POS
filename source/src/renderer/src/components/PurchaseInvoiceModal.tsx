@@ -32,6 +32,7 @@ import { PurchaseItemPickerModal } from './PurchaseItemPickerModal'
 import { toastSuccess, toastError } from '../stores/toast'
 import { playScanBeep } from '../lib/barcodeScanner'
 import { calculateChainDiscount } from '../utils/supplierDiscount'
+import { matchesProductSearch } from '@shared/searchUtils'
 
 interface PurchaseInvoiceModalProps {
   open: boolean
@@ -224,16 +225,10 @@ export function PurchaseInvoiceModal({
 
   // Filtered products for dropdown suggestions
   const searchResults = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
+    const q = searchQuery.trim()
     if (!q) return []
     return allProducts
-      .filter((p) => {
-        const nameMatch = p.name.toLowerCase().includes(q)
-        const codeMatch = (p.barcode || '').toLowerCase().includes(q)
-        const skuMatch = (p.sku || '').toLowerCase().includes(q)
-        const unitMatch = p.units?.some((u) => (u.barcode || '').toLowerCase().includes(q))
-        return nameMatch || codeMatch || skuMatch || unitMatch
-      })
+      .filter((p) => matchesProductSearch(p, q))
       .slice(0, 10)
   }, [allProducts, searchQuery])
 
