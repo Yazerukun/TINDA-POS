@@ -202,6 +202,37 @@ Never lose a single sale to internet disconnects. All inventory items, customer 
 
 ---
 
+## ☁️ Dual-Cloud High Availability & Supabase Failover Setup
+
+To guarantee 100% continuous uptime and eliminate Single Points of Failure (SPOF) when internet providers in the Philippines encounter latency or Cloudflare edge maintenance, TINDA POS features a **Dual-Cloud Autonomous Failover Architecture**:
+
+- **Primary Cloud Gateway**: Cloudflare Workers + Cloudflare D1 Edge Database (`https://tinda-sync.yomikaze-md.workers.dev`)
+- **Secondary Cloud Gateway (Auto-Failover)**: Supabase Managed PostgreSQL Engine (`https://qeruenpmscoxwycniklr.supabase.co`)
+
+### 📋 How to Use `SUPABASE_SCHEMA.txt`
+
+The full PostgreSQL DDL schema with Row Level Security (RLS) policies and performance indexes is provided in [`SUPABASE_SCHEMA.txt`](./SUPABASE_SCHEMA.txt).
+
+#### Step-by-Step Instructions:
+1. **Open Supabase Project Dashboard**: Navigate to [https://supabase.com/dashboard/project/qeruenpmscoxwycniklr](https://supabase.com/dashboard/project/qeruenpmscoxwycniklr).
+2. **Access SQL Editor**: Click on the **SQL Editor** tab on the left-hand navigation sidebar (or press `Ctrl + /` and type "SQL").
+3. **Load Schema File**:
+   - Open [`SUPABASE_SCHEMA.txt`](./SUPABASE_SCHEMA.txt) from the project root.
+   - Copy the entire SQL content and paste it into a new query window in the Supabase SQL Editor.
+4. **Execute**: Click the **Run** button (or press `Ctrl + Enter`).
+5. **Verify Tables**: Ensure the following 8 core tables and their corresponding indexes are created:
+   - `public.owner_users` — Store owner accounts and authentication credentials.
+   - `public.stores` — Physical store terminals, branch names, and secure sync key hashes.
+   - `public.sales` — Completed sales transactions with integer-centavo (`_c`) precision.
+   - `public.sale_items` — Itemized line items per transaction with weighable decimal support.
+   - `public.stock_movements` — Atomic inventory audit trail (Sales, Restocks, Adjustments, Refunds).
+   - `public.shift_snapshots` — Cashier shift summaries and end-of-day Z-Read cash totals.
+   - `public.owner_sessions` — Persistent owner login session tokens.
+   - `public.system_telemetry` — Live store health score and autonomous bug radar telemetry.
+6. **Automatic Desktop & Dashboard Failover**: If the primary Cloudflare Worker endpoint fails or exceeds response time (>3 seconds), the POS terminal and Cloud Owner Dashboard seamlessly route traffic to Supabase REST endpoints without user intervention.
+
+---
+
 ## 🗂️ Repository Directory Structure
 
 ```text
