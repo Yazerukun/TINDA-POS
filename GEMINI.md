@@ -17,7 +17,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v4.1.2 (Universal Multi-Unit Barcode & Hyphen-Agnostic Product Search Edition)
+- **Current Stable Version:** v4.1.3 (Multi-Token Packaging Unit Disambiguation & Hardware Scanner Standby Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**

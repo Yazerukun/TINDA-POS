@@ -54,13 +54,15 @@
 ---
 
 ## 6. Software Update & Release Guarantees
-* **Auto-Updater Compatibility:** Seamless in-app update transition to v4.1.0 via `electron-updater` and official GitHub Releases (`Yazerukun/TINDA-POS`).
+* **Auto-Updater Compatibility:** Seamless in-app update transition to v4.1.3 via `electron-updater` and official GitHub Releases (`Yazerukun/TINDA-POS-Source`).
 * **Canonical Release Artifacts:**
-  - `TindaPOS-Setup-4.1.0.exe` (NSIS installer with differential blockmap support, 111.4 MB)
-  - `TindaPOS-Setup-4.1.0.exe.blockmap` (Differential blockmap, 121 KB)
+  - `TindaPOS-Setup-4.1.3.exe` (NSIS installer with differential blockmap support, 111.4 MB)
+  - `TindaPOS-Setup-4.1.3.exe.blockmap` (Differential blockmap, 122 KB)
   - `latest.yml` (Version metadata and cryptographic SHA-512 hashes)
-  - `TindaPOS-Portable-4.1.0.exe` (Zero-install standalone portable runtime, 110.5 MB)
-  - `SHA256SUMS-v4.1.0.txt` (Cryptographic verification signatures)
+  - `TindaPOS-Portable-4.1.3.exe` (Zero-install standalone portable runtime, 390 MB)
+  - `TindaPOS-4.1.3.AppImage` (64-bit universal Linux desktop executable, 135 MB)
+  - `latest-linux.yml` (Linux version metadata and SHA-512 hashes)
+  - `SHA256SUMS-v4.1.3.txt` (Cryptographic verification signatures)
 
 ---
 
@@ -2029,7 +2031,7 @@
 
 ---
 
-## 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)
+## 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)
 
 ### 94.1 Multi-Token Tokenized Search & Packaging Unit Parity
 1. **Tokenized Query Parsing Invariant:** `searchProducts` and `searchProductsSimple` decompose search queries containing whitespace into discrete tokens (`q.trim().split(/\s+/)`). Every token must match across the product hierarchy: `p.name`, `p.sku`, `p.barcode`, `pu.barcode`, or `pu.name`.

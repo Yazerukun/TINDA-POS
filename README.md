@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v4.1.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.2_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/TindaPOS-Setup-4.1.2.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.2_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/TindaPOS-Portable-4.1.2.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,25 +30,25 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v4.1.2 Full Release)
+## ⚡ Quick Download & Release Assets (v4.1.3 Full Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.2.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/TindaPOS-Setup-4.1.2.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.2.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/TindaPOS-Portable-4.1.2.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-4.1.2.AppImage**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/TindaPOS-4.1.2.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.2.txt**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.2/SHA256SUMS-v4.1.2.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-4.1.3.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.3.txt**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/SHA256SUMS-v4.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v4.1.2: Multi-Token Search Disambiguation, Hardware Scanner Standby & Linux AppImage
+## 🌟 What's New in v4.1.3: Multi-Token Search Disambiguation, Hardware Scanner Standby & Linux AppImage
 - **Multi-Token Unit Disambiguation & Camel-Stick Elimination**: Decomposed multi-word search queries into discrete tokens across both product names and packaging units. Solves compound searches (e.g. `Marlboro stick`, `Coke 1.5`, `Zest-O piece`) while adding short-token (`< 3` characters) guards against greedy packaging unit matches (`pc`, `pack`, `stick`, `case`), completely eliminating alphabetical monopoly in the POS Cashier.
 - **Hierarchical Relevance Scoring**: Upgraded SQLite ranking (`ORDER BY CASE`) to prioritize exact primary barcodes, unit barcodes, and SKUs ahead of product name prefixes, substrings, and packaging unit matches.
 - **Keyboard Arrow-Key Enter Selection**: POS Cashier Enter key now prioritizes the cashier's arrow-key highlighted product in the search dropdown.
 - **Hardware Barcode Scanner Standby Pill**: Polished the scanner indicator to a quiet standby pill that turns pulsing emerald when a physical USB/Bluetooth scanner is triggered.
-- **Official Linux 64-bit AppImage (`TindaPOS-4.1.2.AppImage`)**: Complete Linux standalone executable tested and verified for Arch Linux / Omarchy and Debian/Ubuntu desktop distributions.
+- **Official Linux 64-bit AppImage (`TindaPOS-4.1.3.AppImage`)**: Complete Linux standalone executable tested and verified for Arch Linux / Omarchy and Debian/Ubuntu desktop distributions.
 - **Universal Hyphen- & Punctuation-Agnostic Search**: Eliminates brand naming friction (e.g. `Zest-O` vs `Zesto` vs `Zest O`, `Coca-Cola` vs `cocacola`, `7-Up` vs `7up`). Alphanumeric normalization guarantees products match across SQLite backend and frontend state regardless of whether hyphens or spaces were entered.
 - **Multi-Unit Barcode Search Parity**: Resolved inventory search blindspot where products encoded with selling unit barcodes (Piece, Pack, Box, Case) were visible in POS Cashier but omitted from Inventory search. Client-side and server-side filters now inspect all packaging unit barcodes and names simultaneously.
 - **Universal Live Database Search (Zero-Cap Guarantee)**: Eliminated the 1,000-item pagination limit in Inventory view. Typing in the search bar triggers an asynchronous SQLite search against the entire database, guaranteeing 100% discoverability for large catalogs with 10,000+ items.
