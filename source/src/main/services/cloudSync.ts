@@ -317,8 +317,8 @@ async function postToSupabase(
     }
 
     if (endpoint === '/api/sync/batch') {
-      const items = (payload.data as any)?.sales as CloudSaleSyncPayload[] | undefined
-      if (Array.isArray(items)) {
+      const items = ((payload.data as any)?.sales || (payload as any).sales) as CloudSaleSyncPayload[] | undefined
+      if (Array.isArray(items) && items.length > 0) {
         let allOk = true
         for (const s of items) {
           const ok = await postToSupabase('/api/sync/sale', { ...payload, data: s })
@@ -326,7 +326,7 @@ async function postToSupabase(
         }
         return allOk
       }
-      return true
+      return false
     }
 
     return false
@@ -504,7 +504,7 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       signal: AbortSignal.timeout(8000)
     })
     if (!pingRes.ok) {
-      return { ok: false, message: `Cloud server responded with status: ${pingRes.status}` }
+      console.warn(`[CloudSync] Primary cloud server responded with status: ${pingRes.status}. Continuing to dual-cloud pipeline...`)
     }
 
     // Auto-register and verify store on Cloudflare D1
@@ -528,12 +528,7 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       if (syncPingRes.status === 401) {
         return { ok: false, message: 'Invalid Sync Credentials. Please verify Store ID and Sync Key in Settings.' }
       }
-      let errDetail = ''
-      try {
-        const errJson = (await syncPingRes.json()) as any
-        if (errJson?.error) errDetail = `: ${errJson.error}`
-      } catch {}
-      return { ok: false, message: `Cloud authentication failed (${syncPingRes.status})${errDetail}` }
+      console.warn(`[CloudSync] Primary cloud auth ping status ${syncPingRes.status}. Continuing with autonomous Supabase failover...`)
     }
 
     // Push pending/recent sales so cloud dashboard displays live data immediately
