@@ -22,7 +22,17 @@ CREATE TABLE IF NOT EXISTS public.stores (
   owner_user_id BIGINT REFERENCES public.owner_users(id) ON DELETE SET NULL,
   last_sale_at TIMESTAMPTZ,
   last_sync_at TIMESTAMPTZ,
+  pin_hash TEXT,
+  slug TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 2b. Store Owners (Many-to-Many Store Ownership Mapping)
+CREATE TABLE IF NOT EXISTS public.store_owners (
+  store_id TEXT NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
+  owner_user_id BIGINT NOT NULL REFERENCES public.owner_users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (store_id, owner_user_id)
 );
 
 -- 3. Sales Header Table
@@ -86,7 +96,7 @@ CREATE INDEX IF NOT EXISTS idx_movements_store ON public.stock_movements(store_i
 CREATE INDEX IF NOT EXISTS idx_movements_date ON public.stock_movements(moved_at);
 CREATE INDEX IF NOT EXISTS idx_movements_product ON public.stock_movements(store_id, product_name);
 
--- 6. Shift Snapshots
+-- 6. Shift Snapshots (Shift Reports)
 CREATE TABLE IF NOT EXISTS public.shift_snapshots (
   id BIGSERIAL PRIMARY KEY,
   store_id TEXT NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
@@ -94,7 +104,7 @@ CREATE TABLE IF NOT EXISTS public.shift_snapshots (
   cashier_name TEXT NOT NULL,
   shift_date TEXT NOT NULL,
   opened_at TIMESTAMPTZ NOT NULL,
-  closed_at TIMESTAMPTZ NOT NULL,
+  closed_at TIMESTAMPTZ,
   gross_sales_c BIGINT NOT NULL DEFAULT 0,
   cash_c BIGINT NOT NULL DEFAULT 0,
   gcash_c BIGINT NOT NULL DEFAULT 0,
@@ -123,7 +133,27 @@ CREATE TABLE IF NOT EXISTS public.owner_sessions (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON public.owner_sessions(token_hash);
 
--- 8. Real-Time Telemetry & Error Radar
+-- 8. Global Community Chat Messages
+CREATE TABLE IF NOT EXISTS public.global_chat_messages (
+  id BIGSERIAL PRIMARY KEY,
+  store_id TEXT NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
+  branch_name TEXT NOT NULL,
+  sender_name TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 9. Live Announcements
+CREATE TABLE IF NOT EXISTS public.live_announcements (
+  id BIGSERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  severity TEXT NOT NULL DEFAULT 'info',
+  active INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 10. Real-Time Telemetry & Error Radar
 CREATE TABLE IF NOT EXISTS public.system_telemetry (
   id BIGSERIAL PRIMARY KEY,
   store_id TEXT NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
@@ -138,11 +168,14 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_store ON public.system_telemetry(store_
 -- Enable RLS and create permissive policies for public anon / authenticated sync
 ALTER TABLE public.owner_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.store_owners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sale_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_movements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shift_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.owner_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.global_chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.live_announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_telemetry ENABLE ROW LEVEL SECURITY;
 
 -- Allow anon & service_role access for sync operations
@@ -150,6 +183,9 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'stores' AND policyname = 'Allow public stores access') THEN
     CREATE POLICY "Allow public stores access" ON public.stores FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'store_owners' AND policyname = 'Allow public store_owners access') THEN
+    CREATE POLICY "Allow public store_owners access" ON public.store_owners FOR ALL USING (true) WITH CHECK (true);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'sales' AND policyname = 'Allow public sales access') THEN
     CREATE POLICY "Allow public sales access" ON public.sales FOR ALL USING (true) WITH CHECK (true);
@@ -168,6 +204,12 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'owner_sessions' AND policyname = 'Allow public owner_sessions access') THEN
     CREATE POLICY "Allow public owner_sessions access" ON public.owner_sessions FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'global_chat_messages' AND policyname = 'Allow public global_chat_messages access') THEN
+    CREATE POLICY "Allow public global_chat_messages access" ON public.global_chat_messages FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'live_announcements' AND policyname = 'Allow public live_announcements access') THEN
+    CREATE POLICY "Allow public live_announcements access" ON public.live_announcements FOR ALL USING (true) WITH CHECK (true);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'system_telemetry' AND policyname = 'Allow public system_telemetry access') THEN
     CREATE POLICY "Allow public system_telemetry access" ON public.system_telemetry FOR ALL USING (true) WITH CHECK (true);

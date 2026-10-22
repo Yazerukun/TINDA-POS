@@ -220,7 +220,7 @@ The full PostgreSQL DDL schema with Row Level Security (RLS) policies and perfor
    - Open [`SUPABASE_SCHEMA.txt`](./SUPABASE_SCHEMA.txt) from the project root.
    - Copy the entire SQL content and paste it into a new query window in the Supabase SQL Editor.
 4. **Execute**: Click the **Run** button (or press `Ctrl + Enter`).
-5. **Verify Tables**: Ensure the following 8 core tables and their corresponding indexes are created:
+5. **Verify Tables**: Ensure the following 11 core tables and their corresponding indexes are created:
    - `public.owner_users` — Store owner accounts and authentication credentials.
    - `public.stores` — Physical store terminals, branch names, and secure sync key hashes.
    - `public.sales` — Completed sales transactions with integer-centavo (`_c`) precision.
