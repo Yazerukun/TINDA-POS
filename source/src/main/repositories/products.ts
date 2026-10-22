@@ -120,22 +120,60 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
   const params: unknown[] = []
   if (q && q.trim()) {
     const trimmed = q.trim()
-    const cleanAlpha = trimmed.replace(/[^a-zA-Z0-9]/g, '')
-    const likeRaw = `%${trimmed}%`
-    const likeClean = `%${cleanAlpha || trimmed}%`
+    const tokens = trimmed.split(/\s+/).filter(Boolean)
 
-    where.push(`(
-      p.name LIKE ?
-      OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
-      OR p.sku LIKE ?
-      OR p.barcode = ? COLLATE NOCASE
-      OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
-        pu.barcode = ? COLLATE NOCASE
-        OR pu.name LIKE ?
-        OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
-      ))
-    )`)
-    params.push(likeRaw, likeClean, likeRaw, trimmed, trimmed, likeRaw, likeClean)
+    if (tokens.length > 1) {
+      // Multi-token search (e.g. "Marlboro stick", "Coke 1.5", "Zest-o piece"):
+      // Every token must match product name/sku/barcode or unit name/barcode
+      for (const token of tokens) {
+        const cleanT = token.replace(/[^a-zA-Z0-9]/g, '')
+        const likeRaw = `%${token}%`
+        const likeClean = `%${cleanT || token}%`
+        where.push(`(
+          p.name LIKE ?
+          OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+          OR p.sku LIKE ?
+          OR p.barcode = ? COLLATE NOCASE
+          OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
+            pu.barcode = ? COLLATE NOCASE
+            OR pu.name LIKE ?
+            OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+          ))
+        )`)
+        params.push(likeRaw, likeClean, likeRaw, token, token, likeRaw, likeClean)
+      }
+    } else {
+      // Single-token search (e.g. "c", "marlboro", "480001", "stick"):
+      const cleanAlpha = trimmed.replace(/[^a-zA-Z0-9]/g, '')
+      const likeRaw = `%${trimmed}%`
+      const likeClean = `%${cleanAlpha || trimmed}%`
+
+      // For short single-character / 2-char prefixes (< 3 chars), do NOT loosely match unit names
+      // ("pc", "pack", "case", "stick") because almost every product in a sari-sari store has those units.
+      if (trimmed.length < 3) {
+        where.push(`(
+          p.name LIKE ?
+          OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+          OR p.sku LIKE ?
+          OR p.barcode = ? COLLATE NOCASE
+          OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND pu.barcode = ? COLLATE NOCASE)
+        )`)
+        params.push(likeRaw, likeClean, likeRaw, trimmed, trimmed)
+      } else {
+        where.push(`(
+          p.name LIKE ?
+          OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+          OR p.sku LIKE ?
+          OR p.barcode = ? COLLATE NOCASE
+          OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
+            pu.barcode = ? COLLATE NOCASE
+            OR pu.name LIKE ?
+            OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+          ))
+        )`)
+        params.push(likeRaw, likeClean, likeRaw, trimmed, trimmed, likeRaw, likeClean)
+      }
+    }
   }
   if (category_id) {
     where.push('p.category_id = ?')
@@ -159,10 +197,11 @@ export function searchProducts(db: Database.Database, opts: SearchOptions = {}):
         WHEN p.sku = ? COLLATE NOCASE THEN 2
         WHEN p.name = ? COLLATE NOCASE THEN 3
         WHEN p.name LIKE ? COLLATE NOCASE THEN 4
-        ELSE 5
+        WHEN p.name LIKE ? COLLATE NOCASE THEN 5
+        ELSE 6
       END), p.name COLLATE NOCASE
     `
-    queryParams.push(trimmed, trimmed, trimmed, trimmed, `${trimmed}%`)
+    queryParams.push(trimmed, trimmed, trimmed, trimmed, `${trimmed}%`, `%${trimmed}%`)
   }
 
   const rows = db
@@ -176,6 +215,34 @@ export function searchProductsSimple(db: Database.Database, q: string, limit = 1
   if (!s) return []
   const cleanAlpha = s.replace(/[^a-zA-Z0-9]/g, '')
   const isBarcodeLike = /^[0-9A-Z-]{4,}$/i.test(s)
+  const tokens = s.split(/\s+/).filter(Boolean)
+
+  if (tokens.length > 1) {
+    const whereTokens: string[] = []
+    const params: unknown[] = []
+    for (const t of tokens) {
+      const cT = t.replace(/[^a-zA-Z0-9]/g, '')
+      whereTokens.push(`(
+        p.name LIKE ?
+        OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
+        OR p.sku LIKE ?
+        OR p.barcode = ? COLLATE NOCASE
+        OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
+          pu.barcode = ? COLLATE NOCASE OR pu.name LIKE ? OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+        ))
+      )`)
+      params.push(`%${t}%`, `%${cT || t}%`, `%${t}%`, t, t, `%${t}%`, `%${cT || t}%`)
+    }
+    const rows = db
+      .prepare(`${BASE_SELECT} WHERE p.status = 'ACTIVE' AND ${whereTokens.join(' AND ')} ORDER BY p.name COLLATE NOCASE LIMIT ?`)
+      .all(...params, limit) as Record<string, unknown>[]
+    return rows.map((r) => rowToProduct(db, r))
+  }
+
+  const matchUnits = s.length >= 3
+  const matchUnitsSql = matchUnits
+    ? "OR pu.name LIKE ? OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?"
+    : ""
   const rows = db
     .prepare(
       `${BASE_SELECT}
@@ -184,7 +251,7 @@ export function searchProductsSimple(db: Database.Database, q: string, limit = 1
          OR REPLACE(REPLACE(REPLACE(p.name, '-', ''), ' ', ''), '_', '') LIKE ?
          OR p.sku LIKE ? ${isBarcodeLike ? 'OR p.barcode = ?' : ''}
          OR EXISTS (SELECT 1 FROM product_units pu WHERE pu.product_id = p.id AND (
-           pu.barcode = ? OR pu.name LIKE ? OR REPLACE(REPLACE(REPLACE(pu.name, '-', ''), ' ', ''), '_', '') LIKE ?
+           pu.barcode = ? ${matchUnitsSql}
          ))
        )
        ORDER BY p.name COLLATE NOCASE LIMIT ?`
@@ -194,8 +261,7 @@ export function searchProductsSimple(db: Database.Database, q: string, limit = 1
       `%${cleanAlpha || s}%`,
       `%${s}%`,
       ...(isBarcodeLike ? [s, s] : [s]),
-      `%${s}%`,
-      `%${cleanAlpha || s}%`,
+      ...(matchUnits ? [`%${s}%`, `%${cleanAlpha || s}%`] : []),
       limit
     ) as Record<string, unknown>[]
   return rows.map((r) => rowToProduct(db, r))

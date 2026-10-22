@@ -728,9 +728,16 @@ export function POS(): React.JSX.Element {
       if (!found) {
         found = res.rows.find((p) => p.name.toLowerCase() === target)
       }
-      if (!found && res.rows.length === 1) {
-        // If there's only exactly 1 search result and it matches the name/sku/barcode
-        found = res.rows[0]
+      if (!found && res.rows.length === 1 && res.rows[0]) {
+        // Only pick single result if query actually matches product name, sku, or unit barcode
+        const single = res.rows[0]
+        const cleanT = target.replace(/[^a-zA-Z0-9]/g, '')
+        const matchesName = single.name.toLowerCase().includes(target) || (cleanT.length > 0 && single.name.toLowerCase().replace(/[^a-zA-Z0-9]/g, '').includes(cleanT))
+        const matchesSku = single.sku?.toLowerCase().includes(target)
+        const matchesUnit = single.units?.some((u) => u.name.toLowerCase() === target || u.barcode?.toLowerCase() === target)
+        if (matchesName || matchesSku || matchesUnit) {
+          found = single
+        }
       }
       if (!found && res.rows.length > 1) {
         // Only pick if product name starts exactly with query, NEVER fall back to rows[0] blindly!
@@ -962,6 +969,19 @@ export function POS(): React.JSX.Element {
                     if (multiMatch && multiMatch[1] && multiMatch[2]) {
                       e.preventDefault()
                       void handleScan(trimmed)
+                    } else if (userNavigatedWithArrows.current && selectedRowIndex >= 0 && selectedRowIndex < displayedProducts.length) {
+                      // Prioritize keyboard-selected product from the search results
+                      e.preventDefault()
+                      const p = displayedProducts[selectedRowIndex]
+                      if (p) {
+                        if (saleStock(p) > 0) {
+                          usePosCart.getState().add(p)
+                          warnIfNearExpiry(p)
+                          setQ('')
+                        } else {
+                          toastError('Out of stock', `Available for sale: 0 ${p.base_unit}`)
+                        }
+                      }
                     } else if (trimmed) {
                       e.preventDefault()
                       void handleScan(trimmed)
@@ -1191,7 +1211,7 @@ export function POS(): React.JSX.Element {
               className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all shrink-0 cursor-default ${
                 hardwareScannerDetected
                   ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
-                  : 'border-brand-500/40 bg-brand-500/10 text-brand-300'
+                  : 'border-ink-line/80 bg-ink-850 text-slate-400 hover:text-slate-300'
               }`}
               title={
                 hardwareScannerDetected
@@ -1199,7 +1219,7 @@ export function POS(): React.JSX.Element {
                   : 'Barcode Scanner Ready (Wedge Auto-Detect Active - Scan any barcode)'
               }
             >
-              <span className={`h-2 w-2 rounded-full ${hardwareScannerDetected ? 'bg-emerald-400 animate-pulse' : 'bg-brand-400'}`} />
+              <span className={`h-2 w-2 rounded-full ${hardwareScannerDetected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
               <Barcode className="h-3.5 w-3.5" />
               <span className="hidden sm:inline font-mono text-[11px]">
                 {hardwareScannerDetected ? 'Scanner Active' : 'Scanner Ready'}
