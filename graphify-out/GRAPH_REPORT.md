@@ -1,9 +1,9 @@
 # Graph Report - TINDA-POS-v1.0.37  (2026-10-22)
 
 ## Corpus Check
-- 788 files · ~909,666 words
+- 788 files · ~909,835 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 43 file(s) not represented in the graph (top: .blockmap 29, (none) 5, .bat 2)
+- Unclassified: 44 file(s) not represented in the graph (top: .blockmap 30, (none) 5, .bat 2)
 
 ## Summary
 - 6088 nodes · 10788 edges · 595 communities (384 shown, 211 thin omitted)
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e1b77a8a`
+- Built from commit: `52cbf7c6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -583,7 +583,7 @@
 - publish_v1051.mjs
 - brigade_mcp_server.ts
 - holdSubmission.test.ts
-- 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)
+- 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)
 - ☁️ Dual-Cloud High Availability & Supabase Failover Setup
 - adv-devtools-performance.md
 - formcfg-default-values.md
@@ -1375,7 +1375,7 @@ Nodes (6): BUILDS_DIR, ghRequest(), GITHUB_TOKEN, main(), sha256File(), uploadAs
 
 ### Community 190 - "🏪 TINDA POS (Desktop Master Edition)"
 Cohesion: 0.12
-Nodes (16): ⌨️ Cashier High-Speed Keyboard Shortcuts, 🏛️ Development Team & The 9 Elite Specialists, 📄 License, ⚡ Quick Download & Release Assets (v4.1.2 Full Release), 🗂️ Repository Directory Structure, The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers, 🏪 TINDA POS (Desktop Master Edition), ✨ What's New in v3.0.4: Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition (+8 more)
+Nodes (16): ⌨️ Cashier High-Speed Keyboard Shortcuts, 🏛️ Development Team & The 9 Elite Specialists, 📄 License, ⚡ Quick Download & Release Assets (v4.1.3 Full Release), 🗂️ Repository Directory Structure, The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers, 🏪 TINDA POS (Desktop Master Edition), ✨ What's New in v3.0.4: Fast Buttons Universal Inventory Search & In-Place Linker Studio Edition (+8 more)
 
 ### Community 191 - "publish_v1071.mjs"
 Cohesion: 0.36
@@ -2149,9 +2149,9 @@ Nodes (5): BUILDS_DIR, ghRequest(), run(), sha256File(), uploadAsset()
 Cohesion: 0.50
 Nodes (3): createHoldSubmission(), held, payload
 
-### Community 590 - "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)"
+### Community 590 - "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)"
 Cohesion: 0.50
-Nodes (4): 94.2 Short-Prefix Protection Against Greedy Packaging Unit Collisions, 94.3 Hierarchical Relevance Ranking, 94.4 POS Cashier Cart Hardening & Arrow-Key Selection Priority, 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)
+Nodes (4): 94.2 Short-Prefix Protection Against Greedy Packaging Unit Collisions, 94.3 Hierarchical Relevance Ranking, 94.4 POS Cashier Cart Hardening & Arrow-Key Selection Priority, 94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)
 
 ### Community 591 - "☁️ Dual-Cloud High Availability & Supabase Failover Setup"
 Cohesion: 0.67
@@ -2165,17 +2165,17 @@ Nodes (3): ☁️ Dual-Cloud High Availability & Supabase Failover Setup, 📋 H
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `p()` connect `createNotImplementedError` to `index.js`, `Test Filtering`, `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)`, `i`?**
-  _High betweenness centrality (0.123) - this node is a cross-community bridge._
+- **Why does `p()` connect `createNotImplementedError` to `index.js`, `Test Filtering`, `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)`, `i`?**
+  _High betweenness centrality (0.119) - this node is a cross-community bridge._
 - **What connects `RFC-6455`, `@hookform/resolvers`, `react-hook-form` to the rest of the system?**
   _23 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `backup.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.08653061224489796 - nodes in this community are weakly interconnected._
-- **Why does `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)` connect `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)` to `products.ts`, `SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
+- **Why does `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)` connect `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)` to `products.ts`, `SYSTEM_MASTER.md — TINDA POS Desktop Suite Architecture`?**
+  _High betweenness centrality (0.116) - this node is a cross-community bridge._
 - **Should `brigade_mcp_server.mjs` be split into smaller, more focused modules?**
   _Cohesion score 0.05929989550679206 - nodes in this community are weakly interconnected._
-- **Why does `94.2 Short-Prefix Protection Against Greedy Packaging Unit Collisions` connect `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)` to `createNotImplementedError`?**
-  _High betweenness centrality (0.120) - this node is a cross-community bridge._
+- **Why does `94.2 Short-Prefix Protection Against Greedy Packaging Unit Collisions` connect `94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)` to `createNotImplementedError`?**
+  _High betweenness centrality (0.116) - this node is a cross-community bridge._
 - **Should `Shell.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._

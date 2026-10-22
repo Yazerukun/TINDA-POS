@@ -27167,7 +27167,7 @@
       "node_kind": "heading",
       "norm_label": "82.3 dual-store hardware alignment & settings parity",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1821"
+      "source_location": "L1823"
     },
     {
       "id": "agents_skills_react_best_practices_agents_6_10_use_react_dom_resource_hints",
@@ -33614,7 +33614,7 @@
       "node_kind": "heading",
       "norm_label": "81.1 fast buttons (speed keys) & cashier calculator (`f3`)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1774"
+      "source_location": "L1776"
     },
     {
       "id": "system_master_81_3_printing_business_document_services_hub",
@@ -33626,7 +33626,7 @@
       "node_kind": "heading",
       "norm_label": "81.3 printing business & document services hub",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1790"
+      "source_location": "L1792"
     },
     {
       "id": "system_master_81_4_promo_bundles_dynamic_cart_combo_engine",
@@ -33638,7 +33638,7 @@
       "node_kind": "heading",
       "norm_label": "81.4 promo bundles & dynamic cart combo engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1796"
+      "source_location": "L1798"
     },
     {
       "id": "system_master_81_5_category_based_physical_inventory_stock_valuation",
@@ -33650,7 +33650,7 @@
       "node_kind": "heading",
       "norm_label": "81.5 category-based physical inventory & stock valuation",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1801"
+      "source_location": "L1803"
     },
     {
       "id": "system_master_81_speed_keys_composite_bom_engine_printing_services_hub_promo_bundles_architecture_v1_0_98_spec",
@@ -33662,7 +33662,7 @@
       "node_kind": "heading",
       "norm_label": "81. speed keys, composite bom engine, printing services hub & promo bundles architecture (v1.0.98 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1772"
+      "source_location": "L1774"
     },
     {
       "id": "source_src_renderer_src_components_ewallet_managebillersmodal",
@@ -35018,7 +35018,7 @@
       "node_kind": "heading",
       "norm_label": "25. wholesale tiering & automated volume discount engine (v1.0.43)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L503"
+      "source_location": "L505"
     },
     {
       "id": "system_master_30_flexible_line_item_price_override_manager_bargain_authorization_v1_0_49",
@@ -35030,7 +35030,7 @@
       "node_kind": "heading",
       "norm_label": "30. flexible line-item price override & manager bargain authorization (v1.0.49)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L596"
+      "source_location": "L598"
     },
     {
       "id": "source_src_renderer_src_components_theme_themeselector",
@@ -36256,14 +36256,14 @@
       "source_location": "L593"
     },
     {
-      "id": "readme_quick_download_release_assets_v4_1_2_full_release",
-      "label": "\u26a1 Quick Download & Release Assets (v4.1.2 Full Release)",
+      "id": "readme_quick_download_release_assets_v4_1_3_full_release",
+      "label": "\u26a1 Quick Download & Release Assets (v4.1.3 Full Release)",
       "_origin": "ast",
       "community": 190,
       "community_name": "\ud83c\udfea TINDA POS (Desktop Master Edition)",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "\u26a1 quick download & release assets (v4.1.2 full release)",
+      "norm_label": "\u26a1 quick download & release assets (v4.1.3 full release)",
       "source_file": "README.md",
       "source_location": "L33"
     },
@@ -36400,14 +36400,14 @@
       "source_location": "L82"
     },
     {
-      "id": "readme_what_s_new_in_v4_1_2_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
-      "label": "\ud83c\udf1f What's New in v4.1.2: Multi-Token Search Disambiguation, Hardware Scanner Standby & Linux AppImage",
+      "id": "readme_what_s_new_in_v4_1_3_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
+      "label": "\ud83c\udf1f What's New in v4.1.3: Multi-Token Search Disambiguation, Hardware Scanner Standby & Linux AppImage",
       "_origin": "ast",
       "community": 190,
       "community_name": "\ud83c\udfea TINDA POS (Desktop Master Edition)",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "\ud83c\udf1f what's new in v4.1.2: multi-token search disambiguation, hardware scanner standby & linux appimage",
+      "norm_label": "\ud83c\udf1f what's new in v4.1.3: multi-token search disambiguation, hardware scanner standby & linux appimage",
       "source_file": "README.md",
       "source_location": "L46"
     },
@@ -36454,7 +36454,7 @@
       "node_kind": "heading",
       "norm_label": "74. real-time dynamic in-memory version sync on live hot-patching",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1590"
+      "source_location": "L1592"
     },
     {
       "id": "tools_publish_v1066",
@@ -37561,7 +37561,7 @@
       "node_kind": "heading",
       "norm_label": "78. architectural blueprint: unified cupertino minimize-to-dock architecture for tinda community chat & floatingwidgetsdock (v1.0.85 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1696"
+      "source_location": "L1698"
     },
     {
       "id": "source_src_main_repositories_ewallet",
@@ -38442,7 +38442,7 @@
       "node_kind": "heading",
       "norm_label": "66. native document printing, audit dual print engine & maribank ecosystem integration (v1.0.72)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1455"
+      "source_location": "L1457"
     },
     {
       "id": "docs_archive_release_notes_v1_0_24",
@@ -41790,7 +41790,7 @@
       "node_kind": "heading",
       "norm_label": "27. weighable & fractional decimal quantity architecture (v1.0.44)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L534"
+      "source_location": "L536"
     },
     {
       "id": "system_master_62_release_v1_0_69_laptop_responsive_layout_auth_setup_resilience_edition",
@@ -41802,7 +41802,7 @@
       "node_kind": "heading",
       "norm_label": "62. release v1.0.69 \u2014 laptop responsive layout & auth setup resilience edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1293"
+      "source_location": "L1295"
     },
     {
       "id": "docs_tagalog_02_kodigo_ng_cashier_at_shortcuts",
@@ -45748,7 +45748,7 @@
       "node_kind": "heading",
       "norm_label": "10. multi-terminal lan architecture & vps remote database blueprint",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L112"
+      "source_location": "L114"
     },
     {
       "id": "system_master_a_feature_1_secure_multi_terminal_local_lan_architecture_master_satellite_hub",
@@ -45760,7 +45760,7 @@
       "node_kind": "heading",
       "norm_label": "a. feature 1: secure multi-terminal local lan architecture (master-satellite hub)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L113"
+      "source_location": "L115"
     },
     {
       "id": "system_master_b_feature_2_vps_remote_hosting_cloud_mirroring_architecture",
@@ -45772,7 +45772,7 @@
       "node_kind": "heading",
       "norm_label": "b. feature 2: vps remote hosting & cloud mirroring architecture",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L133"
+      "source_location": "L135"
     },
     {
       "id": "system_master_79_1_single_surface_invariant_isa_nalang_sya_kabuok",
@@ -45784,7 +45784,7 @@
       "node_kind": "heading",
       "norm_label": "79.1 single surface invariant (\"isa nalang sya kabuok\")",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1721"
+      "source_location": "L1723"
     },
     {
       "id": "system_master_79_2_vip_non_disruption_guardrails_dili_sagabal_sa_vip",
@@ -45796,7 +45796,7 @@
       "node_kind": "heading",
       "norm_label": "79.2 vip non-disruption guardrails (\"dili sagabal sa vip\")",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1726"
+      "source_location": "L1728"
     },
     {
       "id": "system_master_79_unified_vip_first_auto_updater_architecture_standard_v1_0_95",
@@ -45808,7 +45808,7 @@
       "node_kind": "heading",
       "norm_label": "79. unified vip-first auto-updater architecture standard (v1.0.95)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1719"
+      "source_location": "L1721"
     },
     {
       "id": "agents_skills_seo_skill",
@@ -48066,7 +48066,7 @@
       "node_kind": "heading",
       "norm_label": "47. permanent hardware-anchored vip licensing & multi-vault self-healing architecture (v1.0.56)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L927"
+      "source_location": "L929"
     },
     {
       "id": "system_master_85_1_zero_config_udp_auto_discovery_node_dgram_port_3112",
@@ -48078,7 +48078,7 @@
       "node_kind": "heading",
       "norm_label": "85.1 zero-config udp auto-discovery (`node:dgram`, port 3112)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1887"
+      "source_location": "L1889"
     },
     {
       "id": "system_master_85_2_floating_vip_pass_centralized_roaming_authentication",
@@ -48090,7 +48090,7 @@
       "node_kind": "heading",
       "norm_label": "85.2 floating vip pass & centralized roaming authentication",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1892"
+      "source_location": "L1894"
     },
     {
       "id": "system_master_85_3_decoupled_thermal_print_routing_sqlite_concurrency_armor",
@@ -48102,7 +48102,7 @@
       "node_kind": "heading",
       "norm_label": "85.3 decoupled thermal print routing & sqlite concurrency armor",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1896"
+      "source_location": "L1898"
     },
     {
       "id": "system_master_85_doctoral_multi_pc_edge_fabric_floating_vip_lease_architecture_v2_2_0_spec",
@@ -48114,7 +48114,7 @@
       "node_kind": "heading",
       "norm_label": "85. doctoral multi-pc edge fabric & floating vip lease architecture (v2.2.0 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1885"
+      "source_location": "L1887"
     },
     {
       "id": "agents_skills_react_best_practices_rules_js_set_map_lookups",
@@ -49554,7 +49554,7 @@
       "node_kind": "heading",
       "norm_label": "71. linux real-time in-app update engine & native linux appimage build (v1.0.80-l / v1.0.81)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1533"
+      "source_location": "L1535"
     },
     {
       "id": "agents_skills_react_best_practices_rules_server_cache_lru",
@@ -51298,7 +51298,7 @@
       "node_kind": "heading",
       "norm_label": "84.1 timezone invariant & zero-ghosting datetime parsing",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1861"
+      "source_location": "L1863"
     },
     {
       "id": "system_master_84_2_dual_mode_e_wallet_bills_architecture",
@@ -51310,7 +51310,7 @@
       "node_kind": "heading",
       "norm_label": "84.2 dual-mode e-wallet & bills architecture",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1866"
+      "source_location": "L1868"
     },
     {
       "id": "system_master_84_3_unified_transactions_multi_ledger_viewer",
@@ -51322,7 +51322,7 @@
       "node_kind": "heading",
       "norm_label": "84.3 unified transactions & multi-ledger viewer",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1876"
+      "source_location": "L1878"
     },
     {
       "id": "system_master_84_unified_e_wallet_bills_center_single_receipt_pos_cart_integration_cross_ledger_sync_v2_1_6_spec",
@@ -51334,7 +51334,7 @@
       "node_kind": "heading",
       "norm_label": "84. unified e-wallet & bills center, single-receipt pos cart integration & cross-ledger sync (v2.1.6 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1859"
+      "source_location": "L1861"
     },
     {
       "id": "tools_publish_v1060",
@@ -57418,7 +57418,7 @@
       "node_kind": "heading",
       "norm_label": "91.1 zero-escape universal ipc interceptor",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1975"
+      "source_location": "L1977"
     },
     {
       "id": "system_master_91_2_global_react_error_boundaries_graceful_recovery_studio",
@@ -57430,7 +57430,7 @@
       "node_kind": "heading",
       "norm_label": "91.2 global react error boundaries & graceful recovery studio",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1979"
+      "source_location": "L1981"
     },
     {
       "id": "system_master_91_3_ambient_cashier_fault_pill_ambientfaultpill_tsx",
@@ -57442,7 +57442,7 @@
       "node_kind": "heading",
       "norm_label": "91.3 ambient cashier fault pill (`ambientfaultpill.tsx`)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1986"
+      "source_location": "L1988"
     },
     {
       "id": "system_master_91_4_deep_context_black_box_snapshotting_autonomous_cloud_bug_radar",
@@ -57454,7 +57454,7 @@
       "node_kind": "heading",
       "norm_label": "91.4 deep context black-box snapshotting & autonomous cloud bug radar",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1990"
+      "source_location": "L1992"
     },
     {
       "id": "system_master_91_omnipresent_real_time_error_tracing_react_error_boundaries_ambient_fault_pill_cloud_bug_radar_v3_2_9_spec",
@@ -57466,7 +57466,7 @@
       "node_kind": "heading",
       "norm_label": "91. omnipresent real-time error tracing, react error boundaries, ambient fault pill & cloud bug radar (v3.2.9 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1973"
+      "source_location": "L1975"
     },
     {
       "id": "agents_skills_writing_skills_testing_skills_with_subagents_common_mistakes_same_as_tdd",
@@ -59095,7 +59095,7 @@
       "node_kind": "heading",
       "norm_label": "86.1 self-sharing barcode integrity & multi-unit coexistence",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1904"
+      "source_location": "L1906"
     },
     {
       "id": "system_master_86_2_instant_item_exchange_studio_mathematical_matrix",
@@ -59107,7 +59107,7 @@
       "node_kind": "heading",
       "norm_label": "86.2 instant item exchange studio & mathematical matrix",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1908"
+      "source_location": "L1910"
     },
     {
       "id": "system_master_86_3_fast_buttons_universal_inventory_search_in_place_linker",
@@ -59119,7 +59119,7 @@
       "node_kind": "heading",
       "norm_label": "86.3 fast buttons universal inventory search & in-place linker",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1916"
+      "source_location": "L1918"
     },
     {
       "id": "system_master_86_high_velocity_barcode_integrity_instant_item_exchange_fast_buttons_studio_v2_2_18_v3_0_4_spec",
@@ -59131,7 +59131,7 @@
       "node_kind": "heading",
       "norm_label": "86. high-velocity barcode integrity, instant item exchange & fast buttons studio (v2.2.18\u2013v3.0.4 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1902"
+      "source_location": "L1904"
     },
     {
       "id": "agents_skills_brainstorming_scripts_stop_server",
@@ -59697,7 +59697,7 @@
       "node_kind": "heading",
       "norm_label": "21. instant hardware barcode auto-capture & inventory cataloging engine (v1.0.42)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L404"
+      "source_location": "L406"
     },
     {
       "id": "system_master_75_store_handbook_comprehensive_modernization_chapter_11_software_updates_zero_restart_live_patches_v1_0_82",
@@ -59709,7 +59709,7 @@
       "node_kind": "heading",
       "norm_label": "75. store handbook comprehensive modernization & chapter 11 (software updates & zero-restart live patches) (v1.0.82)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1606"
+      "source_location": "L1608"
     },
     {
       "id": "agents_skills_diagnosing_superpowers_templates_case",
@@ -60606,7 +60606,7 @@
       "node_kind": "heading",
       "norm_label": "83.1 streamlined zero-clutter pos architecture",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1829"
+      "source_location": "L1831"
     },
     {
       "id": "system_master_83_2_unified_store_academy_interactive_cashier_tour",
@@ -60618,7 +60618,7 @@
       "node_kind": "heading",
       "norm_label": "83.2 unified store academy & interactive cashier tour",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1844"
+      "source_location": "L1846"
     },
     {
       "id": "system_master_83_3_system_invariants_safety_guarantees",
@@ -60630,7 +60630,7 @@
       "node_kind": "heading",
       "norm_label": "83.3 system invariants & safety guarantees",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1853"
+      "source_location": "L1855"
     },
     {
       "id": "system_master_83_streamlined_cashier_workflow_zero_clutter_pos_architecture_interactive_store_academy_v2_0_2_spec",
@@ -60642,7 +60642,7 @@
       "node_kind": "heading",
       "norm_label": "83. streamlined cashier workflow, zero-clutter pos architecture & interactive store academy (v2.0.2 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1827"
+      "source_location": "L1829"
     },
     {
       "id": "tools_publish_v1074",
@@ -62081,7 +62081,7 @@
       "node_kind": "heading",
       "norm_label": "82.1 zero-crash checkout immunity contract",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1809"
+      "source_location": "L1811"
     },
     {
       "id": "system_master_82_2_rush_id_studio_packages_fast_pos_speed_key",
@@ -62093,7 +62093,7 @@
       "node_kind": "heading",
       "norm_label": "82.2 rush id studio packages & fast pos speed key",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1815"
+      "source_location": "L1817"
     },
     {
       "id": "system_master_82_zero_crash_checkout_immunity_cupertino_feature_carousel_dual_store_hardware_alignment_v2_0_1_spec",
@@ -62105,7 +62105,7 @@
       "node_kind": "heading",
       "norm_label": "82. zero-crash checkout immunity, cupertino feature carousel & dual-store hardware alignment (v2.0.1 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1807"
+      "source_location": "L1809"
     },
     {
       "id": "agents_skills_brainstorming_builder_check_prompt",
@@ -62979,7 +62979,7 @@
       "node_kind": "heading",
       "norm_label": "87.1 floating receiving dock (`purchaseinvoicemodal.tsx`)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1925"
+      "source_location": "L1927"
     },
     {
       "id": "system_master_87_2_collapsible_header_dynamic_table_expansion",
@@ -62991,7 +62991,7 @@
       "node_kind": "heading",
       "norm_label": "87.2 collapsible header & dynamic table expansion",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1929"
+      "source_location": "L1931"
     },
     {
       "id": "system_master_87_purchase_invoice_minimizable_dock_collapsible_header_studio_v3_0_5_spec",
@@ -63003,7 +63003,7 @@
       "node_kind": "heading",
       "norm_label": "87. purchase invoice minimizable dock & collapsible header studio (v3.0.5 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1923"
+      "source_location": "L1925"
     },
     {
       "id": "agents_knowledge_base",
@@ -63075,7 +63075,7 @@
       "node_kind": "heading",
       "norm_label": "88.1 vip barcode conflict shield",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1937"
+      "source_location": "L1939"
     },
     {
       "id": "system_master_88_2_archived_items_restore_center",
@@ -63087,7 +63087,7 @@
       "node_kind": "heading",
       "norm_label": "88.2 archived items restore center",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1941"
+      "source_location": "L1943"
     },
     {
       "id": "system_master_88_barcode_conflict_resolution_archived_restore_architecture_v3_0_6_spec",
@@ -63099,7 +63099,7 @@
       "node_kind": "heading",
       "norm_label": "88. barcode conflict resolution & archived restore architecture (v3.0.6 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1935"
+      "source_location": "L1937"
     },
     {
       "id": "source_src_shared_receipthtml",
@@ -63144,7 +63144,7 @@
       "node_kind": "heading",
       "norm_label": "63. release v1.0.70 \u2014 7-eleven micro thermal spacing & express manual print edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1324"
+      "source_location": "L1326"
     },
     {
       "id": "scripts_jin_lock_template",
@@ -63204,7 +63204,7 @@
       "node_kind": "heading",
       "norm_label": "89.1 0ms real-time event-driven ipc broadcast",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1949"
+      "source_location": "L1951"
     },
     {
       "id": "system_master_89_2_self_healing_database_diagnostic_engine",
@@ -63216,7 +63216,7 @@
       "node_kind": "heading",
       "norm_label": "89.2 self-healing database diagnostic engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1953"
+      "source_location": "L1955"
     },
     {
       "id": "system_master_89_tinda_sentinel_24_7_offline_flight_recorder_diagnostic_studio_v3_0_7_spec",
@@ -63228,7 +63228,7 @@
       "node_kind": "heading",
       "norm_label": "89. tinda sentinel 24/7 offline flight recorder & diagnostic studio (v3.0.7 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1947"
+      "source_location": "L1949"
     },
     {
       "id": "opencode",
@@ -63264,7 +63264,7 @@
       "node_kind": "heading",
       "norm_label": "90.1 dual-layer diagnostic architecture",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1962"
+      "source_location": "L1964"
     },
     {
       "id": "system_master_90_chrome_devtools_right_click_inspect_element_cupertino_live_console_v3_2_8_spec",
@@ -63276,7 +63276,7 @@
       "node_kind": "heading",
       "norm_label": "90. chrome devtools, right-click inspect element & cupertino live console (v3.2.8 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1960"
+      "source_location": "L1962"
     },
     {
       "id": "source_src_shared_searchutils",
@@ -63370,7 +63370,7 @@
       "node_kind": "heading",
       "norm_label": "92.1 multi-unit barcode parity across inventory & cashier",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2004"
+      "source_location": "L2006"
     },
     {
       "id": "system_master_92_2_asynchronous_live_sqlite_search_zero_cap_guarantee",
@@ -63382,7 +63382,7 @@
       "node_kind": "heading",
       "norm_label": "92.2 asynchronous live sqlite search (zero-cap guarantee)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2008"
+      "source_location": "L2010"
     },
     {
       "id": "system_master_92_3_intelligent_category_fallback_engine",
@@ -63394,7 +63394,7 @@
       "node_kind": "heading",
       "norm_label": "92.3 intelligent category fallback engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2012"
+      "source_location": "L2014"
     },
     {
       "id": "system_master_92_4_searchable_restock_stock_withdrawal_studios",
@@ -63406,7 +63406,7 @@
       "node_kind": "heading",
       "norm_label": "92.4 searchable restock & stock withdrawal studios",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2015"
+      "source_location": "L2017"
     },
     {
       "id": "system_master_92_universal_multi_unit_barcode_search_0ms_live_sqlite_inventory_ingest_restock_studio_v4_1_0_spec",
@@ -63418,7 +63418,7 @@
       "node_kind": "heading",
       "norm_label": "92. universal multi-unit barcode search, 0ms live sqlite inventory ingest & restock studio (v4.1.0 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2002"
+      "source_location": "L2004"
     },
     {
       "id": "agents_skills_react_hook_form_skill",
@@ -63869,7 +63869,7 @@
       "node_kind": "heading",
       "norm_label": "64. architecture plan & specification: clean fee notation, no-seconds receipt timestamps & next-gen community chat (v1.0.71)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1354"
+      "source_location": "L1356"
     },
     {
       "id": "system_master_67_ultra_compact_zero_wrap_thermal_receipts_universal_receipt_standard_edition_v1_0_73",
@@ -63881,7 +63881,7 @@
       "node_kind": "heading",
       "norm_label": "67. ultra-compact zero-wrap thermal receipts & universal receipt standard edition (v1.0.73)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1477"
+      "source_location": "L1479"
     },
     {
       "id": "tools_sync_agency_agents",
@@ -64330,48 +64330,48 @@
       "label": "94.2 Short-Prefix Protection Against Greedy Packaging Unit Collisions",
       "_origin": "ast",
       "community": 590,
-      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)",
+      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "94.2 short-prefix protection against greedy packaging unit collisions",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2038"
+      "source_location": "L2040"
     },
     {
       "id": "system_master_94_3_hierarchical_relevance_ranking",
       "label": "94.3 Hierarchical Relevance Ranking",
       "_origin": "ast",
       "community": 590,
-      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)",
+      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "94.3 hierarchical relevance ranking",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2042"
+      "source_location": "L2044"
     },
     {
       "id": "system_master_94_4_pos_cashier_cart_hardening_arrow_key_selection_priority",
       "label": "94.4 POS Cashier Cart Hardening & Arrow-Key Selection Priority",
       "_origin": "ast",
       "community": 590,
-      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)",
+      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "94.4 pos cashier cart hardening & arrow-key selection priority",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2054"
+      "source_location": "L2056"
     },
     {
-      "id": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
-      "label": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)",
+      "id": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
+      "label": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)",
       "_origin": "ast",
       "community": 590,
-      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.2 Spec)",
+      "community_name": "94. Multi-Token Packaging Unit Disambiguation, Short-Prefix Guardrails & POS Hardware Scanner Standby Studio (v4.1.3 Spec)",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "94. multi-token packaging unit disambiguation, short-prefix guardrails & pos hardware scanner standby studio (v4.1.2 spec)",
+      "norm_label": "94. multi-token packaging unit disambiguation, short-prefix guardrails & pos hardware scanner standby studio (v4.1.3 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2032"
+      "source_location": "L2034"
     },
     {
       "id": "readme_dual_cloud_high_availability_supabase_failover_setup",
@@ -65733,7 +65733,7 @@
       "node_kind": "heading",
       "norm_label": "80.1 zero first-letter clipping contract (\"walay putol sa sinugdanan\")",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1736"
+      "source_location": "L1738"
     },
     {
       "id": "system_master_80_2_high_density_solid_black_print_standard_dili_blury_klaro_ug_itom",
@@ -65745,7 +65745,7 @@
       "node_kind": "heading",
       "norm_label": "80.2 high-density solid black print standard (\"dili blury, klaro ug itom\")",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1745"
+      "source_location": "L1747"
     },
     {
       "id": "system_master_80_3_100_manual_vs_automatic_print_parity_contract",
@@ -65757,7 +65757,7 @@
       "node_kind": "heading",
       "norm_label": "80.3 100% manual vs automatic print parity contract",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1761"
+      "source_location": "L1763"
     },
     {
       "id": "system_master_80_universal_thermal_receipt_alignment_high_density_solid_black_standard_v1_0_97_spec",
@@ -65769,7 +65769,7 @@
       "node_kind": "heading",
       "norm_label": "80. universal thermal receipt alignment & high-density solid black standard (v1.0.97 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1734"
+      "source_location": "L1736"
     },
     {
       "id": "agents_skills_agency_desktop_app_engineer_skill",
@@ -66837,7 +66837,7 @@
       "node_kind": "heading",
       "norm_label": "11. dual-repository security & intellectual property protection architecture",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L154"
+      "source_location": "L156"
     },
     {
       "id": "system_master_12_in_system_knowledge_architecture_digital_book_system_handbook_tsx_v1_0_31",
@@ -66849,7 +66849,7 @@
       "node_kind": "heading",
       "norm_label": "12. in-system knowledge architecture & digital book system (`handbook.tsx`, v1.0.31+)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L170"
+      "source_location": "L172"
     },
     {
       "id": "system_master_14_hands_free_counter_camera_zero_click_background_scanning_architecture_v1_0_35",
@@ -66861,7 +66861,7 @@
       "node_kind": "heading",
       "norm_label": "14. hands-free counter camera & zero-click background scanning architecture (v1.0.35)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L217"
+      "source_location": "L219"
     },
     {
       "id": "system_master_15_cryptographic_machine_locked_licensing_anti_theft_architecture_v1_0_37",
@@ -66873,7 +66873,7 @@
       "node_kind": "heading",
       "norm_label": "15. cryptographic machine-locked licensing & anti-theft architecture (v1.0.37)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L230"
+      "source_location": "L232"
     },
     {
       "id": "system_master_16_interactive_legal_privacy_architecture_privacy_policy_terms_of_service",
@@ -66885,7 +66885,7 @@
       "node_kind": "heading",
       "norm_label": "16. interactive legal & privacy architecture (privacy policy & terms of service)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L275"
+      "source_location": "L277"
     },
     {
       "id": "system_master_17_ui_scaling_modal_accessibility_architecture_v1_0_38",
@@ -66897,7 +66897,7 @@
       "node_kind": "heading",
       "norm_label": "17. ui scaling & modal accessibility architecture (v1.0.38)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L292"
+      "source_location": "L294"
     },
     {
       "id": "system_master_18_multi_terminal_lan_synchronization_inventory_search_audit_deletion_pos_hotkeys_engine_v1_0_39",
@@ -66909,7 +66909,7 @@
       "node_kind": "heading",
       "norm_label": "18. multi-terminal lan synchronization, inventory search, audit deletion & pos hotkeys engine (v1.0.39)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L306"
+      "source_location": "L308"
     },
     {
       "id": "system_master_19_startup_single_instance_concurrency_port_hardening_crash_dialog_elimination_architecture_v1_0_40",
@@ -66921,7 +66921,7 @@
       "node_kind": "heading",
       "norm_label": "19. startup single-instance concurrency, port hardening & crash dialog elimination architecture (v1.0.40)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L346"
+      "source_location": "L348"
     },
     {
       "id": "system_master_1_system_identity_north_star",
@@ -66945,7 +66945,7 @@
       "node_kind": "heading",
       "norm_label": "20. cryptographic anti-downgrade lock (epoch 41) & 5 strategic value gating pillars (v1.0.41)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L378"
+      "source_location": "L380"
     },
     {
       "id": "system_master_22_permanent_non_destructive_update_vip_preservation_store_expense_architecture_v1_0_43",
@@ -66957,7 +66957,7 @@
       "node_kind": "heading",
       "norm_label": "22. permanent non-destructive update, vip preservation & store expense architecture (v1.0.43+)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L436"
+      "source_location": "L438"
     },
     {
       "id": "system_master_23_expiration_date_management_spoilage_prevention_engine_v1_0_43",
@@ -66969,7 +66969,7 @@
       "node_kind": "heading",
       "norm_label": "23. expiration date management & spoilage prevention engine (v1.0.43)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L459"
+      "source_location": "L461"
     },
     {
       "id": "system_master_24_wireless_customer_facing_display_cfd_with_dynamic_offline_qr_payments_v1_0_43",
@@ -66981,7 +66981,7 @@
       "node_kind": "heading",
       "norm_label": "24. wireless customer facing display (cfd) with dynamic offline qr payments (v1.0.43)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L480"
+      "source_location": "L482"
     },
     {
       "id": "system_master_26_cross_platform_android_parity_unified_data_exchange_architecture_v1_0_43",
@@ -66993,7 +66993,7 @@
       "node_kind": "heading",
       "norm_label": "26. cross-platform android parity & unified data exchange architecture (v1.0.43)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L520"
+      "source_location": "L522"
     },
     {
       "id": "system_master_28_verification_gates_non_destructive_invariant_proofs_definition_of_done_v1_0_44",
@@ -67005,7 +67005,7 @@
       "node_kind": "heading",
       "norm_label": "28. verification gates, non-destructive invariant proofs & definition of done (v1.0.44)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L563"
+      "source_location": "L565"
     },
     {
       "id": "system_master_29_extended_specification_visibility_multiline_catalog_engine_v1_0_49",
@@ -67017,7 +67017,7 @@
       "node_kind": "heading",
       "norm_label": "29. extended specification visibility & multiline catalog engine (v1.0.49)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L575"
+      "source_location": "L577"
     },
     {
       "id": "system_master_2_tech_stack_environment_locks",
@@ -67041,7 +67041,7 @@
       "node_kind": "heading",
       "norm_label": "31. verification gates, non-destructive invariant proofs & definition of done (v1.0.49)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L623"
+      "source_location": "L625"
     },
     {
       "id": "system_master_32_tinda_global_community_lounge_live_developer_announcements_english_release_modal_v1_0_50",
@@ -67053,7 +67053,7 @@
       "node_kind": "heading",
       "norm_label": "32. tinda global community lounge, live developer announcements & english release modal (v1.0.50)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L635"
+      "source_location": "L637"
     },
     {
       "id": "system_master_33_verification_gates_non_destructive_invariant_proofs_definition_of_done_v1_0_50",
@@ -67065,7 +67065,7 @@
       "node_kind": "heading",
       "norm_label": "33. verification gates, non-destructive invariant proofs & definition of done (v1.0.50)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L662"
+      "source_location": "L664"
     },
     {
       "id": "system_master_34_multi_platform_linux_appimage_distribution_native_wayland_desktop_integration_v1_0_50",
@@ -67077,7 +67077,7 @@
       "node_kind": "heading",
       "norm_label": "34. multi-platform linux appimage distribution & native wayland desktop integration (v1.0.50)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L674"
+      "source_location": "L676"
     },
     {
       "id": "system_master_35_verification_gates_non_destructive_invariant_proofs_definition_of_done_v1_0_50_linux_target",
@@ -67089,7 +67089,7 @@
       "node_kind": "heading",
       "norm_label": "35. verification gates, non-destructive invariant proofs & definition of done (v1.0.50 linux target)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L700"
+      "source_location": "L702"
     },
     {
       "id": "system_master_37_verification_gates_non_destructive_invariant_proofs_definition_of_done_v1_0_51",
@@ -67101,7 +67101,7 @@
       "node_kind": "heading",
       "norm_label": "37. verification gates, non-destructive invariant proofs & definition of done (v1.0.51)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L732"
+      "source_location": "L734"
     },
     {
       "id": "system_master_38_cross_platform_linux_appimage_auto_update_architecture_v1_0_51_hotfix",
@@ -67113,7 +67113,7 @@
       "node_kind": "heading",
       "norm_label": "38. cross-platform linux appimage auto-update architecture (v1.0.51 hotfix)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L743"
+      "source_location": "L745"
     },
     {
       "id": "system_master_39_verification_gates_non_destructive_invariant_proofs_definition_of_done_linux_auto_update",
@@ -67125,7 +67125,7 @@
       "node_kind": "heading",
       "norm_label": "39. verification gates, non-destructive invariant proofs & definition of done (linux auto-update)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L764"
+      "source_location": "L766"
     },
     {
       "id": "system_master_3_core_operational_modules",
@@ -67149,7 +67149,7 @@
       "node_kind": "heading",
       "norm_label": "40. verified vip badges, animated shimmer & exclusive lounge styling (v1.0.52)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L774"
+      "source_location": "L776"
     },
     {
       "id": "system_master_41_verification_gates_non_destructive_invariant_proofs_definition_of_done_v1_0_52",
@@ -67161,7 +67161,7 @@
       "node_kind": "heading",
       "norm_label": "41. verification gates, non-destructive invariant proofs & definition of done (v1.0.52)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L796"
+      "source_location": "L798"
     },
     {
       "id": "system_master_42_vip_e_wallet_cash_audit_hub_gcash_maya_3_way_audit_v1_0_53",
@@ -67173,7 +67173,7 @@
       "node_kind": "heading",
       "norm_label": "42. vip e-wallet & cash audit hub (gcash, maya & 3-way audit) (v1.0.53)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L807"
+      "source_location": "L809"
     },
     {
       "id": "system_master_43_verification_gates_definition_of_done_v1_0_53",
@@ -67185,7 +67185,7 @@
       "node_kind": "heading",
       "norm_label": "43. verification gates & definition of done (v1.0.53)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L831"
+      "source_location": "L833"
     },
     {
       "id": "system_master_44_bulletproof_user_management_modern_categorized_sidebar_navigation_v1_0_54",
@@ -67197,7 +67197,7 @@
       "node_kind": "heading",
       "norm_label": "44. bulletproof user management & modern categorized sidebar navigation (v1.0.54)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L842"
+      "source_location": "L844"
     },
     {
       "id": "system_master_45_enhanced_global_community_lounge_100_free_nationwide_online_chat_non_blocking_draggable_window_minimizable_capsule_pill_audio_chime_message_moderation",
@@ -67209,7 +67209,7 @@
       "node_kind": "heading",
       "norm_label": "45. enhanced global community lounge: 100% free nationwide online chat, non-blocking draggable window, minimizable capsule pill, audio chime & message moderation",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L867"
+      "source_location": "L869"
     },
     {
       "id": "system_master_46_vip_e_wallet_reconciliation_hub_v1_0_55_physical_cash_drawer_zero_float_override_dedicated_transactions_ledger_and_1_tap_void_delete_management",
@@ -67221,7 +67221,7 @@
       "node_kind": "heading",
       "norm_label": "46. vip e-wallet reconciliation hub (v1.0.55): physical cash drawer zero float override, dedicated transactions ledger, and 1-tap void/delete management",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L899"
+      "source_location": "L901"
     },
     {
       "id": "system_master_49_multi_theme_high_clarity_eye_care_background_engine_v1_0_57",
@@ -67233,7 +67233,7 @@
       "node_kind": "heading",
       "norm_label": "49. multi-theme & high-clarity eye-care background engine (v1.0.57)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L989"
+      "source_location": "L991"
     },
     {
       "id": "system_master_4_forbidden_actions",
@@ -67257,7 +67257,7 @@
       "node_kind": "heading",
       "norm_label": "50. tinda pos v1.0.57 master release summary",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1015"
+      "source_location": "L1017"
     },
     {
       "id": "system_master_51_profit_margins_restoration_automated_vip_rollback_engine_v1_0_58",
@@ -67269,7 +67269,7 @@
       "node_kind": "heading",
       "norm_label": "51. profit margins restoration & automated vip rollback engine (v1.0.58)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1034"
+      "source_location": "L1036"
     },
     {
       "id": "system_master_52_release_v1_0_59_high_density_enterprise_pos_cashier_listing_engine",
@@ -67281,7 +67281,7 @@
       "node_kind": "heading",
       "norm_label": "52. release v1.0.59 \u2014 high-density enterprise pos cashier listing engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1070"
+      "source_location": "L1072"
     },
     {
       "id": "system_master_53_release_v1_0_60_vip_client_infinite_scroll_7_core_enhancements",
@@ -67293,7 +67293,7 @@
       "node_kind": "heading",
       "norm_label": "53. release v1.0.60 \u2014 vip client infinite scroll & 7 core enhancements",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1100"
+      "source_location": "L1102"
     },
     {
       "id": "system_master_54_release_v1_0_61_mathematical_mass_edition_goojprt_desktop_thermal_support",
@@ -67305,7 +67305,7 @@
       "node_kind": "heading",
       "norm_label": "54. release v1.0.61 \u2014 mathematical mass edition & goojprt desktop thermal support",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1127"
+      "source_location": "L1129"
     },
     {
       "id": "system_master_55_release_v1_0_62_ultra_modern_quantum_mark_goojprt_hardware_fix",
@@ -67317,7 +67317,7 @@
       "node_kind": "heading",
       "norm_label": "55. release v1.0.62 \u2014 ultra-modern quantum mark & goojprt hardware fix",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1149"
+      "source_location": "L1151"
     },
     {
       "id": "system_master_56_release_v1_0_63_zero_click_auto_detect_thermal_printer_paper_width_inference",
@@ -67329,7 +67329,7 @@
       "node_kind": "heading",
       "norm_label": "56. release v1.0.63 \u2014 zero-click auto-detect thermal printer & paper width inference",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1166"
+      "source_location": "L1168"
     },
     {
       "id": "system_master_57_release_v1_0_64_vip_custom_logo_universal_discount_edition",
@@ -67341,7 +67341,7 @@
       "node_kind": "heading",
       "norm_label": "57. release v1.0.64 \u2014 vip custom logo & universal discount edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1183"
+      "source_location": "L1185"
     },
     {
       "id": "system_master_58_release_v1_0_65_zero_blur_high_density_thermal_universal_manual_print_edition",
@@ -67353,7 +67353,7 @@
       "node_kind": "heading",
       "norm_label": "58. release v1.0.65 \u2014 zero-blur high-density thermal & universal manual print edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1206"
+      "source_location": "L1208"
     },
     {
       "id": "system_master_59_release_v1_0_66_universal_shelf_price_tags_operations_sheets_zero_waste_thermal_bills_payment_edition",
@@ -67365,7 +67365,7 @@
       "node_kind": "heading",
       "norm_label": "59. release v1.0.66 \u2014 universal shelf price tags, operations sheets, zero-waste thermal & bills payment edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1223"
+      "source_location": "L1225"
     },
     {
       "id": "system_master_5_third_party_data_import_architecture_v1_0_29",
@@ -67389,7 +67389,7 @@
       "node_kind": "heading",
       "norm_label": "60. release v1.0.67 \u2014 unified e-wallet & bills center, universal manual print & zero-waste thermal edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1249"
+      "source_location": "L1251"
     },
     {
       "id": "system_master_61_release_v1_0_68_ultra_compact_zero_waste_thermal_receipt_spacing_engine",
@@ -67401,7 +67401,7 @@
       "node_kind": "heading",
       "norm_label": "61. release v1.0.68 \u2014 ultra-compact zero-waste thermal receipt spacing engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1271"
+      "source_location": "L1273"
     },
     {
       "id": "system_master_65_enterprise_n_tier_3_tier_architecture_standard_pal_bll_bal_dal",
@@ -67413,7 +67413,7 @@
       "node_kind": "heading",
       "norm_label": "65. enterprise n-tier / 3-tier architecture standard (pal, bll/bal, dal)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1398"
+      "source_location": "L1400"
     },
     {
       "id": "system_master_68_audit_delete_safeguards_fast_feature_patcher_unrestricted_e_wallet_v1_0_74_v1_0_76",
@@ -67425,7 +67425,7 @@
       "node_kind": "heading",
       "norm_label": "68. audit delete safeguards, fast feature patcher & unrestricted e-wallet (v1.0.74 \u2013 v1.0.76)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1499"
+      "source_location": "L1501"
     },
     {
       "id": "system_master_69_sidebar_fast_updates_hub_zero_restart_live_engine_v1_0_77_v1_0_79",
@@ -67437,7 +67437,7 @@
       "node_kind": "heading",
       "norm_label": "69. sidebar fast updates hub & zero-restart live engine (v1.0.77 \u2013 v1.0.79)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1511"
+      "source_location": "L1513"
     },
     {
       "id": "system_master_6_software_update_release_guarantees",
@@ -67461,7 +67461,7 @@
       "node_kind": "heading",
       "norm_label": "70. apply live asset resolution & pop-up debounce standard (v1.0.80)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1522"
+      "source_location": "L1524"
     },
     {
       "id": "system_master_72_official_release_v1_0_81_linux_zero_restart_live_patch_network_diagnostic_edition",
@@ -67473,7 +67473,7 @@
       "node_kind": "heading",
       "norm_label": "72. official release v1.0.81: linux zero-restart live patch & network diagnostic edition",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1554"
+      "source_location": "L1556"
     },
     {
       "id": "system_master_73_unified_dual_mode_update_engine_option_a_live_patch_vs_option_b_full_build",
@@ -67485,7 +67485,7 @@
       "node_kind": "heading",
       "norm_label": "73. unified dual-mode update engine (option a: live patch vs option b: full build)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1569"
+      "source_location": "L1571"
     },
     {
       "id": "system_master_76_in_store_tindabot_ai_assistant_multi_model_free_pool_architecture_v1_0_83",
@@ -67497,7 +67497,7 @@
       "node_kind": "heading",
       "norm_label": "76. in-store tindabot ai assistant & multi-model free pool architecture (v1.0.83)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1638"
+      "source_location": "L1640"
     },
     {
       "id": "system_master_77_compact_tindabot_non_blocking_pos_clearance_architecture_v1_0_84",
@@ -67509,7 +67509,7 @@
       "node_kind": "heading",
       "norm_label": "77. compact tindabot & non-blocking pos clearance architecture (v1.0.84)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1668"
+      "source_location": "L1670"
     },
     {
       "id": "system_master_7_complete_backup_import_matrix_verified_protocols",
@@ -67521,7 +67521,7 @@
       "node_kind": "heading",
       "norm_label": "7. complete backup & import matrix (verified protocols)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L67"
+      "source_location": "L69"
     },
     {
       "id": "system_master_8_quality_assurance_distribution_verification_protocols",
@@ -67533,7 +67533,7 @@
       "node_kind": "heading",
       "norm_label": "8. quality assurance & distribution verification protocols",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L78"
+      "source_location": "L80"
     },
     {
       "id": "system_master_9_universal_hardware_camera_barcode_scanner_architecture_v1_0_30_v1_0_33",
@@ -67545,7 +67545,7 @@
       "node_kind": "heading",
       "norm_label": "9. universal hardware & camera barcode scanner architecture (v1.0.30\u2013v1.0.33)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L85"
+      "source_location": "L87"
     },
     {
       "id": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
@@ -69645,7 +69645,7 @@
       "node_kind": "heading",
       "norm_label": "36. free nationwide merchant community, dynamic red unread alerts & pos header streamlining (v1.0.51)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L710"
+      "source_location": "L712"
     },
     {
       "id": "system_master_48_financial_realized_revenue_engine_zero_flicker_client_store_hydration_v1_0_57",
@@ -69657,7 +69657,7 @@
       "node_kind": "heading",
       "norm_label": "48. financial realized revenue engine & zero-flicker client store hydration (v1.0.57)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L963"
+      "source_location": "L965"
     },
     {
       "id": "agents_skills_vitest_references_advanced_environments",
@@ -71716,7 +71716,7 @@
       "node_kind": "heading",
       "norm_label": "13. multi-frame barcode consensus & product editing stabilization (v1.0.34)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L197"
+      "source_location": "L199"
     },
     {
       "id": "system_master_81_2_composite_nested_bill_of_materials_bom_engine",
@@ -71728,7 +71728,7 @@
       "node_kind": "heading",
       "norm_label": "81.2 composite & nested bill of materials (bom) engine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1780"
+      "source_location": "L1782"
     },
     {
       "id": "system_master_93_1_universal_hyphen_space_agnostic_search_matcher",
@@ -71740,7 +71740,7 @@
       "node_kind": "heading",
       "norm_label": "93.1 universal hyphen & space agnostic search matcher",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2024"
+      "source_location": "L2026"
     },
     {
       "id": "system_master_93_punctuation_hyphen_agnostic_product_search_normalization_v4_1_2_spec",
@@ -71752,7 +71752,7 @@
       "node_kind": "heading",
       "norm_label": "93. punctuation- & hyphen-agnostic product search normalization (v4.1.2 spec)",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2022"
+      "source_location": "L2024"
     },
     {
       "id": "system_master_94_1_multi_token_tokenized_search_packaging_unit_parity",
@@ -71764,7 +71764,7 @@
       "node_kind": "heading",
       "norm_label": "94.1 multi-token tokenized search & packaging unit parity",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2034"
+      "source_location": "L2036"
     },
     {
       "id": "source_src_main_validation_schemas",
@@ -166696,7 +166696,7 @@
     },
     {
       "source": "readme_tinda_pos_desktop_master_edition",
-      "target": "readme_quick_download_release_assets_v4_1_2_full_release",
+      "target": "readme_quick_download_release_assets_v4_1_3_full_release",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -166718,7 +166718,7 @@
     },
     {
       "source": "readme_tinda_pos_desktop_master_edition",
-      "target": "readme_what_s_new_in_v4_1_2_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
+      "target": "readme_what_s_new_in_v4_1_3_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -181651,7 +181651,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L113",
+      "source_location": "L115",
       "weight": 1.0
     },
     {
@@ -181662,7 +181662,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L133",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -181673,7 +181673,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1721",
+      "source_location": "L1723",
       "weight": 1.0
     },
     {
@@ -181684,7 +181684,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1726",
+      "source_location": "L1728",
       "weight": 1.0
     },
     {
@@ -181695,7 +181695,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1736",
+      "source_location": "L1738",
       "weight": 1.0
     },
     {
@@ -181706,7 +181706,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1745",
+      "source_location": "L1747",
       "weight": 1.0
     },
     {
@@ -181717,7 +181717,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1761",
+      "source_location": "L1763",
       "weight": 1.0
     },
     {
@@ -181728,7 +181728,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1774",
+      "source_location": "L1776",
       "weight": 1.0
     },
     {
@@ -181739,7 +181739,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1780",
+      "source_location": "L1782",
       "weight": 1.0
     },
     {
@@ -181750,7 +181750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1790",
+      "source_location": "L1792",
       "weight": 1.0
     },
     {
@@ -181761,7 +181761,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1796",
+      "source_location": "L1798",
       "weight": 1.0
     },
     {
@@ -181772,7 +181772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1801",
+      "source_location": "L1803",
       "weight": 1.0
     },
     {
@@ -181783,7 +181783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1809",
+      "source_location": "L1811",
       "weight": 1.0
     },
     {
@@ -181794,7 +181794,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1815",
+      "source_location": "L1817",
       "weight": 1.0
     },
     {
@@ -181805,7 +181805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1821",
+      "source_location": "L1823",
       "weight": 1.0
     },
     {
@@ -181816,7 +181816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1829",
+      "source_location": "L1831",
       "weight": 1.0
     },
     {
@@ -181827,7 +181827,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1844",
+      "source_location": "L1846",
       "weight": 1.0
     },
     {
@@ -181838,7 +181838,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1853",
+      "source_location": "L1855",
       "weight": 1.0
     },
     {
@@ -181849,7 +181849,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1861",
+      "source_location": "L1863",
       "weight": 1.0
     },
     {
@@ -181860,7 +181860,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1866",
+      "source_location": "L1868",
       "weight": 1.0
     },
     {
@@ -181871,7 +181871,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1876",
+      "source_location": "L1878",
       "weight": 1.0
     },
     {
@@ -181882,7 +181882,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1887",
+      "source_location": "L1889",
       "weight": 1.0
     },
     {
@@ -181893,7 +181893,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1892",
+      "source_location": "L1894",
       "weight": 1.0
     },
     {
@@ -181904,7 +181904,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1896",
+      "source_location": "L1898",
       "weight": 1.0
     },
     {
@@ -181915,7 +181915,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1904",
+      "source_location": "L1906",
       "weight": 1.0
     },
     {
@@ -181926,7 +181926,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1908",
+      "source_location": "L1910",
       "weight": 1.0
     },
     {
@@ -181937,7 +181937,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1916",
+      "source_location": "L1918",
       "weight": 1.0
     },
     {
@@ -181948,7 +181948,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1925",
+      "source_location": "L1927",
       "weight": 1.0
     },
     {
@@ -181959,7 +181959,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1929",
+      "source_location": "L1931",
       "weight": 1.0
     },
     {
@@ -181970,7 +181970,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1937",
+      "source_location": "L1939",
       "weight": 1.0
     },
     {
@@ -181981,7 +181981,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1941",
+      "source_location": "L1943",
       "weight": 1.0
     },
     {
@@ -181992,7 +181992,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1949",
+      "source_location": "L1951",
       "weight": 1.0
     },
     {
@@ -182003,7 +182003,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1953",
+      "source_location": "L1955",
       "weight": 1.0
     },
     {
@@ -182014,7 +182014,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1962",
+      "source_location": "L1964",
       "weight": 1.0
     },
     {
@@ -182025,7 +182025,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1975",
+      "source_location": "L1977",
       "weight": 1.0
     },
     {
@@ -182036,7 +182036,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1979",
+      "source_location": "L1981",
       "weight": 1.0
     },
     {
@@ -182047,7 +182047,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1986",
+      "source_location": "L1988",
       "weight": 1.0
     },
     {
@@ -182058,7 +182058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1990",
+      "source_location": "L1992",
       "weight": 1.0
     },
     {
@@ -182069,7 +182069,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2004",
+      "source_location": "L2006",
       "weight": 1.0
     },
     {
@@ -182080,7 +182080,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2008",
+      "source_location": "L2010",
       "weight": 1.0
     },
     {
@@ -182091,7 +182091,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2012",
+      "source_location": "L2014",
       "weight": 1.0
     },
     {
@@ -182102,7 +182102,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2015",
+      "source_location": "L2017",
       "weight": 1.0
     },
     {
@@ -182113,51 +182113,51 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2024",
+      "source_location": "L2026",
       "weight": 1.0
     },
     {
-      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
+      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
       "target": "system_master_94_1_multi_token_tokenized_search_packaging_unit_parity",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2034",
+      "source_location": "L2036",
       "weight": 1.0
     },
     {
-      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
+      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
       "target": "system_master_94_2_short_prefix_protection_against_greedy_packaging_unit_collisions",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2038",
+      "source_location": "L2040",
       "weight": 1.0
     },
     {
-      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
+      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
       "target": "system_master_94_3_hierarchical_relevance_ranking",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2042",
+      "source_location": "L2044",
       "weight": 1.0
     },
     {
-      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
+      "source": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
       "target": "system_master_94_4_pos_cashier_cart_hardening_arrow_key_selection_priority",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2054",
+      "source_location": "L2056",
       "weight": 1.0
     },
     {
@@ -182168,7 +182168,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1015",
+      "source_location": "L1017",
       "weight": 1.0
     },
     {
@@ -182179,7 +182179,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1034",
+      "source_location": "L1036",
       "weight": 1.0
     },
     {
@@ -182190,7 +182190,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1070",
+      "source_location": "L1072",
       "weight": 1.0
     },
     {
@@ -182201,18 +182201,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1100",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_10_multi_terminal_lan_architecture_vps_remote_database_blueprint",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L112",
+      "source_location": "L1102",
       "weight": 1.0
     },
     {
@@ -182223,7 +182212,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1127",
+      "source_location": "L1129",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_10_multi_terminal_lan_architecture_vps_remote_database_blueprint",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -182234,7 +182234,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1149",
+      "source_location": "L1151",
       "weight": 1.0
     },
     {
@@ -182245,7 +182245,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1166",
+      "source_location": "L1168",
       "weight": 1.0
     },
     {
@@ -182256,7 +182256,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1183",
+      "source_location": "L1185",
       "weight": 1.0
     },
     {
@@ -182267,7 +182267,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1206",
+      "source_location": "L1208",
       "weight": 1.0
     },
     {
@@ -182278,7 +182278,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1223",
+      "source_location": "L1225",
       "weight": 1.0
     },
     {
@@ -182289,7 +182289,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1249",
+      "source_location": "L1251",
       "weight": 1.0
     },
     {
@@ -182300,7 +182300,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1271",
+      "source_location": "L1273",
       "weight": 1.0
     },
     {
@@ -182311,7 +182311,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1293",
+      "source_location": "L1295",
       "weight": 1.0
     },
     {
@@ -182322,7 +182322,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1324",
+      "source_location": "L1326",
       "weight": 1.0
     },
     {
@@ -182333,7 +182333,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1354",
+      "source_location": "L1356",
       "weight": 1.0
     },
     {
@@ -182344,7 +182344,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1398",
+      "source_location": "L1400",
       "weight": 1.0
     },
     {
@@ -182355,7 +182355,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1455",
+      "source_location": "L1457",
       "weight": 1.0
     },
     {
@@ -182366,7 +182366,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1477",
+      "source_location": "L1479",
       "weight": 1.0
     },
     {
@@ -182377,7 +182377,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1499",
+      "source_location": "L1501",
       "weight": 1.0
     },
     {
@@ -182388,7 +182388,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1511",
+      "source_location": "L1513",
       "weight": 1.0
     },
     {
@@ -182399,7 +182399,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1522",
+      "source_location": "L1524",
       "weight": 1.0
     },
     {
@@ -182410,18 +182410,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1533",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_11_dual_repository_security_intellectual_property_protection_architecture",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L154",
+      "source_location": "L1535",
       "weight": 1.0
     },
     {
@@ -182432,7 +182421,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1554",
+      "source_location": "L1556",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_11_dual_repository_security_intellectual_property_protection_architecture",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -182443,7 +182443,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1569",
+      "source_location": "L1571",
       "weight": 1.0
     },
     {
@@ -182454,7 +182454,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1590",
+      "source_location": "L1592",
       "weight": 1.0
     },
     {
@@ -182476,7 +182476,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1606",
+      "source_location": "L1608",
       "weight": 1.0
     },
     {
@@ -182487,7 +182487,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1638",
+      "source_location": "L1640",
       "weight": 1.0
     },
     {
@@ -182498,7 +182498,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1668",
+      "source_location": "L1670",
       "weight": 1.0
     },
     {
@@ -182509,7 +182509,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1696",
+      "source_location": "L1698",
       "weight": 1.0
     },
     {
@@ -182520,7 +182520,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L170",
+      "source_location": "L172",
       "weight": 1.0
     },
     {
@@ -182531,7 +182531,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1719",
+      "source_location": "L1721",
       "weight": 1.0
     },
     {
@@ -182542,7 +182542,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1734",
+      "source_location": "L1736",
       "weight": 1.0
     },
     {
@@ -182553,7 +182553,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1772",
+      "source_location": "L1774",
       "weight": 1.0
     },
     {
@@ -182564,7 +182564,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1807",
+      "source_location": "L1809",
       "weight": 1.0
     },
     {
@@ -182575,7 +182575,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1827",
+      "source_location": "L1829",
       "weight": 1.0
     },
     {
@@ -182586,7 +182586,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1859",
+      "source_location": "L1861",
       "weight": 1.0
     },
     {
@@ -182597,7 +182597,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1885",
+      "source_location": "L1887",
       "weight": 1.0
     },
     {
@@ -182608,7 +182608,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1902",
+      "source_location": "L1904",
       "weight": 1.0
     },
     {
@@ -182619,7 +182619,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1923",
+      "source_location": "L1925",
       "weight": 1.0
     },
     {
@@ -182630,7 +182630,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1935",
+      "source_location": "L1937",
       "weight": 1.0
     },
     {
@@ -182641,7 +182641,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1947",
+      "source_location": "L1949",
       "weight": 1.0
     },
     {
@@ -182652,18 +182652,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1960",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_13_multi_frame_barcode_consensus_product_editing_stabilization_v1_0_34",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L197",
+      "source_location": "L1962",
       "weight": 1.0
     },
     {
@@ -182674,7 +182663,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1973",
+      "source_location": "L1975",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_13_multi_frame_barcode_consensus_product_editing_stabilization_v1_0_34",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -182685,7 +182685,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2002",
+      "source_location": "L2004",
       "weight": 1.0
     },
     {
@@ -182696,18 +182696,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2022",
+      "source_location": "L2024",
       "weight": 1.0
     },
     {
       "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_2_spec",
+      "target": "system_master_94_multi_token_packaging_unit_disambiguation_short_prefix_guardrails_pos_hardware_scanner_standby_studio_v4_1_3_spec",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2032",
+      "source_location": "L2034",
       "weight": 1.0
     },
     {
@@ -182718,7 +182718,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L217",
+      "source_location": "L219",
       "weight": 1.0
     },
     {
@@ -182729,7 +182729,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L230",
+      "source_location": "L232",
       "weight": 1.0
     },
     {
@@ -182751,7 +182751,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L275",
+      "source_location": "L277",
       "weight": 1.0
     },
     {
@@ -182762,7 +182762,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L292",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -182773,7 +182773,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L306",
+      "source_location": "L308",
       "weight": 1.0
     },
     {
@@ -182795,7 +182795,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L346",
+      "source_location": "L348",
       "weight": 1.0
     },
     {
@@ -182806,7 +182806,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L378",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -182817,7 +182817,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L404",
+      "source_location": "L406",
       "weight": 1.0
     },
     {
@@ -182828,7 +182828,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L436",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -182850,7 +182850,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L459",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
@@ -182861,7 +182861,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L480",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -182872,7 +182872,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L503",
+      "source_location": "L505",
       "weight": 1.0
     },
     {
@@ -182883,7 +182883,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L520",
+      "source_location": "L522",
       "weight": 1.0
     },
     {
@@ -182894,7 +182894,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L534",
+      "source_location": "L536",
       "weight": 1.0
     },
     {
@@ -182916,7 +182916,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L563",
+      "source_location": "L565",
       "weight": 1.0
     },
     {
@@ -182927,7 +182927,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L575",
+      "source_location": "L577",
       "weight": 1.0
     },
     {
@@ -182938,7 +182938,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L596",
+      "source_location": "L598",
       "weight": 1.0
     },
     {
@@ -182949,7 +182949,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L623",
+      "source_location": "L625",
       "weight": 1.0
     },
     {
@@ -182960,7 +182960,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L635",
+      "source_location": "L637",
       "weight": 1.0
     },
     {
@@ -182971,18 +182971,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L662",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_7_complete_backup_import_matrix_verified_protocols",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L67",
+      "source_location": "L664",
       "weight": 1.0
     },
     {
@@ -182993,7 +182982,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L674",
+      "source_location": "L676",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_7_complete_backup_import_matrix_verified_protocols",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -183015,7 +183015,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L700",
+      "source_location": "L702",
       "weight": 1.0
     },
     {
@@ -183026,7 +183026,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L710",
+      "source_location": "L712",
       "weight": 1.0
     },
     {
@@ -183037,7 +183037,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L732",
+      "source_location": "L734",
       "weight": 1.0
     },
     {
@@ -183048,7 +183048,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L743",
+      "source_location": "L745",
       "weight": 1.0
     },
     {
@@ -183059,7 +183059,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L764",
+      "source_location": "L766",
       "weight": 1.0
     },
     {
@@ -183070,18 +183070,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L774",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_8_quality_assurance_distribution_verification_protocols",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L78",
+      "source_location": "L776",
       "weight": 1.0
     },
     {
@@ -183092,7 +183081,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L796",
+      "source_location": "L798",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_8_quality_assurance_distribution_verification_protocols",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -183103,7 +183103,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L807",
+      "source_location": "L809",
       "weight": 1.0
     },
     {
@@ -183114,7 +183114,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L831",
+      "source_location": "L833",
       "weight": 1.0
     },
     {
@@ -183125,18 +183125,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L842",
-      "weight": 1.0
-    },
-    {
-      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
-      "target": "system_master_9_universal_hardware_camera_barcode_scanner_architecture_v1_0_30_v1_0_33",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L85",
+      "source_location": "L844",
       "weight": 1.0
     },
     {
@@ -183147,7 +183136,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L867",
+      "source_location": "L869",
+      "weight": 1.0
+    },
+    {
+      "source": "system_master_system_master_md_tinda_pos_desktop_suite_architecture",
+      "target": "system_master_9_universal_hardware_camera_barcode_scanner_architecture_v1_0_30_v1_0_33",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "SYSTEM_MASTER.md",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -183158,7 +183158,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L899",
+      "source_location": "L901",
       "weight": 1.0
     },
     {
@@ -183169,7 +183169,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L927",
+      "source_location": "L929",
       "weight": 1.0
     },
     {
@@ -183180,7 +183180,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L963",
+      "source_location": "L965",
       "weight": 1.0
     },
     {
@@ -183191,7 +183191,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L989",
+      "source_location": "L991",
       "weight": 1.0
     },
     {
@@ -195619,7 +195619,7 @@
       "confidence_score": 0.95,
       "context": "AppLogo",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1387",
+      "source_location": "L1389",
       "weight": 1.0
     },
     {
@@ -195631,7 +195631,7 @@
       "confidence_score": 0.95,
       "context": "BillRecord",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1492",
+      "source_location": "L1494",
       "weight": 1.0
     },
     {
@@ -195643,7 +195643,7 @@
       "confidence_score": 0.95,
       "context": "CartPanel",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L219",
+      "source_location": "L221",
       "weight": 1.0
     },
     {
@@ -195655,7 +195655,7 @@
       "confidence_score": 0.95,
       "context": "CartQtyInput",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L542",
+      "source_location": "L544",
       "weight": 1.0
     },
     {
@@ -195715,7 +195715,7 @@
       "confidence_score": 0.95,
       "context": "CommunityChatMessage",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1384",
+      "source_location": "L1386",
       "weight": 1.0
     },
     {
@@ -195799,7 +195799,7 @@
       "confidence_score": 0.95,
       "context": "EwalletChannel",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1470",
+      "source_location": "L1472",
       "weight": 1.0
     },
     {
@@ -195811,7 +195811,7 @@
       "confidence_score": 0.95,
       "context": "EwalletShiftSummary",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1473",
+      "source_location": "L1475",
       "weight": 1.0
     },
     {
@@ -195847,7 +195847,7 @@
       "confidence_score": 0.95,
       "context": "FastButtonsBar",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1840",
+      "source_location": "L1842",
       "weight": 1.0
     },
     {
@@ -195859,7 +195859,7 @@
       "confidence_score": 0.95,
       "context": "FloatingWidgetsDock",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1704",
+      "source_location": "L1706",
       "weight": 1.0
     },
     {
@@ -195883,7 +195883,7 @@
       "confidence_score": 0.95,
       "context": "HelpGuideModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1845",
+      "source_location": "L1847",
       "weight": 1.0
     },
     {
@@ -195919,7 +195919,7 @@
       "confidence_score": 0.95,
       "context": "ManagerPinModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L603",
+      "source_location": "L605",
       "weight": 1.0
     },
     {
@@ -195943,7 +195943,7 @@
       "confidence_score": 0.95,
       "context": "PinnedCategoriesBar",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1840",
+      "source_location": "L1842",
       "weight": 1.0
     },
     {
@@ -195967,7 +195967,7 @@
       "confidence_score": 0.95,
       "context": "PriceOverrideModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L616",
+      "source_location": "L618",
       "weight": 1.0
     },
     {
@@ -196003,7 +196003,7 @@
       "confidence_score": 0.95,
       "context": "PriceTagPrintModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1823",
+      "source_location": "L1825",
       "weight": 1.0
     },
     {
@@ -196039,7 +196039,7 @@
       "confidence_score": 0.95,
       "context": "PrinterStudioModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1823",
+      "source_location": "L1825",
       "weight": 1.0
     },
     {
@@ -196075,7 +196075,7 @@
       "confidence_score": 0.95,
       "context": "ProductModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L411",
+      "source_location": "L413",
       "weight": 1.0
     },
     {
@@ -196087,7 +196087,7 @@
       "confidence_score": 0.95,
       "context": "ProductModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L516",
+      "source_location": "L518",
       "weight": 1.0
     },
     {
@@ -196099,7 +196099,7 @@
       "confidence_score": 0.95,
       "context": "ProductModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L589",
+      "source_location": "L591",
       "weight": 1.0
     },
     {
@@ -196171,7 +196171,7 @@
       "confidence_score": 0.95,
       "context": "ReceiptPaper",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1823",
+      "source_location": "L1825",
       "weight": 1.0
     },
     {
@@ -196187,7 +196187,7 @@
       "weight": 1.0
     },
     {
-      "source": "readme_what_s_new_in_v4_1_2_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
+      "source": "readme_what_s_new_in_v4_1_3_multi_token_search_disambiguation_hardware_scanner_standby_linux_appimage",
       "target": "source_src_renderer_src_pages_inventory_restockmodal",
       "relation": "references",
       "_origin": "ast",
@@ -196207,7 +196207,7 @@
       "confidence_score": 0.95,
       "context": "RestockModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2016",
+      "source_location": "L2018",
       "weight": 1.0
     },
     {
@@ -196231,7 +196231,7 @@
       "confidence_score": 0.95,
       "context": "Settings",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1823",
+      "source_location": "L1825",
       "weight": 1.0
     },
     {
@@ -196243,7 +196243,7 @@
       "confidence_score": 0.95,
       "context": "SoftwareUpdatePanel",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L954",
+      "source_location": "L956",
       "weight": 1.0
     },
     {
@@ -196339,7 +196339,7 @@
       "confidence_score": 0.95,
       "context": "TindaCommunityChat",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1705",
+      "source_location": "L1707",
       "weight": 1.0
     },
     {
@@ -196375,7 +196375,7 @@
       "confidence_score": 0.95,
       "context": "Transactions",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1261",
+      "source_location": "L1263",
       "weight": 1.0
     },
     {
@@ -196399,7 +196399,7 @@
       "confidence_score": 0.95,
       "context": "UpdateService",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1592",
+      "source_location": "L1594",
       "weight": 1.0
     },
     {
@@ -196411,7 +196411,7 @@
       "confidence_score": 0.95,
       "context": "WithdrawModal",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L320",
+      "source_location": "L322",
       "weight": 1.0
     },
     {
@@ -196423,7 +196423,7 @@
       "confidence_score": 0.95,
       "context": "adjustStock",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L555",
+      "source_location": "L557",
       "weight": 1.0
     },
     {
@@ -196459,7 +196459,7 @@
       "confidence_score": 0.95,
       "context": "autoPrintAfterCheckout",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1763",
+      "source_location": "L1765",
       "weight": 1.0
     },
     {
@@ -196471,7 +196471,7 @@
       "confidence_score": 0.95,
       "context": "autoPrintAfterCheckout",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1897",
+      "source_location": "L1899",
       "weight": 1.0
     },
     {
@@ -196495,7 +196495,7 @@
       "confidence_score": 0.95,
       "context": "buildReceiptLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L557",
+      "source_location": "L559",
       "weight": 1.0
     },
     {
@@ -196507,7 +196507,7 @@
       "confidence_score": 0.95,
       "context": "buildReceiptLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -196567,7 +196567,7 @@
       "confidence_score": 0.95,
       "context": "calculateItemUnitPrice",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L510",
+      "source_location": "L512",
       "weight": 1.0
     },
     {
@@ -196579,7 +196579,7 @@
       "confidence_score": 0.95,
       "context": "calculateItemUnitPrice",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L606",
+      "source_location": "L608",
       "weight": 1.0
     },
     {
@@ -196591,7 +196591,7 @@
       "confidence_score": 0.95,
       "context": "calculateRollupCost()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1788",
+      "source_location": "L1790",
       "weight": 1.0
     },
     {
@@ -196687,7 +196687,7 @@
       "confidence_score": 0.95,
       "context": "completeSetup",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1312",
+      "source_location": "L1314",
       "weight": 1.0
     },
     {
@@ -196723,7 +196723,7 @@
       "confidence_score": 0.95,
       "context": "createBackupSync",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L74",
+      "source_location": "L76",
       "weight": 1.0
     },
     {
@@ -196759,7 +196759,7 @@
       "confidence_score": 0.95,
       "context": "discoverMasters()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1889",
+      "source_location": "L1891",
       "weight": 1.0
     },
     {
@@ -196807,7 +196807,7 @@
       "confidence_score": 0.95,
       "context": "evaluateCartPromos()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1798",
+      "source_location": "L1800",
       "weight": 1.0
     },
     {
@@ -196819,7 +196819,7 @@
       "confidence_score": 0.95,
       "context": "extractZipArchive()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1536",
+      "source_location": "L1538",
       "weight": 1.0
     },
     {
@@ -196831,7 +196831,7 @@
       "confidence_score": 0.95,
       "context": "fetchLatestRedirectFallback",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1622",
+      "source_location": "L1624",
       "weight": 1.0
     },
     {
@@ -196855,7 +196855,7 @@
       "confidence_score": 0.95,
       "context": "formatBillSlipLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1371",
+      "source_location": "L1373",
       "weight": 1.0
     },
     {
@@ -196867,7 +196867,7 @@
       "confidence_score": 0.95,
       "context": "formatBillSlipLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -196879,7 +196879,7 @@
       "confidence_score": 0.95,
       "context": "formatEwalletAuditLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1473",
+      "source_location": "L1475",
       "weight": 1.0
     },
     {
@@ -196891,7 +196891,7 @@
       "confidence_score": 0.95,
       "context": "formatEwalletAuditLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -196903,7 +196903,7 @@
       "confidence_score": 0.95,
       "context": "formatEwalletSlipLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -196915,7 +196915,7 @@
       "confidence_score": 0.95,
       "context": "formatReceiptDate()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1486",
+      "source_location": "L1488",
       "weight": 1.0
     },
     {
@@ -196963,7 +196963,7 @@
       "confidence_score": 0.95,
       "context": "generateQrSvg",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L487",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -196975,7 +196975,7 @@
       "confidence_score": 0.95,
       "context": "generateSku",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L200",
+      "source_location": "L202",
       "weight": 1.0
     },
     {
@@ -197083,7 +197083,7 @@
       "confidence_score": 0.95,
       "context": "getState()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1593",
+      "source_location": "L1595",
       "weight": 1.0
     },
     {
@@ -197095,7 +197095,7 @@
       "confidence_score": 0.95,
       "context": "getStatus()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L947",
+      "source_location": "L949",
       "weight": 1.0
     },
     {
@@ -197119,7 +197119,7 @@
       "confidence_score": 0.95,
       "context": "getUserByUsername",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1312",
+      "source_location": "L1314",
       "weight": 1.0
     },
     {
@@ -197155,7 +197155,7 @@
       "confidence_score": 0.95,
       "context": "hasRecipeCycle()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1787",
+      "source_location": "L1789",
       "weight": 1.0
     },
     {
@@ -197167,7 +197167,7 @@
       "confidence_score": 0.95,
       "context": "input",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L416",
+      "source_location": "L418",
       "weight": 1.0
     },
     {
@@ -197179,7 +197179,7 @@
       "confidence_score": 0.95,
       "context": "install()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1598",
+      "source_location": "L1600",
       "weight": 1.0
     },
     {
@@ -197191,7 +197191,7 @@
       "confidence_score": 0.95,
       "context": "isMoneyLine",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1343",
+      "source_location": "L1345",
       "weight": 1.0
     },
     {
@@ -197215,7 +197215,7 @@
       "confidence_score": 0.95,
       "context": "isSatelliteVip()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1893",
+      "source_location": "L1895",
       "weight": 1.0
     },
     {
@@ -197227,7 +197227,7 @@
       "confidence_score": 0.95,
       "context": "isValidBarcode",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L103",
+      "source_location": "L105",
       "weight": 1.0
     },
     {
@@ -197239,7 +197239,7 @@
       "confidence_score": 0.95,
       "context": "isWeighableUnit",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L539",
+      "source_location": "L541",
       "weight": 1.0
     },
     {
@@ -197299,7 +197299,7 @@
       "confidence_score": 0.95,
       "context": "localTime",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -197347,7 +197347,7 @@
       "confidence_score": 0.95,
       "context": "markPatchStable()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1537",
+      "source_location": "L1539",
       "weight": 1.0
     },
     {
@@ -197359,7 +197359,7 @@
       "confidence_score": 0.95,
       "context": "matchesProductSearch",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2025",
+      "source_location": "L2027",
       "weight": 1.0
     },
     {
@@ -197431,7 +197431,7 @@
       "confidence_score": 0.95,
       "context": "p",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2040",
+      "source_location": "L2042",
       "weight": 1.0
     },
     {
@@ -197467,7 +197467,7 @@
       "confidence_score": 0.95,
       "context": "playScanBeep",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L417",
+      "source_location": "L419",
       "weight": 1.0
     },
     {
@@ -197527,7 +197527,7 @@
       "confidence_score": 0.95,
       "context": "printSale",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1763",
+      "source_location": "L1765",
       "weight": 1.0
     },
     {
@@ -197539,7 +197539,7 @@
       "confidence_score": 0.95,
       "context": "printTest",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1767",
+      "source_location": "L1769",
       "weight": 1.0
     },
     {
@@ -197563,7 +197563,7 @@
       "confidence_score": 0.95,
       "context": "processRefund",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L559",
+      "source_location": "L561",
       "weight": 1.0
     },
     {
@@ -197587,7 +197587,7 @@
       "confidence_score": 0.95,
       "context": "pushSaleToCloud",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L977",
+      "source_location": "L979",
       "weight": 1.0
     },
     {
@@ -197599,7 +197599,7 @@
       "confidence_score": 0.95,
       "context": "pushShiftToCloud",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L977",
+      "source_location": "L979",
       "weight": 1.0
     },
     {
@@ -197611,7 +197611,7 @@
       "confidence_score": 0.95,
       "context": "readAllVaults()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L941",
+      "source_location": "L943",
       "weight": 1.0
     },
     {
@@ -197707,7 +197707,7 @@
       "confidence_score": 0.95,
       "context": "reloadLiveWithPatch()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1562",
+      "source_location": "L1564",
       "weight": 1.0
     },
     {
@@ -197719,7 +197719,7 @@
       "confidence_score": 0.95,
       "context": "reloadLiveWithPatch()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1593",
+      "source_location": "L1595",
       "weight": 1.0
     },
     {
@@ -197743,7 +197743,7 @@
       "confidence_score": 0.95,
       "context": "resolveLeafComponents",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1786",
+      "source_location": "L1788",
       "weight": 1.0
     },
     {
@@ -197791,7 +197791,7 @@
       "confidence_score": 0.95,
       "context": "rowsToHtml()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1490",
+      "source_location": "L1492",
       "weight": 1.0
     },
     {
@@ -197851,7 +197851,7 @@
       "confidence_score": 0.95,
       "context": "salesReport",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L973",
+      "source_location": "L975",
       "weight": 1.0
     },
     {
@@ -197899,7 +197899,7 @@
       "confidence_score": 0.95,
       "context": "searchProducts",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2025",
+      "source_location": "L2027",
       "weight": 1.0
     },
     {
@@ -197911,7 +197911,7 @@
       "confidence_score": 0.95,
       "context": "searchProducts",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2035",
+      "source_location": "L2037",
       "weight": 1.0
     },
     {
@@ -197923,7 +197923,7 @@
       "confidence_score": 0.95,
       "context": "searchProductsSimple",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2025",
+      "source_location": "L2027",
       "weight": 1.0
     },
     {
@@ -197935,7 +197935,7 @@
       "confidence_score": 0.95,
       "context": "searchProductsSimple",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L2035",
+      "source_location": "L2037",
       "weight": 1.0
     },
     {
@@ -197947,7 +197947,7 @@
       "confidence_score": 0.95,
       "context": "sendCommunityMessage",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L718",
+      "source_location": "L720",
       "weight": 1.0
     },
     {
@@ -198031,7 +198031,7 @@
       "confidence_score": 0.95,
       "context": "submitPrint()",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1743",
+      "source_location": "L1745",
       "weight": 1.0
     },
     {
@@ -198055,7 +198055,7 @@
       "confidence_score": 0.95,
       "context": "testPrintLines",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1487",
+      "source_location": "L1489",
       "weight": 1.0
     },
     {
@@ -198175,7 +198175,7 @@
       "confidence_score": 0.95,
       "context": "validateProductInput",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L199",
+      "source_location": "L201",
       "weight": 1.0
     },
     {
@@ -198187,7 +198187,7 @@
       "confidence_score": 0.95,
       "context": "validateProductInput",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L1905",
+      "source_location": "L1907",
       "weight": 1.0
     },
     {
@@ -198199,7 +198199,7 @@
       "confidence_score": 0.95,
       "context": "verifyManagerPin",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L602",
+      "source_location": "L604",
       "weight": 1.0
     },
     {
@@ -198247,10 +198247,10 @@
       "confidence_score": 0.95,
       "context": "warnIfNearExpiry",
       "source_file": "SYSTEM_MASTER.md",
-      "source_location": "L471",
+      "source_location": "L473",
       "weight": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e1b77a8a52fa58b3ee0712c3f2508a4f06ea8ecc"
+  "built_at_commit": "52cbf7c6081b89f1c18168c8a8824122fa336368"
 }

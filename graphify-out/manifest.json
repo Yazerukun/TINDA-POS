@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "source/package.json": {
-    "mtime": 1792677418.5072792,
-    "seen": 1792677496.5380986,
-    "ast_hash": "d253dce8307a3bb34bc0a5fde808bb33",
+    "mtime": 1792678713.9770525,
+    "seen": 1792679309.4222534,
+    "ast_hash": "32eeaec6fb3b9206b9abac547e6c5898",
     "semantic_hash": ""
   },
   "source/postcss.config.cjs": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "source/src/main/services/cloudSync.ts": {
-    "mtime": 1792677418.5166245,
-    "seen": 1792677496.538327,
-    "ast_hash": "6e8603725bdc62f37a4fee5d7ba13052",
+    "mtime": 1792678725.0627797,
+    "seen": 1792679309.428968,
+    "ast_hash": "da5739d1c8f631ce958c6b62d8cf0c57",
     "semantic_hash": ""
   },
   "source/src/main/services/communityChat.ts": {
@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PosToolsModal.tsx": {
-    "mtime": 1792677418.526624,
-    "seen": 1792677496.5385337,
-    "ast_hash": "42da10123325f4b368706dac67c7a88c",
+    "mtime": 1792678744.2272947,
+    "seen": 1792679309.4328332,
+    "ast_hash": "c04ed28e231e955b040271f921bca4d4",
     "semantic_hash": ""
   },
   "source/src/renderer/src/components/PriceGuideModal.tsx": {
@@ -3078,9 +3078,9 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1792677418.0536523,
-    "seen": 1792677496.5412269,
-    "ast_hash": "938e565e74cf53031e588884b8d449b6",
+    "mtime": 1792678783.457252,
+    "seen": 1792679309.4767044,
+    "ast_hash": "12466f236bfc6889dd63bc598a5a273a",
     "semantic_hash": ""
   },
   "IMPLEMENT.md": {
@@ -3102,15 +3102,15 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792677418.056652,
-    "seen": 1792677496.5412462,
-    "ast_hash": "d0d9d8c58fe1d9051ea1894b93df0eb1",
+    "mtime": 1792678815.5443554,
+    "seen": 1792679309.4769335,
+    "ast_hash": "0ee00fe127520ce9325f34f090bcaaaf",
     "semantic_hash": ""
   },
   "SYSTEM_MASTER.md": {
-    "mtime": 1792677418.058652,
-    "seen": 1792677496.541253,
-    "ast_hash": "f9d9722c9cee6df058a13f1baa90a647",
+    "mtime": 1792679243.2082794,
+    "seen": 1792679309.4769812,
+    "ast_hash": "dfd29de1e84ffc289766c681e389aa4b",
     "semantic_hash": ""
   },
   "TINDA-POS-LIVE.md": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "docs/RELEASE-STATE.md": {
-    "mtime": 1792677418.0606518,
-    "seen": 1792677496.5412912,
-    "ast_hash": "de1866b8afb094236391b75b31c88fa6",
+    "mtime": 1792678778.40039,
+    "seen": 1792679309.47759,
+    "ast_hash": "b095d3870a25a1df1d2346f7fd692e81",
     "semantic_hash": ""
   },
   "docs/RELEASE-WORKFLOW.md": {
@@ -3678,15 +3678,15 @@
     "semantic_hash": ""
   },
   "installers/latest-linux.yml": {
-    "mtime": 1792677418.4516284,
-    "seen": 1792677496.5415897,
-    "ast_hash": "195960f1c6025d48920bf1958f3f71d4",
+    "mtime": 1792679179.4345274,
+    "seen": 1792679309.48352,
+    "ast_hash": "f83327fd7692ac2293d80c0396b8a8d0",
     "semantic_hash": ""
   },
   "installers/latest.yml": {
-    "mtime": 1791463199.0219219,
-    "seen": 1792677496.541599,
-    "ast_hash": "b65af0d69ccd9c3204dde7b61bdff705",
+    "mtime": 1792679179.4325273,
+    "seen": 1792679309.4835236,
+    "ast_hash": "01992b0007733cbbbd43b2ce915cd491",
     "semantic_hash": ""
   },
   "installers/release-notes-v1.0.43.md": {
@@ -5211,6 +5211,12 @@
     "mtime": 1792677418.056652,
     "seen": 1792677496.5412498,
     "ast_hash": "38d88e94de735006b54305a04c8a61c9",
+    "semantic_hash": ""
+  },
+  "installers/SHA256SUMS-v4.1.3.txt": {
+    "mtime": 1792679179.4305274,
+    "seen": 1792679309.481808,
+    "ast_hash": "5a9093e584c2b80b892c5bf6371fb13d",
     "semantic_hash": ""
   }
 }
