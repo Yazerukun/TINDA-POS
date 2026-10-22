@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -34,12 +34,12 @@
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-4.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/TindaPOS-4.1.3.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.3.txt**](https://github.com/Yazerukun/TINDA-POS-Source/releases/download/v4.1.3/SHA256SUMS-v4.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-4.1.3.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/SHA256SUMS-v4.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
