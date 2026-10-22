@@ -43,7 +43,7 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Offline System Sentinel, Error Tracer & Diagnostic Studio Edition`
+const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Multi-Token Search Disambiguation, Hardware Scanner Standby & Multi-Platform Release`
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
@@ -121,15 +121,23 @@ async function main() {
 
   const portableFile = `TindaPOS-Portable-${version}.exe`
   const portablePath = path.join(BUILDS_DIR, portableFile)
+  const appImageFile = `TindaPOS-${version}.AppImage`
+  const appImagePath = path.join(BUILDS_DIR, appImageFile)
   const blockmapFile = `TindaPOS-Setup-${version}.exe.blockmap`
   const blockmapPath = path.join(BUILDS_DIR, blockmapFile)
   const latestYmlFile = `latest.yml`
   const latestYmlPath = path.join(BUILDS_DIR, latestYmlFile)
+  const latestLinuxYmlFile = `latest-linux.yml`
+  const latestLinuxYmlPath = path.join(BUILDS_DIR, latestLinuxYmlFile)
+  const pdfFile = `TindaPOS-User-Guide.pdf`
+  const pdfPath = fs.existsSync(path.join(BUILDS_DIR, pdfFile))
+    ? path.join(BUILDS_DIR, pdfFile)
+    : path.resolve('installers', pdfFile)
   const sumsFile = `SHA256SUMS-${TAG}.txt`
   const sumsPath = path.join(BUILDS_DIR, sumsFile)
 
   // Compute checksums for all release binaries (NO PATCHES)
-  const filesToHash = [setupPath, portablePath, blockmapPath, latestYmlPath].filter(fs.existsSync)
+  const filesToHash = [setupPath, portablePath, appImagePath, blockmapPath, latestYmlPath, latestLinuxYmlPath].filter(fs.existsSync)
   const checksumLines = filesToHash.map((f) => {
     const h = crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')
     return `${h}  ${path.basename(f)}`
@@ -138,6 +146,7 @@ async function main() {
 
   const setupSizeMb = (fs.statSync(setupPath).size / 1024 / 1024).toFixed(1)
   const portableSizeMb = fs.existsSync(portablePath) ? (fs.statSync(portablePath).size / 1024 / 1024).toFixed(1) : ''
+  const appImageSizeMb = fs.existsSync(appImagePath) ? (fs.statSync(appImagePath).size / 1024 / 1024).toFixed(1) : ''
   const todayStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
   // Release notes
@@ -171,20 +180,22 @@ async function main() {
 - **100% Pure Full Setup.exe & Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.`
   }
 
-  const body = `## 🚀 TINDA POS ${TAG} — Official Full Windows Release
+  const body = `## 🚀 TINDA POS ${TAG} — Official Multi-Platform Release
 
 > **Official Stable Release · ${todayStr}**  
-> *Official Windows Installer (NSIS) and Standalone Portable executable for TINDA POS ${TAG}. 100% clean full binary installation.*
+> *Official Windows Installer (NSIS), Standalone Portable, and Linux Desktop AppImage for TINDA POS ${TAG}. 100% clean full binary installation.*
 
 ---
 
-### 📦 Official Download Assets (No Patches · 100% Full Setup)
+### 📦 Official Download Assets (No Patches · 100% Full Binaries)
 | Asset | Size | Type | Download Link |
 |---|---|---|---|
 | 💿 **${setupFile}** | ${setupSizeMb} MB | Official Windows Setup (NSIS) | [Download Setup](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${setupFile}) |
-| 🚀 **${portableFile}** | ${portableSizeMb} MB | Standalone Zero-Install Executable | [Download Portable](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${portableFile}) |
-| 📄 **latest.yml** | ~360 B | Auto-Updater Manifest | [Download latest.yml](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/latest.yml) |
-| 🛡️ **${sumsFile}** | ~320 B | Cryptographic SHA-256 Hashes | [Download Hashes](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${sumsFile}) |
+| 🚀 **${portableFile}** | ${portableSizeMb} MB | Standalone Zero-Install Portable | [Download Portable](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${portableFile}) |
+| 🐧 **${appImageFile}** | ${appImageSizeMb} MB | Linux Desktop AppImage (64-bit) | [Download AppImage](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${appImageFile}) |
+| 📄 **latest.yml** | ~360 B | Windows Auto-Updater Manifest | [Download latest.yml](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/latest.yml) |
+| 📄 **latest-linux.yml** | ~370 B | Linux Auto-Updater Manifest | [Download latest-linux.yml](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/latest-linux.yml) |
+| 🛡️ **${sumsFile}** | ~400 B | Cryptographic SHA-256 Hashes | [Download Hashes](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${TAG}/${sumsFile}) |
 
 ---
 
@@ -258,11 +269,20 @@ ${fs.readFileSync(sumsPath, 'utf8').trim()}
   if (fs.existsSync(portablePath)) {
     assetsToUpload.push({ file: portableFile, path: portablePath, type: 'application/vnd.microsoft.portable-executable' })
   }
+  if (fs.existsSync(appImagePath)) {
+    assetsToUpload.push({ file: appImageFile, path: appImagePath, type: 'application/x-executable' })
+  }
   if (fs.existsSync(blockmapPath)) {
     assetsToUpload.push({ file: blockmapFile, path: blockmapPath, type: 'application/octet-stream' })
   }
   if (fs.existsSync(latestYmlPath)) {
     assetsToUpload.push({ file: latestYmlFile, path: latestYmlPath, type: 'text/yaml' })
+  }
+  if (fs.existsSync(latestLinuxYmlPath)) {
+    assetsToUpload.push({ file: latestLinuxYmlFile, path: latestLinuxYmlPath, type: 'text/yaml' })
+  }
+  if (fs.existsSync(pdfPath)) {
+    assetsToUpload.push({ file: pdfFile, path: pdfPath, type: 'application/pdf' })
   }
   if (fs.existsSync(sumsPath)) {
     assetsToUpload.push({ file: sumsFile, path: sumsPath, type: 'text/plain' })
