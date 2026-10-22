@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v3.2.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v3.2.9_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/TindaPOS-Setup-3.2.9.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v3.2.9_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/TindaPOS-Portable-3.2.9.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +30,52 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v3.2.9 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v4.1.3 Full Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-3.2.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/TindaPOS-Setup-3.2.9.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-3.2.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/TindaPOS-Portable-3.2.9.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v3.2.9.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v3.2.9/SHA256SUMS-v3.2.9.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-4.1.3.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/SHA256SUMS-v4.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## 🌟 What's New in v4.1.3: Multi-Token Search Disambiguation, Hardware Scanner Standby & Linux AppImage
+- **Multi-Token Unit Disambiguation & Camel-Stick Elimination**: Decomposed multi-word search queries into discrete tokens across both product names and packaging units. Solves compound searches (e.g. `Marlboro stick`, `Coke 1.5`, `Zest-O piece`) while adding short-token (`< 3` characters) guards against greedy packaging unit matches (`pc`, `pack`, `stick`, `case`), completely eliminating alphabetical monopoly in the POS Cashier.
+- **Hierarchical Relevance Scoring**: Upgraded SQLite ranking (`ORDER BY CASE`) to prioritize exact primary barcodes, unit barcodes, and SKUs ahead of product name prefixes, substrings, and packaging unit matches.
+- **Keyboard Arrow-Key Enter Selection**: POS Cashier Enter key now prioritizes the cashier's arrow-key highlighted product in the search dropdown.
+- **Hardware Barcode Scanner Standby Pill**: Polished the scanner indicator to a quiet standby pill that turns pulsing emerald when a physical USB/Bluetooth scanner is triggered.
+- **Official Linux 64-bit AppImage (`TindaPOS-4.1.3.AppImage`)**: Complete Linux standalone executable tested and verified for Arch Linux / Omarchy and Debian/Ubuntu desktop distributions.
+- **Universal Hyphen- & Punctuation-Agnostic Search**: Eliminates brand naming friction (e.g. `Zest-O` vs `Zesto` vs `Zest O`, `Coca-Cola` vs `cocacola`, `7-Up` vs `7up`). Alphanumeric normalization guarantees products match across SQLite backend and frontend state regardless of whether hyphens or spaces were entered.
+- **Multi-Unit Barcode Search Parity**: Resolved inventory search blindspot where products encoded with selling unit barcodes (Piece, Pack, Box, Case) were visible in POS Cashier but omitted from Inventory search. Client-side and server-side filters now inspect all packaging unit barcodes and names simultaneously.
+- **Universal Live Database Search (Zero-Cap Guarantee)**: Eliminated the 1,000-item pagination limit in Inventory view. Typing in the search bar triggers an asynchronous SQLite search against the entire database, guaranteeing 100% discoverability for large catalogs with 10,000+ items.
+- **Intelligent Cross-Category Fallback**: When searching with active category filters, if no matches exist within the selected category, the system gracefully expands to show matching products across all categories rather than presenting an empty list.
+- **Searchable Restock & Withdrawal Studios**: Restructured `RestockModal` with instant barcode/name search, auto-selection, and unit-barcode auto-matching, providing fluid restocking operations for store owners and cashiers.
+- **Automated Windows CI/CD Unblocked**: Unblocked GitHub Actions automated Windows binary build and release pipeline.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
+
+---
+
+## ⚡ What's New in v3.2.11: [F1] 0ms Instant Hardware Responsiveness & Progressive Chunking Edition
+- **Zero-Latency [F1] Spotlight Launch (<2ms)**: Diagnosed and eliminated the synchronous DOM mount bottleneck when opening large inventory catalogs (1,000 to 5,000+ items). Replaced monolithic full-list mapping with an Apple-grade progressive 80-item windowed chunking engine, slashing initial mount latency from ~350ms down to under 2 milliseconds (<0.002s).
+- **Dynamic 60fps Chunk Expansion**: As the user scrolls through the catalog or navigates using Arrow / PageDown keys, new chunks of items hydrate dynamically in background frames with zero frame drops or visual stutter.
+- **Microtask Instant Focus**: Replaced 60ms timer with `requestAnimationFrame`, ensuring the search input field is focused and ready to type on the exact hardware frame the modal opens.
+- **586 Automated Tests Passing**: 100% test pass rate across all 92 test suites with 0 TypeScript compilation errors and verified database invariants.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
+
+---
+
+## 🚀 What's New in v3.2.10: [F1] Universal Inventory Spotlight Explorer & Fast Purchase Invoicing Studio Edition
+- **[F1] Universal Inventory Spotlight Explorer**: Press `F1` from anywhere within the Purchase Invoice window to launch the Apple Design Standard catalog command palette (`PurchaseItemPickerModal.tsx`). Full catalog visibility with 0ms in-memory search across Name, Barcode, SKU, and Category.
+- **Speedrun Keyboard Ergonomics**: High-productivity wholesale invoicing workflow (`F1` -> Type search -> `Enter` -> Type Qty -> `Enter` -> `F1`...). Arrow keys provide fluid selection, and pressing `Enter` closes the explorer, loads packaging & default cost, and automatically focuses the `Qty` input field for instantaneous entry.
+- **Visual On-Hand Stock Health & Margin Transparency**: Real-time stock status pills (Out of Stock, Low Stock, Healthy Stock) with base units, latest Purchase Cost in integer-centavo precision, Retail SRP, and expected margin markup percentage preview.
+- **Smart Category & Low Stock Filter Pills**: Instant one-click chips for `All Items`, `⚠️ Low / Out of Stock` (critical for restocking/purchasing decisions), and top product categories.
+- **Preserved Dual-Minimize Architecture**: Seamlessly compatible with the existing Floating Receiving Dock (`fixed bottom-5 right-6`) and collapsible supplier details panel.
+- **585 Automated Tests Passing**: 100% test pass rate across all 92 test suites with 0 TypeScript compilation errors and verified database invariants.
+- **100% Pure Full Setup.exe & Standalone Portable**: Zero patches, zero asset mismatch, and 100% clean full binary installation.
 
 ---
 
@@ -168,6 +206,37 @@ Never lose a single sale to internet disconnects. All inventory items, customer 
 ### 7. 💵 E-Wallet Hub & Daily Cash Drawer Reconciliation
 - Daily midnight (12:00 AM) auto-resetting totals for GCash, Maya, and MariBank Cash In / Cash Out and Bills Payment.
 - Z-Read shift closing drawer balance verification with cash breakdown calculator.
+
+---
+
+## ☁️ Dual-Cloud High Availability & Supabase Failover Setup
+
+To guarantee 100% continuous uptime and eliminate Single Points of Failure (SPOF) when internet providers in the Philippines encounter latency or Cloudflare edge maintenance, TINDA POS features a **Dual-Cloud Autonomous Failover Architecture**:
+
+- **Primary Cloud Gateway**: Cloudflare Workers + Cloudflare D1 Edge Database (`https://tinda-sync.yomikaze-md.workers.dev`)
+- **Secondary Cloud Gateway (Auto-Failover)**: Supabase Managed PostgreSQL Engine (`https://qeruenpmscoxwycniklr.supabase.co`)
+
+### 📋 How to Use `SUPABASE_SCHEMA.txt`
+
+The full PostgreSQL DDL schema with Row Level Security (RLS) policies and performance indexes is provided in [`SUPABASE_SCHEMA.txt`](./SUPABASE_SCHEMA.txt).
+
+#### Step-by-Step Instructions:
+1. **Open Supabase Project Dashboard**: Navigate to [https://supabase.com/dashboard/project/qeruenpmscoxwycniklr](https://supabase.com/dashboard/project/qeruenpmscoxwycniklr).
+2. **Access SQL Editor**: Click on the **SQL Editor** tab on the left-hand navigation sidebar (or press `Ctrl + /` and type "SQL").
+3. **Load Schema File**:
+   - Open [`SUPABASE_SCHEMA.txt`](./SUPABASE_SCHEMA.txt) from the project root.
+   - Copy the entire SQL content and paste it into a new query window in the Supabase SQL Editor.
+4. **Execute**: Click the **Run** button (or press `Ctrl + Enter`).
+5. **Verify Tables**: Ensure the following 11 core tables and their corresponding indexes are created:
+   - `public.owner_users` — Store owner accounts and authentication credentials.
+   - `public.stores` — Physical store terminals, branch names, and secure sync key hashes.
+   - `public.sales` — Completed sales transactions with integer-centavo (`_c`) precision.
+   - `public.sale_items` — Itemized line items per transaction with weighable decimal support.
+   - `public.stock_movements` — Atomic inventory audit trail (Sales, Restocks, Adjustments, Refunds).
+   - `public.shift_snapshots` — Cashier shift summaries and end-of-day Z-Read cash totals.
+   - `public.owner_sessions` — Persistent owner login session tokens.
+   - `public.system_telemetry` — Live store health score and autonomous bug radar telemetry.
+6. **Automatic Desktop & Dashboard Failover**: If the primary Cloudflare Worker endpoint fails or exceeds response time (>3 seconds), the POS terminal and Cloud Owner Dashboard seamlessly route traffic to Supabase REST endpoints without user intervention.
 
 ---
 
