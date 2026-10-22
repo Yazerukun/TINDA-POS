@@ -43,6 +43,7 @@ describe('Dual-Cloud Autonomous Failover to Supabase', () => {
     await expect(
       pushSaleToCloud(db, {
         local_sale_id: 1,
+        local_shift_id: 1,
         transaction_no: 'TRX-FAILOVER-001',
         cashier_name: 'Cashier 1',
         customer_name: 'Customer A',
