@@ -1665,7 +1665,7 @@ export function PurchaseInvoiceModal({
                                     className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
                                     title={`Less ${money(it.discountC)}`}
                                   >
-                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty)}
+                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty, { withEffective: true })}
                                   </span>
                                 ) : (
                                   <span className="text-slate-600 font-mono">—</span>
@@ -3015,7 +3015,7 @@ export function PurchaseInvoiceModal({
                               const discInput = it.discountInput ?? it.discount_input ?? ''
                               const discC =
                                 it.discountC ?? it.discount_c ?? Math.max(0, unitCostC * qty - subtotalC)
-                              const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty)
+                              const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty, { withEffective: true })
 
                               const padY = `${printCustomizer.rowPaddingY || 3}px`
 

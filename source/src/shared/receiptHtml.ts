@@ -859,10 +859,16 @@ export interface PurchaseOrderPrintPayload {
  * Formats a trade discount into clean percentage format (e.g. "-20%", "-10%-10%", "-5%-5%-5%").
  * Standard Philippine wholesale hardware distributor delivery receipt format.
  */
+export interface FormatDiscountPercentOptions {
+  compact?: boolean
+  withEffective?: boolean
+}
+
 export function formatDiscountPercent(
   discountInput?: string | null,
   discountC?: number,
-  grossC?: number
+  grossC?: number,
+  options?: FormatDiscountPercentOptions
 ): string {
   const raw = String(discountInput || '').trim()
 
@@ -889,7 +895,30 @@ export function formatDiscountPercent(
     // If multiple numbers (e.g. "10+10", "10-10", "5/5/5", "-10%-10%")
     // or single number with percent sign (e.g. "20%", "-20%")
     if (numbers.length > 1 || (numbers.length === 1 && hasPercentSign)) {
-      return numbers.map((n) => `-${n}%`).join('')
+      const chainStr = numbers.map((n) => `-${n}%`).join('')
+      if (numbers.length > 1 && options?.withEffective && !options?.compact) {
+        // Calculate effective compounding percentage
+        let effectivePctStr = ''
+        if (discountC && discountC > 0 && grossC && grossC > 0) {
+          const eff = (discountC / grossC) * 100
+          effectivePctStr =
+            Number.isInteger(eff) || Math.abs(eff - Math.round(eff)) < 0.05
+              ? Math.round(eff).toString()
+              : eff.toFixed(1)
+        } else {
+          let factor = 1
+          for (const n of numbers) {
+            factor *= 1 - n / 100
+          }
+          const eff = (1 - factor) * 100
+          effectivePctStr =
+            Number.isInteger(eff) || Math.abs(eff - Math.round(eff)) < 0.05
+              ? Math.round(eff).toString()
+              : eff.toFixed(1)
+        }
+        return `${chainStr} (Effective: ${effectivePctStr}%)`
+      }
+      return chainStr
     }
 
     // Single number without % (e.g. "20" or "10")
@@ -948,7 +977,7 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
     totalQty += it.qty
     totalBase += it.qty_base
     const grossItemC = it.unit_cost_c * it.qty
-    const discStr = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC)
+    const discStr = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC, { compact: true })
 
     lines.push(`${String(it.qty).padEnd(4, ' ')} ${it.unit_name.toUpperCase().padEnd(6, ' ')} ${it.product_name}`)
     const priceStr = moneyStr(it.unit_cost_c).padStart(9, ' ')
@@ -1032,7 +1061,7 @@ export function generatePurchaseOrderDocumentHtml(
   const itemsHtml = p.items
     .map((it, idx) => {
       const grossItemC = it.unit_cost_c * it.qty
-      const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC)
+      const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC, { withEffective: true })
       const discDisplay =
         discText !== '—'
           ? `<span style="color:#b45309; font-weight: 700; font-family: monospace; font-size: ${Math.max(10, fontSize)}px;">${escapeHtml(discText)}</span>`

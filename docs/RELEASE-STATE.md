@@ -1,14 +1,18 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.6 (WIDE DESCRIPTION, 1-PAGE GUARANTEE & PRINT CUSTOMIZER STUDIO EDITION)
+- v4.1.7 (DUAL-NOTATION CASCADING TRADE DISCOUNT & MASTER TEAM ALIGNMENT, 1-PAGE GUARANTEE & PRINT CUSTOMIZER STUDIO EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.6 Wide Description, 1-Page Guarantee & Print Customizer Studio Edition
+- Production Release Ready — v4.1.7 Dual-Notation Cascading Trade Discount Edition
 
+COMPLETED (v4.1.7 Dual-Notation Cascading Trade Discount):
+- Stage 18: Dual-Notation Discount Display: Evaluates compounding/cascading distributor formulas (e.g. -10%-10%, -5%-5%-5%) and displays both original formula and mathematically exact effective rate (Effective: 19%, Effective: 14.3%).
+- Stage 19: Thermal POS Slip Layout Protection: Maintains compact format (-10%-10%, -5%-5%-5%) on 58mm/80mm receipts to strictly respect the 32-column constraint without line-wrapping.
+- Stage 20: 100% Comprehensive Unit Test Coverage: 620/620 passing vitest tests with 0 TypeScript compilation errors.
 COMPLETED (v4.1.6 Wide Description, 1-Page Guarantee & Print Customizer):
 - Stage 13: Expanded Description Column & Compact Financial Grid: Description takes ~60%+ of table width, with Quantity (58px), Unit (50px), Unit Price (78px), Discount (72px), and Amount (86px) tightly grouped matching hardware store receipts.
 - Stage 14: Interactive Print Customizer Studio: Built-in visual panel with live sliders for Row Spacing (2px - 10px), Font Size (9px - 13px), Margins (4mm - 18mm), and Zoom Scaling (75% - 100%).
