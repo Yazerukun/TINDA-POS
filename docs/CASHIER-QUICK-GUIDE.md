@@ -48,33 +48,20 @@
 ### Option 1: Handheld USB Barcode Scanner (Recommended)
 * Plug the USB cable into any free USB port on your PC or laptop.
 * Zero drivers or software needed! It works immediately.
-* Look for the **`🟢 Scanner Ready`** indicator in the POS header.
-
-### Option 2: Smartphone Camera as Scanner (Zero Cost)
-* Install **Iriun Webcam** or **DroidCam** from Google Play Store or Apple App Store.
-* Install the matching free Windows driver on your PC.
-* Connect both your smartphone and PC to the same Wi-Fi network (or connect with a phone USB cable).
-* In TINDA POS, click **`📷 Camera / Phone`** in the header. Select your phone in the camera dropdown. Point the camera at any barcode!
 
 ---
 
-## 📋 5. Customer Utang (Credit Ledger)
-1. **To view who owes money:** Click **Utang** in the left sidebar.
-2. **To see itemized debt breakdown:** Click the **📦 Package Icon** next to any credit transaction. You will see every item, unit, and price the customer bought.
-3. **When a customer makes a payment:** Click **Record Payment**. Enter the amount (partial payments are fully supported). Click **Print Receipt** for their payment slip.
+## 🖨️ 5. Thermal Receipt Printing Tips
+* Make sure your 58mm or 80mm thermal printer is turned on and paper is loaded correctly (thermal side facing up).
+* If receipts need reprinting, go to **History ➔ Transactions**, click the sale, and click **Print Receipt**.
 
 ---
 
-## 🌙 6. Closing the Shift (End of Day Z-Reading)
-1. At the end of the day, click **End Shift** in the top navigation or Shift menu.
-2. Count all physical cash in the money drawer (bills and coins).
-3. Type the counted cash total into the prompt.
-4. The system automatically prints/displays the **Z-Reading Shift Report**:
-   * Total Cash Sales
-   * Total GCash Sales
-   * Total Utang Issued
-   * Cash Float vs Drawer Balance (Over / Short variance)
-5. Review the report and click **Close Shift**.
+## 🌙 6. Evening Routine — Closing the Shift (Z-Read)
+1. In the sidebar or top bar, click **Close Shift / Z-Read**.
+2. Count the cash inside your drawer: input the exact coin and paper bill breakdown in the **Cash Count** window.
+3. The system compares your counted cash against registered sales.
+4. Click **Finalize Z-Read**. The shift report prints automatically with total sales, cash in drawer, e-wallet collections, and receivables.
 
 ---
 
@@ -86,10 +73,20 @@
 ---
 
 ## ⌨️ 8. Keyboard Shortcuts Cheat Sheet
-* **`F1`** or **`/`** — Focus Product Search
+* **`F1`** or **`/`** — Focus Product Search / F1 Spotlight Item Picker
 * **`F2`** — Quick Quantity Edit
 * **`F4`** — Apply Discount
 * **`F8`** — Hold / Suspend Sale
 * **`F9`** — Cash Checkout
 * **`F10`** — GCash Checkout
 * **`Esc`** — Close Modal / Cancel
+* **`Ctrl + S`** — Save Purchase Invoice / Save Edits
+
+---
+
+## 📦 9. Supplier Deliveries & Purchase Orders (v4.1.4 Spec)
+* **Search Past Invoices:** Go to **Inventory ➔ Purchase Invoices ➔ Invoices History**. Type the P.O. Number, Supplier Invoice #, Receipt #, or Supplier Name in the search bar.
+* **View Invoice Details:** Click any row to see the complete invoice layout with item quantities, packaging units, and discounts.
+* **Edit Delivery Items (Authorized):** Click **`[ ✏️ Edit ]`**. Enter the Manager or Admin PIN/Password. Adjust quantities or add missing items, then click **`[ 💾 Save Edit (Ctrl+S) ]`**. The system adjusts inventory stock automatically.
+* **Print Delivery Voucher or Receipt:** Click **`[ 🖨️ Print ]`** to print an **A4/Letter Document** (with signature lines for receiving) or a **Thermal POS Receipt** (58mm/80mm).
+* **Previous / Next Navigation:** Use **`[ ◀ Prev. ]`** and **`[ Next ▶ ]`** to flip through invoices.
