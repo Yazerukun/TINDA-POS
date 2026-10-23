@@ -814,3 +814,258 @@ export function formatCustomerStatementLines(payload: CustomerStatementPrintPayl
   return lines
 }
 
+
+export interface PurchaseOrderPrintPayload {
+  storeName?: string | null
+  storeAddress?: string | null
+  storePhone?: string | null
+  storeTin?: string | null
+  purchase: {
+    id: number
+    purchase_no: string
+    supplier_name: string
+    supplier_address?: string | null
+    supplier_contact?: string | null
+    supplier_phone?: string | null
+    purchase_date: string
+    invoice_no?: string | null
+    receipt_no?: string | null
+    reference?: string | null
+    is_paid?: boolean
+    terms_days?: number
+    discount_c?: number
+    net_total_c?: number
+    total_c: number
+    notes?: string | null
+    user_name?: string
+    created_at?: string
+    items: {
+      id?: number
+      product_name: string
+      product_barcode?: string | null
+      product_sku?: string | null
+      unit_name: string
+      qty: number
+      qty_base: number
+      unit_cost_c: number
+      discount_input?: string | null
+      discount_c?: number
+      subtotal_c: number
+    }[]
+  }
+}
+
+export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload): string[] {
+  const p = payload.purchase
+  const moneyStr = (c: number): string => (c / 100).toFixed(2)
+  const lines: string[] = [
+    payload.storeName || 'TINDA POS',
+    'PURCHASE ORDER / RECEIVING SLIP',
+    '--------------------------------',
+    `P.O. Number: ${p.purchase_no}`,
+    `Date: ${formatReceiptDate(p.purchase_date)}`,
+    `Supplier: ${p.supplier_name}`,
+    `Invoice #: ${p.invoice_no || '—'}`,
+    `Receipt #: ${p.receipt_no || '—'}`,
+    `Payment: ${p.is_paid ? 'PAID' : `TERMS (${p.terms_days || 0} DAYS)`}`,
+    `Encoder: ${p.user_name || 'Staff'}`
+  ]
+  if (p.notes) {
+    lines.push(`Notes: ${p.notes}`)
+  }
+  lines.push('--------------------------------')
+  lines.push('ITEMS RECEIVED:')
+  lines.push('ITEM / UNIT        QTY    COST    TOTAL')
+  lines.push('--------------------------------')
+
+  let totalQty = 0
+  let totalBase = 0
+  for (const it of p.items) {
+    totalQty += it.qty
+    totalBase += it.qty_base
+    lines.push(it.product_name)
+    const unitPart = `${it.unit_name.toUpperCase()} (x${it.qty})`.padEnd(16, ' ')
+    const costPart = moneyStr(it.unit_cost_c).padStart(8, ' ')
+    const subPart = moneyStr(it.subtotal_c).padStart(8, ' ')
+    lines.push(`  ${unitPart}${costPart}${subPart}`)
+    if (it.discount_input || (it.discount_c && it.discount_c > 0)) {
+      const discLabel = it.discount_input ? `Disc (${it.discount_input})` : 'Disc'
+      lines.push(`    ${discLabel}: -P${moneyStr(it.discount_c || 0)}`)
+    }
+  }
+
+  lines.push('--------------------------------')
+  lines.push(`Gross Total:          P${moneyStr(p.total_c)}`)
+  if (p.discount_c && p.discount_c > 0) {
+    lines.push(`Trade Discount:      -P${moneyStr(p.discount_c)}`)
+  }
+  lines.push('================================')
+  lines.push(`NET PAYABLE:         P${moneyStr(p.net_total_c ?? p.total_c)}`)
+  lines.push('================================')
+  lines.push(`Total Items: ${p.items.length} (${totalQty} units / ${totalBase} base)`)
+  lines.push('Status: RECEIVED & VERIFIED')
+  lines.push('')
+  lines.push('Received By: ___________________')
+  lines.push('Date Signed: ___________________')
+  return lines
+}
+
+export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPayload): { title: string; html: string } {
+  const p = payload.purchase
+  const moneyStr = (c: number): string =>
+    (c / 100).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const storeName = escapeHtml(payload.storeName || 'TINDA POS STORE')
+  const storeAddress = escapeHtml(payload.storeAddress || '')
+  const storePhone = escapeHtml(payload.storePhone || '')
+  const poNo = escapeHtml(p.purchase_no)
+  const title = `Purchase Order - ${poNo}`
+
+  const itemsHtml = p.items
+    .map((it, idx) => {
+      const discDisplay = it.discount_input
+        ? `<span style="color:#d97706; font-size:11px;">${escapeHtml(it.discount_input)}</span>`
+        : it.discount_c && it.discount_c > 0
+          ? `<span style="color:#d97706; font-size:11px;">-₱${moneyStr(it.discount_c)}</span>`
+          : '—'
+
+      return `
+      <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px; ${idx % 2 === 1 ? 'background-color:#f8fafc;' : ''}">
+        <td style="padding: 8px 10px; color: #64748b; text-align: center;">${idx + 1}</td>
+        <td style="padding: 8px 10px; font-weight: 600; color: #0f172a;">
+          ${escapeHtml(it.product_name)}
+          ${it.product_barcode ? `<div style="font-size: 10px; color: #64748b; font-family: monospace;">BARCODE: ${escapeHtml(it.product_barcode)}</div>` : ''}
+        </td>
+        <td style="padding: 8px 10px; text-align: center; color: #334155; font-size: 11px;">
+          <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #cbd5e1;">${escapeHtml(it.unit_name.toUpperCase())}</span>
+        </td>
+        <td style="padding: 8px 10px; text-align: center; font-weight: 700; color: #0f172a; font-family: monospace; font-size: 13px;">${it.qty}</td>
+        <td style="padding: 8px 10px; text-align: center; color: #64748b; font-size: 11px;">${it.qty_base}</td>
+        <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #334155;">₱${moneyStr(it.unit_cost_c)}</td>
+        <td style="padding: 8px 10px; text-align: center;">${discDisplay}</td>
+        <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 700; color: #059669; font-size: 13px;">₱${moneyStr(it.subtotal_c)}</td>
+      </tr>
+    `
+    })
+    .join('')
+
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${title}</title>
+  <style>
+    @page { size: A4; margin: 12mm 15mm; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .header-box { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 14px; margin-bottom: 16px; }
+    .store-title { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin: 0; }
+    .store-sub { font-size: 12px; color: #475569; margin-top: 2px; }
+    .po-badge { text-align: right; }
+    .po-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #059669; }
+    .po-number { font-size: 22px; font-weight: 900; color: #0f172a; font-family: monospace; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
+    .card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .meta-label { color: #64748b; }
+    .meta-val { font-weight: 600; color: #0f172a; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { background: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; font-weight: 700; }
+    .summary-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px; margin-bottom: 24px; }
+    .notes-box { flex: 1; margin-right: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
+    .totals-box { width: 280px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
+    .tot-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+    .tot-grand { display: flex; justify-content: space-between; border-top: 2px solid #059669; padding-top: 8px; margin-top: 6px; font-size: 16px; font-weight: 900; color: #059669; font-family: monospace; }
+    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 40px; }
+    .sig-line { border-top: 1px solid #94a3b8; text-align: center; padding-top: 6px; font-size: 11px; color: #475569; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="header-box">
+    <div>
+      <h1 class="store-title">${storeName}</h1>
+      ${storeAddress ? `<div class="store-sub">${storeAddress}</div>` : ''}
+      ${storePhone ? `<div class="store-sub">Contact: ${storePhone}</div>` : ''}
+      <div class="store-sub" style="margin-top: 4px; font-weight: 600; color: #059669;">PURCHASE ORDER & STOCK RECEIVING VOUCHER</div>
+    </div>
+    <div class="po-badge">
+      <div class="po-label">OFFICIAL P.O. NUMBER</div>
+      <div class="po-number">${poNo}</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Date: ${formatReceiptDate(p.purchase_date)}</div>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="card">
+      <div class="card-title">Vendor / Supplier Details</div>
+      <div style="font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">${escapeHtml(p.supplier_name)}</div>
+      ${p.supplier_contact ? `<div class="meta-row"><span class="meta-label">Contact:</span><span class="meta-val">${escapeHtml(p.supplier_contact)}</span></div>` : ''}
+      ${p.supplier_phone ? `<div class="meta-row"><span class="meta-label">Phone:</span><span class="meta-val">${escapeHtml(p.supplier_phone)}</span></div>` : ''}
+      ${p.supplier_address ? `<div class="meta-row"><span class="meta-label">Address:</span><span class="meta-val">${escapeHtml(p.supplier_address)}</span></div>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Invoice & Payment References</div>
+      <div class="meta-row"><span class="meta-label">Supplier Invoice #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.invoice_no || '—')}</span></div>
+      <div class="meta-row"><span class="meta-label">Official Receipt #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.receipt_no || '—')}</span></div>
+      <div class="meta-row"><span class="meta-label">Payment Status:</span><span class="meta-val" style="color: ${p.is_paid ? '#059669' : '#d97706'}; font-weight: 800;">${p.is_paid ? 'PAID / SETTLED' : `TERMS (${p.terms_days || 0} DAYS)`}</span></div>
+      <div class="meta-row"><span class="meta-label">Encoded By:</span><span class="meta-val">${escapeHtml(p.user_name || 'Admin')}</span></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 30px; text-align: center;">#</th>
+        <th style="text-align: left;">Item Description</th>
+        <th style="width: 70px; text-align: center;">Unit</th>
+        <th style="width: 55px; text-align: center;">Qty</th>
+        <th style="width: 60px; text-align: center;">Base Qty</th>
+        <th style="width: 85px; text-align: right;">Unit Cost</th>
+        <th style="width: 75px; text-align: center;">Disc</th>
+        <th style="width: 100px; text-align: right;">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemsHtml}
+    </tbody>
+  </table>
+
+  <div class="summary-section">
+    <div class="notes-box">
+      <div class="card-title">Memo / Delivery Notes</div>
+      <div style="color: #334155; font-style: ${p.notes ? 'normal' : 'italic'};">
+        ${escapeHtml(p.notes || 'No delivery notes specified for this shipment.')}
+      </div>
+      <div style="margin-top: 10px; font-size: 11px; color: #64748b;">
+        Total Received: <strong>${p.items.length} unique items</strong> (${p.items.reduce((s, i) => s + i.qty, 0)} packages / ${p.items.reduce((s, i) => s + i.qty_base, 0)} base units)
+      </div>
+    </div>
+
+    <div class="totals-box">
+      <div class="tot-row">
+        <span class="meta-label">Gross Amount:</span>
+        <span style="font-family: monospace; font-weight: 600;">₱${moneyStr(p.total_c)}</span>
+      </div>
+      ${p.discount_c && p.discount_c > 0 ? `
+        <div class="tot-row">
+          <span class="meta-label" style="color: #d97706;">Trade Discount:</span>
+          <span style="font-family: monospace; font-weight: 700; color: #d97706;">-₱${moneyStr(p.discount_c)}</span>
+        </div>
+      ` : ''}
+      <div class="tot-grand">
+        <span>NET PAYABLE:</span>
+        <span>₱${moneyStr(p.net_total_c ?? p.total_c)}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="signatures">
+    <div class="sig-line">Prepared / Encoded By<br><strong style="font-size: 12px; color: #0f172a;">${escapeHtml(p.user_name || 'Staff')}</strong></div>
+    <div class="sig-line">Received & Verified By<br><strong style="font-size: 12px; color: #0f172a;">Warehouse / Store Custodian</strong></div>
+    <div class="sig-line">Approved By<br><strong style="font-size: 12px; color: #0f172a;">Store Manager / Owner</strong></div>
+  </div>
+</body>
+</html>`
+
+  return { title, html }
+}

@@ -76,14 +76,15 @@ export function loginPin(pin: string, targetUserId?: number): { user: SessionUse
   return finalize(db, match.id)
 }
 
-export function verifyManagerPin(pin: string): { valid: boolean; name?: string } {
+export function verifyManagerPin(secret: string): { valid: boolean; name?: string } {
   const db = getDb()
-  const candidates = db.prepare('SELECT id, pin_hash, is_active FROM users WHERE is_active = 1').all() as {
+  const candidates = db.prepare('SELECT id, pin_hash, password_hash, is_active FROM users WHERE is_active = 1').all() as {
     id: number
     pin_hash: string
+    password_hash: string
     is_active: number
   }[]
-  const match = candidates.find((c) => verifySecret(pin, c.pin_hash))
+  const match = candidates.find((c) => verifySecret(secret, c.pin_hash) || (c.password_hash && verifySecret(secret, c.password_hash)))
   if (!match) return { valid: false }
   const user = toSession(db, match.id)
   const isManagerOrAdmin = user.roles.some((r) => {

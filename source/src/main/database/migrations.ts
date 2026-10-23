@@ -141,6 +141,16 @@ export function ensureSchemaColumns(db: Database.Database): void {
       db.exec('ALTER TABLE purchases ADD COLUMN net_total_c INTEGER NOT NULL DEFAULT 0')
     }
 
+    const itemCols = new Set(
+      (db.prepare("PRAGMA table_info('purchase_items')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (!itemCols.has('discount_input')) {
+      db.exec('ALTER TABLE purchase_items ADD COLUMN discount_input TEXT')
+    }
+    if (!itemCols.has('discount_c')) {
+      db.exec('ALTER TABLE purchase_items ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
+    }
+
     db.exec(`
       CREATE INDEX IF NOT EXISTS idx_purchases_invoice_no ON purchases(invoice_no);
       CREATE INDEX IF NOT EXISTS idx_purchases_receipt_no ON purchases(receipt_no);

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v4.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,8 +18,8 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.3_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.3_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.4_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/TindaPOS-Setup-4.1.4.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.4_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/TindaPOS-Portable-4.1.4.exe)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,16 +30,26 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v4.1.3 Full Release)
+## ⚡ Quick Download & Release Assets (v4.1.4 Full Windows Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Setup-4.1.3.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-Portable-4.1.3.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-4.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/TindaPOS-4.1.3.AppImage) | `~134.3 MB` | **Linux Desktop AppImage** | 64-bit universal Linux executable with bundled SQLite3 and desktop runner. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/latest-linux.yml) | `0.4 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.3/SHA256SUMS-v4.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/TindaPOS-Setup-4.1.4.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/TindaPOS-Portable-4.1.4.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.4/SHA256SUMS-v4.1.4.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## 🌟 What's New in v4.1.4: Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing
+- **Purchase Invoices History Universal Search Bar**: Live filtering across P.O. Number (`purchase_no`), Supplier Invoice # (`invoice_no`), Receipt # (`receipt_no`), Supplier Name, Encoder/Staff (`user_name`), and status. Fast, debounced, zero-lag query execution with instant 1-click Clear button.
+- **Unified P.O. Details Panel Matching New Invoice Layout**: Clicking any row or P.O. number in history opens a dedicated full invoice view mirroring the "New Invoice" design (Header metadata, status badges, itemized line items with discount formula breakdown, pack units, pcs/unit conversion, base additions, landed net cost, and financial summary cards).
+- **Read-Only by Default & Manager/Admin Authorization Security**: Protects historical financial records from accidental tampering ("bawal mag-edit" by default). An `[ ✏️ Edit ]` button prompts for Admin/Manager PIN or Password verification (`verifyManagerPin`).
+- **Full Line-Item & Metadata Editing Studio**: Once authorized, enables real-time editing of Supplier, Invoice #, Receipt #, Date, Payment Method/Status, and Notes. Line items can be added via the integrated Fast Item Entry bar, packaging units switched, quantities adjusted, and trade discounts modified with live financial recalculation and a green `[ 💾 Save Edit (Ctrl+S) ]` action.
+- **Atomic Stock Reconciliation on Edit**: Automatically calculates inventory differences per product (`delta = new_qty_base - old_qty_base`). Increasing quantities adds stock, decreasing quantities subtracts stock, and removing items safely reverses previously added inventory—all within a single atomic SQLite transaction with full audit trail.
+- **Dual-Format Purchase Order Printing**: Prominent `[ 🖨️ Print ]` button offering both Official A4 / Letter Document voucher (with store header, supplier details, line item table, discounts, and signature blocks) and Thermal POS Slip (58mm / 80mm ESC/POS format).
+- **Sequential Invoice Navigation**: Convenient `[ ◀ Prev. ]` and `[ Next ▶ ]` buttons in the top navigation bar to page through purchase invoices sequentially within the filtered list.
+- **100% Zero-Error Mathematical Precision**: Strict integer-cent (`_c`) arithmetic across all landed costs, discounts, and line-item subtotals.
 
 ---
 

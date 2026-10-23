@@ -405,6 +405,8 @@ export interface PurchaseItem {
   qty: number
   qty_base: number
   unit_cost_c: number
+  discount_input?: string | null
+  discount_c?: number
   subtotal_c: number
 }
 
@@ -425,6 +427,32 @@ export interface CreatePurchaseInput {
     qty: number
     qty_base: number
     unit_cost_c: number
+    discount_input?: string | null
+    discount_c?: number
+    subtotal_c: number
+  }[]
+}
+
+export interface UpdatePurchaseInput {
+  supplier_id: number
+  purchase_date: string
+  reference?: string | null
+  invoice_no?: string | null
+  receipt_no?: string | null
+  is_paid?: boolean
+  terms_days?: number
+  discount_c?: number
+  notes?: string | null
+  update_product_costs?: boolean
+  items: {
+    id?: number
+    product_id: number
+    unit_name: string
+    qty: number
+    qty_base: number
+    unit_cost_c: number
+    discount_input?: string | null
+    discount_c?: number
     subtotal_c: number
   }[]
 }

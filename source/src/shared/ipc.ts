@@ -20,6 +20,7 @@ import type {
   ProductInput,
   Purchase,
   CreatePurchaseInput,
+  UpdatePurchaseInput,
   Refund,
   ReportSummary,
   SalesReportRow,
@@ -357,9 +358,10 @@ export interface TindaApi {
   }
 
   purchases: {
-    list: (opts?: { supplier_id?: number; from?: string; to?: string; limit?: number; offset?: number }) => Promise<{ rows: Purchase[]; total: number }>
+    list: (opts?: { supplier_id?: number; from?: string; to?: string; limit?: number; offset?: number; search?: string }) => Promise<{ rows: Purchase[]; total: number }>
     get: (id: number) => Promise<Purchase>
     create: (input: CreatePurchaseInput) => Promise<Purchase>
+    update: (id: number, input: UpdatePurchaseInput) => Promise<Purchase>
   }
 
   customers: {

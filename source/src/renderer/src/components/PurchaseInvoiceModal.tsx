@@ -23,9 +23,17 @@ import {
   Maximize2,
   ChevronUp,
   ChevronDown,
-  PackageSearch
+  PackageSearch,
+  Printer,
+  Lock,
+  Unlock,
+  ChevronLeft,
+  ChevronRight,
+  Receipt,
+  Eye,
+  Edit3
 } from 'lucide-react'
-import type { Product, Supplier, Purchase, ProductUnit } from '@shared/types'
+import type { Product, Supplier, Purchase, ProductUnit, CreatePurchaseInput, UpdatePurchaseInput } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
 import { Modal } from './ui/Modal'
 import { PurchaseItemPickerModal } from './PurchaseItemPickerModal'
@@ -33,6 +41,14 @@ import { toastSuccess, toastError } from '../stores/toast'
 import { playScanBeep } from '../lib/barcodeScanner'
 import { calculateChainDiscount } from '../utils/supplierDiscount'
 import { matchesProductSearch } from '@shared/searchUtils'
+import { useSettings } from '../stores/settings'
+import { useAuth } from '../stores/auth'
+import {
+  formatPurchaseOrderSlipLines,
+  generatePurchaseOrderDocumentHtml,
+  receiptHtml,
+  type PurchaseOrderPrintPayload
+} from '@shared/receiptHtml'
 
 interface PurchaseInvoiceModalProps {
   open: boolean
@@ -77,6 +93,9 @@ export function PurchaseInvoiceModal({
   onClose,
   onSuccess
 }: PurchaseInvoiceModalProps): React.JSX.Element | null {
+  const { settings, load: loadSettings } = useSettings()
+  const user = useAuth((s) => s.user)
+
   const [activeTab, setActiveTab] = useState<'create' | 'history'>('create')
   const [isMinimized, setIsMinimized] = useState(false)
   const [isHeaderPanelMinimized, setIsHeaderPanelMinimized] = useState(false)
@@ -85,11 +104,11 @@ export function PurchaseInvoiceModal({
   const [loadingInitial, setLoadingInitial] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  // Invoice Header Fields
+  // Invoice Header Fields (Create mode)
   const [supplierId, setSupplierId] = useState<number | ''>('')
   const [invoiceNo, setInvoiceNo] = useState('')
   const [receiptNo, setReceiptNo] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [purchaseDate, setPurchaseDate] = useState<string>(() => new Date().toISOString().slice(0, 10))
   const [isPaid, setIsPaid] = useState(true)
   const [termsDays, setTermsDays] = useState('0')
   const [notes, setNotes] = useState('')
@@ -109,13 +128,41 @@ export function PurchaseInvoiceModal({
   const [dropdownIndex, setDropdownIndex] = useState(0)
   const [showItemPicker, setShowItemPicker] = useState(false)
 
-  // Line items
+  // Line items for Create mode
   const [items, setItems] = useState<InvoiceLineItem[]>([])
 
   // History Tab state
   const [historyList, setHistoryList] = useState<Purchase[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
-  const [selectedHistoryPurchase, setSelectedHistoryPurchase] = useState<Purchase | null>(null)
+  const [historySearch, setHistorySearch] = useState('')
+
+  // View / Edit Invoice from History (VIP feature)
+  const [viewingPurchase, setViewingPurchase] = useState<Purchase | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [authorizedManagerName, setAuthorizedManagerName] = useState('')
+  const [viewSupplierId, setViewSupplierId] = useState<number | ''>('')
+  const [viewInvoiceNo, setViewInvoiceNo] = useState('')
+  const [viewReceiptNo, setViewReceiptNo] = useState('')
+  const [viewPurchaseDate, setViewPurchaseDate] = useState('')
+  const [viewIsPaid, setViewIsPaid] = useState(true)
+  const [viewTermsDays, setViewTermsDays] = useState('0')
+  const [viewNotes, setViewNotes] = useState('')
+  const [viewDiscountPesos, setViewDiscountPesos] = useState('0')
+  const [viewUpdateProductCosts, setViewUpdateProductCosts] = useState(true)
+  const [viewItems, setViewItems] = useState<InvoiceLineItem[]>([])
+
+  // Manager PIN Modal state
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [showPinText, setShowPinText] = useState(false)
+  const [pinError, setPinError] = useState('')
+  const [verifyingPin, setVerifyingPin] = useState(false)
+
+  // Print P.O. Modal state
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [printFormat, setPrintFormat] = useState<'DOCUMENT' | 'THERMAL'>('DOCUMENT')
+  const [useSystemDialog, setUseSystemDialog] = useState(false)
+  const [isPrintingPO, setIsPrintingPO] = useState(false)
 
   // Refs for keyboard focus navigation
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -124,10 +171,16 @@ export function PurchaseInvoiceModal({
   const discountInputRef = useRef<HTMLInputElement>(null)
   const unitSelectRef = useRef<HTMLSelectElement>(null)
 
-  // Selected supplier details
+  // Selected supplier details (Create mode)
   const currentSupplier = useMemo(() => {
     return suppliers.find((s) => s.id === Number(supplierId)) || null
   }, [suppliers, supplierId])
+
+  // Selected supplier details (View/Edit mode)
+  const currentViewSupplier = useMemo(() => {
+    const sId = viewSupplierId || viewingPurchase?.supplier_id
+    return suppliers.find((s) => s.id === Number(sId)) || null
+  }, [suppliers, viewSupplierId, viewingPurchase])
 
   // Load initial data
   const loadData = async () => {
@@ -135,7 +188,7 @@ export function PurchaseInvoiceModal({
     try {
       const [supList, prodRes] = await Promise.all([
         window.api.suppliers.list(),
-        window.api.products.search('', { status: 'ACTIVE', limit: 2000 })
+        window.api.products.search('', { status: 'ACTIVE', limit: 3000 })
       ])
       setSuppliers(supList)
       setAllProducts(prodRes.rows)
@@ -154,7 +207,7 @@ export function PurchaseInvoiceModal({
   const loadHistory = async () => {
     setHistoryLoading(true)
     try {
-      const res = await window.api.purchases.list({ limit: 50 })
+      const res = await window.api.purchases.list({ limit: 150 })
       setHistoryList(Array.isArray(res?.rows) ? res.rows : [])
     } catch (err) {
       console.error('Failed to load purchase history:', err)
@@ -169,6 +222,7 @@ export function PurchaseInvoiceModal({
     if (open) {
       setIsMinimized(false)
       void loadData()
+      if (!settings) void loadSettings()
       if (activeTab === 'history') {
         void loadHistory()
       }
@@ -177,13 +231,13 @@ export function PurchaseInvoiceModal({
 
   // Focus search when modal opens
   useEffect(() => {
-    if (open && activeTab === 'create') {
+    if (open && activeTab === 'create' && !viewingPurchase) {
       const timer = setTimeout(() => {
         searchInputRef.current?.focus()
       }, 100)
       return () => clearTimeout(timer)
     }
-  }, [open, activeTab])
+  }, [open, activeTab, viewingPurchase])
 
   // Available units for the selected product: base unit, configured units, and standard packaging units
   const availableUnits = useMemo(() => {
@@ -231,6 +285,32 @@ export function PurchaseInvoiceModal({
       .filter((p) => matchesProductSearch(p, q))
       .slice(0, 10)
   }, [allProducts, searchQuery])
+
+  // Filtered History list by Search Bar (P.O. Number, Invoice #, Receipt #, Supplier, Date, Encoder)
+  const filteredHistoryList = useMemo(() => {
+    const q = historySearch.trim().toLowerCase()
+    if (!q) return historyList
+    return historyList.filter((p) => {
+      return (
+        (p.purchase_no && p.purchase_no.toLowerCase().includes(q)) ||
+        (p.invoice_no && p.invoice_no.toLowerCase().includes(q)) ||
+        (p.receipt_no && p.receipt_no.toLowerCase().includes(q)) ||
+        (p.supplier_name && p.supplier_name.toLowerCase().includes(q)) ||
+        (p.user_name && p.user_name.toLowerCase().includes(q)) ||
+        (p.purchase_date && p.purchase_date.toLowerCase().includes(q)) ||
+        (p.is_paid ? 'paid' : 'terms').includes(q)
+      )
+    })
+  }, [historyList, historySearch])
+
+  // Index and Prev / Next Navigation for viewing an invoice
+  const currentHistoryIndex = useMemo(() => {
+    if (!viewingPurchase) return -1
+    return filteredHistoryList.findIndex((p) => p.id === viewingPurchase.id)
+  }, [filteredHistoryList, viewingPurchase])
+
+  const hasPrev = currentHistoryIndex > 0
+  const hasNext = currentHistoryIndex >= 0 && currentHistoryIndex < filteredHistoryList.length - 1
 
   // Product Selection Handler
   const handleSelectProduct = (product: Product) => {
@@ -335,59 +415,88 @@ export function PurchaseInvoiceModal({
     const unitCostC = Math.round(unitCost * 100)
     const grossSubtotalC = Math.round(qty * unitCostC)
 
-    // Evaluate trade discount on this line (supports "-5%-5%-5%", "10/5", "5+5+5", "₱50", etc.)
+    // Evaluate trade discount on this line
     const lineDiscount = calculateChainDiscount(grossSubtotalC, itemDiscountInput)
     const discountC = lineDiscount.discountAmountC
     const subtotalC = Math.max(0, grossSubtotalC - discountC)
     const netUnitCostC = qty > 0 ? Math.round(subtotalC / qty) : unitCostC
 
-    // Check if item with same product & unit already in grid
-    const existingIndex = items.findIndex(
-      (it) => it.productId === selectedProduct.id && it.unitName.toLowerCase() === effectiveUnitName.toLowerCase()
-    )
+    const newItem: InvoiceLineItem = {
+      tempId: `item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      barcode: selectedProduct.barcode || '',
+      sku: selectedProduct.sku || '',
+      unitName: effectiveUnitName,
+      conversionToBase: mult,
+      qty,
+      qtyBase,
+      unitCostC,
+      discountInput: itemDiscountInput.trim(),
+      discountC,
+      netUnitCostC,
+      subtotalC
+    }
 
-    if (existingIndex >= 0) {
-      // Update existing item
-      const updated = [...items]
-      const existing = updated[existingIndex]
-      if (existing) {
-        const newQty = existing.qty + qty
-        const newQtyBase = Math.round(newQty * mult * 1000) / 1000
-        const newGrossSubtotal = Math.round(newQty * unitCostC)
-        const combinedFormula = itemDiscountInput.trim() || existing.discountInput
-        const newDiscount = calculateChainDiscount(newGrossSubtotal, combinedFormula)
-        const newSubtotal = Math.max(0, newGrossSubtotal - newDiscount.discountAmountC)
-        updated[existingIndex] = {
-          ...existing,
-          qty: newQty,
-          qtyBase: newQtyBase,
-          unitCostC,
-          discountInput: combinedFormula,
-          discountC: newDiscount.discountAmountC,
-          netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
-          subtotalC: newSubtotal
+    // Determine target list: viewItems (if in edit mode) or items (if in create mode)
+    if (viewingPurchase && isEditMode) {
+      const existingIndex = viewItems.findIndex(
+        (it) => it.productId === selectedProduct.id && it.unitName.toLowerCase() === effectiveUnitName.toLowerCase()
+      )
+      if (existingIndex >= 0) {
+        const updated = [...viewItems]
+        const existing = updated[existingIndex]
+        if (existing) {
+          const newQty = existing.qty + qty
+          const newQtyBase = Math.round(newQty * mult * 1000) / 1000
+          const newGrossSubtotal = Math.round(newQty * unitCostC)
+          const combinedFormula = itemDiscountInput.trim() || existing.discountInput
+          const newDiscount = calculateChainDiscount(newGrossSubtotal, combinedFormula)
+          const newSubtotal = Math.max(0, newGrossSubtotal - newDiscount.discountAmountC)
+          updated[existingIndex] = {
+            ...existing,
+            qty: newQty,
+            qtyBase: newQtyBase,
+            unitCostC,
+            discountInput: combinedFormula,
+            discountC: newDiscount.discountAmountC,
+            netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
+            subtotalC: newSubtotal
+          }
+          setViewItems(updated)
         }
-        setItems(updated)
+      } else {
+        setViewItems([...viewItems, newItem])
       }
     } else {
-      // Append new item
-      const newItem: InvoiceLineItem = {
-        tempId: `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        productId: selectedProduct.id,
-        productName: selectedProduct.name,
-        barcode: selectedProduct.barcode || selectedProduct.sku || '—',
-        sku: selectedProduct.sku,
-        unitName: effectiveUnitName,
-        conversionToBase: mult,
-        qty,
-        qtyBase,
-        unitCostC,
-        discountInput: itemDiscountInput.trim(),
-        discountC,
-        netUnitCostC,
-        subtotalC
+      const existingIndex = items.findIndex(
+        (it) => it.productId === selectedProduct.id && it.unitName.toLowerCase() === effectiveUnitName.toLowerCase()
+      )
+      if (existingIndex >= 0) {
+        const updated = [...items]
+        const existing = updated[existingIndex]
+        if (existing) {
+          const newQty = existing.qty + qty
+          const newQtyBase = Math.round(newQty * mult * 1000) / 1000
+          const newGrossSubtotal = Math.round(newQty * unitCostC)
+          const combinedFormula = itemDiscountInput.trim() || existing.discountInput
+          const newDiscount = calculateChainDiscount(newGrossSubtotal, combinedFormula)
+          const newSubtotal = Math.max(0, newGrossSubtotal - newDiscount.discountAmountC)
+          updated[existingIndex] = {
+            ...existing,
+            qty: newQty,
+            qtyBase: newQtyBase,
+            unitCostC,
+            discountInput: combinedFormula,
+            discountC: newDiscount.discountAmountC,
+            netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
+            subtotalC: newSubtotal
+          }
+          setItems(updated)
+        }
+      } else {
+        setItems([...items, newItem])
       }
-      setItems([...items, newItem])
     }
 
     playScanBeep()
@@ -403,25 +512,30 @@ export function PurchaseInvoiceModal({
     setItemDiscountInput('')
     setShowDropdown(false)
 
-    // Focus back to Item Code / Search input for next item!
     setTimeout(() => {
       searchInputRef.current?.focus()
     }, 50)
   }
 
-  // Remove Line Item (F3)
+  // Remove Line Item
   const handleRemoveItem = (tempId: string) => {
-    setItems((prev) => prev.filter((it) => it.tempId !== tempId))
+    if (viewingPurchase && isEditMode) {
+      setViewItems((prev) => prev.filter((it) => it.tempId !== tempId))
+    } else {
+      setItems((prev) => prev.filter((it) => it.tempId !== tempId))
+    }
   }
 
   // Remove Last Line Item
   const handleRemoveLastItem = () => {
-    if (items.length > 0) {
-      setItems((prev) => prev.slice(0, -1))
+    if (viewingPurchase && isEditMode) {
+      if (viewItems.length > 0) setViewItems((prev) => prev.slice(0, -1))
+    } else {
+      if (items.length > 0) setItems((prev) => prev.slice(0, -1))
     }
   }
 
-  // Math Calculations (including compound invoice trade discount)
+  // Create Mode Math Calculations
   const grossTotalC = useMemo(() => {
     return items.reduce((sum, it) => sum + it.subtotalC, 0)
   }, [items])
@@ -440,7 +554,26 @@ export function PurchaseInvoiceModal({
     return items.reduce((sum, it) => sum + it.qtyBase, 0)
   }, [items])
 
-  // Save / Post Purchase Invoice
+  // View / Edit Mode Math Calculations
+  const viewGrossTotalC = useMemo(() => {
+    return viewItems.reduce((sum, it) => sum + it.subtotalC, 0)
+  }, [viewItems])
+
+  const viewInvoiceDiscountResult = useMemo(() => {
+    return calculateChainDiscount(viewGrossTotalC, viewDiscountPesos)
+  }, [viewGrossTotalC, viewDiscountPesos])
+
+  const viewDiscountC = viewInvoiceDiscountResult.discountAmountC
+
+  const viewNetTotalC = useMemo(() => {
+    return Math.max(0, viewGrossTotalC - viewDiscountC)
+  }, [viewGrossTotalC, viewDiscountC])
+
+  const viewTotalBaseUnits = useMemo(() => {
+    return viewItems.reduce((sum, it) => sum + it.qtyBase, 0)
+  }, [viewItems])
+
+  // Save / Post New Purchase Invoice
   const handleSaveInvoice = async () => {
     if (!supplierId) {
       toastError('Supplier Missing', 'Please select a supplier for this invoice.')
@@ -448,21 +581,19 @@ export function PurchaseInvoiceModal({
     }
 
     if (items.length === 0) {
-      toastError('Empty Invoice', 'Please add at least one item before saving.')
-      searchInputRef.current?.focus()
+      toastError('No Items', 'Please add at least one product to the invoice.')
       return
     }
 
     setSubmitting(true)
     try {
-      const payload = {
+      const payload: CreatePurchaseInput = {
         supplier_id: Number(supplierId),
-        purchase_date: purchaseDate || new Date().toISOString().split('T')[0] || '2026-01-01',
+        purchase_date: purchaseDate,
         invoice_no: invoiceNo.trim() || null,
         receipt_no: receiptNo.trim() || null,
-        reference: invoiceNo.trim() || receiptNo.trim() || null,
         is_paid: isPaid,
-        terms_days: parseInt(termsDays, 10) || 0,
+        terms_days: isPaid ? 0 : parseInt(termsDays, 10) || 0,
         discount_c: discountC,
         notes: notes.trim() || null,
         update_product_costs: updateProductCosts,
@@ -472,40 +603,256 @@ export function PurchaseInvoiceModal({
           qty: it.qty,
           qty_base: it.qtyBase,
           unit_cost_c: it.unitCostC,
+          discount_input: it.discountInput || null,
+          discount_c: it.discountC,
           subtotal_c: it.subtotalC
         }))
       }
 
       const res = await window.api.purchases.create(payload)
-
       toastSuccess(
-        'Purchase Invoice Posted',
-        `Invoice ${res.purchase_no} recorded! ${items.length} product(s) stock incremented.`
+        'Invoice Saved & Stocks Updated!',
+        `Purchase ${res.purchase_no} recorded successfully with ${items.length} items.`
       )
 
-      setIsMinimized(false)
+      // Reset form
+      setItems([])
+      setInvoiceNo('')
+      setReceiptNo('')
+      setNotes('')
+      setDiscountPesos('0')
       onSuccess()
       onClose()
     } catch (err) {
+      console.error('Failed to create purchase invoice:', err)
       toastError('Failed to Save Invoice', String((err as Error)?.message || err))
     } finally {
       setSubmitting(false)
     }
   }
 
-  // Handle modal / dock close with discard protection
-  const handleClose = () => {
-    if (items.length > 0) {
-      const confirmDiscard = window.confirm(
-        `You have ${items.length} unsaved item${items.length === 1 ? '' : 's'} in this purchase invoice. Are you sure you want to discard this draft?`
-      )
-      if (!confirmDiscard) return
-    }
-    setIsMinimized(false)
-    onClose()
+  // Open an invoice from history into View Panel (Image 2 -> Image 3)
+  const handleOpenPurchaseDetails = (p: Purchase) => {
+    setViewingPurchase(p)
+    setIsEditMode(false)
+    setAuthorizedManagerName('')
+    setShowPinModal(false)
+    setShowPrintModal(false)
+
+    // Populate view / edit state
+    setViewSupplierId(p.supplier_id)
+    setViewInvoiceNo(p.invoice_no || '')
+    setViewReceiptNo(p.receipt_no || '')
+    setViewPurchaseDate(p.purchase_date || new Date().toISOString().slice(0, 10))
+    setViewIsPaid(p.is_paid !== false)
+    setViewTermsDays(String(p.terms_days || 0))
+    setViewNotes(p.notes || '')
+    setViewDiscountPesos(p.discount_c ? (p.discount_c / 100).toFixed(2) : '0')
+    setViewUpdateProductCosts(true)
+
+    // Populate line items
+    const mappedItems: InvoiceLineItem[] = (p.items || []).map((it, idx) => {
+      const matchedProd = allProducts.find((pr) => pr.id === it.product_id)
+      const unitObj = matchedProd?.units?.find((u) => u.name.toLowerCase() === it.unit_name.toLowerCase())
+      const conversion = unitObj?.conversion_to_base || (it.qty > 0 ? Math.round(it.qty_base / it.qty) : 1)
+
+      const grossUnitCostC = it.unit_cost_c
+      const discountC = it.discount_c || Math.max(0, grossUnitCostC * it.qty - it.subtotal_c)
+      const discountInput: string = it.discount_input ? String(it.discount_input) : (discountC > 0 ? (discountC / 100).toFixed(2) : '')
+      const netUnitCostC = it.qty > 0 ? Math.round(it.subtotal_c / it.qty) : grossUnitCostC
+
+      return {
+        tempId: `view-item-${it.id || idx}-${Date.now()}`,
+        productId: it.product_id,
+        productName: it.product_name,
+        barcode: it.product_barcode || matchedProd?.barcode || '',
+        sku: it.product_sku || matchedProd?.sku || '',
+        unitName: it.unit_name,
+        conversionToBase: conversion,
+        qty: it.qty,
+        qtyBase: it.qty_base,
+        unitCostC: grossUnitCostC,
+        discountInput,
+        discountC,
+        netUnitCostC,
+        subtotalC: it.subtotal_c
+      }
+    })
+
+    setViewItems(mappedItems)
   }
 
-  // Global Keyboard Shortcuts
+  // Previous and Next Invoice Navigation
+  const handlePrevPurchase = () => {
+    if (hasPrev) {
+      const prev = filteredHistoryList[currentHistoryIndex - 1]
+      if (prev) handleOpenPurchaseDetails(prev)
+    }
+  }
+
+  const handleNextPurchase = () => {
+    if (hasNext) {
+      const next = filteredHistoryList[currentHistoryIndex + 1]
+      if (next) handleOpenPurchaseDetails(next)
+    }
+  }
+
+  // Verify Manager PIN / Password to unlock Edit Mode
+  const handleVerifyPin = async () => {
+    if (!pinInput.trim()) return
+    setVerifyingPin(true)
+    setPinError('')
+    try {
+      const res = await window.api.auth.verifyManagerPin(pinInput.trim())
+      if (res.valid) {
+        setIsEditMode(true)
+        setAuthorizedManagerName(res.name ?? 'Manager')
+        setShowPinModal(false)
+        setPinInput('')
+        toastSuccess('Access Granted', `Authorized by ${res.name || 'Admin/Manager'}. You can now edit this invoice.`)
+      } else {
+        setPinError('Invalid Admin or Manager PIN/Password. Access denied.')
+      }
+    } catch (err) {
+      setPinError(String((err as Error)?.message || err))
+    } finally {
+      setVerifyingPin(false)
+    }
+  }
+
+  // Save Edit (Image 3 bottom right)
+  const handleSaveEdit = async () => {
+    if (!viewingPurchase) return
+    if (!viewSupplierId) {
+      toastError('Supplier Missing', 'Please select a supplier for this invoice.')
+      return
+    }
+
+    if (viewItems.length === 0) {
+      toastError('No Items', 'Purchase invoice must have at least one line item.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const payload: UpdatePurchaseInput = {
+        supplier_id: Number(viewSupplierId),
+        purchase_date: viewPurchaseDate,
+        invoice_no: viewInvoiceNo.trim() || null,
+        receipt_no: viewReceiptNo.trim() || null,
+        is_paid: viewIsPaid,
+        terms_days: viewIsPaid ? 0 : parseInt(viewTermsDays, 10) || 0,
+        discount_c: viewDiscountC,
+        notes: viewNotes.trim() || null,
+        update_product_costs: viewUpdateProductCosts,
+        items: viewItems.map((it) => ({
+          product_id: it.productId,
+          unit_name: it.unitName,
+          qty: it.qty,
+          qty_base: it.qtyBase,
+          unit_cost_c: it.unitCostC,
+          discount_input: it.discountInput || null,
+          discount_c: it.discountC,
+          subtotal_c: it.subtotalC
+        }))
+      }
+
+      const updated = await window.api.purchases.update(viewingPurchase.id, payload)
+      toastSuccess(
+        'Purchase Invoice Updated!',
+        `P.O. ${updated.purchase_no} updated successfully with inventory reconciliation.`
+      )
+
+      setIsEditMode(false)
+      setViewingPurchase(updated)
+      void loadHistory()
+      onSuccess()
+    } catch (err) {
+      console.error('Failed to update purchase invoice:', err)
+      toastError('Update Failed', String((err as Error)?.message || err))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // Print P.O. Voucher / Thermal Receipt
+  const handlePrintPO = async () => {
+    if (!viewingPurchase) return
+    setIsPrintingPO(true)
+    try {
+      const payload: PurchaseOrderPrintPayload = {
+        storeName: settings?.store_name || 'TINDA POS',
+        storeAddress: settings?.address || '',
+        storePhone: settings?.phone || '',
+        purchase: {
+          ...viewingPurchase,
+          supplier_address: currentViewSupplier?.address,
+          supplier_contact: currentViewSupplier?.contact_person,
+          supplier_phone: currentViewSupplier?.phone
+        }
+      }
+
+      if (printFormat === 'DOCUMENT') {
+        const { title, html } = generatePurchaseOrderDocumentHtml(payload)
+        if (window.api?.printer?.printDocument) {
+          const res = await window.api.printer.printDocument(html, {
+            manual: useSystemDialog,
+            title,
+            pageSize: 'A4'
+          })
+          if (res.ok) {
+            toastSuccess('Document Printed', `P.O. Voucher ${viewingPurchase.purchase_no} sent to printer.`)
+            setShowPrintModal(false)
+          } else if (res.code !== 'DISABLED') {
+            toastError('Print Failed', res.message)
+          }
+        } else {
+          const printWin = window.open('', '_blank', 'width=850,height=1000')
+          if (printWin) {
+            printWin.document.write(html)
+            printWin.document.close()
+            printWin.focus()
+            setTimeout(() => printWin.print(), 250)
+          }
+        }
+      } else {
+        // Thermal receipt format
+        const lines = formatPurchaseOrderSlipLines(payload)
+        const thermalHtml = receiptHtml(lines, '80mm', '₱', {
+          fontScale: 100
+        })
+        if (window.api?.printer?.printDocument) {
+          const res = await window.api.printer.printDocument(thermalHtml, {
+            manual: useSystemDialog,
+            title: `P.O. Slip ${viewingPurchase.purchase_no}`,
+            widthMm: 80,
+            heightMm: 220
+          })
+          if (res.ok) {
+            toastSuccess('Thermal Slip Printed', `P.O. Slip ${viewingPurchase.purchase_no} printed on thermal roll.`)
+            setShowPrintModal(false)
+          } else if (res.code !== 'DISABLED') {
+            toastError('Print Failed', res.message)
+          }
+        } else {
+          const printWin = window.open('', '_blank', 'width=400,height=800')
+          if (printWin) {
+            printWin.document.write(thermalHtml)
+            printWin.document.close()
+            printWin.focus()
+            setTimeout(() => printWin.print(), 250)
+          }
+        }
+      }
+    } catch (err) {
+      console.error('P.O. print error:', err)
+      toastError('Print Error', String((err as Error)?.message || err))
+    } finally {
+      setIsPrintingPO(false)
+    }
+  }
+
+  // Keyboard Shortcuts: F1, F2, F3, Ctrl+S
   useEffect(() => {
     if (!open || isMinimized) return
 
@@ -517,19 +864,10 @@ export function PurchaseInvoiceModal({
         return
       }
 
-      // F2: Commit Item (if product selected or entering qty)
+      // F2: Commit Item
       if (e.key === 'F2') {
         e.preventDefault()
-        if (selectedProduct) {
-          handleCommitItem()
-        } else {
-          // If no item staged and invoice has items, suggest save or focus
-          if (items.length > 0) {
-            void handleSaveInvoice()
-          } else {
-            searchInputRef.current?.focus()
-          }
-        }
+        handleCommitItem()
         return
       }
 
@@ -540,25 +878,48 @@ export function PurchaseInvoiceModal({
         return
       }
 
-      // F6: Barcode scan focus
-      if (e.key === 'F6') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
-        return
-      }
-
-      // Ctrl+S: Post Invoice
+      // Ctrl+S / Cmd+S: Save Invoice
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault()
-        void handleSaveInvoice()
-        return
+        if (viewingPurchase && isEditMode) {
+          void handleSaveEdit()
+        } else if (activeTab === 'create') {
+          void handleSaveInvoice()
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, isMinimized, selectedProduct, qtyInput, unitCostPesos, selectedUnitName, items, supplierId, invoiceNo, receiptNo, isPaid, termsDays, discountC, notes, updateProductCosts])
+  }, [
+    open,
+    isMinimized,
+    selectedProduct,
+    qtyInput,
+    unitCostPesos,
+    selectedUnitName,
+    items,
+    viewItems,
+    supplierId,
+    viewSupplierId,
+    invoiceNo,
+    viewInvoiceNo,
+    receiptNo,
+    viewReceiptNo,
+    isPaid,
+    viewIsPaid,
+    termsDays,
+    viewTermsDays,
+    discountC,
+    viewDiscountC,
+    notes,
+    viewNotes,
+    updateProductCosts,
+    viewUpdateProductCosts,
+    viewingPurchase,
+    isEditMode,
+    activeTab
+  ])
 
   if (!open) return null
 
@@ -568,85 +929,56 @@ export function PurchaseInvoiceModal({
       {isMinimized && (
         <div
           className="fixed bottom-5 right-6 z-50 flex items-center gap-4 rounded-2xl border border-white/10 bg-ink-900/95 p-4 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-300 select-none cursor-pointer hover:border-emerald-500/30 transition-all"
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest('button[data-action="discard"]')) return
-            setIsMinimized(false)
-          }}
+          onClick={() => setIsMinimized(false)}
         >
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner">
-            <FileSpreadsheet className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Truck className="h-6 w-6" />
           </div>
-
-          <div className="flex flex-col">
+          <div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                Receiving Invoice in Progress
-              </span>
-              <span className="rounded-full bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-300">
-                {items.length} line item{items.length === 1 ? '' : 's'}
+              <span className="text-sm font-bold text-white">Purchase Invoice Receiving</span>
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                {viewingPurchase ? (isEditMode ? 'EDITING' : 'VIEWING') : 'ACTIVE'}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span
-                className="text-sm font-bold text-white truncate max-w-[180px]"
-                title={currentSupplier?.name || 'Walk-in / Direct'}
-              >
-                {currentSupplier?.name || 'Walk-in / Direct'}
-              </span>
-              <span className="text-xs text-slate-500">•</span>
-              <span className="font-mono text-sm font-bold text-emerald-400">
-                {money(netTotalC)}
-              </span>
-            </div>
+            <p className="text-xs text-zinc-400">
+              {viewingPurchase
+                ? `${viewingPurchase.purchase_no} (${viewItems.length} items · ${money(viewNetTotalC)})`
+                : `${items.length} items staged (${money(netTotalC)})`}
+            </p>
           </div>
-
-          <div className="flex items-center gap-1.5 pl-2 border-l border-white/10">
-            <button
-              type="button"
-              onClick={() => setIsMinimized(false)}
-              title="Restore Invoice Modal"
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-2 text-xs font-bold text-white shadow-md transition-all active:scale-95"
-            >
-              <Maximize2 className="h-3.5 w-3.5" />
-              <span>Restore</span>
-            </button>
-
-            <button
-              type="button"
-              data-action="discard"
-              onClick={handleClose}
-              title="Discard / Close Invoice"
-              className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsMinimized(false)
+            }}
+            className="ml-2 rounded-lg bg-white/10 p-2 text-zinc-300 hover:bg-white/20 hover:text-white transition-colors"
+            title="Restore Window"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
         </div>
       )}
 
-      {/* Full Modal Dialog */}
+      {/* Main Full-Size Purchase Invoice Modal */}
       {!isMinimized && (
         <Modal
           open={open}
-          onClose={handleClose}
-          title=""
+          onClose={onClose}
           maxWidth="max-w-7xl"
-          zIndex="z-50"
+          title=""
         >
-          <div className="-mt-3 flex flex-col gap-4">
-            {/* Header Tabs & Title */}
-            <div className="flex flex-wrap items-center justify-between border-b border-ink-line pb-3">
+          <div className="flex flex-col space-y-4 p-5">
+            {/* Top Navigation & Tab Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-ink-line">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-inner">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 shadow-sm">
                   <FileSpreadsheet className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-white tracking-tight">Purchase Invoice</h2>
+                    <h2 className="text-base font-bold text-white">Purchase Invoice</h2>
                     <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
                       Batch Stock-In Receiving
                     </span>
@@ -661,9 +993,13 @@ export function PurchaseInvoiceModal({
                 <div className="flex rounded-lg border border-ink-line bg-ink-950 p-1">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('create')}
+                    onClick={() => {
+                      setViewingPurchase(null)
+                      setIsEditMode(false)
+                      setActiveTab('create')
+                    }}
                     className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-                      activeTab === 'create'
+                      activeTab === 'create' && !viewingPurchase
                         ? 'bg-emerald-600 text-white shadow-sm'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
@@ -674,11 +1010,13 @@ export function PurchaseInvoiceModal({
                   <button
                     type="button"
                     onClick={() => {
+                      setViewingPurchase(null)
+                      setIsEditMode(false)
                       setActiveTab('history')
                       void loadHistory()
                     }}
                     className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-                      activeTab === 'history'
+                      activeTab === 'history' || viewingPurchase
                         ? 'bg-ink-700 text-white shadow-sm'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
@@ -699,149 +1037,1541 @@ export function PurchaseInvoiceModal({
               </div>
             </div>
 
-        {activeTab === 'history' ? (
-          /* HISTORY TAB */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-400">
-                Showing recent {historyList.length} purchase invoices
-              </p>
-              <button
-                onClick={() => void loadHistory()}
-                className="btn-ghost flex items-center gap-1.5 text-xs text-slate-300"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${historyLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-            </div>
-
-            {historyLoading ? (
-              <div className="space-y-2 py-8 text-center text-sm text-slate-400">
-                Loading purchase invoices…
-              </div>
-            ) : historyList.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-ink-line p-10 text-center text-slate-500">
-                No purchase invoices recorded yet. Click &quot;New Invoice&quot; to create one.
-              </div>
-            ) : (
-              <div className="max-h-[60vh] overflow-auto rounded-xl border border-ink-line">
-                <table className="table min-w-[900px]">
-                  <thead>
-                    <tr>
-                      <th className="py-2.5 px-3 text-left">P.O. Number</th>
-                      <th className="py-2.5 px-3 text-left">Invoice #</th>
-                      <th className="py-2.5 px-3 text-left">Receipt #</th>
-                      <th className="py-2.5 px-3 text-left">Supplier</th>
-                      <th className="py-2.5 px-3 text-center">Date</th>
-                      <th className="py-2.5 px-3 text-center">Items</th>
-                      <th className="py-2.5 px-3 text-center">Status</th>
-                      <th className="py-2.5 px-3 text-right">Net Amount</th>
-                      <th className="py-2.5 px-3 text-center">Encoder</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historyList.map((p) => (
-                      <tr
-                        key={p.id}
-                        onClick={() => setSelectedHistoryPurchase(p)}
-                        className="cursor-pointer hover:bg-ink-800 transition-colors"
-                      >
-                        <td className="py-2.5 px-3 font-mono font-semibold text-brand-300">
-                          {p.purchase_no}
-                        </td>
-                        <td className="py-2.5 px-3 font-mono text-xs text-white">
-                          {p.invoice_no || '—'}
-                        </td>
-                        <td className="py-2.5 px-3 font-mono text-xs text-slate-300">
-                          {p.receipt_no || '—'}
-                        </td>
-                        <td className="py-2.5 px-3 font-medium text-white truncate max-w-[200px]">
-                          {p.supplier_name}
-                        </td>
-                        <td className="py-2.5 px-3 text-center text-xs text-slate-400">
-                          {shortDate(p.purchase_date)}
-                        </td>
-                        <td className="py-2.5 px-3 text-center text-xs text-slate-300 font-mono">
-                          {p.items?.length || 0}
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <span
-                            className={`badge inline-flex items-center text-[10px] ${
-                              p.is_paid
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                                : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                            }`}
-                          >
-                            {p.is_paid ? 'PAID' : `TERMS ${p.terms_days || 0}D`}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-emerald-400">
-                          {money(p.net_total_c ?? p.total_c)}
-                        </td>
-                        <td className="py-2.5 px-3 text-center text-xs text-slate-400">
-                          {p.user_name || '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* History Details View Modal */}
-            {selectedHistoryPurchase && (
-              <Modal
-                open
-                onClose={() => setSelectedHistoryPurchase(null)}
-                title={`Purchase Details: ${selectedHistoryPurchase.purchase_no}`}
-                maxWidth="max-w-4xl"
-                footer={
-                  <button className="btn-ghost" onClick={() => setSelectedHistoryPurchase(null)}>
-                    Close
-                  </button>
-                }
-              >
+            {/* TAB CONTENT: HISTORY OR CREATE */}
+            {activeTab === 'history' ? (
+              viewingPurchase ? (
+                /* VIEW / EDIT PURCHASE INVOICE DETAIL PANEL (IMAGE 3) */
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4 rounded-xl border border-ink-line bg-ink-950 p-3 text-xs">
-                    <div>
-                      <span className="text-slate-500">Supplier:</span>
-                      <p className="font-semibold text-white">{selectedHistoryPurchase.supplier_name}</p>
+                  {/* Top Bar for Viewing / Editing: Print, Edit, Prev, Next, Close (Image 3) */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-xl border border-ink-line bg-ink-950">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowPrintModal(true)}
+                        className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-ink-850 hover:bg-ink-700 border border-ink-line rounded-lg transition-all shadow-sm"
+                        title="Print Purchase Order / Receiving Slip"
+                      >
+                        <Printer className="h-4 w-4 text-emerald-400" />
+                        <span>Print</span>
+                      </button>
+
+                      {!isEditMode ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPinInput('')
+                            setPinError('')
+                            setShowPinModal(true)
+                          }}
+                          className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition-all"
+                          title="Admin or Manager PIN required to edit this invoice"
+                        >
+                          <Lock className="h-3.5 w-3.5 text-amber-400" />
+                          <span>Edit</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (viewingPurchase) handleOpenPurchaseDetails(viewingPurchase)
+                          }}
+                          className="btn-ghost flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-ink-850 border border-ink-line rounded-lg"
+                        >
+                          <X className="h-3.5 w-3.5 text-slate-400" />
+                          <span>Cancel Edit</span>
+                        </button>
+                      )}
+
+                      <span className="font-mono font-bold text-sm text-emerald-400 ml-2">
+                        {viewingPurchase.purchase_no}
+                      </span>
+
+                      {isEditMode ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-300">
+                          <Edit3 className="h-3 w-3" />
+                          EDITING MODE ({authorizedManagerName || 'Authorized'})
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/80 border border-slate-700 px-2.5 py-0.5 text-[11px] font-medium text-slate-300">
+                          <Lock className="h-3 w-3 text-slate-400" />
+                          Read-Only
+                        </span>
+                      )}
+
+                      <span
+                        className={`badge inline-flex items-center text-[10px] font-semibold ${
+                          viewingPurchase.is_paid
+                            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                            : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                        }`}
+                      >
+                        {viewingPurchase.is_paid ? 'PAID' : `TERMS ${viewingPurchase.terms_days || 0}D`}
+                      </span>
                     </div>
-                    <div>
-                      <span className="text-slate-500">Invoice No:</span>
-                      <p className="font-semibold text-white">{selectedHistoryPurchase.invoice_no || '—'}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Receipt No:</span>
-                      <p className="font-semibold text-white">{selectedHistoryPurchase.receipt_no || '—'}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Date:</span>
-                      <p className="font-semibold text-white">{shortDate(selectedHistoryPurchase.purchase_date)}</p>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 rounded-lg border border-ink-line bg-ink-900 p-1">
+                        <button
+                          type="button"
+                          disabled={!hasPrev}
+                          onClick={handlePrevPurchase}
+                          className={`flex items-center gap-1 rounded px-2.5 py-1 text-xs font-semibold transition-all ${
+                            hasPrev
+                              ? 'text-white hover:bg-ink-800'
+                              : 'text-slate-600 cursor-not-allowed opacity-40'
+                          }`}
+                          title="Previous Invoice"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                          <span>Prev.</span>
+                        </button>
+
+                        <span className="px-2 text-[11px] font-mono text-slate-400 border-x border-ink-line">
+                          {currentHistoryIndex >= 0 ? `${currentHistoryIndex + 1} of ${filteredHistoryList.length}` : '—'}
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={!hasNext}
+                          onClick={handleNextPurchase}
+                          className={`flex items-center gap-1 rounded px-2.5 py-1 text-xs font-semibold transition-all ${
+                            hasNext
+                              ? 'text-white hover:bg-ink-800'
+                              : 'text-slate-600 cursor-not-allowed opacity-40'
+                          }`}
+                          title="Next Invoice"
+                        >
+                          <span>Next</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setViewingPurchase(null)}
+                        className="btn-ghost flex items-center gap-1 text-xs text-slate-300 hover:text-white"
+                        title="Back to Invoices History"
+                      >
+                        <X className="h-4 w-4" />
+                        <span>Close</span>
+                      </button>
                     </div>
                   </div>
 
-                  <div className="max-h-[40vh] overflow-auto rounded-lg border border-ink-line">
-                    <table className="table">
-                      <thead>
+                  {/* 1. Header Information Panel */}
+                  <div className="rounded-xl border border-ink-line bg-ink-950/70 p-3.5 backdrop-blur shadow-sm space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-ink-line/50">
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-emerald-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                          Invoice Details & Supplier
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-400 font-mono">
+                        Encoder: {viewingPurchase.user_name || 'Staff'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                      {/* Supplier Picker */}
+                      <div className="md:col-span-2">
+                        <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
+                          <span className="flex items-center gap-1.5">
+                            <Truck className="h-3.5 w-3.5 text-emerald-400" />
+                            Supplier {isEditMode && <span className="text-danger-400">*</span>}
+                          </span>
+                          {currentViewSupplier?.address && (
+                            <span className="truncate max-w-[200px] text-[11px] font-normal text-slate-400">
+                              {currentViewSupplier.address}
+                            </span>
+                          )}
+                        </label>
+                        {isEditMode ? (
+                          <select
+                            className="input w-full font-medium"
+                            value={viewSupplierId}
+                            onChange={(e) => setViewSupplierId(Number(e.target.value))}
+                          >
+                            <option value="">— Select Supplier —</option>
+                            {suppliers.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.name} {s.contact_person ? `(${s.contact_person})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="input w-full font-medium bg-ink-900 border-ink-line text-white flex items-center">
+                            {viewingPurchase.supplier_name || '—'}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Receipt Number */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <Hash className="h-3.5 w-3.5 text-sky-400" />
+                          Receipt No.
+                        </label>
+                        <input
+                          type="text"
+                          disabled={!isEditMode}
+                          value={viewReceiptNo}
+                          onChange={(e) => setViewReceiptNo(e.target.value)}
+                          placeholder="e.g. SI0000002966"
+                          className="input w-full font-mono text-xs uppercase disabled:bg-ink-900 disabled:text-slate-300"
+                        />
+                      </div>
+
+                      {/* Invoice Number / Transaction # */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-amber-400" />
+                          Invoice No. / Trans #
+                        </label>
+                        <input
+                          type="text"
+                          disabled={!isEditMode}
+                          value={viewInvoiceNo}
+                          onChange={(e) => setViewInvoiceNo(e.target.value)}
+                          placeholder="e.g. BS-2024-017"
+                          className="input w-full font-mono text-xs uppercase disabled:bg-ink-900 disabled:text-slate-300"
+                        />
+                      </div>
+
+                      {/* Invoice Date */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                          Invoice Date
+                        </label>
+                        <input
+                          type="date"
+                          disabled={!isEditMode}
+                          value={viewPurchaseDate}
+                          onChange={(e) => setViewPurchaseDate(e.target.value)}
+                          className="input w-full font-mono text-xs disabled:bg-ink-900 disabled:text-slate-300"
+                        />
+                      </div>
+
+                      {/* Payment Terms & Status */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
+                          Payment Status
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              disabled={!isEditMode}
+                              checked={viewIsPaid}
+                              onChange={(e) => setViewIsPaid(e.target.checked)}
+                              className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0 disabled:opacity-60"
+                            />
+                            <span>Paid</span>
+                          </label>
+                          {!viewIsPaid && (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                disabled={!isEditMode}
+                                min="0"
+                                value={viewTermsDays}
+                                onChange={(e) => setViewTermsDays(e.target.value)}
+                                className="input w-16 py-1 text-center font-mono text-xs disabled:bg-ink-900"
+                              />
+                              <span className="text-[11px] text-slate-400">days term</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Memo / Delivery Notes */}
+                      <div className="md:col-span-2">
+                        <label className="mb-1 block text-xs font-semibold text-slate-300">
+                          Memo / Delivery Notes
+                        </label>
+                        <input
+                          type="text"
+                          disabled={!isEditMode}
+                          value={viewNotes}
+                          onChange={(e) => setViewNotes(e.target.value)}
+                          placeholder="e.g. CUS.BOOKING / Van delivery / Supplier rep"
+                          className="input w-full text-xs disabled:bg-ink-900 disabled:text-slate-300"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. FAST ITEM ENTRY (Active only when in Edit Mode) */}
+                  {isEditMode ? (
+                    <div className="rounded-xl border border-emerald-500/30 bg-ink-950 p-3.5 shadow-md space-y-3">
+                      <div className="flex items-center justify-between pb-1 border-b border-ink-line/40">
+                        <div className="flex items-center gap-2">
+                          <Barcode className="h-4 w-4 text-emerald-400" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                            Fast Item Entry
+                          </span>
+                          <span className="rounded bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-mono text-emerald-400">
+                            F1 EXPLORER
+                          </span>
+                          <span className="rounded bg-sky-500/10 border border-sky-500/30 px-1.5 py-0.5 text-[10px] font-mono text-sky-300">
+                            F2 TO COMMIT
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12 items-end">
+                        <div className="relative md:col-span-4">
+                          <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
+                            <span>Item Code / Barcode</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowItemPicker(true)}
+                              className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-normal"
+                            >
+                              <Search className="h-3 w-3" /> F1 Explorer
+                            </button>
+                          </label>
+                          <input
+                            ref={searchInputRef}
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => {
+                              setSearchQuery(e.target.value)
+                              setShowDropdown(true)
+                              setDropdownIndex(0)
+                            }}
+                            onFocus={() => setShowDropdown(true)}
+                            placeholder="Scan barcode or type name…"
+                            className="input w-full font-medium text-xs pr-8"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="mb-1 block text-xs font-semibold text-slate-300">Unit</label>
+                          <select
+                            ref={unitSelectRef}
+                            value={selectedUnitName}
+                            onChange={(e) => handleUnitChange(e.target.value)}
+                            className="input w-full text-xs font-medium"
+                          >
+                            {availableUnits.map((u) => (
+                              <option key={u.name} value={u.name}>{u.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <label className="mb-1 block text-[11px] font-semibold text-slate-300 truncate">Pcs/Unit</label>
+                          <input
+                            type="number"
+                            min="1"
+                            step="any"
+                            value={unitMultiplierInput}
+                            onChange={(e) => handleMultiplierChange(e.target.value)}
+                            className="input w-full font-mono text-xs text-center"
+                          />
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <label className="mb-1 block text-xs font-semibold text-slate-300">Unit Cost (₱)</label>
+                          <input
+                            ref={costInputRef}
+                            type="number"
+                            step="0.01"
+                            value={unitCostPesos}
+                            onChange={(e) => setUnitCostPesos(e.target.value)}
+                            className="input w-full font-mono text-xs font-semibold"
+                          />
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <label className="mb-1 block text-xs font-semibold text-slate-300">Qty</label>
+                          <input
+                            ref={qtyInputRef}
+                            type="number"
+                            min="1"
+                            step="any"
+                            value={qtyInput}
+                            onChange={(e) => setQtyInput(e.target.value)}
+                            className="input w-full font-mono text-xs text-center font-bold text-white bg-ink-800"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
+                            <span>Supplier Disc</span>
+                            <span className="text-[10px] text-slate-400 font-normal">5+5+5 / 10/5</span>
+                          </label>
+                          <input
+                            ref={discountInputRef}
+                            type="text"
+                            value={itemDiscountInput}
+                            onChange={(e) => setItemDiscountInput(e.target.value)}
+                            placeholder="0 / 5+5+5 / 10/5"
+                            className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40"
+                          />
+                        </div>
+
+                        <div className="md:col-span-1">
+                          <button
+                            type="button"
+                            disabled={!selectedProduct}
+                            onClick={handleCommitItem}
+                            className="btn-primary w-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center p-2 font-bold shadow-sm"
+                          >
+                            <Plus className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-slate-700/50 bg-ink-950/50 p-2.5 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                      <Lock className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Read-Only Invoice View • Click <strong>Edit</strong> with Admin/Manager PIN to modify line items</span>
+                    </div>
+                  )}
+
+                  {/* 3. INVOICE LINE ITEMS GRID */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        Invoice Items ({viewItems.length})
+                      </span>
+                      {isEditMode && viewItems.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveLastItem}
+                          className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Remove Last (F3)
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-[38vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60">
+                      <table className="table min-w-[920px]">
+                        <thead>
+                          <tr>
+                            <th className="w-10 py-2.5 px-3 text-center">#</th>
+                            <th className="py-2.5 px-3 text-left">Item Code</th>
+                            <th className="py-2.5 px-3 text-left">Description</th>
+                            <th className="py-2.5 px-3 text-center">Unit</th>
+                            <th className="py-2.5 px-3 text-center">Qty</th>
+                            <th className="py-2.5 px-3 text-center">Stock In</th>
+                            <th className="py-2.5 px-3 text-right">Gross Cost</th>
+                            <th className="py-2.5 px-3 text-center">Trade Disc</th>
+                            <th className="py-2.5 px-3 text-right">Net Cost</th>
+                            <th className="py-2.5 px-3 text-right">Net Amount</th>
+                            {isEditMode && <th className="w-10 py-2.5 px-3 text-center">Action</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {viewItems.map((it, idx) => (
+                            <tr key={it.tempId} className="hover:bg-ink-800/60 transition-colors">
+                              <td className="py-2 px-3 text-center text-xs font-mono text-slate-500">
+                                {idx + 1}
+                              </td>
+                              <td className="py-2 px-3 font-mono text-xs text-slate-300">
+                                {it.barcode || it.sku || '—'}
+                              </td>
+                              <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
+                                {it.productName}
+                              </td>
+                              <td className="py-2 px-3 text-center text-xs">
+                                <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">
+                                  {it.unitName.toUpperCase()}
+                                  {it.conversionToBase > 1 ? ` (x${it.conversionToBase})` : ''}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center font-mono font-bold text-white">
+                                {isEditMode ? (
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    step="any"
+                                    value={it.qty}
+                                    onChange={(e) => {
+                                      const newQty = parseFloat(e.target.value) || 0
+                                      const updated = [...viewItems]
+                                      const row = updated[idx]
+                                      if (row) {
+                                        const newQtyBase = Math.round(newQty * row.conversionToBase * 1000) / 1000
+                                        const newGross = Math.round(newQty * row.unitCostC)
+                                        const newDisc = calculateChainDiscount(newGross, row.discountInput)
+                                        const newSub = Math.max(0, newGross - newDisc.discountAmountC)
+                                        updated[idx] = {
+                                          ...row,
+                                          qty: newQty,
+                                          qtyBase: newQtyBase,
+                                          discountC: newDisc.discountAmountC,
+                                          netUnitCostC: newQty > 0 ? Math.round(newSub / newQty) : row.unitCostC,
+                                          subtotalC: newSub
+                                        }
+                                        setViewItems(updated)
+                                      }
+                                    }}
+                                    className="input w-16 py-0.5 text-center font-mono text-xs font-bold text-white bg-ink-800"
+                                  />
+                                ) : (
+                                  it.qty
+                                )}
+                              </td>
+                              <td className="py-2 px-3 text-center font-mono text-xs text-emerald-400 font-semibold">
+                                +{it.qtyBase}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-xs text-slate-300">
+                                {money(it.unitCostC)}
+                              </td>
+                              <td className="py-2 px-3 text-center text-xs">
+                                {it.discountC > 0 ? (
+                                  <span
+                                    className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
+                                    title={it.discountInput}
+                                  >
+                                    {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-600 font-mono">—</span>
+                                )}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-xs font-semibold text-slate-200">
+                                {money(it.netUnitCostC)}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
+                                {money(it.subtotalC)}
+                              </td>
+                              {isEditMode && (
+                                <td className="py-2 px-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveItem(it.tempId)}
+                                    className="rounded p-1 text-slate-500 hover:bg-danger-500/20 hover:text-danger-400 transition-colors"
+                                    title="Delete Item"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* 4. BOTTOM SUMMARY & TOTALS */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center rounded-xl border border-ink-line bg-ink-950 p-3.5">
+                    <div className="md:col-span-6 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
+                          F1
+                        </kbd>
+                        Inventory Explorer
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                        <kbd className="rounded bg-emerald-900 border border-emerald-600 px-1.5 py-0.5 font-mono text-white">
+                          F2
+                        </kbd>
+                        Commit Qty
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
+                          Ctrl+S
+                        </kbd>
+                        Save
+                      </span>
+                      <div className="mt-1 w-full text-[11px] text-slate-500">
+                        Total Items: <strong className="text-white">{viewItems.length}</strong> · Total Base Units:{' '}
+                        <strong className="text-emerald-400">+{viewTotalBaseUnits}</strong>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-6 flex flex-col items-end gap-1.5">
+                      <div className="flex items-center gap-4 text-xs text-slate-300">
+                        <span>Gross Total:</span>
+                        <span className="font-mono font-semibold text-white">{money(viewGrossTotalC)}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs text-slate-300">
+                        <span>Trade / Series Discount:</span>
+                        <div className="flex items-center gap-1.5">
+                          {isEditMode ? (
+                            <input
+                              type="text"
+                              value={viewDiscountPesos}
+                              onChange={(e) => setViewDiscountPesos(e.target.value)}
+                              placeholder="0 / 5+5+5 / 10/5"
+                              className="input w-36 py-0.5 text-right font-mono text-xs text-amber-300"
+                            />
+                          ) : (
+                            <span className="font-mono font-bold text-amber-300">
+                              {viewDiscountC > 0 ? `-${money(viewDiscountC)}` : '₱0.00'}
+                            </span>
+                          )}
+                          {viewInvoiceDiscountResult.discountAmountC > 0 && isEditMode && (
+                            <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                              -{money(viewInvoiceDiscountResult.discountAmountC)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 border-t border-ink-line pt-1 text-sm font-bold text-white">
+                        <span>Net Payable:</span>
+                        <span className="font-mono text-xl text-emerald-400">{money(viewNetTotalC)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setViewingPurchase(null)}
+                      className="btn-ghost flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Back to Invoices History
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowPrintModal(true)}
+                        className="btn-ghost flex items-center gap-1.5 text-xs font-bold text-white bg-ink-850 hover:bg-ink-700 border border-ink-line px-4 py-2 rounded-lg"
+                      >
+                        <Printer className="h-4 w-4 text-emerald-400" />
+                        <span>Print P.O. Voucher</span>
+                      </button>
+
+                      {isEditMode ? (
+                        <button
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => void handleSaveEdit()}
+                          className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 px-6 py-2.5 font-bold shadow-lg"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span>{submitting ? 'Saving Changes…' : 'Save Edit (Ctrl+S)'}</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPinInput('')
+                            setPinError('')
+                            setShowPinModal(true)
+                          }}
+                          className="btn-primary flex items-center gap-1.5 text-xs font-bold px-4 py-2"
+                        >
+                          <Lock className="h-4 w-4" />
+                          <span>Authorize & Edit</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* INVOICES HISTORY LIST VIEW WITH SEARCH BAR (IMAGE 2) */
+                <div className="space-y-4">
+                  {/* Search Bar & Header Controls (Image 2) */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="relative flex-1 min-w-[280px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        value={historySearch}
+                        onChange={(e) => setHistorySearch(e.target.value)}
+                        placeholder="Search P.O. #, invoice #, receipt #, supplier, encoder..."
+                        className="input w-full pl-9 pr-8 text-xs font-medium"
+                        autoFocus
+                      />
+                      {historySearch && (
+                        <button
+                          type="button"
+                          onClick={() => setHistorySearch('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">
+                        Showing {filteredHistoryList.length} of {historyList.length} purchase invoices
+                      </span>
+                      <button
+                        onClick={() => void loadHistory()}
+                        className="btn-ghost flex items-center gap-1.5 text-xs text-slate-300"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${historyLoading ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </button>
+                    </div>
+                  </div>
+
+                  {historyLoading ? (
+                    <div className="space-y-2 py-8 text-center text-sm text-slate-400">
+                      Loading purchase invoices…
+                    </div>
+                  ) : filteredHistoryList.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-ink-line p-10 text-center text-slate-500">
+                      {historySearch
+                        ? `No purchase invoices match "${historySearch}".`
+                        : 'No purchase invoices recorded yet. Click "+ New Invoice" to create one.'}
+                    </div>
+                  ) : (
+                    <div className="max-h-[60vh] overflow-auto rounded-xl border border-ink-line">
+                      <table className="table min-w-[900px]">
+                        <thead>
+                          <tr>
+                            <th className="py-2.5 px-3 text-left">P.O. Number</th>
+                            <th className="py-2.5 px-3 text-left">Invoice #</th>
+                            <th className="py-2.5 px-3 text-left">Receipt #</th>
+                            <th className="py-2.5 px-3 text-left">Supplier</th>
+                            <th className="py-2.5 px-3 text-center">Date</th>
+                            <th className="py-2.5 px-3 text-center">Items</th>
+                            <th className="py-2.5 px-3 text-center">Status</th>
+                            <th className="py-2.5 px-3 text-right">Net Amount</th>
+                            <th className="py-2.5 px-3 text-center">Encoder</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredHistoryList.map((p) => (
+                            <tr
+                              key={p.id}
+                              onClick={() => handleOpenPurchaseDetails(p)}
+                              className="cursor-pointer hover:bg-ink-800 transition-colors group"
+                            >
+                              <td className="py-2.5 px-3 font-mono font-bold text-emerald-400 group-hover:underline flex items-center gap-1.5">
+                                <PackageSearch className="h-3.5 w-3.5 text-emerald-400/70" />
+                                {p.purchase_no}
+                              </td>
+                              <td className="py-2.5 px-3 font-mono text-xs text-white">
+                                {p.invoice_no || '—'}
+                              </td>
+                              <td className="py-2.5 px-3 font-mono text-xs text-slate-300">
+                                {p.receipt_no || '—'}
+                              </td>
+                              <td className="py-2.5 px-3 font-medium text-white truncate max-w-[200px]">
+                                {p.supplier_name}
+                              </td>
+                              <td className="py-2.5 px-3 text-center text-xs text-slate-400">
+                                {shortDate(p.purchase_date)}
+                              </td>
+                              <td className="py-2.5 px-3 text-center text-xs text-slate-300 font-mono">
+                                {p.items?.length || 0}
+                              </td>
+                              <td className="py-2.5 px-3 text-center">
+                                <span
+                                  className={`badge inline-flex items-center text-[10px] ${
+                                    p.is_paid
+                                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                      : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                  }`}
+                                >
+                                  {p.is_paid ? 'PAID' : `TERMS ${p.terms_days || 0}D`}
+                                </span>
+                              </td>
+                              <td className="py-2.5 px-3 text-right font-mono font-semibold text-emerald-400">
+                                {money(p.net_total_c ?? p.total_c)}
+                              </td>
+                              <td className="py-2.5 px-3 text-center text-xs text-slate-400">
+                                {p.user_name || '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )
+            ) : (
+              /* CREATE INVOICE WORKFLOW */
+              <>
+                {/* 1. Header Information Panel */}
+                <div className="rounded-xl border border-ink-line bg-ink-950/70 p-3.5 backdrop-blur shadow-sm space-y-3 transition-all">
+                  <div className="flex items-center justify-between pb-2 border-b border-ink-line/50">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-4 w-4 text-emerald-400" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        Invoice Details & Supplier
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsHeaderPanelMinimized(!isHeaderPanelMinimized)}
+                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-white hover:bg-ink-800 transition-colors"
+                      title={isHeaderPanelMinimized ? 'Show Details' : 'Minimize Details'}
+                    >
+                      {isHeaderPanelMinimized ? (
+                        <>
+                          <ChevronDown className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Show Details</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
+                          <span>Minimize Details</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {isHeaderPanelMinimized ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-xs">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                          <span className="text-slate-400">Supplier:</span>
+                          <strong className="text-emerald-300 font-semibold">{currentSupplier?.name || 'None'}</strong>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                          <span className="text-slate-400">Inv:</span>
+                          <span className="font-mono">{invoiceNo || '—'}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                          <span className="text-slate-400">Ref:</span>
+                          <span className="font-mono">{receiptNo || '—'}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
+                          <span className="text-slate-400">Date:</span>
+                          <span>{purchaseDate}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 font-semibold text-emerald-300 text-[11px]">
+                          <span>Status:</span>
+                          <span>Draft ({isPaid ? 'Paid' : `Terms ${termsDays || 0}D`})</span>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsHeaderPanelMinimized(false)}
+                        className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded hover:bg-emerald-500/10 transition-colors"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                        <span>Expand</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                      {/* Supplier Picker */}
+                      <div className="md:col-span-2">
+                        <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
+                          <span className="flex items-center gap-1.5">
+                            <Truck className="h-3.5 w-3.5 text-emerald-400" />
+                            Supplier <span className="text-danger-400">*</span>
+                          </span>
+                          {currentSupplier?.address && (
+                            <span className="truncate max-w-[200px] text-[11px] font-normal text-slate-400">
+                              {currentSupplier.address}
+                            </span>
+                          )}
+                        </label>
+                        <select
+                          className="input w-full font-medium"
+                          value={supplierId}
+                          onChange={(e) => setSupplierId(Number(e.target.value))}
+                        >
+                          <option value="">— Select Supplier —</option>
+                          {suppliers.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name} {s.contact_person ? `(${s.contact_person})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Receipt Number */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <Hash className="h-3.5 w-3.5 text-sky-400" />
+                          Receipt No.
+                        </label>
+                        <input
+                          type="text"
+                          value={receiptNo}
+                          onChange={(e) => setReceiptNo(e.target.value)}
+                          placeholder="e.g. SI0000002966"
+                          className="input w-full font-mono text-xs uppercase"
+                        />
+                      </div>
+
+                      {/* Invoice Number / Transaction # */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-amber-400" />
+                          Invoice No. / Trans #
+                        </label>
+                        <input
+                          type="text"
+                          value={invoiceNo}
+                          onChange={(e) => setInvoiceNo(e.target.value)}
+                          placeholder="e.g. BS-2024-017"
+                          className="input w-full font-mono text-xs uppercase"
+                        />
+                      </div>
+
+                      {/* Invoice Date */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                          Invoice Date
+                        </label>
+                        <input
+                          type="date"
+                          value={purchaseDate}
+                          onChange={(e) => setPurchaseDate(e.target.value)}
+                          className="input w-full font-mono text-xs"
+                        />
+                      </div>
+
+                      {/* Payment Terms & Status */}
+                      <div>
+                        <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
+                          <CreditCard className="h-3.5 w-3.5 text-emerald-400" />
+                          Payment Status
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isPaid}
+                              onChange={(e) => setIsPaid(e.target.checked)}
+                              className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
+                            />
+                            <span>Paid</span>
+                          </label>
+                          {!isPaid && (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min="0"
+                                value={termsDays}
+                                onChange={(e) => setTermsDays(e.target.value)}
+                                className="input w-16 py-1 text-center font-mono text-xs"
+                              />
+                              <span className="text-[11px] text-slate-400">days term</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Memo / Delivery Notes */}
+                      <div className="md:col-span-2">
+                        <label className="mb-1 block text-xs font-semibold text-slate-300">
+                          Memo / Delivery Notes
+                        </label>
+                        <input
+                          type="text"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="e.g. CUS.BOOKING / Van delivery / Supplier rep"
+                          className="input w-full text-xs"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. FAST ITEM ENTRY BAR */}
+                <div className="rounded-xl border border-ink-line bg-ink-950 p-3.5 shadow-md space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-ink-line/40">
+                    <div className="flex items-center gap-2">
+                      <Barcode className="h-4 w-4 text-emerald-400" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                        Fast Item Entry
+                      </span>
+                      <span className="rounded bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-mono text-emerald-400">
+                        F1 EXPLORER
+                      </span>
+                      <span className="rounded bg-sky-500/10 border border-sky-500/30 px-1.5 py-0.5 text-[10px] font-mono text-sky-300">
+                        F2 TO COMMIT
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12 items-end">
+                    <div className="relative md:col-span-4">
+                      <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
+                        <span>Item Code / Barcode</span>
+                        <button
+                          type="button"
+                          onClick={() => setShowItemPicker(true)}
+                          className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-normal"
+                        >
+                          <Search className="h-3 w-3" /> F1 Explorer
+                        </button>
+                      </label>
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value)
+                          setShowDropdown(true)
+                          setDropdownIndex(0)
+                        }}
+                        onFocus={() => setShowDropdown(true)}
+                        placeholder="Scan barcode or type name…"
+                        className="input w-full font-medium text-xs pr-8"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="mb-1 block text-xs font-semibold text-slate-300">Unit</label>
+                      <select
+                        ref={unitSelectRef}
+                        value={selectedUnitName}
+                        onChange={(e) => handleUnitChange(e.target.value)}
+                        className="input w-full text-xs font-medium"
+                      >
+                        {availableUnits.map((u) => (
+                          <option key={u.name} value={u.name}>{u.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-1">
+                      <label className="mb-1 block text-[11px] font-semibold text-slate-300 truncate">Pcs/Unit</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        value={unitMultiplierInput}
+                        onChange={(e) => handleMultiplierChange(e.target.value)}
+                        className="input w-full font-mono text-xs text-center"
+                      />
+                    </div>
+
+                    <div className="md:col-span-1">
+                      <label className="mb-1 block text-xs font-semibold text-slate-300">Unit Cost (₱)</label>
+                      <input
+                        ref={costInputRef}
+                        type="number"
+                        step="0.01"
+                        value={unitCostPesos}
+                        onChange={(e) => setUnitCostPesos(e.target.value)}
+                        className="input w-full font-mono text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div className="md:col-span-1">
+                      <label className="mb-1 block text-xs font-semibold text-slate-300">Qty</label>
+                      <input
+                        ref={qtyInputRef}
+                        type="number"
+                        min="1"
+                        step="any"
+                        value={qtyInput}
+                        onChange={(e) => setQtyInput(e.target.value)}
+                        className="input w-full font-mono text-xs text-center font-bold text-white bg-ink-800"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
+                        <span>Supplier Disc</span>
+                        <span className="text-[10px] text-slate-400 font-normal">5+5+5 / 10/5</span>
+                      </label>
+                      <input
+                        ref={discountInputRef}
+                        type="text"
+                        value={itemDiscountInput}
+                        onChange={(e) => setItemDiscountInput(e.target.value)}
+                        placeholder="0 / 5+5+5 / 10/5"
+                        className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40"
+                      />
+                    </div>
+
+                    <div className="md:col-span-1">
+                      <button
+                        type="button"
+                        disabled={!selectedProduct}
+                        onClick={handleCommitItem}
+                        className="btn-primary w-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center p-2 font-bold shadow-sm"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. LINE ITEMS GRID */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                      Invoice Items ({items.length})
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300">
+                        <input
+                          type="checkbox"
+                          checked={updateProductCosts}
+                          onChange={(e) => setUpdateProductCosts(e.target.checked)}
+                          className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
+                        />
+                        <span>Update Product Catalog Cost</span>
+                      </label>
+                      {items.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveLastItem}
+                          className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Remove Last (F3)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="max-h-[38vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60">
+                    {items.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-slate-500 space-y-1">
+                        <Barcode className="h-8 w-8 text-slate-600" />
+                        <p className="text-xs font-medium">No items in this invoice yet.</p>
+                        <p className="text-[11px] text-slate-600">
+                          Press <strong>F1</strong> to search item, enter Qty, and press <strong>F2</strong> to commit to stocks.
+                        </p>
+                      </div>
+                    ) : (
+                      <table className="table min-w-[920px]">
+                        <thead>
+                          <tr>
+                            <th className="w-10 py-2.5 px-3 text-center">#</th>
+                            <th className="py-2.5 px-3 text-left">Item Code</th>
+                            <th className="py-2.5 px-3 text-left">Description</th>
+                            <th className="py-2.5 px-3 text-center">Unit</th>
+                            <th className="py-2.5 px-3 text-center">Qty</th>
+                            <th className="py-2.5 px-3 text-center">Stock In</th>
+                            <th className="py-2.5 px-3 text-right">Gross Cost</th>
+                            <th className="py-2.5 px-3 text-center">Trade Disc</th>
+                            <th className="py-2.5 px-3 text-right">Net Cost</th>
+                            <th className="py-2.5 px-3 text-right">Net Amount</th>
+                            <th className="w-10 py-2.5 px-3 text-center">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {items.map((it, idx) => (
+                            <tr key={it.tempId} className="hover:bg-ink-800/60 transition-colors">
+                              <td className="py-2 px-3 text-center text-xs font-mono text-slate-500">
+                                {idx + 1}
+                              </td>
+                              <td className="py-2 px-3 font-mono text-xs text-slate-300">
+                                {it.barcode}
+                              </td>
+                              <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
+                                {it.productName}
+                              </td>
+                              <td className="py-2 px-3 text-center text-xs">
+                                <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">
+                                  {it.unitName.toUpperCase()}
+                                  {it.conversionToBase > 1 ? ` (x${it.conversionToBase})` : ''}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center font-mono font-bold text-white">
+                                {it.qty}
+                              </td>
+                              <td className="py-2 px-3 text-center font-mono text-xs text-emerald-400 font-semibold">
+                                +{it.qtyBase}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-xs text-slate-300">
+                                {money(it.unitCostC)}
+                              </td>
+                              <td className="py-2 px-3 text-center text-xs">
+                                {it.discountC > 0 ? (
+                                  <span
+                                    className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
+                                    title={it.discountInput}
+                                  >
+                                    {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-600 font-mono">—</span>
+                                )}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-xs font-semibold text-slate-200">
+                                {money(it.netUnitCostC)}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
+                                {money(it.subtotalC)}
+                              </td>
+                              <td className="py-2 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveItem(it.tempId)}
+                                  className="rounded p-1 text-slate-500 hover:bg-danger-500/20 hover:text-danger-400 transition-colors"
+                                  title="Delete Item"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+
+                {/* 4. BOTTOM SUMMARY */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center rounded-xl border border-ink-line bg-ink-950 p-3.5">
+                  <div className="md:col-span-6 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
+                        F1
+                      </kbd>
+                      Inventory Explorer
+                    </span>
+                    <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                      <kbd className="rounded bg-emerald-900 border border-emerald-600 px-1.5 py-0.5 font-mono text-white">
+                        F2
+                      </kbd>
+                      Commit Qty
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
+                        F3
+                      </kbd>
+                      Remove
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
+                        Ctrl+S
+                      </kbd>
+                      Post
+                    </span>
+                    <div className="mt-1 w-full text-[11px] text-slate-500">
+                      Total Items: <strong className="text-white">{items.length}</strong> · Total Base Units:{' '}
+                      <strong className="text-emerald-400">+{totalBaseUnits}</strong>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-6 flex flex-col items-end gap-1.5">
+                    <div className="flex items-center gap-4 text-xs text-slate-300">
+                      <span>Gross Total:</span>
+                      <span className="font-mono font-semibold text-white">{money(grossTotalC)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <span>Trade / Series Discount:</span>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={discountPesos}
+                          onChange={(e) => setDiscountPesos(e.target.value)}
+                          placeholder="0 / 5+5+5 / 10/5"
+                          className="input w-36 py-0.5 text-right font-mono text-xs text-amber-300"
+                        />
+                        {invoiceDiscountResult.discountAmountC > 0 && (
+                          <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                            -{money(invoiceDiscountResult.discountAmountC)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 border-t border-ink-line pt-1 text-sm font-bold text-white">
+                      <span>Net Payable:</span>
+                      <span className="font-mono text-xl text-emerald-400">{money(netTotalC)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="btn-ghost text-xs text-slate-400 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsMinimized(true)}
+                      className="btn-ghost text-xs text-zinc-400 hover:text-white flex items-center gap-1"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                      Minimize
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={submitting || items.length === 0 || !supplierId}
+                      onClick={() => void handleSaveInvoice()}
+                      className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 px-6 py-2.5 font-bold shadow-lg"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {submitting ? 'Posting Invoice…' : 'Post & Update Stocks (Ctrl+S)'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Universal Inventory Spotlight Explorer Modal (F1) */}
+      <PurchaseItemPickerModal
+        open={showItemPicker}
+        onClose={() => setShowItemPicker(false)}
+        products={allProducts}
+        onSelectProduct={(prod) => {
+          setShowItemPicker(false)
+          handleSelectProduct(prod)
+        }}
+      />
+
+      {/* Admin / Manager PIN Authorization Modal */}
+      {showPinModal && (
+        <Modal
+          open
+          onClose={() => {
+            setShowPinModal(false)
+            setPinInput('')
+            setPinError('')
+          }}
+          title="Manager Authorization Required"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4 py-2">
+            <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-200">
+              <Lock className="h-5 w-5 flex-shrink-0 text-amber-400" />
+              <div>
+                <p className="font-bold">Manager Permission Required</p>
+                <p className="text-amber-300/80 mt-0.5">
+                  Enter Admin or Manager PIN or Password to unlock and modify P.O.{' '}
+                  <span className="font-mono font-bold text-white">{viewingPurchase?.purchase_no}</span>
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Admin / Manager PIN or Password:
+              </label>
+              <div className="relative">
+                <input
+                  type={showPinText ? 'text' : 'password'}
+                  value={pinInput}
+                  onChange={(e) => {
+                    setPinInput(e.target.value)
+                    setPinError('')
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleVerifyPin()
+                  }}
+                  placeholder="Enter 4-digit PIN or password"
+                  autoFocus
+                  className="input w-full text-center text-lg font-mono tracking-widest"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPinText(!showPinText)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                >
+                  {showPinText ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {pinError && (
+                <p className="text-xs text-danger-400 mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {pinError}
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-ink-line">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPinModal(false)
+                  setPinInput('')
+                  setPinError('')
+                }}
+                className="btn-ghost text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={verifyingPin || !pinInput.trim()}
+                onClick={() => void handleVerifyPin()}
+                className="btn-primary text-xs font-bold px-4 py-2 flex items-center gap-1.5"
+              >
+                {verifyingPin ? 'Verifying…' : 'Authorize & Edit'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Purchase Order Printing Modal (A4 Document & Thermal Slip) */}
+      {showPrintModal && viewingPurchase && (
+        <Modal
+          open
+          onClose={() => setShowPrintModal(false)}
+          title={`Print Purchase Order: ${viewingPurchase.purchase_no}`}
+          maxWidth="max-w-2xl"
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-400 flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useSystemDialog}
+                    onChange={(e) => setUseSystemDialog(e.target.checked)}
+                    className="checkbox-custom"
+                  />
+                  <span>Open System Print Dialog (Ctrl+P)</span>
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <button type="button" className="btn-ghost text-xs" onClick={() => setShowPrintModal(false)}>
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handlePrintPO()}
+                  disabled={isPrintingPO}
+                  className="btn-primary text-xs font-bold px-4 py-2 flex items-center gap-1.5"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>
+                    {isPrintingPO
+                      ? 'Printing…'
+                      : printFormat === 'DOCUMENT'
+                        ? 'Print A4 Document'
+                        : 'Print Thermal Receipt'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            {/* Format Selector */}
+            <div className="flex items-center gap-2 rounded-xl border border-ink-line bg-ink-950 p-1.5">
+              <button
+                type="button"
+                onClick={() => setPrintFormat('DOCUMENT')}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                  printFormat === 'DOCUMENT'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-ink-850'
+                }`}
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>A4 / Letter Document (Official Voucher)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintFormat('THERMAL')}
+                className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition-all ${
+                  printFormat === 'THERMAL'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-ink-850'
+                }`}
+              >
+                <Receipt className="h-4 w-4" />
+                <span>Thermal POS Slip (58mm / 80mm)</span>
+              </button>
+            </div>
+
+            {/* Live Preview Box */}
+            <div className="rounded-xl border border-ink-line bg-ink-950 p-4 max-h-[50vh] overflow-auto">
+              {printFormat === 'DOCUMENT' ? (
+                <div className="bg-white text-slate-900 p-6 rounded-lg shadow-sm text-xs space-y-4 font-sans">
+                  <div className="flex justify-between items-start border-b-2 border-emerald-600 pb-3">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900">
+                        {settings?.store_name || 'TINDA POS STORE'}
+                      </h3>
+                      <p className="text-[11px] text-slate-600">{settings?.address || ''}</p>
+                      <p className="text-[11px] font-bold text-emerald-700 mt-1">
+                        PURCHASE ORDER & STOCK RECEIVING VOUCHER
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                        P.O. NUMBER
+                      </span>
+                      <p className="text-lg font-black font-mono text-slate-900">{viewingPurchase.purchase_no}</p>
+                      <p className="text-[11px] text-slate-500">Date: {shortDate(viewingPurchase.purchase_date)}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 bg-slate-50 border border-slate-200 rounded-md p-3 text-[11px]">
+                    <div>
+                      <span className="text-slate-500 block font-semibold">SUPPLIER:</span>
+                      <p className="font-bold text-slate-900 text-xs">{viewingPurchase.supplier_name}</p>
+                      {currentViewSupplier?.address && (
+                        <p className="text-slate-600 text-[10px]">{currentViewSupplier.address}</p>
+                      )}
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Invoice #:</span>
+                        <strong className="font-mono">{viewingPurchase.invoice_no || '—'}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Receipt #:</span>
+                        <strong className="font-mono">{viewingPurchase.receipt_no || '—'}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Payment:</span>
+                        <strong className={viewingPurchase.is_paid ? 'text-emerald-700' : 'text-amber-700'}>
+                          {viewingPurchase.is_paid ? 'PAID' : `TERMS (${viewingPurchase.terms_days || 0}D)`}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-md overflow-hidden">
+                    <table className="w-full text-left text-[11px]">
+                      <thead className="bg-slate-900 text-white text-[10px] uppercase font-bold">
                         <tr>
-                          <th className="py-2 px-3 text-left">Item Name</th>
-                          <th className="py-2 px-3 text-center">Unit</th>
-                          <th className="py-2 px-3 text-center">Qty</th>
-                          <th className="py-2 px-3 text-center">Base Qty</th>
-                          <th className="py-2 px-3 text-right">Unit Cost</th>
-                          <th className="py-2 px-3 text-right">Subtotal</th>
+                          <th className="p-2 text-center w-8">#</th>
+                          <th className="p-2">Description</th>
+                          <th className="p-2 text-center w-16">Unit</th>
+                          <th className="p-2 text-center w-14">Qty</th>
+                          <th className="p-2 text-right w-20">Unit Cost</th>
+                          <th className="p-2 text-center w-16">Disc</th>
+                          <th className="p-2 text-right w-24">Subtotal</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {selectedHistoryPurchase.items?.map((it, idx) => (
-                          <tr key={idx}>
-                            <td className="py-2 px-3 font-medium text-white">{it.product_name}</td>
-                            <td className="py-2 px-3 text-center text-xs text-slate-300">{it.unit_name}</td>
-                            <td className="py-2 px-3 text-center font-mono font-semibold">{it.qty}</td>
-                            <td className="py-2 px-3 text-center font-mono text-xs text-slate-400">{it.qty_base}</td>
-                            <td className="py-2 px-3 text-right font-mono text-xs">{money(it.unit_cost_c)}</td>
-                            <td className="py-2 px-3 text-right font-mono font-semibold text-emerald-400">
+                      <tbody className="divide-y divide-slate-200">
+                        {viewingPurchase.items?.map((it, idx) => (
+                          <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
+                            <td className="p-2 text-center text-slate-500">{idx + 1}</td>
+                            <td className="p-2 font-medium text-slate-900">
+                              {it.product_name}
+                              {it.product_barcode && (
+                                <span className="block font-mono text-[9px] text-slate-500">
+                                  {it.product_barcode}
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2 text-center">
+                              <span className="bg-slate-100 border border-slate-300 rounded px-1 text-[10px] font-bold">
+                                {it.unit_name.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="p-2 text-center font-mono font-bold text-slate-900">{it.qty}</td>
+                            <td className="p-2 text-right font-mono text-slate-700">{money(it.unit_cost_c)}</td>
+                            <td className="p-2 text-center text-amber-700 font-medium">
+                              {it.discount_input || (it.discount_c ? `-${money(it.discount_c)}` : '—')}
+                            </td>
+                            <td className="p-2 text-right font-mono font-bold text-emerald-700">
                               {money(it.subtotal_c)}
                             </td>
                           </tr>
@@ -850,748 +2580,57 @@ export function PurchaseInvoiceModal({
                     </table>
                   </div>
 
-                  <div className="flex justify-between items-center bg-ink-900 rounded-lg p-3 border border-ink-line">
-                    <span className="text-xs text-slate-400">
-                      Total items: {selectedHistoryPurchase.items?.length || 0}
-                    </span>
-                    <div className="text-right">
-                      <span className="text-xs text-slate-400 mr-2">Total Amount:</span>
-                      <span className="font-mono text-lg font-bold text-emerald-400">
-                        {money(selectedHistoryPurchase.net_total_c ?? selectedHistoryPurchase.total_c)}
-                      </span>
+                  <div className="flex justify-between items-start pt-2">
+                    <div className="text-[11px] text-slate-500 max-w-xs">
+                      {viewingPurchase.notes ? (
+                        <p>
+                          <strong>Memo:</strong> {viewingPurchase.notes}
+                        </p>
+                      ) : (
+                        <p className="italic">No delivery notes recorded.</p>
+                      )}
+                      <p className="mt-1">
+                        Items: {viewingPurchase.items?.length || 0} (
+                        {viewingPurchase.items?.reduce((s, i) => s + i.qty, 0)} packages)
+                      </p>
                     </div>
-                  </div>
-                </div>
-              </Modal>
-            )}
-          </div>
-        ) : (
-          /* CREATE INVOICE WORKFLOW */
-          <>
-            {/* 1. Header Information Panel (Supplier & Invoice Metadata) */}
-            <div className="rounded-xl border border-ink-line bg-ink-950/70 p-3.5 backdrop-blur shadow-sm space-y-3 transition-all">
-              <div className="flex items-center justify-between pb-2 border-b border-ink-line/50">
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    Invoice Details & Supplier
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsHeaderPanelMinimized(!isHeaderPanelMinimized)}
-                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-white hover:bg-ink-800 transition-colors"
-                  title={isHeaderPanelMinimized ? 'Show Details' : 'Minimize Details'}
-                >
-                  {isHeaderPanelMinimized ? (
-                    <>
-                      <ChevronDown className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>Show Details</span>
-                    </>
-                  ) : (
-                    <>
-                      <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
-                      <span>Minimize Details</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {isHeaderPanelMinimized ? (
-                /* Collapsed 1-line horizontal summary chip bar */
-                <div className="flex flex-wrap items-center justify-between gap-2 py-1 text-xs">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
-                      <span className="text-slate-400">Supplier:</span>
-                      <strong className="text-emerald-300 font-semibold">{currentSupplier?.name || 'None'}</strong>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
-                      <span className="text-slate-400">Inv:</span>
-                      <span className="font-mono">{invoiceNo || '—'}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
-                      <span className="text-slate-400">Ref:</span>
-                      <span className="font-mono">{receiptNo || '—'}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-ink-800/80 border border-ink-line px-2.5 py-1 text-white">
-                      <span className="text-slate-400">Date:</span>
-                      <span>{purchaseDate}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 font-semibold text-emerald-300 text-[11px]">
-                      <span>Status:</span>
-                      <span>Draft ({isPaid ? 'Paid' : `Terms ${termsDays || 0}D`})</span>
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsHeaderPanelMinimized(false)}
-                    className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2 py-1 rounded hover:bg-emerald-500/10 transition-colors"
-                  >
-                    <ChevronDown className="h-3.5 w-3.5" />
-                    <span>Expand</span>
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                    {/* Supplier Picker */}
-                    <div className="md:col-span-2">
-                      <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
-                        <span className="flex items-center gap-1.5">
-                          <Truck className="h-3.5 w-3.5 text-emerald-400" />
-                          Supplier <span className="text-danger-400">*</span>
+                    <div className="w-56 bg-slate-50 border border-slate-200 rounded-md p-2.5 text-[11px] space-y-1">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Gross:</span>
+                        <span className="font-mono">{money(viewingPurchase.total_c)}</span>
+                      </div>
+                      {viewingPurchase.discount_c ? (
+                        <div className="flex justify-between text-amber-700 font-semibold">
+                          <span>Trade Disc:</span>
+                          <span className="font-mono">-{money(viewingPurchase.discount_c)}</span>
+                        </div>
+                      ) : null}
+                      <div className="flex justify-between text-sm font-extrabold text-emerald-700 border-t border-emerald-600 pt-1">
+                        <span>Net Total:</span>
+                        <span className="font-mono">
+                          {money(viewingPurchase.net_total_c ?? viewingPurchase.total_c)}
                         </span>
-                        {currentSupplier?.address && (
-                          <span className="truncate max-w-[200px] text-[11px] font-normal text-slate-400">
-                            {currentSupplier.address}
-                          </span>
-                        )}
-                      </label>
-                      <select
-                        className="input w-full font-medium"
-                        value={supplierId}
-                        onChange={(e) => setSupplierId(Number(e.target.value))}
-                      >
-                        <option value="">— Select Supplier —</option>
-                        {suppliers.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} {s.contact_person ? `(${s.contact_person})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Receipt Number (VIP requested) */}
-                    <div>
-                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
-                        <Hash className="h-3.5 w-3.5 text-sky-400" />
-                        Receipt No.
-                      </label>
-                      <input
-                        type="text"
-                        value={receiptNo}
-                        onChange={(e) => setReceiptNo(e.target.value)}
-                        placeholder="e.g. SI0000002966"
-                        className="input w-full font-mono text-xs uppercase"
-                      />
-                    </div>
-
-                    {/* Invoice Number / Transaction # (VIP requested) */}
-                    <div>
-                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-300">
-                        <FileSpreadsheet className="h-3.5 w-3.5 text-amber-400" />
-                        Invoice No. / Trans #
-                      </label>
-                      <input
-                        type="text"
-                        value={invoiceNo}
-                        onChange={(e) => setInvoiceNo(e.target.value)}
-                        placeholder="e.g. BS-2024-017"
-                        className="input w-full font-mono text-xs uppercase"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Second row of meta */}
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4 items-center pt-1 border-t border-ink-line/60">
-                    {/* Date */}
-                    <div>
-                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                        Invoice Date
-                      </label>
-                      <input
-                        type="date"
-                        value={purchaseDate}
-                        onChange={(e) => setPurchaseDate(e.target.value)}
-                        className="input w-full text-xs"
-                      />
-                    </div>
-
-                    {/* Payment Status & Terms */}
-                    <div>
-                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                        <CreditCard className="h-3.5 w-3.5 text-slate-400" />
-                        Payment Status
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-1.5 cursor-pointer text-xs text-white">
-                          <input
-                            type="checkbox"
-                            checked={isPaid}
-                            onChange={(e) => setIsPaid(e.target.checked)}
-                            className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
-                          />
-                          <span>Paid</span>
-                        </label>
-                        {!isPaid && (
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              min="0"
-                              value={termsDays}
-                              onChange={(e) => setTermsDays(e.target.value)}
-                              placeholder="Days"
-                              className="input w-16 py-0.5 text-xs font-mono text-center"
-                            />
-                            <span className="text-[11px] text-slate-400">Days</span>
-                          </div>
-                        )}
                       </div>
                     </div>
-
-                    {/* Memo / Notes */}
-                    <div className="md:col-span-2">
-                      <label className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-400">
-                        Memo / Delivery Notes
-                      </label>
-                      <input
-                        type="text"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="e.g. CUS.BOOKING / Van delivery / Supplier rep"
-                        className="input w-full text-xs"
-                      />
-                    </div>
                   </div>
-                </>
-              )}
-            </div>
-
-            {/* 2. FAST ITEM ENTRY BAR (VIP: Arrow point to Qty box then F2 mapupunta sa stocks sya) */}
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 shadow-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                  <Barcode className="h-4 w-4 text-emerald-400" />
-                  Fast Item Entry
-                  <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] text-emerald-300 font-mono">
-                    F1 Explorer · F2 in Qty to commit
-                  </span>
-                </span>
-                {selectedProduct && (
-                  <span className="text-xs text-slate-300">
-                    Current Stock: <strong className="font-mono text-white">{selectedProduct.stock} {selectedProduct.base_unit}</strong>
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-2 md:grid-cols-12 items-end">
-                {/* Search / Barcode Input (F1) */}
-                <div className="relative md:col-span-3">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                    <span className="flex items-center gap-1.5">
-                      <span>Item Code / Barcode</span>
-                      <button
-                        type="button"
-                        onClick={() => setShowItemPicker(true)}
-                        className="inline-flex items-center gap-1 rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[10px] font-bold text-emerald-300 hover:bg-emerald-500/25 transition-colors"
-                        title="Open Inventory Spotlight Explorer (F1)"
-                      >
-                        <PackageSearch className="h-3 w-3" />
-                        <span>F1 Explorer</span>
-                      </button>
-                    </span>
-                    <kbd className="rounded bg-ink-800 px-1 text-[10px] font-mono text-slate-400 border border-ink-line">
-                      F1
-                    </kbd>
-                  </label>
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value)
-                        setShowDropdown(true)
-                        setDropdownIndex(0)
-                      }}
-                      onFocus={() => {
-                        if (searchQuery.trim()) setShowDropdown(true)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowDown') {
-                          e.preventDefault()
-                          setDropdownIndex((prev) => Math.min(prev + 1, searchResults.length - 1))
-                        } else if (e.key === 'ArrowUp') {
-                          e.preventDefault()
-                          setDropdownIndex((prev) => Math.max(prev - 1, 0))
-                        } else if (e.key === 'Enter') {
-                          e.preventDefault()
-                          const target = searchResults[dropdownIndex] || searchResults[0]
-                          if (target) {
-                            handleSelectProduct(target)
-                          }
-                        } else if (e.key === 'Escape') {
-                          setShowDropdown(false)
-                        }
-                      }}
-                      placeholder="Scan barcode or type name…"
-                      className="input w-full pl-9 font-medium text-xs"
-                    />
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchQuery('')
-                          setSelectedProduct(null)
-                          setShowDropdown(false)
-                          searchInputRef.current?.focus()
-                        }}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Autocomplete Dropdown */}
-                  {showDropdown && searchResults.length > 0 && (
-                    <div className="absolute left-0 top-full z-40 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-ink-line bg-ink-850 p-1 shadow-2xl">
-                      {searchResults.map((prod, idx) => (
-                        <div
-                          key={prod.id}
-                          onClick={() => handleSelectProduct(prod)}
-                          onMouseEnter={() => setDropdownIndex(idx)}
-                          className={`flex items-center justify-between rounded-md px-3 py-2 text-xs cursor-pointer ${
-                            idx === dropdownIndex ? 'bg-emerald-600 text-white' : 'text-slate-200 hover:bg-ink-750'
-                          }`}
-                        >
-                          <div className="truncate">
-                            <p className="font-semibold">{prod.name}</p>
-                            <p className={`text-[10px] ${idx === dropdownIndex ? 'text-emerald-100' : 'text-slate-400'}`}>
-                              Barcode: {prod.barcode || prod.sku} · Stock: {prod.stock} {prod.base_unit}
-                            </p>
-                          </div>
-                          <span className="font-mono font-bold">
-                            {money(prod.purchase_cost_c)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-
-                {/* Packaging Unit Selector */}
-                <div className="md:col-span-2">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                    <span>Unit</span>
-                    <span className="text-[10px] text-slate-500">Box/Pack/Roll</span>
-                  </label>
-                  <select
-                    ref={unitSelectRef}
-                    disabled={!selectedProduct}
-                    value={selectedUnitName}
-                    onChange={(e) => handleUnitChange(e.target.value)}
-                    className="input w-full font-medium text-xs uppercase"
-                  >
-                    {availableUnits.map((u) => (
-                      <option key={u.name} value={u.name}>
-                        {u.name.toUpperCase()} {u.conversionToBase > 1 ? `(x${u.conversionToBase})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedUnitName === 'custom' && (
-                    <input
-                      type="text"
-                      value={customUnitName}
-                      onChange={(e) => setCustomUnitName(e.target.value)}
-                      placeholder="e.g. TIE, TUB"
-                      className="input mt-1 w-full text-[11px] py-0.5 uppercase"
-                    />
-                  )}
-                </div>
-
-                {/* Multiplier (Pcs / Unit Conversion) */}
-                <div className="md:col-span-1">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                    <span>Pcs/Unit</span>
-                    <span className="text-[10px] text-emerald-400">Rate</span>
-                  </label>
-                  <input
-                    disabled={!selectedProduct}
-                    type="number"
-                    step="any"
-                    min="0.001"
-                    value={unitMultiplierInput}
-                    onChange={(e) => handleMultiplierChange(e.target.value)}
-                    placeholder="1"
-                    className="input w-full font-mono text-xs text-center font-semibold"
-                    title="Conversion multiplier: how many base pieces are inside this packaging unit"
-                  />
-                </div>
-
-                {/* Cost Price */}
-                <div className="md:col-span-2">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-300">
-                    <span>Unit Cost (₱)</span>
-                    <span className="text-[10px] text-emerald-400">Supplier</span>
-                  </label>
-                  <input
-                    ref={costInputRef}
-                    disabled={!selectedProduct}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={unitCostPesos}
-                    onChange={(e) => setUnitCostPesos(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        qtyInputRef.current?.focus()
-                        qtyInputRef.current?.select()
-                      }
-                    }}
-                    placeholder="0.00"
-                    className="input w-full font-mono text-xs font-semibold"
-                  />
-                </div>
-
-                {/* Quantity Box (THE CORE F2 ERGONOMIC HOTSPOT) */}
-                <div className="md:col-span-1">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-bold text-emerald-300">
-                    <span>Qty</span>
-                    <kbd className="rounded bg-emerald-500/20 px-1 text-[9px] font-mono text-emerald-300 border border-emerald-500/30">
-                      F2
-                    </kbd>
-                  </label>
-                  <input
-                    ref={qtyInputRef}
-                    disabled={!selectedProduct}
-                    type="number"
-                    step="any"
-                    min="1"
-                    value={qtyInput}
-                    onChange={(e) => setQtyInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        discountInputRef.current?.focus()
-                        discountInputRef.current?.select()
-                      } else if (e.key === 'F2') {
-                        e.preventDefault()
-                        handleCommitItem()
-                      }
-                    }}
-                    placeholder="Qty"
-                    className="input w-full font-mono text-sm font-bold text-center border-emerald-500/60 focus:border-emerald-400 focus:ring-emerald-500"
-                  />
-                </div>
-
-                {/* Supplier Trade Discount (Series / Cascading: Less 5 Less 5) */}
-                <div className="md:col-span-2">
-                  <label className="mb-1 flex items-center justify-between text-[11px] font-semibold text-amber-300">
-                    <span>Supplier Disc</span>
-                    <span className="text-[9px] text-amber-400 font-mono">5+5+5 / 10/5</span>
-                  </label>
-                  <input
-                    ref={discountInputRef}
-                    disabled={!selectedProduct}
-                    type="text"
-                    value={itemDiscountInput}
-                    onChange={(e) => setItemDiscountInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        handleCommitItem()
-                      }
-                    }}
-                    placeholder="0 / 5+5+5 / 10/5"
-                    className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40 focus:border-amber-400 focus:ring-amber-500"
-                    title="Supplier chain discount: enter series like *-5%-5%-5%, 5+5+5, 10/5, or flat ₱50"
-                  />
-                </div>
-
-                {/* Add Item Button */}
-                <div className="md:col-span-1">
-                  <button
-                    type="button"
-                    disabled={!selectedProduct}
-                    onClick={handleCommitItem}
-                    title="Add Item to Invoice (F2 / Enter)"
-                    className="btn-primary w-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center p-2 font-bold shadow-sm"
-                  >
-                    <Plus className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Live Calculation Strip: Total Base Stock Addition & Supplier Discount Preview */}
-              {selectedProduct && (
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-ink-900/90 border border-emerald-500/20 px-3 py-1.5 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <span className="font-semibold text-emerald-400">📦 Stock Addition:</span>
-                    <span className="font-mono text-white">
-                      {qtyInput || 0} {selectedUnitName.toUpperCase() || 'UNIT'} × {unitMultiplierInput || 1} ={' '}
-                      <strong className="text-emerald-300 font-bold">
-                        +{Math.round((parseFloat(qtyInput) || 0) * (parseFloat(unitMultiplierInput) || 1) * 1000) / 1000}{' '}
-                        {selectedProduct.base_unit || 'pcs'}
-                      </strong>
-                    </span>
-                    <span className="text-slate-500 text-[11px]">(automatically added to inventory stock on post)</span>
-                  </div>
-
-                  {itemDiscountInput.trim() && itemDiscountResult.discountAmountC > 0 ? (
-                    <div className="flex items-center gap-2 text-xs font-mono">
-                      <span className="text-amber-400 font-bold">
-                        🏷️ Trade Discount ({itemDiscountResult.formula}):
-                      </span>
-                      <span className="text-slate-400 line-through">{money(itemGrossC)}</span>
-                      <span className="text-amber-300 font-semibold">-{money(itemDiscountResult.discountAmountC)}</span>
-                      <span className="text-emerald-400 font-bold">= {money(itemDiscountResult.netAmountC)}</span>
-                      <span className="text-[10px] text-amber-500/90">
-                        (-{itemDiscountResult.effectivePercent.toFixed(2)}% net)
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="font-mono text-slate-300 text-xs">
-                      Line Total: <strong className="text-emerald-400 font-bold">{money(itemGrossC)}</strong>
-                    </div>
-                  )}
+              ) : (
+                <div className="bg-white text-black p-4 rounded-lg shadow-sm font-mono text-xs whitespace-pre-wrap max-w-sm mx-auto leading-relaxed border border-slate-300">
+                  {formatPurchaseOrderSlipLines({
+                    storeName: settings?.store_name || 'TINDA POS',
+                    purchase: {
+                      ...viewingPurchase,
+                      supplier_address: currentViewSupplier?.address,
+                      supplier_contact: currentViewSupplier?.contact_person,
+                      supplier_phone: currentViewSupplier?.phone
+                    }
+                  }).join('\n')}
                 </div>
               )}
             </div>
-
-            {/* 3. INVOICE LINE ITEMS GRID (Matching CCTI POS Grid) */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Invoice Items ({items.length})
-                </span>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300">
-                    <input
-                      type="checkbox"
-                      checked={updateProductCosts}
-                      onChange={(e) => setUpdateProductCosts(e.target.checked)}
-                      className="rounded border-ink-line bg-ink-800 text-emerald-500 focus:ring-0"
-                    />
-                    <span>Update Product Catalog Cost</span>
-                  </label>
-                  {items.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveLastItem}
-                      className="text-xs text-slate-400 hover:text-danger-400 flex items-center gap-1"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      Remove Last (F3)
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className={`${isHeaderPanelMinimized ? 'max-h-[54vh] min-h-[360px]' : 'max-h-[36vh] min-h-[160px]'} overflow-auto rounded-xl border border-ink-line bg-ink-950/60 transition-[max-height] duration-300`}>
-                {items.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-500 space-y-1">
-                    <Barcode className="h-8 w-8 text-slate-600" />
-                    <p className="text-xs font-medium">No items in this invoice yet.</p>
-                    <p className="text-[11px] text-slate-600">
-                      Press <strong>F1</strong> to search item, enter Qty, and press <strong>F2</strong> to commit to stocks.
-                    </p>
-                  </div>
-                ) : (
-                  <table className="table min-w-[920px]">
-                    <thead>
-                      <tr>
-                        <th className="w-10 py-2.5 px-3 text-center">#</th>
-                        <th className="py-2.5 px-3 text-left">Item Code</th>
-                        <th className="py-2.5 px-3 text-left">Description</th>
-                        <th className="py-2.5 px-3 text-center">Unit</th>
-                        <th className="py-2.5 px-3 text-center">Qty</th>
-                        <th className="py-2.5 px-3 text-center">Stock In</th>
-                        <th className="py-2.5 px-3 text-right">Gross Cost</th>
-                        <th className="py-2.5 px-3 text-center">Trade Disc</th>
-                        <th className="py-2.5 px-3 text-right">Net Cost</th>
-                        <th className="py-2.5 px-3 text-right">Net Amount</th>
-                        <th className="w-10 py-2.5 px-3 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((it, idx) => (
-                        <tr key={it.tempId} className="hover:bg-ink-800/60 transition-colors">
-                          <td className="py-2 px-3 text-center text-xs font-mono text-slate-500">
-                            {idx + 1}
-                          </td>
-                          <td className="py-2 px-3 font-mono text-xs text-slate-300">
-                            {it.barcode}
-                          </td>
-                          <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
-                            {it.productName}
-                          </td>
-                          <td className="py-2 px-3 text-center text-xs">
-                            <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">
-                              {it.unitName.toUpperCase()}
-                              {it.conversionToBase > 1 ? ` (x${it.conversionToBase})` : ''}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3 text-center font-mono font-bold text-white">
-                            {it.qty}
-                          </td>
-                          <td className="py-2 px-3 text-center font-mono text-xs text-emerald-400 font-semibold">
-                            +{it.qtyBase}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono text-xs text-slate-300">
-                            {money(it.unitCostC)}
-                          </td>
-                          <td className="py-2 px-3 text-center text-xs">
-                            {it.discountC > 0 ? (
-                              <span
-                                className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
-                                title={it.discountInput}
-                              >
-                                {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
-                              </span>
-                            ) : (
-                              <span className="text-slate-600 font-mono">—</span>
-                            )}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono text-xs font-semibold text-slate-200">
-                            {money(it.netUnitCostC)}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
-                            {money(it.subtotalC)}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(it.tempId)}
-                              className="rounded p-1 text-slate-500 hover:bg-danger-500/20 hover:text-danger-400 transition-colors"
-                              title="Delete Item"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-
-            {/* 4. BOTTOM SUMMARY & FUNCTION KEYS BAR (Matching CCTI POS Summary) */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center rounded-xl border border-ink-line bg-ink-950 p-3.5">
-              {/* Shortcut Keys Guide */}
-              <div className="md:col-span-6 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
-                    F1
-                  </kbd>
-                  Inventory Explorer
-                </span>
-                <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-                  <kbd className="rounded bg-emerald-900 border border-emerald-600 px-1.5 py-0.5 font-mono text-white">
-                    F2
-                  </kbd>
-                  Commit Qty
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
-                    F3
-                  </kbd>
-                  Remove
-                </span>
-                <span className="flex items-center gap-1">
-                  <kbd className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-white">
-                    Ctrl+S
-                  </kbd>
-                  Post
-                </span>
-                <div className="mt-1 w-full text-[11px] text-slate-500">
-                  Total Items: <strong className="text-white">{items.length}</strong> · Total Base Units:{' '}
-                  <strong className="text-emerald-400">+{totalBaseUnits}</strong>
-                </div>
-              </div>
-
-              {/* Financial Totals */}
-              <div className="md:col-span-6 flex flex-col items-end gap-1.5">
-                <div className="flex items-center gap-4 text-xs text-slate-300">
-                  <span>Gross Total:</span>
-                  <span className="font-mono font-semibold text-white">{money(grossTotalC)}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-slate-300">
-                  <span title="Supports chain discount: e.g. 5+5+5 or 10/5 or ₱100">
-                    Trade / Series Discount:
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="text"
-                      value={discountPesos}
-                      onChange={(e) => setDiscountPesos(e.target.value)}
-                      placeholder="0 / 5+5+5 / 10/5"
-                      className="input w-36 py-0.5 text-right font-mono text-xs text-amber-300"
-                    />
-                    {invoiceDiscountResult.discountAmountC > 0 && (
-                      <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
-                        -{money(invoiceDiscountResult.discountAmountC)}
-                        {invoiceDiscountResult.effectivePercent > 0 && (
-                          <span className="text-[10px] text-amber-500/90 ml-1">
-                            ({invoiceDiscountResult.effectivePercent.toFixed(1)}%)
-                          </span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 border-t border-ink-line pt-1 text-sm font-bold text-white">
-                  <span>Net Payable:</span>
-                  <span className="font-mono text-xl text-emerald-400">{money(netTotalC)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Actions Footer */}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="btn-ghost text-xs text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsMinimized(true)}
-                  className="btn-ghost text-xs text-zinc-400 hover:text-white flex items-center gap-1"
-                  title="Minimize to Floating Dock"
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                  Minimize
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={submitting || items.length === 0 || !supplierId}
-                  onClick={() => void handleSaveInvoice()}
-                  className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 px-6 py-2.5 font-bold shadow-lg"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  {submitting ? 'Posting Invoice…' : 'Post & Update Stocks (Ctrl+S)'}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </Modal>
-  )}
-
-  {/* Universal Inventory Spotlight Explorer Modal (F1) */}
-  <PurchaseItemPickerModal
-    open={showItemPicker}
-    onClose={() => setShowItemPicker(false)}
-    products={allProducts}
-    onSelectProduct={(prod) => {
-      setShowItemPicker(false)
-      handleSelectProduct(prod)
-    }}
-  />
-</>
+          </div>
+        </Modal>
+      )}
+    </>
   )
 }

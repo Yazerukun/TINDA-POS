@@ -741,6 +741,20 @@ handle('purchases:create', (_e: IpcMainInvokeEvent, input: unknown) => {
   emitInventoryChanged({ reason: 'PURCHASE', product_ids: p.items.map((i) => i.product_id) })
   return p
 })
+handle('purchases:update', (_e: IpcMainInvokeEvent, id: number, input: unknown) => {
+  const u = user()
+  const payload = input as Parameters<typeof purchRepo.updatePurchase>[2]
+  const p = purchRepo.updatePurchase(db(), id, { ...payload, user_id: u.id })
+  auditRepo.audit(db(), {
+    action: 'PURCHASE_UPDATE',
+    user_id: u.id,
+    entity_type: 'PURCHASE',
+    entity_id: p.id,
+    new_value: `${p.purchase_no} updated (Total: ${p.net_total_c ?? p.total_c})`
+  })
+  emitInventoryChanged({ reason: 'PURCHASE', product_ids: p.items.map((i) => i.product_id) })
+  return p
+})
 
 // ---- Customers ----
 handle('customers:list', (_e: IpcMainInvokeEvent, opts?: unknown) => custRepo.listCustomers(db(), (opts ?? {}) as object))

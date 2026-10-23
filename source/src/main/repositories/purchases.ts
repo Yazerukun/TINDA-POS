@@ -102,6 +102,16 @@ export function ensurePurchasesTables(db: Database.Database): void {
     if (!purchCols.has('net_total_c')) {
       db.exec('ALTER TABLE purchases ADD COLUMN net_total_c INTEGER NOT NULL DEFAULT 0')
     }
+
+    const itemCols = new Set(
+      (db.prepare("PRAGMA table_info('purchase_items')").all() as { name: string }[]).map((c) => c.name)
+    )
+    if (!itemCols.has('discount_input')) {
+      db.exec('ALTER TABLE purchase_items ADD COLUMN discount_input TEXT')
+    }
+    if (!itemCols.has('discount_c')) {
+      db.exec('ALTER TABLE purchase_items ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
+    }
   } catch (err) {
     console.error('ensurePurchasesTables column upgrade failed:', err)
   }
@@ -190,7 +200,16 @@ export function createPurchase(
     notes?: string | null
     user_id: number
     update_product_costs?: boolean
-    items: { product_id: number; unit_name: string; qty: number; qty_base: number; unit_cost_c: number; subtotal_c: number }[]
+    items: {
+      product_id: number
+      unit_name: string
+      qty: number
+      qty_base: number
+      unit_cost_c: number
+      discount_input?: string | null
+      discount_c?: number
+      subtotal_c: number
+    }[]
   }
 ): Purchase {
   ensurePurchasesTables(db)
@@ -274,9 +293,154 @@ export function createPurchase(
   return getPurchase(db, id)
 }
 
+
+export function updatePurchase(
+  db: Database.Database,
+  id: number,
+  input: {
+    supplier_id: number
+    purchase_date: string
+    reference?: string | null
+    invoice_no?: string | null
+    receipt_no?: string | null
+    is_paid?: boolean
+    terms_days?: number
+    discount_c?: number
+    notes?: string | null
+    user_id: number
+    update_product_costs?: boolean
+    items: {
+      product_id: number
+      unit_name: string
+      qty: number
+      qty_base: number
+      unit_cost_c: number
+      discount_input?: string | null
+      discount_c?: number
+      subtotal_c: number
+    }[]
+  }
+): Purchase {
+  ensurePurchasesTables(db)
+  const existing = getPurchase(db, id)
+  if (!existing) throw new Error('Purchase not found.')
+  if (!input.supplier_id) throw new Error('Supplier is required.')
+  if (!input.items || input.items.length === 0) throw new Error('Purchase must have at least one item.')
+  for (const it of input.items) {
+    if (it.qty <= 0) throw new Error('Quantity must be greater than zero.')
+    if (it.unit_cost_c < 0) throw new Error('Unit cost cannot be negative.')
+  }
+
+  const grossTotal = input.items.reduce((s, i) => s + i.subtotal_c, 0)
+  const discount = Math.max(0, input.discount_c || 0)
+  const netTotal = Math.max(0, grossTotal - discount)
+  const ref = input.invoice_no || input.receipt_no || input.reference || null
+
+  const txn = db.transaction(() => {
+    // 1. Calculate stock difference between existing and new items
+    const oldProductStockMap = new Map<number, number>()
+    for (const oldIt of existing.items) {
+      oldProductStockMap.set(oldIt.product_id, (oldProductStockMap.get(oldIt.product_id) || 0) + (oldIt.qty_base || 0))
+    }
+
+    const newProductStockMap = new Map<number, number>()
+    for (const newIt of input.items) {
+      newProductStockMap.set(newIt.product_id, (newProductStockMap.get(newIt.product_id) || 0) + (newIt.qty_base || 0))
+    }
+
+    const allProductIds = new Set([...oldProductStockMap.keys(), ...newProductStockMap.keys()])
+    for (const prodId of allProductIds) {
+      const oldQty = oldProductStockMap.get(prodId) || 0
+      const newQty = newProductStockMap.get(prodId) || 0
+      const delta = newQty - oldQty
+      if (delta !== 0) {
+        adjustStock(
+          db,
+          prodId,
+          delta,
+          'PURCHASE',
+          `Purchase Invoice Edit ${existing.purchase_no}`.trim(),
+          input.user_id,
+          input.invoice_no || input.receipt_no || existing.purchase_no,
+          {
+            source: 'PURCHASE',
+            supplier_id: input.supplier_id,
+            notes: `Adjusted via Invoice Edit (${delta > 0 ? '+' : ''}${delta})`
+          }
+        )
+      }
+    }
+
+    // 2. Update purchase header record
+    db.prepare(
+      `UPDATE purchases SET
+         supplier_id = ?,
+         purchase_date = ?,
+         reference = ?,
+         invoice_no = ?,
+         receipt_no = ?,
+         is_paid = ?,
+         terms_days = ?,
+         discount_c = ?,
+         total_c = ?,
+         net_total_c = ?,
+         notes = ?
+       WHERE id = ?`
+    ).run(
+      input.supplier_id,
+      input.purchase_date,
+      ref,
+      input.invoice_no ?? null,
+      input.receipt_no ?? null,
+      input.is_paid !== false ? 1 : 0,
+      input.terms_days ?? 0,
+      discount,
+      grossTotal,
+      netTotal,
+      input.notes ?? null,
+      id
+    )
+
+    // 3. Delete old items and insert updated items
+    db.prepare(`DELETE FROM purchase_items WHERE purchase_id = ?`).run(id)
+
+    const stmt = db.prepare(
+      `INSERT INTO purchase_items (
+         purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    for (const it of input.items) {
+      stmt.run(
+        id,
+        it.product_id,
+        it.unit_name,
+        it.qty,
+        it.qty_base,
+        it.unit_cost_c,
+        it.discount_input ?? null,
+        it.discount_c ?? 0,
+        it.subtotal_c
+      )
+
+      if (input.update_product_costs) {
+        const netBaseCostC = it.qty_base > 0
+          ? Math.round(it.subtotal_c / it.qty_base)
+          : Math.round(it.unit_cost_c / (it.qty > 0 ? it.qty_base / it.qty : 1))
+        db.prepare(`UPDATE products SET purchase_cost_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
+          netBaseCostC,
+          it.product_id
+        )
+      }
+    }
+  })
+
+  txn()
+  return getPurchase(db, id)
+}
+
 export function listPurchases(
   db: Database.Database,
-  opts: { supplier_id?: number; from?: string; to?: string; limit?: number; offset?: number } = {}
+  opts: { supplier_id?: number; from?: string; to?: string; limit?: number; offset?: number; search?: string } = {}
 ): { rows: Purchase[]; total: number } {
   ensurePurchasesTables(db)
 
@@ -294,8 +458,15 @@ export function listPurchases(
     where.push('p.purchase_date <= ?')
     params.push(opts.to)
   }
+  if (opts.search && opts.search.trim()) {
+    const term = `%${opts.search.trim()}%`
+    where.push(
+      '(p.purchase_no LIKE ? OR p.invoice_no LIKE ? OR p.receipt_no LIKE ? OR s.name LIKE ? OR COALESCE(u.full_name, u.username, \'\') LIKE ?)'
+    )
+    params.push(term, term, term, term, term)
+  }
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : ''
-  const totalRow = db.prepare(`SELECT COUNT(*) AS c FROM purchases p ${whereSql}`).get(...params) as
+  const totalRow = db.prepare(`SELECT COUNT(*) AS c FROM purchases p LEFT JOIN suppliers s ON s.id = p.supplier_id LEFT JOIN users u ON u.id = p.user_id ${whereSql}`).get(...params) as
     | { c: number }
     | undefined
   const total = totalRow?.c ?? 0

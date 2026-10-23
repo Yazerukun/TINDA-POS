@@ -202,7 +202,8 @@ const api: TindaApi = {
   purchases: {
     list: (opts) => invoke<{ rows: import('@shared/types').Purchase[]; total: number }>('purchases:list', opts),
     get: (id) => invoke<import('@shared/types').Purchase>('purchases:get', id),
-    create: (input) => invoke<import('@shared/types').Purchase>('purchases:create', input)
+    create: (input) => invoke<import('@shared/types').Purchase>('purchases:create', input),
+    update: (id, input) => invoke<import('@shared/types').Purchase>('purchases:update', id, input)
   },
   customers: {
     list: (opts) => invoke<{ rows: import('@shared/types').Customer[]; total: number }>('customers:list', opts),

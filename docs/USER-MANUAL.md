@@ -1,10 +1,34 @@
-# TINDA POS v1.0.59 User Manual
+# TINDA POS v4.1.4 User Manual
 
-**TINDA POS v1.0.59** — Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v4.1.4** — Official User Manual & Operations Guide for Store Owners and Cashiers.
 
 This guide covers release **v1.0.59**, introducing the **High-Density Enterprise Cashier Listing Engine**, **Dual-Mode Switcher (Table Listing vs Card Grid)**, **In-Line Table Cart Quantity Steppers**, and **High-Speed Keyboard Navigation (`ArrowUp` / `ArrowDown` / `Enter`)**, alongside **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**.
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
+
+## What's New in v4.1.4: Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing
+
+- **Universal Search Bar in Purchase Invoices History:**
+  - Real-time live filtering across P.O. Number (`purchase_no`), Supplier Invoice # (`invoice_no`), Receipt # (`receipt_no`), Supplier Name, Encoder/Staff (`user_name`), and Payment Status (`PAID`, `PENDING`, `PARTIAL`).
+  - Includes instant 1-click **[ ✕ ] Clear** button and zero-lag debounced execution.
+- **Unified P.O. Details Panel ("New Invoice" Style):**
+  - Clicking any row or P.O. Number in the history list instantly opens a full invoice panel matching the "New Invoice" design.
+  - Displays Header metadata, status badges, itemized line items with trade discount breakdown, packaging units (Piece, Pack, Box, Case), pcs/unit conversion multiplier, base additions, landed unit cost, and summary totals.
+- **Read-Only by Default ("Bawal mag-edit") & Admin/Manager Authorization:**
+  - Invoices open in strict read-only mode to prevent accidental tampering or unauthorized edits.
+  - Clicking **[ ✏️ Edit ]** prompts for Manager/Admin PIN or Password authorization (`verifyManagerPin`).
+- **Full Line-Item & Metadata Editing Studio:**
+  - Authorized users can edit header fields, adjust quantities, add new items via the **Fast Item Entry Bar** (or `F1` Spotlight Picker), and update discounts with live calculation and a green **[ 💾 Save Edit (Ctrl+S) ]** button.
+- **Atomic Stock Difference Reconciliation on Edit:**
+  - Automatically calculates differences per product (`delta = new_qty_base - old_qty_base`). Increases add to stock, decreases subtract, and removed items safely reverse added stock—all in a single atomic SQLite transaction with full audit logging.
+- **Dual-Engine Purchase Order Printing:**
+  - Prominent **[ 🖨️ Print ]** button offering both:
+    1. **Official A4 / Letter Document:** Formal corporate voucher with store header, vendor details, breakdown table, and 3 formal signature blocks (*Prepared By*, *Checked By*, *Approved By*).
+    2. **Thermal POS Slip (58mm / 80mm):** ESC/POS receipt format for instant counter thermal printers.
+- **Sequential Invoice Navigation:**
+  - Top navigation bar features **[ ◀ Prev. ]** and **[ Next ▶ ]** buttons to page through purchase invoices sequentially within the filtered list.
+
+---
 
 ## What's New in v1.0.59 (High-Density Enterprise Cashier Listing Engine)
 
@@ -430,6 +454,52 @@ Quantity must be greater than zero and cost cannot be negative. Restock creates 
 Kung gusto ninyong makita kung anong stocks ang dumating ngayong araw, pumunta sa **Inventory → Stock Receiving**. Makikita rito ang received product, quantity at unit, previous/new stock, supplier, date/time, cost, reference, notes, source, at kung sino ang nag-receive.
 
 Gamitin ang Search Product, Date From/To, Supplier, at Source filters para mabilis makita ang kailangan. Click ang row para sa complete read-only details. Ang Restock at legitimate Purchase Receiving ay automatic na lalabas agad—hindi kailangan ng manual Refresh. Ang CSV opening stock ay malinaw na naka-label bilang opening/import stock, at hindi delivery. Damage, loss, sale, at ibang negative movements ay hindi ipinapakitang received stock.
+
+
+## Purchase Orders & Invoices History Studio (v4.1.4 Spec)
+
+**WHERE TO GO:** Inventory → **Purchase Invoices** (o pindutin ang Purchase Orders shortcut).
+
+1. **Universal Search Bar (P.O. Search):**
+   - Agad na mag-filter gamit ang real-time search bar sa ibabaw ng Invoices History.
+   - Pwede kang mag-search gamit ang:
+     - **P.O. Number** (hal. `PO-20261023-0001`)
+     - **Supplier Invoice #** (hal. `INV-98234`)
+     - **Delivery Receipt #** (hal. `DR-4819`)
+     - **Supplier Name** (hal. `Lucky Steel Corporation`, `San Miguel`)
+     - **Encoder / Staff Name** (hal. `Admin`, `Cashier Jane`)
+     - **Payment Status** (`PAID`, `PENDING`, `PARTIAL`)
+   - May instant `[ ✕ ] Clear` button para ma-reset agad ang filter nang walang delay.
+
+2. **Unified P.O. Details Panel:**
+   - I-click ang kahit anong row o P.O. Number sa table para buksan ang buong visual layout na katulad ng "New Invoice".
+   - Makikita rito ang lahat ng impormasyon:
+     - Header Details: Supplier, Invoice #, Receipt #, Date, Payment Status, at Notes.
+     - Itemized Table: Products, Packaging Units (Box, Pack, Case, Pcs), Pcs/Unit Multiplier, Base Additions (+120 pcs), Supplier Trade Discount Formula (`-5%-5%`, `10+5`), Net Landed Cost per piece, at Subtotal.
+     - Financial Summary: Gross Subtotal, Trade Discount Deductions, Net Total, Amount Paid, at Balance.
+
+3. **Read-Only by Default & Manager Authorization:**
+   - Bukas ito sa **Read-Only Mode** ("Bawal na mag-edit" by default) upang maiwasan ang aksidenteng pagbago o pandaraya.
+   - Kung kailangang magbago ng delivery o mag-tama ng invoice, i-click ang `[ ✏️ Edit ]` button sa itaas.
+   - Hihingi ang system ng **Manager o Admin PIN/Password** bago ma-unlock ang Edit Mode.
+
+4. **Editing Line Items & Automated Stock Reconciliation:**
+   - Kapag authorized na:
+     - Pwedeng i-adjust ang Quantity o Unit ng bawat line item.
+     - Pwedeng mag-dagdag ng bagong items gamit ang **Fast Item Entry Bar** (o pindutin ang `F1` para sa Spotlight Item Picker).
+     - Pwedeng i-update ang trade discounts o payment details.
+   - Pag-click sa green `[ 💾 Save Edit (Ctrl+S) ]` button:
+     - Awtomatikong kukuwentahin ng system ang diperensya sa stock (`delta = new_qty_base - old_qty_base`).
+     - Dagdag sa stock kung nadagdagan ang delivery, bawas sa stock kung nabawasan, at ibabalik sa dati kung may tinanggal na item. Lahat ay naka-sync sa iisang safe SQLite transaction.
+
+5. **Dual-Engine Purchase Order Printing:**
+   - I-click ang `[ 🖨️ Print ]` button sa navigation bar para pumili:
+     - **Official A4 / Letter Document:** Propesyonal na corporate voucher na may store header, supplier information, breakdown table, at formal signature blocks (*Prepared By*, *Checked By*, *Approved By*) para sa pirmahan ng warehouse at accountant.
+     - **Thermal POS Slip (58mm / 80mm):** Resibo para sa mabilisang resibo sa counter gamit ang ESC/POS thermal receipt printer.
+
+6. **Sequential Navigation:**
+   - Gamitin ang `[ ◀ Prev. ]` at `[ Next ▶ ]` buttons sa kanang itaas para magpalipat-lipat sa mga purchase invoices nang hindi na kailangang bumalik sa master list.
+
 
 ## Stock adjustment and low stock
 
