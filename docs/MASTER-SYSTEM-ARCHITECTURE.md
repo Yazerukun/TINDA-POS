@@ -1,9 +1,9 @@
 # TINDA POS — Master System Architecture & Engineering Standard
 
-> **Document Version:** 1.0.0  
+> **Document Version:** 4.1.4  
 > **Classification:** Authoritative Technical Blueprint & System Specification  
-> **Maintained by:** Lead Engineer & System Architect  
-> **Last Updated:** 2026-09-25  
+> **Maintained by:** Lead Engineer & System Architect (Jin & Yuzu)  
+> **Last Updated:** 2026-10-23  
 
 ---
 
@@ -114,7 +114,7 @@ sequenceDiagram
 ```
 
 ### 5.1 Mandatory Release Asset Checklist
-Every production release published to GitHub **MUST** include all 5 required artifacts:
+Every production release published to GitHub **MUST** include all required artifacts:
 1. `TindaPOS-Setup-X.Y.Z.exe` — Windows NSIS Installer executable
 2. `TindaPOS-Portable-X.Y.Z.exe` — Standalone portable executable
 3. `latest.yml` — **CRUCIAL**: `electron-updater` manifest containing:
@@ -134,16 +134,16 @@ Before any commit is promoted to `master` or built into release binaries, it mus
 
 ```bash
 # 1. Code Quality & Formatting Gate
-pnpm run lint          # Must return 0 errors, 0 warnings
+npm run lint          # Must return 0 errors, 0 warnings
 
 # 2. Static Type Analysis Gate
-pnpm run typecheck     # Must compile cleanly (tsc -b --noEmit)
+npm run typecheck     # Must compile cleanly (tsc -b --noEmit)
 
 # 3. Automated Regression & Unit Testing Gate
-pnpm run test          # All unit, integration, and store tests must pass
+npm run test          # All unit, integration, and store tests must pass
 
 # 4. Packaging Build Gate
-pnpm run build         # Must produce clean production bundles
+npm run build         # Must produce clean production bundles
 ```
 
 ---
@@ -153,3 +153,65 @@ pnpm run build         # Must produce clean production bundles
 1. **Pre-Update Safety Backup:** The app automatically takes a cold backup of `tindapos.db` into `%APPDATA%\TINDA POS\backups\pre-update\` before applying any binary patch.
 2. **Universal Cross-Platform Backup (`.tinda-backup`):** Single-file JSON archive containing whole store schemas and datasets that can be transferred and restored seamlessly across Windows and Android editions.
 3. **Database Reset Guard:** Destructive database resets require explicit administrative confirmation (typing `RESET` in capital letters) preceded by an automated fallback backup.
+
+---
+
+## 8. Purchase Order & Receiving Subsystem Architecture (v4.1.4 Spec)
+
+```mermaid
+flowchart TD
+    subgraph History [Purchase Invoices History]
+        SearchInput["Universal Search Bar: P.O. #, Invoice #, Receipt #, Supplier, Staff"]
+        HistoryList["Filtered Invoices List with Badges"]
+        NavControl["Sequential ◀ Prev. / Next ▶ Navigation"]
+    end
+
+    subgraph DetailsPanel [Unified P.O. Details Panel]
+        RO["Read-Only Mode: View All Details, Line Items, Discounts & Landed Costs"]
+        AuthGate{"Manager / Admin Auth Modal"}
+        EditStudio["Edit Mode: Modify Line Items, Quantities, Trade Discounts & Header Data"]
+        PrintEngine["Dual-Engine Print Studio"]
+    end
+
+    subgraph PrintSubsystem [Printing Engines]
+        DocVoucher["Official A4 / Letter Voucher: Store Header, Details, Table, Signatures"]
+        ThermalSlip["58mm / 80mm ESC/POS Thermal Slip"]
+    end
+
+    subgraph DBTransactions [SQLite Atomic Reconciliation]
+        DeltaCalc["Delta = New Qty Base - Old Qty Base"]
+        InvAdjust["adjustStock per Product & Move Audit Trail"]
+        HeaderSync["Update Purchases Header & Replace Line Items"]
+    end
+
+    SearchInput --> HistoryList
+    HistoryList --> RO
+    NavControl --> RO
+    RO -->|Click Edit| AuthGate
+    AuthGate -->|Valid PIN / Password| EditStudio
+    AuthGate -->|Invalid| RO
+    EditStudio -->|Save Ctrl+S| DBTransactions
+    DBTransactions --> DeltaCalc --> InvAdjust --> HeaderSync
+    RO -->|Click Print| PrintEngine
+    PrintEngine --> DocVoucher
+    PrintEngine --> ThermalSlip
+```
+
+### 8.1 Architectural Components & Invariants
+1. **Multi-Field Live History Filtering:**
+   - Real-time debounced multi-field search inspecting `purchase_no`, `invoice_no`, `receipt_no`, `suppliers.name`, and `users.full_name`.
+   - Sequential traversal (`Prev` / `Next`) within the active filtered array preserving current search and pagination state.
+2. **Read-Only by Default Security Protocol:**
+   - Historical invoices remain strictly immutable until an active Admin or Manager provides valid authentication via `verifyManagerPin` (accepting either 4-digit PIN hash or full account password hash).
+   - Cashiers and non-managerial staff are strictly denied write access.
+3. **Atomic Stock Delta Reconciliation (`updatePurchase`):**
+   - The engine computes the difference per line item:
+     $$\Delta Q_{\text{base}} = Q_{\text{new, base}} - Q_{\text{old, base}}$$
+   - $\Delta > 0$: Increments on-hand stock and logs positive inventory adjustment.
+   - $\Delta < 0$: Decrements on-hand stock and logs negative adjustment.
+   - Removed items: Deducts entire old quantity from on-hand stock.
+   - Newly added items: Adds base quantity to on-hand stock.
+   - All mutations execute inside a single transactional block (`db.transaction`), eliminating inventory discrepancies and race conditions.
+4. **Dual-Format Purchase Order Printing Subsystem:**
+   - **Corporate A4 / Letter Document Voucher:** High-resolution vector HTML voucher featuring store branding, vendor invoice and receipt references, comprehensive itemized table with discount breakdown, summary box, and formal 3-party audit signature lines (*Prepared By*, *Checked By*, *Approved By*).
+   - **Thermal POS Slip (58mm / 80mm):** Compact ESC/POS mono-spaced slip designed for fast delivery verification on counter thermal receipt printers.
