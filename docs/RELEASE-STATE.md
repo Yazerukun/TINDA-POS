@@ -1,13 +1,19 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.4 (UNIVERSAL PURCHASE INVOICE HISTORY SEARCH, MANAGER AUTHORIZATION & P.O. SLIP PRINTING EDITION)
+- v4.1.5 (DELIVERY VOUCHER LAYOUT, STRICT PERCENTAGE DISCOUNTS & P.O. PRINTING EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.4 Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing Edition
+- Production Release Ready — v4.1.5 Delivery Voucher Layout, Strict Percentage Discounts & P.O. Printing Edition
+
+COMPLETED (v4.1.5 Hotfix & Layout Polish):
+- Stage 09: Purchase Items SQLite Persistence: Added `discount_input` and `discount_c` to `createPurchase` INSERT statement in `purchases.ts`, resolving missing discount data bug.
+- Stage 10: Strict Percentage Notation Engine (`formatDiscountPercent` in `receiptHtml.ts`): Normalizes any compound or flat discount into `-20%`, `-10%-10%`, `-5%-5%-5%` matching wholesale delivery receipts.
+- Stage 11: Official Delivery Voucher Layout: Standardized table headers to `# | QUANTITY | UNIT | DESCRIPTION | UNIT PRICE | DISCOUNT | AMOUNT` with `Memo: COD` & `Salesman: admin` subheader separated by double line.
+- Stage 12: Dual Output Verification: Complete verification of both A4/Letter official document HTML and 58mm/80mm thermal receiving slips.
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.

@@ -156,7 +156,7 @@ npm run build         # Must produce clean production bundles
 
 ---
 
-## 8. Purchase Order & Receiving Subsystem Architecture (v4.1.4 Spec)
+## 8. Purchase Order & Receiving Subsystem Architecture (v4.1.5 Spec)
 
 ```mermaid
 flowchart TD

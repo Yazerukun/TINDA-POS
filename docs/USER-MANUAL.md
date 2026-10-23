@@ -1,12 +1,12 @@
-# TINDA POS v4.1.4 User Manual
+# TINDA POS v4.1.5 User Manual
 
-**TINDA POS v4.1.4** — Official User Manual & Operations Guide for Store Owners and Cashiers.
+**TINDA POS v4.1.5** — Official User Manual & Operations Guide for Store Owners and Cashiers.
 
 This guide covers release **v1.0.59**, introducing the **High-Density Enterprise Cashier Listing Engine**, **Dual-Mode Switcher (Table Listing vs Card Grid)**, **In-Line Table Cart Quantity Steppers**, and **High-Speed Keyboard Navigation (`ArrowUp` / `ArrowDown` / `Enter`)**, alongside **Profit Margins Restoration**, **Hardened VIP Downgrade Protection**, **Automated 1-Click Rollback with Direct System Restart**, and **100% Professional English Interface**.
 
 Use this guide for initial setup, daily retail sales, shift reconciliation, inventory auditing, theme personalization, and software updates. Bold terms indicate buttons, menus, or interactive elements within the application.
 
-## What's New in v4.1.4: Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing
+## What's New in v4.1.5: Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing
 
 - **Universal Search Bar in Purchase Invoices History:**
   - Real-time live filtering across P.O. Number (`purchase_no`), Supplier Invoice # (`invoice_no`), Receipt # (`receipt_no`), Supplier Name, Encoder/Staff (`user_name`), and Payment Status (`PAID`, `PENDING`, `PARTIAL`).
@@ -456,7 +456,7 @@ Kung gusto ninyong makita kung anong stocks ang dumating ngayong araw, pumunta s
 Gamitin ang Search Product, Date From/To, Supplier, at Source filters para mabilis makita ang kailangan. Click ang row para sa complete read-only details. Ang Restock at legitimate Purchase Receiving ay automatic na lalabas agad—hindi kailangan ng manual Refresh. Ang CSV opening stock ay malinaw na naka-label bilang opening/import stock, at hindi delivery. Damage, loss, sale, at ibang negative movements ay hindi ipinapakitang received stock.
 
 
-## Purchase Orders & Invoices History Studio (v4.1.4 Spec)
+## Purchase Orders & Invoices History Studio (v4.1.5 Spec)
 
 **WHERE TO GO:** Inventory → **Purchase Invoices** (o pindutin ang Purchase Orders shortcut).
 

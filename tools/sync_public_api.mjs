@@ -68,7 +68,7 @@ async function syncFile(localPath, repoPath) {
   }
 
   const payload = {
-    message: `release: sync v1.0.79 ${repoPath}`,
+    message: `release: sync v4.1.5 ${repoPath}`,
     content: base64Content,
     branch: 'master'
   }
@@ -89,7 +89,6 @@ async function syncFile(localPath, repoPath) {
 async function main() {
   const filesToSync = [
     { local: path.resolve('source', 'builds', 'latest.yml'), repo: 'latest.yml' },
-    { local: path.resolve('RELEASE_NOTES_v1.0.79.md'), repo: 'RELEASE_NOTES_v1.0.79.md' },
     { local: path.resolve('README.md'), repo: 'README.md' },
     { local: path.resolve('GEMINI.md'), repo: 'GEMINI.md' },
     { local: path.resolve('SYSTEM_MASTER.md'), repo: 'SYSTEM_MASTER.md' },
@@ -97,7 +96,9 @@ async function main() {
   ]
 
   for (const f of filesToSync) {
-    await syncFile(f.local, f.repo)
+    if (fs.existsSync(f.local)) {
+      await syncFile(f.local, f.repo)
+    }
   }
 
   console.log('\n🎉 ALL PUBLIC FILES SYNCED TO TINDA-POS MASTER VIA GITHUB API!')

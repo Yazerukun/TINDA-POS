@@ -136,7 +136,7 @@ async function postToSupabase(
     apikey: SUPABASE_SYNC_CONFIG.anonKey,
     Authorization: `Bearer ${SUPABASE_SYNC_CONFIG.anonKey}`,
     'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TINDA-POS/4.1.4 Supabase-Failover'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TINDA-POS/4.1.5 Supabase-Failover'
   }
 
   try {

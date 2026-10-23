@@ -84,7 +84,7 @@
 
 ---
 
-## 📦 9. Supplier Deliveries & Purchase Orders (v4.1.4 Spec)
+## 📦 9. Supplier Deliveries & Purchase Orders (v4.1.5 Spec)
 * **Search Past Invoices:** Go to **Inventory ➔ Purchase Invoices ➔ Invoices History**. Type the P.O. Number, Supplier Invoice #, Receipt #, or Supplier Name in the search bar.
 * **View Invoice Details:** Click any row to see the complete invoice layout with item quantities, packaging units, and discounts.
 * **Edit Delivery Items (Authorized):** Click **`[ ✏️ Edit ]`**. Enter the Manager or Admin PIN/Password. Adjust quantities or add missing items, then click **`[ 💾 Save Edit (Ctrl+S) ]`**. The system adjusts inventory stock automatically.
