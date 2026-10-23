@@ -367,4 +367,45 @@ describe('v4.1.4 Purchase Invoices Search, Edit Authorization & Stock Reconcilia
     expect(doc.html).toContain('Prepared / Encoded By')
     expect(doc.html).toContain('Approved By')
   })
+
+  it('supports full print customizer options (1-page fit, spacing, margin, wide description, toggles)', () => {
+    const p = getPurchase(db, 1)
+    const payload = {
+      storeName: 'VIP Client Hardware Store',
+      storeAddress: 'Iloilo City, Philippines',
+      storePhone: '0917-123-4567',
+      purchase: p
+    }
+
+    // 1. One-Page Fit Preset
+    const docCustom = generatePurchaseOrderDocumentHtml(payload, {
+      rowPaddingY: 2,
+      fontSize: 10,
+      marginMm: 6,
+      showRowNumber: false,
+      showBarcode: false,
+      compactHeader: true,
+      scalePercent: 95,
+      fitToOnePage: true
+    })
+
+    expect(docCustom.html).toContain('margin: 6mm;')
+    expect(docCustom.html).toContain('font-size: 10px;')
+    expect(docCustom.html).toContain('transform: scale(0.95);')
+    expect(docCustom.html).toContain('page-break-inside: avoid;')
+    expect(docCustom.html).toContain('QUANTITY')
+    expect(docCustom.html).toContain('UNIT')
+    expect(docCustom.html).toContain('DESCRIPTION')
+    expect(docCustom.html).toContain('UNIT PRICE')
+    expect(docCustom.html).toContain('DISCOUNT')
+    expect(docCustom.html).toContain('AMOUNT')
+
+    // 2. Custom toggles: showRowNumber = true, showBarcode = true
+    const docWithBarcodes = generatePurchaseOrderDocumentHtml(payload, {
+      showRowNumber: true,
+      showBarcode: true
+    })
+    expect(docWithBarcodes.html).toContain('<th style="width: 30px; text-align: center;">#</th>')
+    expect(docWithBarcodes.html).toContain('BARCODE:')
+  })
 })

@@ -973,7 +973,29 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
   return lines
 }
 
-export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPayload): { title: string; html: string } {
+export interface PurchasePrintCustomizerOptions {
+  rowDensity?: 'ultra-compact' | 'compact' | 'normal' | 'relaxed'
+  rowPaddingY?: number
+  fontSize?: number
+  marginMm?: number
+  showRowNumber?: boolean
+  showBarcode?: boolean
+  showBaseUnits?: boolean
+  showStoreHeader?: boolean
+  compactHeader?: boolean
+  showInfoCards?: boolean
+  showMemoBar?: boolean
+  showNotesBox?: boolean
+  showSignatures?: boolean
+  compactSignatures?: boolean
+  scalePercent?: number
+  fitToOnePage?: boolean
+}
+
+export function generatePurchaseOrderDocumentHtml(
+  payload: PurchaseOrderPrintPayload,
+  customizer?: PurchasePrintCustomizerOptions
+): { title: string; html: string } {
   const p = payload.purchase
   const moneyStr = (c: number): string =>
     (c / 100).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -983,30 +1005,54 @@ export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPay
   const poNo = escapeHtml(p.purchase_no)
   const title = `Purchase Order - ${poNo}`
 
+  const rowPaddingY =
+    customizer?.rowPaddingY ??
+    (customizer?.rowDensity === 'ultra-compact'
+      ? 2
+      : customizer?.rowDensity === 'relaxed'
+        ? 8
+        : customizer?.rowDensity === 'normal'
+          ? 6
+          : 3)
+  const fontSize = customizer?.fontSize ?? 11
+  const marginMm = customizer?.marginMm ?? 8
+  const showRowNumber = customizer?.showRowNumber ?? false
+  const showBarcode = customizer?.showBarcode ?? false
+  const showBaseUnits = customizer?.showBaseUnits ?? false
+  const showStoreHeader = customizer?.showStoreHeader ?? true
+  const compactHeader = customizer?.compactHeader ?? true
+  const showInfoCards = customizer?.showInfoCards ?? true
+  const showMemoBar = customizer?.showMemoBar ?? true
+  const showNotesBox = customizer?.showNotesBox ?? true
+  const showSignatures = customizer?.showSignatures ?? true
+  const compactSignatures = customizer?.compactSignatures ?? true
+  const scalePercent = customizer?.scalePercent ?? 100
+  const fitToOnePage = customizer?.fitToOnePage ?? true
+
   const itemsHtml = p.items
     .map((it, idx) => {
       const grossItemC = it.unit_cost_c * it.qty
       const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC)
       const discDisplay =
         discText !== '—'
-          ? `<span style="color:#b45309; font-weight: 700; font-family: monospace; font-size: 12px;">${escapeHtml(discText)}</span>`
+          ? `<span style="color:#b45309; font-weight: 700; font-family: monospace; font-size: ${Math.max(10, fontSize)}px;">${escapeHtml(discText)}</span>`
           : '<span style="color:#94a3b8;">—</span>'
 
       return `
-      <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px; ${idx % 2 === 1 ? 'background-color:#fafafa;' : ''}">
-        <td style="padding: 7px 6px; color: #64748b; text-align: center;">${idx + 1}</td>
-        <td style="padding: 7px 6px; text-align: center; font-weight: 800; color: #0f172a; font-family: monospace; font-size: 13px;">${it.qty}</td>
-        <td style="padding: 7px 6px; text-align: center; color: #334155; font-size: 11px; font-weight: 700;">
-          <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(it.unit_name.toUpperCase())}</span>
+      <tr style="border-bottom: 1px solid #e2e8f0; font-size: ${fontSize}px; ${idx % 2 === 1 ? 'background-color:#fafafa;' : ''}">
+        ${showRowNumber ? `<td style="padding: ${rowPaddingY}px 4px; color: #64748b; text-align: center;">${idx + 1}</td>` : ''}
+        <td style="padding: ${rowPaddingY}px 4px; text-align: center; font-weight: 800; color: #0f172a; font-family: monospace; font-size: ${fontSize + 1}px;">${it.qty}</td>
+        <td style="padding: ${rowPaddingY}px 4px; text-align: center; color: #334155; font-size: ${Math.max(9, fontSize - 1)}px; font-weight: 700;">
+          <span style="background: #f1f5f9; padding: 1px 4px; border-radius: 3px; border: 1px solid #cbd5e1;">${escapeHtml(it.unit_name.toUpperCase())}</span>
         </td>
-        <td style="padding: 7px 10px; font-weight: 700; color: #0f172a; text-transform: uppercase;">
+        <td style="padding: ${rowPaddingY}px 8px; font-weight: 700; color: #0f172a; text-transform: uppercase;">
           ${escapeHtml(it.product_name)}
-          ${it.product_barcode ? `<div style="font-size: 10px; color: #64748b; font-family: monospace; text-transform: none; font-weight: normal;">BARCODE: ${escapeHtml(it.product_barcode)}</div>` : ''}
-          ${it.qty_base > it.qty ? `<span style="font-size: 10px; color: #64748b; font-weight: normal; margin-left: 4px; text-transform: none;">(${it.qty_base} total units)</span>` : ''}
+          ${showBarcode && it.product_barcode ? `<div style="font-size: 9px; color: #64748b; font-family: monospace; text-transform: none; font-weight: normal;">BARCODE: ${escapeHtml(it.product_barcode)}</div>` : ''}
+          ${showBaseUnits && it.qty_base > it.qty ? `<span style="font-size: 9px; color: #64748b; font-weight: normal; margin-left: 4px; text-transform: none;">(${it.qty_base} total units)</span>` : ''}
         </td>
-        <td style="padding: 7px 6px; text-align: right; font-family: monospace; color: #334155; font-weight: 600;">₱${moneyStr(it.unit_cost_c)}</td>
-        <td style="padding: 7px 6px; text-align: center;">${discDisplay}</td>
-        <td style="padding: 7px 6px; text-align: right; font-family: monospace; font-weight: 800; color: #0f172a; font-size: 13px;">₱${moneyStr(it.subtotal_c)}</td>
+        <td style="padding: ${rowPaddingY}px 4px; text-align: right; font-family: monospace; color: #334155; font-weight: 600;">₱${moneyStr(it.unit_cost_c)}</td>
+        <td style="padding: ${rowPaddingY}px 4px; text-align: center;">${discDisplay}</td>
+        <td style="padding: ${rowPaddingY}px 4px; text-align: right; font-family: monospace; font-weight: 800; color: #0f172a; font-size: ${fontSize + 1}px;">₱${moneyStr(it.subtotal_c)}</td>
       </tr>
     `
     })
@@ -1018,122 +1064,169 @@ export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPay
   <meta charset="utf-8">
   <title>${title}</title>
   <style>
-    @page { size: A4; margin: 10mm 14mm; }
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .header-box { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 14px; }
-    .store-title { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin: 0; }
-    .store-sub { font-size: 12px; color: #475569; margin-top: 2px; }
+    @page { size: A4 portrait; margin: ${marginMm}mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page-container {
+      width: 100%;
+      ${scalePercent !== 100 ? `transform: scale(${scalePercent / 100}); transform-origin: top left; width: ${(100 / scalePercent) * 100}%;` : ''}
+    }
+    .header-box { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: ${compactHeader ? '6px' : '10px'}; margin-bottom: ${compactHeader ? '8px' : '12px'}; }
+    .store-title { font-size: ${compactHeader ? '18px' : '20px'}; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin: 0; }
+    .store-sub { font-size: 11px; color: #475569; margin-top: 1px; }
     .po-badge { text-align: right; }
-    .po-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #059669; }
-    .po-number { font-size: 22px; font-weight: 900; color: #0f172a; font-family: monospace; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
-    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
-    .card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .po-label { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #059669; }
+    .po-number { font-size: ${compactHeader ? '18px' : '22px'}; font-weight: 900; color: #0f172a; font-family: monospace; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; font-size: 11px; }
+    .card-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .meta-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
     .meta-label { color: #64748b; }
     .meta-val { font-weight: 600; color: #0f172a; }
-    .memo-bar { display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 4px 4px 4px; font-size: 12px; font-weight: 700; color: #0f172a; }
-    .memo-line { border-top: 3px double #0f172a; margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-    thead th { background: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 6px; font-weight: 800; }
-    .summary-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 8px; margin-bottom: 20px; }
-    .notes-box { flex: 1; margin-right: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
-    .totals-box { width: 280px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
-    .tot-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
-    .tot-grand { display: flex; justify-content: space-between; border-top: 2px solid #059669; padding-top: 8px; margin-top: 6px; font-size: 16px; font-weight: 900; color: #059669; font-family: monospace; }
-    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 36px; }
-    .sig-line { border-top: 1px solid #94a3b8; text-align: center; padding-top: 6px; font-size: 11px; color: #475569; font-weight: 600; }
+    .memo-bar { display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px 2px 2px; font-size: 11px; font-weight: 700; color: #0f172a; }
+    .memo-line { border-top: 2px double #0f172a; margin-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
+    thead th { background: #0f172a; color: #ffffff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 4px; font-weight: 800; }
+    .summary-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; margin-bottom: 12px; }
+    .notes-box { flex: 1; margin-right: 14px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 11px; }
+    .totals-box { width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; }
+    .tot-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
+    .tot-grand { display: flex; justify-content: space-between; border-top: 2px solid #059669; padding-top: 6px; margin-top: 4px; font-size: 14px; font-weight: 900; color: #059669; font-family: monospace; }
+    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: ${compactSignatures ? '16px' : '28px'}; }
+    .sig-line { border-top: 1px solid #94a3b8; text-align: center; padding-top: 4px; font-size: 10px; color: #475569; font-weight: 600; }
+
+    @media print {
+      ${fitToOnePage ? `
+        html, body {
+          height: 100%;
+          max-height: 100%;
+          overflow: hidden !important;
+        }
+        .page-container {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        tr {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        .summary-section, .signatures {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+      ` : ''}
+    }
   </style>
 </head>
 <body>
-  <div class="header-box">
-    <div>
-      <h1 class="store-title">${storeName}</h1>
-      ${storeAddress ? `<div class="store-sub">${storeAddress}</div>` : ''}
-      ${storePhone ? `<div class="store-sub">Contact: ${storePhone}</div>` : ''}
-      <div class="store-sub" style="margin-top: 4px; font-weight: 600; color: #059669;">PURCHASE ORDER & STOCK RECEIVING VOUCHER</div>
-    </div>
-    <div class="po-badge">
-      <div class="po-label">OFFICIAL P.O. NUMBER</div>
-      <div class="po-number">${poNo}</div>
-      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Date: ${formatReceiptDate(p.purchase_date)}</div>
-    </div>
-  </div>
-
-  <div class="info-grid">
-    <div class="card">
-      <div class="card-title">Vendor / Supplier Details</div>
-      <div style="font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">${escapeHtml(p.supplier_name)}</div>
-      ${p.supplier_contact ? `<div class="meta-row"><span class="meta-label">Contact:</span><span class="meta-val">${escapeHtml(p.supplier_contact)}</span></div>` : ''}
-      ${p.supplier_phone ? `<div class="meta-row"><span class="meta-label">Phone:</span><span class="meta-val">${escapeHtml(p.supplier_phone)}</span></div>` : ''}
-      ${p.supplier_address ? `<div class="meta-row"><span class="meta-label">Address:</span><span class="meta-val">${escapeHtml(p.supplier_address)}</span></div>` : ''}
-    </div>
-
-    <div class="card">
-      <div class="card-title">Invoice & Payment References</div>
-      <div class="meta-row"><span class="meta-label">Supplier Invoice #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.invoice_no || '—')}</span></div>
-      <div class="meta-row"><span class="meta-label">Official Receipt #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.receipt_no || '—')}</span></div>
-      <div class="meta-row"><span class="meta-label">Payment Status:</span><span class="meta-val" style="color: ${p.is_paid ? '#059669' : '#d97706'}; font-weight: 800;">${p.is_paid ? 'PAID / SETTLED' : `TERMS (${p.terms_days || 0} DAYS)`}</span></div>
-      <div class="meta-row"><span class="meta-label">Encoded By:</span><span class="meta-val">${escapeHtml(p.user_name || 'Admin')}</span></div>
-    </div>
-  </div>
-
-  <div class="memo-bar">
-    <div><span style="font-weight: 800; color: #475569;">Memo:</span> ${escapeHtml(p.notes || 'COD')}</div>
-    <div><span style="font-weight: 800; color: #475569;">Salesman:</span> ${escapeHtml(p.user_name || 'admin')}</div>
-  </div>
-  <div class="memo-line"></div>
-
-  <table>
-    <thead>
-      <tr>
-        <th style="width: 35px; text-align: center;">#</th>
-        <th style="width: 80px; text-align: center;">QUANTITY</th>
-        <th style="width: 70px; text-align: center;">UNIT</th>
-        <th style="text-align: left;">DESCRIPTION</th>
-        <th style="width: 95px; text-align: right;">UNIT PRICE</th>
-        <th style="width: 100px; text-align: center;">DISCOUNT</th>
-        <th style="width: 110px; text-align: right;">AMOUNT</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${itemsHtml}
-    </tbody>
-  </table>
-
-  <div class="summary-section">
-    <div class="notes-box">
-      <div class="card-title">Memo / Delivery Notes</div>
-      <div style="color: #334155; font-style: ${p.notes ? 'normal' : 'italic'};">
-        ${escapeHtml(p.notes || 'No delivery notes specified for this shipment.')}
+  <div class="page-container">
+    ${showStoreHeader ? `
+    <div class="header-box">
+      <div>
+        <h1 class="store-title">${storeName}</h1>
+        ${storeAddress ? `<div class="store-sub">${storeAddress}</div>` : ''}
+        ${storePhone ? `<div class="store-sub">Contact: ${storePhone}</div>` : ''}
+        <div class="store-sub" style="margin-top: 2px; font-weight: 600; color: #059669;">PURCHASE ORDER & STOCK RECEIVING VOUCHER</div>
       </div>
-      <div style="margin-top: 10px; font-size: 11px; color: #64748b;">
-        Total Received: <strong>${p.items.length} unique items</strong> (${p.items.reduce((s, i) => s + i.qty, 0)} packages / ${p.items.reduce((s, i) => s + i.qty_base, 0)} base units)
+      <div class="po-badge">
+        <div class="po-label">OFFICIAL P.O. NUMBER</div>
+        <div class="po-number">${poNo}</div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Date: ${formatReceiptDate(p.purchase_date)}</div>
       </div>
     </div>
+    ` : ''}
 
-    <div class="totals-box">
-      <div class="tot-row">
-        <span class="meta-label">Gross Amount:</span>
-        <span style="font-family: monospace; font-weight: 600;">₱${moneyStr(p.total_c)}</span>
+    ${showInfoCards ? `
+    <div class="info-grid">
+      <div class="card">
+        <div class="card-title">Vendor / Supplier Details</div>
+        <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 2px;">${escapeHtml(p.supplier_name)}</div>
+        ${p.supplier_contact ? `<div class="meta-row"><span class="meta-label">Contact:</span><span class="meta-val">${escapeHtml(p.supplier_contact)}</span></div>` : ''}
+        ${p.supplier_phone ? `<div class="meta-row"><span class="meta-label">Phone:</span><span class="meta-val">${escapeHtml(p.supplier_phone)}</span></div>` : ''}
+        ${p.supplier_address ? `<div class="meta-row"><span class="meta-label">Address:</span><span class="meta-val">${escapeHtml(p.supplier_address)}</span></div>` : ''}
       </div>
-      ${p.discount_c && p.discount_c > 0 ? `
-        <div class="tot-row">
-          <span class="meta-label" style="color: #d97706;">Trade Discount:</span>
-          <span style="font-family: monospace; font-weight: 700; color: #d97706;">-₱${moneyStr(p.discount_c)}</span>
+
+      <div class="card">
+        <div class="card-title">Invoice & Payment References</div>
+        <div class="meta-row"><span class="meta-label">Supplier Invoice #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.invoice_no || '—')}</span></div>
+        <div class="meta-row"><span class="meta-label">Official Receipt #:</span><span class="meta-val" style="font-family: monospace;">${escapeHtml(p.receipt_no || '—')}</span></div>
+        <div class="meta-row"><span class="meta-label">Payment Status:</span><span class="meta-val" style="color: ${p.is_paid ? '#059669' : '#d97706'}; font-weight: 800;">${p.is_paid ? 'PAID / SETTLED' : `TERMS (${p.terms_days || 0} DAYS)`}</span></div>
+        <div class="meta-row"><span class="meta-label">Encoded By:</span><span class="meta-val">${escapeHtml(p.user_name || 'Admin')}</span></div>
+      </div>
+    </div>
+    ` : ''}
+
+    ${showMemoBar ? `
+    <div class="memo-bar">
+      <div><span style="font-weight: 800; color: #475569;">Memo:</span> ${escapeHtml(p.notes || 'COD')}</div>
+      <div><span style="font-weight: 800; color: #475569;">Salesman:</span> ${escapeHtml(p.user_name || 'admin')}</div>
+    </div>
+    <div class="memo-line"></div>
+    ` : ''}
+
+    <table>
+      <thead>
+        <tr>
+          ${showRowNumber ? '<th style="width: 30px; text-align: center;">#</th>' : ''}
+          <th style="width: 58px; text-align: center;">QUANTITY</th>
+          <th style="width: 50px; text-align: center;">UNIT</th>
+          <th style="text-align: left;">DESCRIPTION</th>
+          <th style="width: 78px; text-align: right;">UNIT PRICE</th>
+          <th style="width: 72px; text-align: center;">DISCOUNT</th>
+          <th style="width: 86px; text-align: right;">AMOUNT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+      </tbody>
+    </table>
+
+    <div class="summary-section">
+      ${showNotesBox ? `
+      <div class="notes-box">
+        <div class="card-title">Memo / Delivery Notes</div>
+        <div style="color: #334155; font-style: ${p.notes ? 'normal' : 'italic'};">
+          ${escapeHtml(p.notes || 'No delivery notes specified for this shipment.')}
         </div>
-      ` : ''}
-      <div class="tot-grand">
-        <span>NET PAYABLE:</span>
-        <span>₱${moneyStr(p.net_total_c ?? p.total_c)}</span>
+        <div style="margin-top: 6px; font-size: 10px; color: #64748b;">
+          Total Received: <strong>${p.items.length} unique items</strong> (${p.items.reduce((s, i) => s + i.qty, 0)} packages / ${p.items.reduce((s, i) => s + i.qty_base, 0)} base units)
+        </div>
+      </div>
+      ` : '<div style="flex: 1;"></div>'}
+
+      <div class="totals-box">
+        <div class="tot-row">
+          <span class="meta-label">Gross Amount:</span>
+          <span style="font-family: monospace; font-weight: 600;">₱${moneyStr(p.total_c)}</span>
+        </div>
+        ${p.discount_c && p.discount_c > 0 ? `
+          <div class="tot-row">
+            <span class="meta-label" style="color: #d97706;">Trade Discount:</span>
+            <span style="font-family: monospace; font-weight: 700; color: #d97706;">-₱${moneyStr(p.discount_c)}</span>
+          </div>
+        ` : ''}
+        <div class="tot-grand">
+          <span>NET PAYABLE:</span>
+          <span>₱${moneyStr(p.net_total_c ?? p.total_c)}</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="signatures">
-    <div class="sig-line">Prepared / Encoded By<br><strong style="font-size: 12px; color: #0f172a;">${escapeHtml(p.user_name || 'Staff')}</strong></div>
-    <div class="sig-line">Received & Verified By<br><strong style="font-size: 12px; color: #0f172a;">Warehouse / Store Custodian</strong></div>
-    <div class="sig-line">Approved By<br><strong style="font-size: 12px; color: #0f172a;">Store Manager / Owner</strong></div>
+    ${showSignatures ? `
+    <div class="signatures">
+      <div class="sig-line">Prepared / Encoded By<br><strong style="font-size: 11px; color: #0f172a;">${escapeHtml(p.user_name || 'Staff')}</strong></div>
+      <div class="sig-line">Received & Verified By<br><strong style="font-size: 11px; color: #0f172a;">Warehouse / Store Custodian</strong></div>
+      <div class="sig-line">Approved By<br><strong style="font-size: 11px; color: #0f172a;">Store Manager / Owner</strong></div>
+    </div>
+    ` : ''}
   </div>
 </body>
 </html>`

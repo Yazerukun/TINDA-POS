@@ -1,13 +1,20 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.5 (DELIVERY VOUCHER LAYOUT, STRICT PERCENTAGE DISCOUNTS & P.O. PRINTING EDITION)
+- v4.1.6 (WIDE DESCRIPTION, 1-PAGE GUARANTEE & PRINT CUSTOMIZER STUDIO EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.5 Delivery Voucher Layout, Strict Percentage Discounts & P.O. Printing Edition
+- Production Release Ready — v4.1.6 Wide Description, 1-Page Guarantee & Print Customizer Studio Edition
+
+COMPLETED (v4.1.6 Wide Description, 1-Page Guarantee & Print Customizer):
+- Stage 13: Expanded Description Column & Compact Financial Grid: Description takes ~60%+ of table width, with Quantity (58px), Unit (50px), Unit Price (78px), Discount (72px), and Amount (86px) tightly grouped matching hardware store receipts.
+- Stage 14: Interactive Print Customizer Studio: Built-in visual panel with live sliders for Row Spacing (2px - 10px), Font Size (9px - 13px), Margins (4mm - 18mm), and Zoom Scaling (75% - 100%).
+- Stage 15: One-Click Quick Presets: 📄 Fit 1 Page (recommended), ⚡ Ultra-Compact (25+ items), and 📑 Standard.
+- Stage 16: Visibility Toggles & Persistence: Toggle row #, barcodes, base units, header, cards, memo, notes, and signatures with automatic LocalStorage persistence.
+- Stage 17: Strict 1-Page Page-Break Protection: CSS print styles preventing multi-page overflow and ensuring clean 1-sheet printing.
 
 COMPLETED (v4.1.5 Hotfix & Layout Polish):
 - Stage 09: Purchase Items SQLite Persistence: Added `discount_input` and `discount_c` to `createPurchase` INSERT statement in `purchases.ts`, resolving missing discount data bug.

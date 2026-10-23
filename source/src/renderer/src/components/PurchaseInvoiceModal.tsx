@@ -31,7 +31,12 @@ import {
   ChevronRight,
   Receipt,
   Eye,
-  Edit3
+  Edit3,
+  Sliders,
+  SlidersHorizontal,
+  Settings2,
+  RotateCcw,
+  Check
 } from 'lucide-react'
 import type { Product, Supplier, Purchase, ProductUnit, CreatePurchaseInput, UpdatePurchaseInput } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
@@ -48,7 +53,8 @@ import {
   generatePurchaseOrderDocumentHtml,
   formatDiscountPercent,
   receiptHtml,
-  type PurchaseOrderPrintPayload
+  type PurchaseOrderPrintPayload,
+  type PurchasePrintCustomizerOptions
 } from '@shared/receiptHtml'
 
 interface PurchaseInvoiceModalProps {
@@ -164,6 +170,107 @@ export function PurchaseInvoiceModal({
   const [printFormat, setPrintFormat] = useState<'DOCUMENT' | 'THERMAL'>('DOCUMENT')
   const [useSystemDialog, setUseSystemDialog] = useState(false)
   const [isPrintingPO, setIsPrintingPO] = useState(false)
+
+  // Print Customizer State (Saved in LocalStorage for 1-Page Layout Persistence)
+  const DEFAULT_CUSTOMIZER: PurchasePrintCustomizerOptions = {
+    rowDensity: 'compact',
+    rowPaddingY: 3,
+    fontSize: 11,
+    marginMm: 8,
+    showRowNumber: false,
+    showBarcode: false,
+    showBaseUnits: false,
+    showStoreHeader: true,
+    compactHeader: true,
+    showInfoCards: true,
+    showMemoBar: true,
+    showNotesBox: true,
+    showSignatures: true,
+    compactSignatures: true,
+    scalePercent: 100,
+    fitToOnePage: true
+  }
+
+  const [printCustomizer, setPrintCustomizer] = useState<PurchasePrintCustomizerOptions>(() => {
+    try {
+      const saved = localStorage.getItem('tinda_po_print_customizer_v1')
+      if (saved) return { ...DEFAULT_CUSTOMIZER, ...JSON.parse(saved) }
+    } catch {}
+    return DEFAULT_CUSTOMIZER
+  })
+
+  const [showCustomizerControls, setShowCustomizerControls] = useState(true)
+
+  const updateCustomizer = (patch: Partial<PurchasePrintCustomizerOptions>) => {
+    setPrintCustomizer((prev) => {
+      const next = { ...prev, ...patch }
+      try {
+        localStorage.setItem('tinda_po_print_customizer_v1', JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }
+
+  const applyPreset = (preset: '1page' | 'ultra' | 'standard') => {
+    if (preset === '1page') {
+      updateCustomizer({
+        rowDensity: 'compact',
+        rowPaddingY: 3,
+        fontSize: 11,
+        marginMm: 8,
+        showRowNumber: false,
+        showBarcode: false,
+        showBaseUnits: false,
+        showStoreHeader: true,
+        compactHeader: true,
+        showInfoCards: true,
+        showMemoBar: true,
+        showNotesBox: true,
+        showSignatures: true,
+        compactSignatures: true,
+        scalePercent: 100,
+        fitToOnePage: true
+      })
+    } else if (preset === 'ultra') {
+      updateCustomizer({
+        rowDensity: 'ultra-compact',
+        rowPaddingY: 2,
+        fontSize: 10,
+        marginMm: 5,
+        showRowNumber: false,
+        showBarcode: false,
+        showBaseUnits: false,
+        showStoreHeader: true,
+        compactHeader: true,
+        showInfoCards: true,
+        showMemoBar: true,
+        showNotesBox: false,
+        showSignatures: true,
+        compactSignatures: true,
+        scalePercent: 90,
+        fitToOnePage: true
+      })
+    } else {
+      updateCustomizer({
+        rowDensity: 'normal',
+        rowPaddingY: 6,
+        fontSize: 12,
+        marginMm: 12,
+        showRowNumber: true,
+        showBarcode: true,
+        showBaseUnits: true,
+        showStoreHeader: true,
+        compactHeader: false,
+        showInfoCards: true,
+        showMemoBar: true,
+        showNotesBox: true,
+        showSignatures: true,
+        compactSignatures: false,
+        scalePercent: 100,
+        fitToOnePage: false
+      })
+    }
+  }
 
   // Refs for keyboard focus navigation
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -820,7 +927,7 @@ export function PurchaseInvoiceModal({
       }
 
       if (printFormat === 'DOCUMENT') {
-        const { title, html } = generatePurchaseOrderDocumentHtml(payload)
+        const { title, html } = generatePurchaseOrderDocumentHtml(payload, printCustomizer)
         if (window.api?.printer?.printDocument) {
           const res = await window.api.printer.printDocument(html, {
             manual: useSystemDialog,
@@ -2442,17 +2549,17 @@ export function PurchaseInvoiceModal({
         </Modal>
       )}
 
-      {/* Purchase Order Printing Modal (A4 Document & Thermal Slip) */}
+      {/* Purchase Order Printing Modal (A4 Document & Thermal Slip + Full Print Customizer) */}
       {showPrintModal && viewingPurchase && (
         <Modal
           open
           onClose={() => setShowPrintModal(false)}
           title={`Print Purchase Order: ${viewingPurchase.purchase_no}`}
-          maxWidth="max-w-2xl"
+          maxWidth="max-w-6xl"
           footer={
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-slate-400 flex items-center gap-1.5 cursor-pointer">
+              <div className="flex items-center gap-3">
+                <label className="text-xs text-slate-400 flex items-center gap-1.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={useSystemDialog}
@@ -2461,6 +2568,12 @@ export function PurchaseInvoiceModal({
                   />
                   <span>Open System Print Dialog (Ctrl+P)</span>
                 </label>
+                {printFormat === 'DOCUMENT' && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+                    <Check className="h-3 w-3" />
+                    <span>{printCustomizer.fitToOnePage ? '1-Page Fit Mode Active' : 'Multi-Page Layout'}</span>
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <button type="button" className="btn-ghost text-xs" onClick={() => setShowPrintModal(false)}>
@@ -2470,7 +2583,7 @@ export function PurchaseInvoiceModal({
                   type="button"
                   onClick={() => void handlePrintPO()}
                   disabled={isPrintingPO}
-                  className="btn-primary text-xs font-bold px-4 py-2 flex items-center gap-1.5"
+                  className="btn-primary text-xs font-bold px-4 py-2 flex items-center gap-1.5 shadow-md shadow-emerald-900/30"
                 >
                   <Printer className="h-4 w-4" />
                   <span>
@@ -2485,185 +2598,553 @@ export function PurchaseInvoiceModal({
             </div>
           }
         >
-          <div className="space-y-4">
-            {/* Format Selector */}
-            <div className="flex items-center gap-2 rounded-xl border border-ink-line bg-ink-950 p-1.5">
-              <button
-                type="button"
-                onClick={() => setPrintFormat('DOCUMENT')}
-                className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition-all ${
-                  printFormat === 'DOCUMENT'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-ink-850'
-                }`}
-              >
-                <FileSpreadsheet className="h-4 w-4" />
-                <span>A4 / Letter Document (Official Voucher)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintFormat('THERMAL')}
-                className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition-all ${
-                  printFormat === 'THERMAL'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-ink-850'
-                }`}
-              >
-                <Receipt className="h-4 w-4" />
-                <span>Thermal POS Slip (58mm / 80mm)</span>
-              </button>
+          <div className="space-y-3">
+            {/* Top Toolbar: Format Selector + Quick Presets + Customizer Toggle */}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-line bg-ink-950 p-2">
+              {/* Format Toggle Tabs */}
+              <div className="flex items-center gap-1.5 bg-ink-900 p-1 rounded-lg border border-ink-line">
+                <button
+                  type="button"
+                  onClick={() => setPrintFormat('DOCUMENT')}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    printFormat === 'DOCUMENT'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-ink-800'
+                  }`}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                  <span>A4 / Letter Document</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintFormat('THERMAL')}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-all ${
+                    printFormat === 'THERMAL'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-ink-800'
+                  }`}
+                >
+                  <Receipt className="h-3.5 w-3.5" />
+                  <span>Thermal Slip (80mm)</span>
+                </button>
+              </div>
+
+              {/* Quick Presets (Only for Document format) */}
+              {printFormat === 'DOCUMENT' && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-semibold text-slate-400 mr-1 hidden md:inline">Presets:</span>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('1page')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all flex items-center gap-1 ${
+                      printCustomizer.rowPaddingY === 3 && printCustomizer.fontSize === 11 && !printCustomizer.showRowNumber
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
+                        : 'bg-ink-900 text-slate-300 border-ink-line hover:border-slate-600'
+                    }`}
+                    title="Optimized single-page layout with wide descriptions"
+                  >
+                    <span>📄 Fit 1 Page</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('ultra')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all flex items-center gap-1 ${
+                      printCustomizer.rowDensity === 'ultra-compact' || printCustomizer.rowPaddingY === 2
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500'
+                        : 'bg-ink-900 text-slate-300 border-ink-line hover:border-slate-600'
+                    }`}
+                    title="Ultra-compact padding for 25+ line items on one sheet"
+                  >
+                    <span>⚡ Ultra-Compact</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('standard')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all flex items-center gap-1 ${
+                      printCustomizer.showRowNumber && (printCustomizer.rowPaddingY ?? 0) >= 6
+                        ? 'bg-sky-500/20 text-sky-300 border-sky-500'
+                        : 'bg-ink-900 text-slate-300 border-ink-line hover:border-slate-600'
+                    }`}
+                    title="Standard layout with row numbers, barcodes, and relaxed spacing"
+                  >
+                    <span>📑 Standard</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomizerControls(!showCustomizerControls)}
+                    className={`ml-2 px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all flex items-center gap-1.5 ${
+                      showCustomizerControls
+                        ? 'bg-slate-800 text-emerald-400 border-emerald-500/50'
+                        : 'bg-ink-900 text-slate-400 border-ink-line hover:text-white'
+                    }`}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    <span>{showCustomizerControls ? 'Hide Controls' : 'Customizer'}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Live Preview Box */}
-            <div className="rounded-xl border border-ink-line bg-ink-950 p-4 max-h-[50vh] overflow-auto">
-              {printFormat === 'DOCUMENT' ? (
-                <div className="bg-white text-slate-900 p-6 rounded-lg shadow-sm text-xs space-y-4 font-sans">
-                  <div className="flex justify-between items-start border-b-2 border-emerald-600 pb-3">
-                    <div>
-                      <h3 className="text-base font-extrabold text-slate-900">
-                        {settings?.store_name || 'TINDA POS STORE'}
-                      </h3>
-                      <p className="text-[11px] text-slate-600">{settings?.address || ''}</p>
-                      <p className="text-[11px] font-bold text-emerald-700 mt-1">
-                        PURCHASE ORDER & STOCK RECEIVING VOUCHER
-                      </p>
+            {/* Main Content Area */}
+            {printFormat === 'DOCUMENT' ? (
+              <div className="flex flex-col lg:flex-row gap-3 items-stretch">
+                {/* Left: Customizer Control Panel */}
+                {showCustomizerControls && (
+                  <div className="w-full lg:w-72 shrink-0 bg-ink-950 border border-ink-line rounded-xl p-3 space-y-3.5 text-xs overflow-y-auto max-h-[64vh]">
+                    <div className="flex items-center justify-between border-b border-ink-line pb-2">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                        <Settings2 className="h-4 w-4 text-emerald-400" />
+                        <span>Print Customizer</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => applyPreset('1page')}
+                        className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-ink-800"
+                        title="Reset to 1-Page recommended settings"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Reset</span>
+                      </button>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
-                        P.O. NUMBER
+
+                    {/* Row Padding (Vertical Spacing) */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-400 font-medium">Row Spacing (Padding):</span>
+                        <span className="font-mono font-bold text-emerald-400">{printCustomizer.rowPaddingY}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="2"
+                        max="10"
+                        step="1"
+                        value={printCustomizer.rowPaddingY}
+                        onChange={(e) => updateCustomizer({ rowPaddingY: Number(e.target.value) })}
+                        className="w-full accent-emerald-500 cursor-pointer"
+                      />
+                      <div className="flex justify-between gap-1 pt-0.5">
+                        {[
+                          { label: 'Ultra', val: 2 },
+                          { label: 'Tight', val: 3 },
+                          { label: 'Med', val: 5 },
+                          { label: 'Loose', val: 8 }
+                        ].map((d) => (
+                          <button
+                            key={d.val}
+                            type="button"
+                            onClick={() => updateCustomizer({ rowPaddingY: d.val })}
+                            className={`flex-1 py-0.5 text-[10px] rounded border transition-colors ${
+                              printCustomizer.rowPaddingY === d.val
+                                ? 'bg-emerald-600 text-white border-emerald-500 font-bold'
+                                : 'bg-ink-900 text-slate-400 border-ink-line hover:text-white'
+                            }`}
+                          >
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Font Size */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-400 font-medium">Table Font Size:</span>
+                        <span className="font-mono font-bold text-emerald-400">{printCustomizer.fontSize}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="9"
+                        max="13"
+                        step="1"
+                        value={printCustomizer.fontSize}
+                        onChange={(e) => updateCustomizer({ fontSize: Number(e.target.value) })}
+                        className="w-full accent-emerald-500 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Page Margin (mm) */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-400 font-medium">Page Margins:</span>
+                        <span className="font-mono font-bold text-emerald-400">{printCustomizer.marginMm}mm</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="4"
+                        max="18"
+                        step="1"
+                        value={printCustomizer.marginMm}
+                        onChange={(e) => updateCustomizer({ marginMm: Number(e.target.value) })}
+                        className="w-full accent-emerald-500 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Print Zoom / Scale (%) */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-slate-400 font-medium">Print Zoom Scale:</span>
+                        <span className="font-mono font-bold text-emerald-400">{printCustomizer.scalePercent}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="75"
+                        max="100"
+                        step="5"
+                        value={printCustomizer.scalePercent}
+                        onChange={(e) => updateCustomizer({ scalePercent: Number(e.target.value) })}
+                        className="w-full accent-emerald-500 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Table Column & Content Toggles */}
+                    <div className="space-y-2 border-t border-ink-line pt-2.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Table Columns
                       </span>
-                      <p className="text-lg font-black font-mono text-slate-900">{viewingPurchase.purchase_no}</p>
-                      <p className="text-[11px] text-slate-500">Date: {shortDate(viewingPurchase.purchase_date)}</p>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Show Row Number (#)</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showRowNumber)}
+                          onChange={(e) => updateCustomizer({ showRowNumber: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Show Barcode Subtitle</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showBarcode)}
+                          onChange={(e) => updateCustomizer({ showBarcode: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Show Base Units Count</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showBaseUnits)}
+                          onChange={(e) => updateCustomizer({ showBaseUnits: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Document Sections Toggles */}
+                    <div className="space-y-2 border-t border-ink-line pt-2.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Voucher Sections
+                      </span>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Store Header</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showStoreHeader)}
+                          onChange={(e) => updateCustomizer({ showStoreHeader: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Supplier & Ref Cards</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showInfoCards)}
+                          onChange={(e) => updateCustomizer({ showInfoCards: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Memo & Salesman Bar</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showMemoBar)}
+                          onChange={(e) => updateCustomizer({ showMemoBar: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Delivery Notes Box</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showNotesBox)}
+                          onChange={(e) => updateCustomizer({ showNotesBox: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Signatures Block</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showSignatures)}
+                          onChange={(e) => updateCustomizer({ showSignatures: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
+                    </div>
+
+                    {/* Fit to 1 Page Checkbox */}
+                    <div className="border-t border-ink-line pt-2.5">
+                      <label className="flex items-center justify-between gap-2 text-[11px] font-bold text-emerald-400 cursor-pointer select-none bg-emerald-950/40 p-2 rounded-lg border border-emerald-900/60">
+                        <span>Fit to 1 Page Rule</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.fitToOnePage)}
+                          onChange={(e) => updateCustomizer({ fitToOnePage: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
                     </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-2 gap-3 bg-slate-50 border border-slate-200 rounded-md p-3 text-[11px]">
-                    <div>
-                      <span className="text-slate-500 block font-semibold">SUPPLIER:</span>
-                      <p className="font-bold text-slate-900 text-xs">{viewingPurchase.supplier_name}</p>
-                      {currentViewSupplier?.address && (
-                        <p className="text-slate-600 text-[10px]">{currentViewSupplier.address}</p>
-                      )}
-                    </div>
-                    <div className="space-y-0.5">
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Invoice #:</span>
-                        <strong className="font-mono">{viewingPurchase.invoice_no || '—'}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Receipt #:</span>
-                        <strong className="font-mono">{viewingPurchase.receipt_no || '—'}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Payment:</span>
-                        <strong className={viewingPurchase.is_paid ? 'text-emerald-700' : 'text-amber-700'}>
-                          {viewingPurchase.is_paid ? 'PAID' : `TERMS (${viewingPurchase.terms_days || 0}D)`}
-                        </strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Subheader: Memo & Salesman above double-line separator matching client voucher */}
-                  <div className="flex justify-between items-end px-1 pt-1 font-bold text-slate-800 text-xs">
-                    <div>
-                      <span className="font-extrabold text-slate-500">Memo:</span>{' '}
-                      {viewingPurchase.notes || 'COD'}
-                    </div>
-                    <div>
-                      <span className="font-extrabold text-slate-500">Salesman:</span>{' '}
-                      {viewingPurchase.user_name || 'admin'}
-                    </div>
-                  </div>
-                  <div className="border-t-[3px] border-double border-slate-900 my-1" />
-
-                  <div className="border border-slate-200 rounded-md overflow-hidden">
-                    <table className="w-full text-left text-[11px]">
-                      <thead className="bg-slate-900 text-white text-[10px] uppercase font-bold">
-                        <tr>
-                          <th className="p-2 text-center w-8">#</th>
-                          <th className="p-2 text-center w-16">QUANTITY</th>
-                          <th className="p-2 text-center w-16">UNIT</th>
-                          <th className="p-2">DESCRIPTION</th>
-                          <th className="p-2 text-right w-20">UNIT PRICE</th>
-                          <th className="p-2 text-center w-20">DISCOUNT</th>
-                          <th className="p-2 text-right w-24">AMOUNT</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {((viewItems.length > 0 ? viewItems : viewingPurchase.items) || []).map((it: any, idx: number) => {
-                          const qty = it.qty || 1
-                          const unitCostC = it.unitCostC ?? it.grossUnitCostC ?? it.unit_cost_c ?? 0
-                          const subtotalC = it.subtotalC ?? it.subtotal_c ?? 0
-                          const discInput = it.discountInput ?? it.discount_input ?? ''
-                          const discC = it.discountC ?? it.discount_c ?? Math.max(0, unitCostC * qty - subtotalC)
-                          const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty)
-
-                          return (
-                            <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
-                              <td className="p-2 text-center text-slate-500">{idx + 1}</td>
-                              <td className="p-2 text-center font-mono font-bold text-slate-900">{qty}</td>
-                              <td className="p-2 text-center">
-                                <span className="bg-slate-100 border border-slate-300 rounded px-1 text-[10px] font-bold">
-                                  {(it.unitName || it.unit_name || 'PC').toUpperCase()}
-                                </span>
-                              </td>
-                              <td className="p-2 font-bold uppercase text-slate-900">
-                                {it.productName || it.product_name}
-                                {(it.barcode || it.product_barcode) && (
-                                  <span className="block font-mono text-[9px] text-slate-500 font-normal normal-case">
-                                    {it.barcode || it.product_barcode}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="p-2 text-right font-mono text-slate-700 font-semibold">{money(unitCostC)}</td>
-                              <td className="p-2 text-center font-mono font-bold text-amber-700 text-xs">
-                                {discStr}
-                              </td>
-                              <td className="p-2 text-right font-mono font-bold text-slate-900">
-                                {money(subtotalC)}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="flex justify-between items-start pt-2">
-                    <div className="text-[11px] text-slate-500 max-w-xs">
-                      {viewingPurchase.notes ? (
-                        <p>
-                          <strong>Memo:</strong> {viewingPurchase.notes}
-                        </p>
-                      ) : (
-                        <p className="italic">No delivery notes recorded.</p>
-                      )}
-                      <p className="mt-1">
-                        Items: {viewingPurchase.items?.length || 0} (
-                        {viewingPurchase.items?.reduce((s, i) => s + i.qty, 0)} packages)
-                      </p>
-                    </div>
-                    <div className="w-56 bg-slate-50 border border-slate-200 rounded-md p-2.5 text-[11px] space-y-1">
-                      <div className="flex justify-between text-slate-600">
-                        <span>Gross:</span>
-                        <span className="font-mono">{money(viewingPurchase.total_c)}</span>
-                      </div>
-                      {viewingPurchase.discount_c ? (
-                        <div className="flex justify-between text-amber-700 font-semibold">
-                          <span>Trade Disc:</span>
-                          <span className="font-mono">-{money(viewingPurchase.discount_c)}</span>
+                {/* Right: Interactive Live Paper Preview */}
+                <div className="flex-1 min-w-0 bg-slate-800/60 border border-ink-line rounded-xl p-3 overflow-y-auto max-h-[64vh]">
+                  <div
+                    className="bg-white text-slate-900 rounded-md shadow-lg font-sans transition-all duration-150 mx-auto"
+                    style={{
+                      padding: `${Math.max(12, (printCustomizer.marginMm || 8) * 2)}px`,
+                      fontSize: `${printCustomizer.fontSize || 11}px`,
+                      maxWidth: '820px'
+                    }}
+                  >
+                    {/* Header */}
+                    {printCustomizer.showStoreHeader && (
+                      <div className="flex justify-between items-start border-b-2 border-emerald-600 pb-2 mb-2">
+                        <div>
+                          <h3 className="text-base font-extrabold text-slate-900 tracking-tight leading-tight">
+                            {settings?.store_name || 'TINDA POS STORE'}
+                          </h3>
+                          <p className="text-[10px] text-slate-600">{settings?.address || ''}</p>
+                          <p className="text-[10px] font-bold text-emerald-700 mt-0.5">
+                            PURCHASE ORDER & STOCK RECEIVING VOUCHER
+                          </p>
                         </div>
-                      ) : null}
-                      <div className="flex justify-between text-sm font-extrabold text-emerald-700 border-t border-emerald-600 pt-1">
-                        <span>Net Total:</span>
-                        <span className="font-mono">
-                          {money(viewingPurchase.net_total_c ?? viewingPurchase.total_c)}
-                        </span>
+                        <div className="text-right">
+                          <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider block">
+                            OFFICIAL P.O. NUMBER
+                          </span>
+                          <p className="text-base font-black font-mono text-slate-900 leading-tight">
+                            {viewingPurchase.purchase_no}
+                          </p>
+                          <p className="text-[10px] text-slate-500">Date: {shortDate(viewingPurchase.purchase_date)}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Vendor and References Cards */}
+                    {printCustomizer.showInfoCards && (
+                      <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200 rounded p-2 text-[10px] mb-2">
+                        <div>
+                          <span className="text-slate-500 block font-semibold">SUPPLIER:</span>
+                          <p className="font-bold text-slate-900 text-[11px]">{viewingPurchase.supplier_name}</p>
+                          {currentViewSupplier?.address && (
+                            <p className="text-slate-600 text-[9px]">{currentViewSupplier.address}</p>
+                          )}
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Invoice #:</span>
+                            <strong className="font-mono">{viewingPurchase.invoice_no || '—'}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Receipt #:</span>
+                            <strong className="font-mono">{viewingPurchase.receipt_no || '—'}</strong>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Payment:</span>
+                            <strong className={viewingPurchase.is_paid ? 'text-emerald-700' : 'text-amber-700'}>
+                              {viewingPurchase.is_paid ? 'PAID' : `TERMS (${viewingPurchase.terms_days || 0}D)`}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Memo & Salesman Bar */}
+                    {printCustomizer.showMemoBar && (
+                      <div className="mb-2">
+                        <div className="flex justify-between items-end px-1 font-bold text-slate-800 text-[10px]">
+                          <div>
+                            <span className="font-extrabold text-slate-500">Memo:</span>{' '}
+                            {viewingPurchase.notes || 'COD'}
+                          </div>
+                          <div>
+                            <span className="font-extrabold text-slate-500">Salesman:</span>{' '}
+                            {viewingPurchase.user_name || 'admin'}
+                          </div>
+                        </div>
+                        <div className="border-t-2 border-double border-slate-900 mt-1" />
+                      </div>
+                    )}
+
+                    {/* Main Table: Wide Description + Compact Meta Columns */}
+                    <div className="border border-slate-200 rounded overflow-hidden mb-2">
+                      <table className="w-full text-left border-collapse table-fixed">
+                        <thead className="bg-slate-900 text-white text-[9px] uppercase font-bold tracking-wider">
+                          <tr>
+                            {printCustomizer.showRowNumber && (
+                              <th style={{ width: '28px' }} className="p-1 text-center">
+                                #
+                              </th>
+                            )}
+                            <th style={{ width: '58px' }} className="p-1 text-center">
+                              QUANTITY
+                            </th>
+                            <th style={{ width: '50px' }} className="p-1 text-center">
+                              UNIT
+                            </th>
+                            <th className="p-1 text-left">DESCRIPTION</th>
+                            <th style={{ width: '78px' }} className="p-1 text-right">
+                              UNIT PRICE
+                            </th>
+                            <th style={{ width: '72px' }} className="p-1 text-center">
+                              DISCOUNT
+                            </th>
+                            <th style={{ width: '86px' }} className="p-1 text-right">
+                              AMOUNT
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {((viewItems.length > 0 ? viewItems : viewingPurchase.items) || []).map(
+                            (it: any, idx: number) => {
+                              const qty = it.qty || 1
+                              const unitCostC = it.unitCostC ?? it.grossUnitCostC ?? it.unit_cost_c ?? 0
+                              const subtotalC = it.subtotalC ?? it.subtotal_c ?? 0
+                              const discInput = it.discountInput ?? it.discount_input ?? ''
+                              const discC =
+                                it.discountC ?? it.discount_c ?? Math.max(0, unitCostC * qty - subtotalC)
+                              const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty)
+
+                              const padY = `${printCustomizer.rowPaddingY || 3}px`
+
+                              return (
+                                <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/70' : ''}>
+                                  {printCustomizer.showRowNumber && (
+                                    <td
+                                      style={{ padding: `${padY} 4px` }}
+                                      className="text-center text-slate-500 font-mono text-[9px]"
+                                    >
+                                      {idx + 1}
+                                    </td>
+                                  )}
+                                  <td
+                                    style={{ padding: `${padY} 4px` }}
+                                    className="text-center font-mono font-bold text-slate-900"
+                                  >
+                                    {qty}
+                                  </td>
+                                  <td style={{ padding: `${padY} 4px` }} className="text-center">
+                                    <span className="bg-slate-100 border border-slate-300 rounded px-1 text-[9px] font-bold">
+                                      {(it.unitName || it.unit_name || 'PC').toUpperCase()}
+                                    </span>
+                                  </td>
+                                  <td
+                                    style={{ padding: `${padY} 6px` }}
+                                    className="font-bold uppercase text-slate-900 leading-tight"
+                                  >
+                                    {it.productName || it.product_name}
+                                    {printCustomizer.showBarcode && (it.barcode || it.product_barcode) && (
+                                      <span className="block font-mono text-[8px] text-slate-500 font-normal normal-case">
+                                        BARCODE: {it.barcode || it.product_barcode}
+                                      </span>
+                                    )}
+                                    {printCustomizer.showBaseUnits && it.qty_base > it.qty && (
+                                      <span className="text-[8px] text-slate-500 font-normal normal-case ml-1">
+                                        ({it.qty_base} total units)
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td
+                                    style={{ padding: `${padY} 4px` }}
+                                    className="text-right font-mono text-slate-700 font-medium"
+                                  >
+                                    {money(unitCostC)}
+                                  </td>
+                                  <td
+                                    style={{ padding: `${padY} 4px` }}
+                                    className="text-center font-mono font-bold text-amber-700"
+                                  >
+                                    {discStr}
+                                  </td>
+                                  <td
+                                    style={{ padding: `${padY} 4px` }}
+                                    className="text-right font-mono font-bold text-slate-900"
+                                  >
+                                    {money(subtotalC)}
+                                  </td>
+                                </tr>
+                              )
+                            }
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Summary Section: Notes Box + Totals */}
+                    <div className="flex justify-between items-start gap-3 pt-1">
+                      {printCustomizer.showNotesBox ? (
+                        <div className="text-[10px] text-slate-600 flex-1 bg-slate-50 border border-dashed border-slate-300 rounded p-2">
+                          <p>
+                            <strong className="text-slate-800">Memo / Notes:</strong>{' '}
+                            {viewingPurchase.notes || 'COD'}
+                          </p>
+                          <p className="mt-0.5 text-[9px] text-slate-500">
+                            Total Received: {viewingPurchase.items?.length || 0} unique items (
+                            {viewingPurchase.items?.reduce((s, i) => s + i.qty, 0)} packages)
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex-1" />
+                      )}
+
+                      <div className="w-52 bg-slate-50 border border-slate-200 rounded p-2 text-[10px] space-y-1">
+                        <div className="flex justify-between text-slate-600">
+                          <span>Gross:</span>
+                          <span className="font-mono">{money(viewingPurchase.total_c)}</span>
+                        </div>
+                        {viewingPurchase.discount_c ? (
+                          <div className="flex justify-between text-amber-700 font-semibold">
+                            <span>Trade Disc:</span>
+                            <span className="font-mono">-{money(viewingPurchase.discount_c)}</span>
+                          </div>
+                        ) : null}
+                        <div className="flex justify-between text-xs font-black text-emerald-700 border-t border-emerald-600 pt-1">
+                          <span>Net Payable:</span>
+                          <span className="font-mono font-black">
+                            {money(viewingPurchase.net_total_c ?? viewingPurchase.total_c)}
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Signatures */}
+                    {printCustomizer.showSignatures && (
+                      <div className="grid grid-cols-3 gap-4 pt-4 mt-2 border-t border-slate-200 text-center text-[9px] text-slate-600 font-medium">
+                        <div className="border-t border-slate-400 pt-1">
+                          Prepared / Encoded By
+                          <br />
+                          <strong className="text-slate-900 font-bold">{viewingPurchase.user_name || 'Staff'}</strong>
+                        </div>
+                        <div className="border-t border-slate-400 pt-1">
+                          Received & Verified By
+                          <br />
+                          <strong className="text-slate-900 font-bold">Store Custodian</strong>
+                        </div>
+                        <div className="border-t border-slate-400 pt-1">
+                          Approved By
+                          <br />
+                          <strong className="text-slate-900 font-bold">Store Manager</strong>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ) : (
+              </div>
+            ) : (
+              /* Thermal Receipt Preview */
+              <div className="rounded-xl border border-ink-line bg-ink-950 p-4 max-h-[60vh] overflow-y-auto">
                 <div className="bg-white text-black p-4 rounded-lg shadow-sm font-mono text-xs whitespace-pre-wrap max-w-sm mx-auto leading-relaxed border border-slate-300">
                   {formatPurchaseOrderSlipLines({
                     storeName: settings?.store_name || 'TINDA POS',
@@ -2675,8 +3156,8 @@ export function PurchaseInvoiceModal({
                     }
                   }).join('\n')}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </Modal>
       )}
