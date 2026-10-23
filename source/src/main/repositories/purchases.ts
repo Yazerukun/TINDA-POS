@@ -249,11 +249,21 @@ export function createPurchase(
       )
     const purchaseId = Number(info.lastInsertRowid)
     const stmt = db.prepare(
-      `INSERT INTO purchase_items (purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, subtotal_c)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO purchase_items (purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     for (const it of input.items) {
-      stmt.run(purchaseId, it.product_id, it.unit_name, it.qty, it.qty_base, it.unit_cost_c, it.subtotal_c)
+      stmt.run(
+        purchaseId,
+        it.product_id,
+        it.unit_name,
+        it.qty,
+        it.qty_base,
+        it.unit_cost_c,
+        it.discount_input ?? null,
+        it.discount_c != null ? it.discount_c : Math.max(0, it.unit_cost_c * it.qty - it.subtotal_c),
+        it.subtotal_c
+      )
 
       // Effective net unit cost per base unit after trade discount
       const netBaseCostC = it.qty_base > 0

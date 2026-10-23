@@ -11,7 +11,8 @@ import { createUser } from '../../repositories/users'
 import { hashSecret } from '../../security/passwords'
 import {
   formatPurchaseOrderSlipLines,
-  generatePurchaseOrderDocumentHtml
+  generatePurchaseOrderDocumentHtml,
+  formatDiscountPercent
 } from '@shared/receiptHtml'
 
 let dataDir: string
@@ -305,7 +306,31 @@ describe('v4.1.4 Purchase Invoices Search, Edit Authorization & Stock Reconcilia
     expect(cashierRes.valid).toBe(false)
   })
 
-  it('generates thermal slip and A4 document HTML for purchase order printing', () => {
+    it('formats trade discounts strictly as clean percentage strings (-20%, -10%-10%, etc.)', () => {
+    // Single percentages
+    expect(formatDiscountPercent('20%')).toBe('-20%')
+    expect(formatDiscountPercent('-20%')).toBe('-20%')
+    expect(formatDiscountPercent('20')).toBe('-20%')
+
+    // Compounded / cascading chained percentages
+    expect(formatDiscountPercent('10+10')).toBe('-10%-10%')
+    expect(formatDiscountPercent('-10%-10%')).toBe('-10%-10%')
+    expect(formatDiscountPercent('10/10')).toBe('-10%-10%')
+    expect(formatDiscountPercent('5+5+5')).toBe('-5%-5%-5%')
+    expect(formatDiscountPercent('-5%-5%-5%')).toBe('-5%-5%-5%')
+    expect(formatDiscountPercent('10-10')).toBe('-10%-10%')
+
+    // Fallback calculation from integer centavos
+    expect(formatDiscountPercent('', 2000, 10000)).toBe('-20%')
+    expect(formatDiscountPercent('₱50', 5000, 50000)).toBe('-10%')
+
+    // Zero / no discount
+    expect(formatDiscountPercent('', 0, 10000)).toBe('—')
+    expect(formatDiscountPercent('0', 0, 10000)).toBe('—')
+    expect(formatDiscountPercent(null, 0, 10000)).toBe('—')
+  })
+
+  it('generates thermal slip and A4 document HTML matching VIP client hardware voucher format', () => {
     const p = getPurchase(db, 1)
     const payload = {
       storeName: 'VIP Client Hardware Store',
@@ -320,6 +345,8 @@ describe('v4.1.4 Purchase Invoices Search, Edit Authorization & Stock Reconcilia
     expect(lines[0]).toBe('VIP Client Hardware Store')
     expect(lines).toContain('PURCHASE ORDER / RECEIVING SLIP')
     expect(lines.some((l) => l.includes('PPO-000001'))).toBe(true)
+    expect(lines.some((l) => l.includes('Memo:'))).toBe(true)
+    expect(lines.some((l) => l.includes('Salesman:'))).toBe(true)
     expect(lines.some((l) => l.includes('NET PAYABLE:'))).toBe(true)
 
     // 2. A4 Document HTML
@@ -328,7 +355,15 @@ describe('v4.1.4 Purchase Invoices Search, Edit Authorization & Stock Reconcilia
     expect(doc.html).toContain('VIP Client Hardware Store')
     expect(doc.html).toContain('OFFICIAL P.O. NUMBER')
     expect(doc.html).toContain('PPO-000001')
-    expect(doc.html).toContain('Deformed Steel Bar 10mm')
+    expect(doc.html).toContain('Memo:')
+    expect(doc.html).toContain('Salesman:')
+    expect(doc.html).toContain('QUANTITY')
+    expect(doc.html).toContain('UNIT')
+    expect(doc.html).toContain('DESCRIPTION')
+    expect(doc.html).toContain('UNIT PRICE')
+    expect(doc.html).toContain('DISCOUNT')
+    expect(doc.html).toContain('AMOUNT')
+    expect(doc.html).toContain('-5%-5%') // Item A with 5+5 discount input
     expect(doc.html).toContain('Prepared / Encoded By')
     expect(doc.html).toContain('Approved By')
   })

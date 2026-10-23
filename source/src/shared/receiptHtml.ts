@@ -855,6 +855,70 @@ export interface PurchaseOrderPrintPayload {
   }
 }
 
+/**
+ * Formats a trade discount into clean percentage format (e.g. "-20%", "-10%-10%", "-5%-5%-5%").
+ * Standard Philippine wholesale hardware distributor delivery receipt format.
+ */
+export function formatDiscountPercent(
+  discountInput?: string | null,
+  discountC?: number,
+  grossC?: number
+): string {
+  const raw = String(discountInput || '').trim()
+
+  if (raw && raw !== '0' && raw !== '0%') {
+    // If it's a flat peso notation explicitly e.g. "₱50" or "P50"
+    if (/^[pP₱]/.test(raw)) {
+      if (discountC && discountC > 0 && grossC && grossC > 0) {
+        const pct = (discountC / grossC) * 100
+        const formatted =
+          Number.isInteger(pct) || Math.abs(pct - Math.round(pct)) < 0.05
+            ? Math.round(pct).toString()
+            : pct.toFixed(1)
+        return `-${formatted}%`
+      }
+    }
+
+    const rawMatches = raw.match(/\d+(?:\.\d+)?/g) || []
+    const numbers = rawMatches
+      .map((n) => parseFloat(n))
+      .filter((n) => !isNaN(n) && n > 0 && n <= 100)
+
+    const hasPercentSign = raw.includes('%')
+
+    // If multiple numbers (e.g. "10+10", "10-10", "5/5/5", "-10%-10%")
+    // or single number with percent sign (e.g. "20%", "-20%")
+    if (numbers.length > 1 || (numbers.length === 1 && hasPercentSign)) {
+      return numbers.map((n) => `-${n}%`).join('')
+    }
+
+    // Single number without % (e.g. "20" or "10")
+    if (numbers.length === 1) {
+      if (discountC && discountC > 0 && grossC && grossC > 0) {
+        const pct = (discountC / grossC) * 100
+        const formatted =
+          Number.isInteger(pct) || Math.abs(pct - Math.round(pct)) < 0.05
+            ? Math.round(pct).toString()
+            : pct.toFixed(1)
+        return `-${formatted}%`
+      }
+      return `-${numbers[0]}%`
+    }
+  }
+
+  // Fallback if no discountInput but discountC > 0
+  if (discountC && discountC > 0 && grossC && grossC > 0) {
+    const pct = (discountC / grossC) * 100
+    const formatted =
+      Number.isInteger(pct) || Math.abs(pct - Math.round(pct)) < 0.05
+        ? Math.round(pct).toString()
+        : pct.toFixed(1)
+    return `-${formatted}%`
+  }
+
+  return '—'
+}
+
 export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload): string[] {
   const p = payload.purchase
   const moneyStr = (c: number): string => (c / 100).toFixed(2)
@@ -870,12 +934,12 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
     `Payment: ${p.is_paid ? 'PAID' : `TERMS (${p.terms_days || 0} DAYS)`}`,
     `Encoder: ${p.user_name || 'Staff'}`
   ]
-  if (p.notes) {
-    lines.push(`Notes: ${p.notes}`)
-  }
+  lines.push('================================')
+  lines.push(`Memo: ${p.notes || 'COD'}`)
+  lines.push(`Salesman: ${p.user_name || 'admin'}`)
   lines.push('--------------------------------')
-  lines.push('ITEMS RECEIVED:')
-  lines.push('ITEM / UNIT        QTY    COST    TOTAL')
+  lines.push('QTY  UNIT  DESCRIPTION')
+  lines.push('     PRICE       DISC     AMOUNT')
   lines.push('--------------------------------')
 
   let totalQty = 0
@@ -883,15 +947,14 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
   for (const it of p.items) {
     totalQty += it.qty
     totalBase += it.qty_base
-    lines.push(it.product_name)
-    const unitPart = `${it.unit_name.toUpperCase()} (x${it.qty})`.padEnd(16, ' ')
-    const costPart = moneyStr(it.unit_cost_c).padStart(8, ' ')
-    const subPart = moneyStr(it.subtotal_c).padStart(8, ' ')
-    lines.push(`  ${unitPart}${costPart}${subPart}`)
-    if (it.discount_input || (it.discount_c && it.discount_c > 0)) {
-      const discLabel = it.discount_input ? `Disc (${it.discount_input})` : 'Disc'
-      lines.push(`    ${discLabel}: -P${moneyStr(it.discount_c || 0)}`)
-    }
+    const grossItemC = it.unit_cost_c * it.qty
+    const discStr = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC)
+
+    lines.push(`${String(it.qty).padEnd(4, ' ')} ${it.unit_name.toUpperCase().padEnd(6, ' ')} ${it.product_name}`)
+    const priceStr = moneyStr(it.unit_cost_c).padStart(9, ' ')
+    const discPart = discStr.padStart(10, ' ')
+    const amountStr = moneyStr(it.subtotal_c).padStart(11, ' ')
+    lines.push(`     ${priceStr} ${discPart} ${amountStr}`)
   }
 
   lines.push('--------------------------------')
@@ -922,27 +985,28 @@ export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPay
 
   const itemsHtml = p.items
     .map((it, idx) => {
-      const discDisplay = it.discount_input
-        ? `<span style="color:#d97706; font-size:11px;">${escapeHtml(it.discount_input)}</span>`
-        : it.discount_c && it.discount_c > 0
-          ? `<span style="color:#d97706; font-size:11px;">-₱${moneyStr(it.discount_c)}</span>`
-          : '—'
+      const grossItemC = it.unit_cost_c * it.qty
+      const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC)
+      const discDisplay =
+        discText !== '—'
+          ? `<span style="color:#b45309; font-weight: 700; font-family: monospace; font-size: 12px;">${escapeHtml(discText)}</span>`
+          : '<span style="color:#94a3b8;">—</span>'
 
       return `
-      <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px; ${idx % 2 === 1 ? 'background-color:#f8fafc;' : ''}">
-        <td style="padding: 8px 10px; color: #64748b; text-align: center;">${idx + 1}</td>
-        <td style="padding: 8px 10px; font-weight: 600; color: #0f172a;">
+      <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px; ${idx % 2 === 1 ? 'background-color:#fafafa;' : ''}">
+        <td style="padding: 7px 6px; color: #64748b; text-align: center;">${idx + 1}</td>
+        <td style="padding: 7px 6px; text-align: center; font-weight: 800; color: #0f172a; font-family: monospace; font-size: 13px;">${it.qty}</td>
+        <td style="padding: 7px 6px; text-align: center; color: #334155; font-size: 11px; font-weight: 700;">
+          <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">${escapeHtml(it.unit_name.toUpperCase())}</span>
+        </td>
+        <td style="padding: 7px 10px; font-weight: 700; color: #0f172a; text-transform: uppercase;">
           ${escapeHtml(it.product_name)}
-          ${it.product_barcode ? `<div style="font-size: 10px; color: #64748b; font-family: monospace;">BARCODE: ${escapeHtml(it.product_barcode)}</div>` : ''}
+          ${it.product_barcode ? `<div style="font-size: 10px; color: #64748b; font-family: monospace; text-transform: none; font-weight: normal;">BARCODE: ${escapeHtml(it.product_barcode)}</div>` : ''}
+          ${it.qty_base > it.qty ? `<span style="font-size: 10px; color: #64748b; font-weight: normal; margin-left: 4px; text-transform: none;">(${it.qty_base} total units)</span>` : ''}
         </td>
-        <td style="padding: 8px 10px; text-align: center; color: #334155; font-size: 11px;">
-          <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 600; border: 1px solid #cbd5e1;">${escapeHtml(it.unit_name.toUpperCase())}</span>
-        </td>
-        <td style="padding: 8px 10px; text-align: center; font-weight: 700; color: #0f172a; font-family: monospace; font-size: 13px;">${it.qty}</td>
-        <td style="padding: 8px 10px; text-align: center; color: #64748b; font-size: 11px;">${it.qty_base}</td>
-        <td style="padding: 8px 10px; text-align: right; font-family: monospace; color: #334155;">₱${moneyStr(it.unit_cost_c)}</td>
-        <td style="padding: 8px 10px; text-align: center;">${discDisplay}</td>
-        <td style="padding: 8px 10px; text-align: right; font-family: monospace; font-weight: 700; color: #059669; font-size: 13px;">₱${moneyStr(it.subtotal_c)}</td>
+        <td style="padding: 7px 6px; text-align: right; font-family: monospace; color: #334155; font-weight: 600;">₱${moneyStr(it.unit_cost_c)}</td>
+        <td style="padding: 7px 6px; text-align: center;">${discDisplay}</td>
+        <td style="padding: 7px 6px; text-align: right; font-family: monospace; font-weight: 800; color: #0f172a; font-size: 13px;">₱${moneyStr(it.subtotal_c)}</td>
       </tr>
     `
     })
@@ -954,28 +1018,30 @@ export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPay
   <meta charset="utf-8">
   <title>${title}</title>
   <style>
-    @page { size: A4; margin: 12mm 15mm; }
+    @page { size: A4; margin: 10mm 14mm; }
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .header-box { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 14px; margin-bottom: 16px; }
+    .header-box { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 14px; }
     .store-title { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin: 0; }
     .store-sub { font-size: 12px; color: #475569; margin-top: 2px; }
     .po-badge { text-align: right; }
     .po-label { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #059669; }
     .po-number { font-size: 22px; font-weight: 900; color: #0f172a; font-family: monospace; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px; }
     .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
     .card-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 6px; }
     .meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
     .meta-label { color: #64748b; }
     .meta-val { font-weight: 600; color: #0f172a; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-    th { background: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; font-weight: 700; }
-    .summary-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px; margin-bottom: 24px; }
+    .memo-bar { display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 4px 4px 4px; font-size: 12px; font-weight: 700; color: #0f172a; }
+    .memo-line { border-top: 3px double #0f172a; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    thead th { background: #0f172a; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 6px; font-weight: 800; }
+    .summary-section { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 8px; margin-bottom: 20px; }
     .notes-box { flex: 1; margin-right: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 10px 14px; font-size: 12px; }
     .totals-box { width: 280px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
     .tot-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
     .tot-grand { display: flex; justify-content: space-between; border-top: 2px solid #059669; padding-top: 8px; margin-top: 6px; font-size: 16px; font-weight: 900; color: #059669; font-family: monospace; }
-    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 40px; }
+    .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 36px; }
     .sig-line { border-top: 1px solid #94a3b8; text-align: center; padding-top: 6px; font-size: 11px; color: #475569; font-weight: 600; }
   </style>
 </head>
@@ -1012,17 +1078,22 @@ export function generatePurchaseOrderDocumentHtml(payload: PurchaseOrderPrintPay
     </div>
   </div>
 
+  <div class="memo-bar">
+    <div><span style="font-weight: 800; color: #475569;">Memo:</span> ${escapeHtml(p.notes || 'COD')}</div>
+    <div><span style="font-weight: 800; color: #475569;">Salesman:</span> ${escapeHtml(p.user_name || 'admin')}</div>
+  </div>
+  <div class="memo-line"></div>
+
   <table>
     <thead>
       <tr>
-        <th style="width: 30px; text-align: center;">#</th>
-        <th style="text-align: left;">Item Description</th>
-        <th style="width: 70px; text-align: center;">Unit</th>
-        <th style="width: 55px; text-align: center;">Qty</th>
-        <th style="width: 60px; text-align: center;">Base Qty</th>
-        <th style="width: 85px; text-align: right;">Unit Cost</th>
-        <th style="width: 75px; text-align: center;">Disc</th>
-        <th style="width: 100px; text-align: right;">Subtotal</th>
+        <th style="width: 35px; text-align: center;">#</th>
+        <th style="width: 80px; text-align: center;">QUANTITY</th>
+        <th style="width: 70px; text-align: center;">UNIT</th>
+        <th style="text-align: left;">DESCRIPTION</th>
+        <th style="width: 95px; text-align: right;">UNIT PRICE</th>
+        <th style="width: 100px; text-align: center;">DISCOUNT</th>
+        <th style="width: 110px; text-align: right;">AMOUNT</th>
       </tr>
     </thead>
     <tbody>

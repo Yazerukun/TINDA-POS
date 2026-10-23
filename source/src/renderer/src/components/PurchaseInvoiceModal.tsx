@@ -46,6 +46,7 @@ import { useAuth } from '../stores/auth'
 import {
   formatPurchaseOrderSlipLines,
   generatePurchaseOrderDocumentHtml,
+  formatDiscountPercent,
   receiptHtml,
   type PurchaseOrderPrintPayload
 } from '@shared/receiptHtml'
@@ -780,6 +781,31 @@ export function PurchaseInvoiceModal({
     if (!viewingPurchase) return
     setIsPrintingPO(true)
     try {
+      const preparedItems = (viewItems.length > 0 ? viewItems : (viewingPurchase.items || [])).map((it: any) => {
+        const qty = it.qty || 1
+        const unitCostC = it.unitCostC ?? it.grossUnitCostC ?? it.unit_cost_c ?? 0
+        const subtotalC = it.subtotalC ?? it.subtotal_c ?? 0
+        const grossC = unitCostC * qty
+        const discC = it.discountC ?? it.discount_c ?? Math.max(0, grossC - subtotalC)
+        const discInput = it.discountInput ?? it.discount_input ?? ''
+        const formattedPercent = formatDiscountPercent(discInput, discC, grossC)
+
+        return {
+          id: it.id || 0,
+          purchase_id: viewingPurchase.id,
+          product_id: it.productId ?? it.product_id,
+          product_name: it.productName ?? it.product_name,
+          product_barcode: it.barcode ?? it.product_barcode ?? '',
+          unit_name: it.unitName ?? it.unit_name,
+          qty,
+          qty_base: it.conversionToBase ? it.conversionToBase * qty : (it.qty_base || qty),
+          unit_cost_c: unitCostC,
+          discount_input: formattedPercent !== '—' ? formattedPercent : (discInput || null),
+          discount_c: discC,
+          subtotal_c: subtotalC
+        }
+      })
+
       const payload: PurchaseOrderPrintPayload = {
         storeName: settings?.store_name || 'TINDA POS',
         storeAddress: settings?.address || '',
@@ -788,7 +814,8 @@ export function PurchaseInvoiceModal({
           ...viewingPurchase,
           supplier_address: currentViewSupplier?.address,
           supplier_contact: currentViewSupplier?.contact_person,
-          supplier_phone: currentViewSupplier?.phone
+          supplier_phone: currentViewSupplier?.phone,
+          items: preparedItems
         }
       }
 
@@ -1529,9 +1556,9 @@ export function PurchaseInvoiceModal({
                                 {it.discountC > 0 ? (
                                   <span
                                     className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
-                                    title={it.discountInput}
+                                    title={`Less ${money(it.discountC)}`}
                                   >
-                                    {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
+                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-600 font-mono">—</span>
@@ -2536,46 +2563,68 @@ export function PurchaseInvoiceModal({
                     </div>
                   </div>
 
+                  {/* Subheader: Memo & Salesman above double-line separator matching client voucher */}
+                  <div className="flex justify-between items-end px-1 pt-1 font-bold text-slate-800 text-xs">
+                    <div>
+                      <span className="font-extrabold text-slate-500">Memo:</span>{' '}
+                      {viewingPurchase.notes || 'COD'}
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-slate-500">Salesman:</span>{' '}
+                      {viewingPurchase.user_name || 'admin'}
+                    </div>
+                  </div>
+                  <div className="border-t-[3px] border-double border-slate-900 my-1" />
+
                   <div className="border border-slate-200 rounded-md overflow-hidden">
                     <table className="w-full text-left text-[11px]">
                       <thead className="bg-slate-900 text-white text-[10px] uppercase font-bold">
                         <tr>
                           <th className="p-2 text-center w-8">#</th>
-                          <th className="p-2">Description</th>
-                          <th className="p-2 text-center w-16">Unit</th>
-                          <th className="p-2 text-center w-14">Qty</th>
-                          <th className="p-2 text-right w-20">Unit Cost</th>
-                          <th className="p-2 text-center w-16">Disc</th>
-                          <th className="p-2 text-right w-24">Subtotal</th>
+                          <th className="p-2 text-center w-16">QUANTITY</th>
+                          <th className="p-2 text-center w-16">UNIT</th>
+                          <th className="p-2">DESCRIPTION</th>
+                          <th className="p-2 text-right w-20">UNIT PRICE</th>
+                          <th className="p-2 text-center w-20">DISCOUNT</th>
+                          <th className="p-2 text-right w-24">AMOUNT</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
-                        {viewingPurchase.items?.map((it, idx) => (
-                          <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
-                            <td className="p-2 text-center text-slate-500">{idx + 1}</td>
-                            <td className="p-2 font-medium text-slate-900">
-                              {it.product_name}
-                              {it.product_barcode && (
-                                <span className="block font-mono text-[9px] text-slate-500">
-                                  {it.product_barcode}
+                        {((viewItems.length > 0 ? viewItems : viewingPurchase.items) || []).map((it: any, idx: number) => {
+                          const qty = it.qty || 1
+                          const unitCostC = it.unitCostC ?? it.grossUnitCostC ?? it.unit_cost_c ?? 0
+                          const subtotalC = it.subtotalC ?? it.subtotal_c ?? 0
+                          const discInput = it.discountInput ?? it.discount_input ?? ''
+                          const discC = it.discountC ?? it.discount_c ?? Math.max(0, unitCostC * qty - subtotalC)
+                          const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty)
+
+                          return (
+                            <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50' : ''}>
+                              <td className="p-2 text-center text-slate-500">{idx + 1}</td>
+                              <td className="p-2 text-center font-mono font-bold text-slate-900">{qty}</td>
+                              <td className="p-2 text-center">
+                                <span className="bg-slate-100 border border-slate-300 rounded px-1 text-[10px] font-bold">
+                                  {(it.unitName || it.unit_name || 'PC').toUpperCase()}
                                 </span>
-                              )}
-                            </td>
-                            <td className="p-2 text-center">
-                              <span className="bg-slate-100 border border-slate-300 rounded px-1 text-[10px] font-bold">
-                                {it.unit_name.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="p-2 text-center font-mono font-bold text-slate-900">{it.qty}</td>
-                            <td className="p-2 text-right font-mono text-slate-700">{money(it.unit_cost_c)}</td>
-                            <td className="p-2 text-center text-amber-700 font-medium">
-                              {it.discount_input || (it.discount_c ? `-${money(it.discount_c)}` : '—')}
-                            </td>
-                            <td className="p-2 text-right font-mono font-bold text-emerald-700">
-                              {money(it.subtotal_c)}
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="p-2 font-bold uppercase text-slate-900">
+                                {it.productName || it.product_name}
+                                {(it.barcode || it.product_barcode) && (
+                                  <span className="block font-mono text-[9px] text-slate-500 font-normal normal-case">
+                                    {it.barcode || it.product_barcode}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-2 text-right font-mono text-slate-700 font-semibold">{money(unitCostC)}</td>
+                              <td className="p-2 text-center font-mono font-bold text-amber-700 text-xs">
+                                {discStr}
+                              </td>
+                              <td className="p-2 text-right font-mono font-bold text-slate-900">
+                                {money(subtotalC)}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
