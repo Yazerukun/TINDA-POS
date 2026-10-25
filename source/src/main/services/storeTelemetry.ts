@@ -295,7 +295,7 @@ export function getStoreTelemetrySummary(
           FROM products p
           WHERE p.status = 'ACTIVE' AND (p.stock <= COALESCE(p.low_stock_threshold, 5) OR p.stock <= 5)
           ORDER BY p.stock ASC, p.name ASC
-          LIMIT 20`
+          LIMIT 5000`
         )
         .all() as { id: number; name: string; stock: number; reorder_level: number; unit: string }[]
 

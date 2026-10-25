@@ -93,7 +93,7 @@ export function Dashboard(): React.JSX.Element | null {
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
         const [sales, prods, u, tx, cats, itemSales] = await Promise.all([
           window.api.reports.sales({ from: today, to: today }),
-          window.api.products.search('', { status: 'ACTIVE', limit: 1000 }),
+          window.api.products.search('', { status: 'ACTIVE', limit: 5000 }),
           window.api.reports.utang(),
           window.api.transactions.list({ from: `${today} 00:00:00`, to: `${today} 23:59:59`, limit: 8 }),
           window.api?.categories?.list ? window.api.categories.list().catch(() => []) : Promise.resolve([]),
@@ -132,7 +132,12 @@ export function Dashboard(): React.JSX.Element | null {
           }
         }
         setCatProductCounts(catMap)
-        const alerts = prods.rows.filter((p) => p.stock <= p.low_stock_threshold).slice(0, 10)
+        // Load all out-of-stock and low-stock alerts without artificial slice limit
+        const alerts = (prods.rows || []).filter(
+          (p) => p.stock <= (p.low_stock_threshold ?? 5)
+        )
+        // Sort: Out-of-stock first, then ascending by current stock
+        alerts.sort((a, b) => a.stock - b.stock)
         setAlertProducts(alerts)
         const expired = prods.rows.filter((p) => productExpirationStatus(p) === 'EXPIRED')
         const soon = prods.rows.filter((p) => {
@@ -185,7 +190,7 @@ export function Dashboard(): React.JSX.Element | null {
   }
 
   const out = alertProducts.filter((p) => p.stock <= 0)
-  const low = alertProducts.filter((p) => p.stock > 0)
+  const low = alertProducts.filter((p) => p.stock > 0 && p.stock <= (p.low_stock_threshold ?? 5))
 
   return (
     <div className="p-6 space-y-4">
@@ -314,8 +319,8 @@ export function Dashboard(): React.JSX.Element | null {
                 <Boxes className="h-4 w-4 shrink-0" />
                 <span>Inventory</span>
               </span>
-              <span className="rounded bg-sky-500/20 group-hover:bg-slate-950/20 px-1 py-0.2 text-[10px] font-mono">
-                Stock
+              <span className="rounded bg-sky-500/20 group-hover:bg-slate-950/20 px-1.5 py-0.5 text-[10px] font-mono font-bold">
+                {low.length > 0 || out.length > 0 ? `${out.length > 0 ? `${out.length} Out · ` : ''}${low.length} Low` : 'Stock'}
               </span>
             </button>
             <button
@@ -431,19 +436,47 @@ export function Dashboard(): React.JSX.Element | null {
 
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 animate-fadeInUp stagger-5">
         <div className="space-y-4">
-          <SectionCard title="LOW / OUT OF STOCK" action={<span className="text-xs text-slate-500">{out.length} out · {low.length} low</span>}>
+          <SectionCard
+            title="LOW / OUT OF STOCK"
+            action={
+              <div className="flex items-center gap-2">
+                <span className="text-xs">
+                  {out.length > 0 && (
+                    <span className="text-red-400 font-bold mr-1.5">{out.length} out</span>
+                  )}
+                  {low.length > 0 && (
+                    <span className="text-amber-400 font-bold">{low.length} low</span>
+                  )}
+                  {out.length === 0 && low.length === 0 && (
+                    <span className="text-slate-500">All in stock</span>
+                  )}
+                </span>
+                {alertProducts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPage('inventory')}
+                    className="text-[11px] font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-0.5 transition-colors"
+                    title="Open Inventory to view all low stock products"
+                  >
+                    <span>View All</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            }
+          >
             {alertProducts.length === 0 ? (
               <p className="text-sm text-slate-400">All products in stock.</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {alertProducts.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between gap-3">
+                  <div key={p.id} className="flex items-center justify-between gap-3 p-1 rounded-lg hover:bg-ink-800 transition-colors">
                     <div className="flex min-w-0 items-center gap-2">
                       <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${p.stock <= 0 ? 'text-red-400' : 'text-amber-400'}`} />
                       <span className="truncate text-sm text-slate-200">{p.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">{p.stock} {p.base_unit}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-slate-400 font-mono">{p.stock} {p.base_unit}</span>
                       <StatusBadge status={p.stock <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK'} />
                     </div>
                   </div>
