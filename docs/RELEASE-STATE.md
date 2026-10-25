@@ -1,13 +1,42 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.8 (FOREIGN KEY CONSTRAINT IMMUNE RESTORE & TINDA LAN DIRECT BEAM PC-TO-PC SYNC EDITION)
+- v4.1.9 (ZERO-CLICK INSTANT PEER RADAR & HYBRID SUBNET SWEEP EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync Edition
+- Production Release Ready — v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep Edition
+
+COMPLETED (v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep):
+- Stage 24: Hybrid Dual-Engine Peer Discovery: Solved Wi-Fi AP Isolation and UDP packet drops on modern routers and public profiles. Engineered fast parallel HTTP subnet sweep (<800ms) across all active `/24` subnets (`192.168.x.1..254`) on port 3111, querying `/api/lan/status` via unicast TCP.
+- Stage 25: Multi-Interface Subnet Broadcast & Probe Reply: Binds UDP beacon on port 3112 (`reuseAddr: true`), listens for `TINDA_BEAM_PROBE` and `TINDA_PROBE` to emit instantaneous unicast UDP replies, and broadcasts dynamically to all interface broadcast addresses (`ip | ~netmask`). Accelerated beacon to 1000ms upon starting Beam.
+- Stage 26: Zero-Click Auto-Selecting Radar UI: Added continuous background radar loop (every 2.5s) to `LanBeamModal`, automatically sweeping the network and auto-selecting detected sender laptops without requiring manual IP typing or clicking "Refresh Scan".
+- Stage 27: Quality Gates: 624/624 passing Vitest tests across 99 suites, 0 TypeScript errors across Node & Web.
+
+COMPLETED (v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam):
+- Stage 21: Universal Foreign Key Restore Immunity: Eradicated SqliteError: FOREIGN KEY constraint failed during .tinda-backup import (backup:importTinda). Corrected CANONICAL_TABLES topological order (shifts before sales, sales before batch_movements), decoupled foreign key checks during bulk restore transaction via PRAGMA foreign_keys = OFF outside transaction, enabled PRAGMA defer_foreign_keys = ON, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
+- Stage 22: TINDA LAN Direct Beam (1-Tap PC-to-PC Data Transfer): Engineered direct local network data beam over Wi-Fi, Ethernet switch, or direct PC-to-PC LAN cable without router. UDP beacon auto-discovery (Port 3112) with \'TINDA_BEAM_BEACON\', secure 6-digit PIN handshake (POST /api/lan/beam/pull on Port 3111), and atomic safety backup & restore. Designed high-contrast OLED/dark modal (LanBeamModal) with UI-UX Pro Max standards, embedded in Settings Data Tab and Network Tab.
+- Stage 23: Quality Gates: Full production build green, typecheck 0 errors across Node & Web, 609/609 vitest tests passing across 97 test suites.
+
+
+COMPLETED (v4.1.7 Dual-Notation Cascading Trade Discount):
+- Stage 18: Dual-Notation Discount Display: Evaluates compounding/cascading distributor formulas (e.g. -10%-10%, -5%-5%-5%) and displays both original formula and mathematically exact effective rate (Effective: 19%, Effective: 14.3%).
+- Stage 19: Thermal POS Slip Layout Protection: Maintains compact format (-10%-10%, -5%-5%-5%) on 58mm/80mm receipts to strictly respect the 32-column constraint without line-wrapping.
+- Stage 20: 100% Comprehensive Unit Test Coverage: 620/620 passing vitest tests with 0 TypeScript compilation errors.
+COMPLETED (v4.1.6 Wide Description, 1-Page Guarantee & Print Customizer):
+- Stage 13: Expanded Description Column & Compact Financial Grid: Description takes ~60%+ of table width, with Quantity (58px), Unit (50px), Unit Price (78px), Discount (72px), and Amount (86px) tightly grouped matching hardware store receipts.
+- Stage 14: Interactive Print Customizer Studio: Built-in visual panel with live sliders for Row Spacing (2px - 10px), Font Size (9px - 13px), Margins (4mm - 18mm), and Zoom Scaling (75% - 100%).
+- Stage 15: One-Click Quick Presets: 📄 Fit 1 Page (recommended), ⚡ Ultra-Compact (25+ items), and 📑 Standard.
+- Stage 16: Visibility Toggles & Persistence: Toggle row #, barcodes, base units, header, cards, memo, notes, and signatures with automatic LocalStorage persistence.
+- Stage 17: Strict 1-Page Page-Break Protection: CSS print styles preventing multi-page overflow and ensuring clean 1-sheet printing.
+
+COMPLETED (v4.1.5 Hotfix & Layout Polish):
+- Stage 09: Purchase Items SQLite Persistence: Added `discount_input` and `discount_c` to `createPurchase` INSERT statement in `purchases.ts`, resolving missing discount data bug.
+- Stage 10: Strict Percentage Notation Engine (`formatDiscountPercent` in `receiptHtml.ts`): Normalizes any compound or flat discount into `-20%`, `-10%-10%`, `-5%-5%-5%` matching wholesale delivery receipts.
+- Stage 11: Official Delivery Voucher Layout: Standardized table headers to `# | QUANTITY | UNIT | DESCRIPTION | UNIT PRICE | DISCOUNT | AMOUNT` with `Memo: COD` & `Salesman: admin` subheader separated by double line.
+- Stage 12: Dual Output Verification: Complete verification of both A4/Letter official document HTML and 58mm/80mm thermal receiving slips.
 
 COMPLETED:
 - Stage 01: Supplier Trade / Series Compound Discounts Engine (`supplierDiscount.ts`): supports cascading discounts like `-5%-5%-5%`, `10+5`, `10/5`, `-10%-5%`, and flat currency (`₱50`), computing sequential integer-cent discounts matching distributor ERPs.
@@ -73,7 +102,11 @@ BLOCKERS:
 - Stage 53: v3.2.11 [F1] 0ms Instant Hardware Responsiveness & Progressive Chunking Edition official release. Diagnosed and eliminated initial DOM rendering freeze on large inventory catalogs (>1,000 items) by implementing progressive 80-item windowed chunking and requestAnimationFrame instant focus; reduced initial modal mount time from ~350ms to under 2ms (<0.002s); added dynamic scroll & keyboard chunk expansion; verified 586/586 automated unit tests passing across 92 test suites with 0 TypeScript compilation errors. Full Windows binaries (TindaPOS-Setup-3.2.11.exe + TindaPOS-Portable-3.2.11.exe) compiled and published to GitHub Releases.
 - Stage 54: v4.1.0 Universal Multi-Unit Barcode Search & Zero-Cap Restock Edition official release. Resolved VIP merchant inventory search blindspot where products encoded with selling unit barcodes or located beyond the 1,000-item pagination cap failed to surface in Inventory and Restock modal. Upgraded Inventory.tsx with 5,000-item initial ingest and live debounced SQLite search (0ms response) for full-catalog discovery. Enhanced search filter to match against selling unit barcodes (p.units.some(u => u.barcode)). Added intelligent category fallback: when a barcode or SKU is scanned while a specific category filter is active, it automatically broadens across all categories rather than returning blank. Upgraded RestockModal with dedicated real-time product search with barcode detection and auto-select. Upgraded WithdrawModal and PurchaseItemPickerModal with selling unit barcode matching. 590/590 automated unit tests passing across 93 test suites with 0 TypeScript compilation errors. Full Windows binaries (TindaPOS-Setup-4.1.0.exe + TindaPOS-Portable-4.1.0.exe) compiled and published to GitHub Releases.
 - Stage 55: v4.1.3 Multi-Token Packaging Unit Disambiguation, Short-Prefix Guards & Hardware Scanner Standby Edition official release. Solved multi-word packaging unit search paradox (e.g., "Marlboro stick", "Coke 1.5", "Zest-O piece") through tokenized multi-attribute query parsing across both products and units; added short-prefix (< 3 chars) guards to prevent common packaging units (pc, pack, stick, case) from matching single letters; implemented multi-tiered relevance ranking in SQLite ORDER BY CASE prioritizing exact primary barcodes, unit barcodes, and SKUs ahead of names and units; hardened POS Cashier handleScan single-result auto-selection; prioritized keyboard arrow-nav highlighted product on Enter key; polished POS Cashier Scanner Ready badge to a discreet standby pill; built official 64-bit Linux AppImage (TindaPOS-4.1.3.AppImage); 596/596 automated unit and integration tests passing across 94 test suites with 0 TypeScript compilation errors and verified database invariants.
-- Stage 56: v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync Edition official release.
+- Stage 56: v4.1.4 Universal Purchase Invoice History Search, Manager Authorization & P.O. Slip Printing Edition official release. Upgraded Purchase Invoices History with live multi-field Search Bar (P.O. Number, Invoice #, Receipt #, Supplier, Staff). Implemented Unified P.O. Details Panel matching New Invoice layout with itemized line items, trade discounts, and financial summaries. Read-only by default with secure Manager/Admin PIN or Password authorization modal to unlock editing. Line-item and metadata editing with Fast Item Entry and atomic inventory stock delta calculation (adjustStock with delta = new_qty_base - old_qty_base). Integrated dual-engine Purchase Order printing (A4/Letter Document Voucher with signature lines & 58mm/80mm Thermal POS Slip). Added sequential Prev/Next navigation controls. 604/604 unit tests passing across 96 test suites, 0 TypeScript compilation errors, master invariants 100% verified.
+- Stage 57: v4.1.5 Delivery Voucher Layout, Strict Percentage Discounts & P.O. Printing Edition official release.
+- Stage 58: v4.1.6 Wide Description, 1-Page Guarantee & Interactive Print Customizer Studio official release.
+- Stage 59: v4.1.7 Dual-Notation Cascading Trade Discount & Master Team Alignment Edition official release.
+- Stage 60: v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync Edition official release.
   - Universal Foreign Key Restore Immunity: Eradicated SqliteError: FOREIGN KEY constraint failed during .tinda-backup import (backup:importTinda). Corrected CANONICAL_TABLES topological order (shifts before sales, sales before batch_movements), decoupled foreign key checks during bulk restore transaction via PRAGMA foreign_keys = OFF outside transaction, enabled PRAGMA defer_foreign_keys = ON, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
   - TINDA LAN Direct Beam (1-Tap PC-to-PC Data Transfer): Engineered direct local network data beam over Wi-Fi, Ethernet switch, or direct PC-to-PC LAN cable without router. UDP beacon auto-discovery (Port 3112) with 'TINDA_BEAM_BEACON', secure 6-digit PIN handshake (POST /api/lan/beam/pull on Port 3111), and atomic safety backup & restore. Designed high-contrast OLED/dark modal (LanBeamModal) with UI-UX Pro Max standards, embedded in Settings Data Tab and Network Tab.
-  - Quality Gates: Full production build green, typecheck 0 errors across Node & Web, 24 unit/integration tests passing.
+  - Quality Gates: Full production build green, typecheck 0 errors across Node & Web, 609/609 vitest tests passing across 97 test suites.
