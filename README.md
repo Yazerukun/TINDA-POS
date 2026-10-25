@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v4.1.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
 <img src="https://img.shields.io/badge/Hardware-Thermal_%26_Barcode_Ready-f59e0b?style=for-the-badge" alt="Hardware">
-<img src="https://img.shields.io/badge/Cloud-Cloudflare_D1_Live_Sync-f97316?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloud">
+<img src="https://img.shields.io/badge/Sync-LAN_Direct_Beam_%26_D1-10b981?style=for-the-badge&logo=wifi&logoColor=white" alt="LAN Beam">
 <img src="https://img.shields.io/badge/License-Free_for_Personal_%26_SMB-14b8a6?style=for-the-badge" alt="License">
 
 <br /><br />
@@ -14,12 +14,13 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
+**TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.5_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/TindaPOS-Setup-4.1.5.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.5_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/TindaPOS-Portable-4.1.5.exe)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.8_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-Setup-4.1.8.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.8_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-Portable-4.1.8.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v4.1.8_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-4.1.8.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -30,14 +31,76 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v4.1.5 Full Windows Release)
+## ⚡ Quick Download & Release Assets (v4.1.8 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/TindaPOS-Setup-4.1.5.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.5.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/TindaPOS-Portable-4.1.5.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/latest.yml) | `0.3 KB` | **Updater Manifest** | Electronic update verification signature for auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.5.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.5/SHA256SUMS-v4.1.5.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-Setup-4.1.8.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-Portable-4.1.8.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.8.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/TindaPOS-4.1.8.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.8.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.8/SHA256SUMS-v4.1.8.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## 🌟 What's New in v4.1.8: Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync Edition
+
+### 1. 🛡️ Universal Foreign Key Constraint Immune Restore (`backup:importTinda`)
+- **Permanently Eradicated Foreign Key Errors**: Solved the `SqliteError: FOREIGN KEY constraint failed` exception that occurred when importing `.tinda-backup` files created from different branches, versions, or Web POS Dexie exports.
+- **Strict Topological Table Order**: Updated `CANONICAL_TABLES` restoration sequence to guarantee parent records are always inserted prior to dependent foreign child records (`shifts` before `sales`, `sales` before `sale_items`, `sale_items` before `batch_movements`).
+- **External Constraint Relaxation (`PRAGMA foreign_keys = OFF`)**: Foreign key checks are systematically deactivated outside active SQLite transactions, deferred inside the transaction via `PRAGMA defer_foreign_keys = ON`, and verified via `PRAGMA foreign_key_check` and `PRAGMA integrity_check` before re-enabling in a bulletproof `finally` block.
+- **Web-Backup & Cross-Format Auto-Healing**:
+  - Automatically synthesizes missing columns, generates missing SKUs (`SKU-XXXX`) for web products, safely handles duplicate barcodes by making them unique, normalizes Dexie settings arrays into key-value pairs, and auto-generates missing user password hashes.
+  - Verifies database referential integrity after restore with zero lost sales, items, or inventory records.
+
+---
+
+### 2. ⚡ TINDA LAN Direct Beam (1-Tap PC-to-PC Store Transfer)
+- **Zero USB Flash Drives Required**: Transfer and clone your entire store database (products, sales, stock, customers, utang ledger, suppliers) between two PCs or laptops in under 2 seconds.
+- **Works Over Wi-Fi, Ethernet Switch, or Direct LAN Cable**:
+  - **Same Wi-Fi Router / Hotspot**: Both computers connect to the same store Wi-Fi network.
+  - **Direct LAN Cable (No Router Needed)**: Connect a single standard Ethernet cable directly between the Ethernet ports of both laptops (Auto-MDIX link-local `169.254.x.x` auto-configures instantly).
+- **Auto-Discovery UDP Radar (Port 3112)**: Sender laptop broadcasts UDP discovery beacons every 2 seconds. The receiver's radar scanner detects nearby TINDA POS instances automatically.
+- **Secure 6-Digit One-Time PIN Handshake (Port 3111)**: Sender generates a 15-minute expiring 6-digit PIN. The receiving computer connects via `POST /api/lan/beam/pull` with the PIN, pulls the complete encrypted backup snapshot, creates an automatic safety rollback backup, and imports the store data atomically.
+- **UI-UX Pro Max OLED/Dark Interface**: High-contrast OLED dark modal (`LanBeamModal.tsx`) accessible from **Settings $\rightarrow$ Data Tab** or **Settings $\rightarrow$ Network Tab** with live pulse radar animation, big PIN display, one-click copy, and multi-stage progress tracking.
+
+---
+
+## 📖 Step-by-Step Guide: How to Use TINDA LAN Direct Beam (PC-to-PC Sync)
+
+Whether you are migrating to a new laptop, copying data to a backup PC, or syncing cash registers, follow this quick 4-step guide:
+
+### Method A: Over Wi-Fi (Store Router or Phone Hotspot)
+1. **Connect Both PCs**: Make sure both Laptop A (Source) and Laptop B (Target) are connected to the same Wi-Fi network or mobile hotspot.
+2. **On Laptop A (Sender / May Data)**:
+   - Go to **Settings** $\rightarrow$ Click **Data** (or **Network**) tab.
+   - Click the green **"LAN Direct Beam"** button (or **"⚡ Direct Beam Transfer"**).
+   - Under the **"Send Data (Host)"** tab, click **"Start Beam Host"**.
+   - A **6-digit PIN** will appear on the screen (e.g., `849 201`) alongside your Local IP address.
+3. **On Laptop B (Receiver / Bag-ong PC)**:
+   - Go to **Settings** $\rightarrow$ Click **Data** tab $\rightarrow$ Click **"LAN Direct Beam"**.
+   - Switch to the **"Receive Data (Client)"** tab.
+   - Laptop B's radar scanner will automatically detect Laptop A (e.g. `Ian Store (192.168.1.15)`). Click on it!
+   - Enter the **6-digit PIN** shown on Laptop A.
+   - Click **"Beam & Restore Store Data"**.
+4. **Complete!**:
+   - Laptop B automatically creates a safety rollback backup of its current state, imports all products, sales, inventory, and utang from Laptop A in ~1.5 seconds, and refreshes the application.
+
+---
+
+### Method B: Direct LAN Cable (No Wi-Fi / No Router Needed)
+> 💡 **Tip:** Did you know modern laptops have Auto-MDIX Ethernet? You do not need a special crossover cable or router. Any standard LAN / Ethernet cable plugged directly between the two laptops will work!
+
+1. **Plug the Cable**: Plug one end of a standard LAN cable into Laptop A's Ethernet port and the other end into Laptop B. Wait ~5 seconds for Windows to detect the link-local connection (`169.254.x.x`).
+2. **On Laptop A (Sender)**:
+   - Open TINDA POS $\rightarrow$ **Settings** $\rightarrow$ **LAN Direct Beam** $\rightarrow$ **"Start Beam Host"**.
+   - Note the **6-digit PIN** and the IP address shown (e.g., `169.254.120.45`).
+3. **On Laptop B (Receiver)**:
+   - Open TINDA POS $\rightarrow$ **Settings** $\rightarrow$ **LAN Direct Beam** $\rightarrow$ **Receive Data** tab.
+   - If the auto-scanner surfaces Laptop A, click it. If Windows Firewall restricts UDP broadcasts, simply click **"Manual IP & Port"** and type Laptop A's IP address (e.g. `169.254.120.45`).
+   - Type the **6-digit PIN** $\rightarrow$ Click **"Beam & Restore Store Data"**.
+4. **Done!**: All store records are cloned directly at 1000 Mbps Gigabit Ethernet speed without using the internet or USB drives!
 
 ---
 
