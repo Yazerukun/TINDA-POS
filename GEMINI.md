@@ -17,11 +17,13 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v4.1.9 (Zero-Click Instant Peer Radar & Hybrid Subnet Sweep Edition)
+- **Current Stable Version:** v4.1.10 (Dedicated Port Isolation & Self-Healing LAN Beam Sync Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**
-  1. **Zero-Click Instant Peer Radar & Hybrid Subnet Sweep**: Solved Wi-Fi AP Isolation and UDP drop issues on modern routers. High-speed parallel HTTP subnet sweep (<800ms) on port 3111 across `/24` subnets combined with multi-interface directed UDP broadcast (port 3112). `LanBeamModal` features continuous background radar loop (every 2.5s) that auto-detects and auto-selects sender laptops in 1-2 seconds without manual typing.
+  1. **Dedicated Port Isolation & Socket Hang-Up Eradication**: Fixed `socket hang up` bug where `phoneScannerService`'s HTTPS camera server collided on port 3115 with `lanHubService`. Migrated phone scanner to dedicated ports `3122/3123` and established isolated LAN Hub candidate rotation `[3111, 3117..3121]`.
+  2. **Self-Healing LAN Direct Beam Pull**: `pullBeamData` now features multi-port fallback (`[peerPort, 3111, 3117]`), instantly auto-recovering if an initial port encounters network drop or port remapping.
+  3. **Zero-Click Instant Peer Radar & Hybrid Subnet Sweep**: Solved Wi-Fi AP Isolation and UDP drop issues on modern routers. High-speed parallel HTTP subnet sweep (<700ms) on ports 3111 & 3117 across `/24` subnets combined with multi-interface directed UDP broadcast (port 3112). `LanBeamModal` features continuous background radar loop (every 2.5s) that auto-detects and auto-selects sender laptops in 1-2 seconds without manual typing.
   2. **TINDA LAN Direct Beam (1-Tap PC-to-PC Data Transfer)**: Direct local network data beam over Wi-Fi, Ethernet switch, or direct PC-to-PC LAN cable without router. UDP beacon auto-discovery (Port 3112) with 'TINDA_BEAM_BEACON', secure 6-digit PIN handshake (POST /api/lan/beam/pull on Port 3111), and atomic safety backup & restore. Designed with UI-UX Pro Max standards, embedded in Settings Data Tab and Network Tab.
   3. **Universal Foreign Key Constraint Immune Restore**: Eradicated `SqliteError: FOREIGN KEY constraint failed` during `.tinda-backup` import (`backup:importTinda`). Corrected `CANONICAL_TABLES` topological order, decoupled foreign key checks during bulk restore transaction via `PRAGMA foreign_keys = OFF` outside transaction, enabled `PRAGMA defer_foreign_keys = ON`, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
   3. **[F1] 0ms Instant Hardware Responsiveness**: Progressive 80-item chunk windowing and requestAnimationFrame focus, reducing initial DOM mount time from ~350ms to < 2ms (over 150× faster).

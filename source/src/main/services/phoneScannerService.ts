@@ -20,8 +20,8 @@ export interface PhoneScannerStatus {
 
 let httpServer: http.Server | null = null
 let httpsServer: https.Server | null = null
-let currentPort = 3112
-let currentHttpsPort = 3113
+let currentPort = 3122
+let currentHttpsPort = 3123
 let sessionToken = ''
 let lastClientPing = 0
 let connectedDevice = ''
@@ -1584,7 +1584,7 @@ function generateMobileHtml(): string {
 
     if (!isHttps) {
       httpNotice.style.display = 'flex';
-      const targetHttpsPort = window.__TINDA_CONFIG__?.httpsPort || 3113;
+      const targetHttpsPort = window.__TINDA_CONFIG__?.httpsPort || 3123;
       httpsSwitchBtn.href = 'https://' + window.location.hostname + ':' + targetHttpsPort + '/scanner' + window.location.search;
     }
 
@@ -2558,7 +2558,7 @@ function startHttpsServerHelper(port: number, attempt = 0): void {
   }
 }
 
-export function startPhoneScannerService(preferredPort = 3112, preferredHttpsPort = 3113, attempt = 0): Promise<number> {
+export function startPhoneScannerService(preferredPort = 3122, preferredHttpsPort = 3123, attempt = 0): Promise<number> {
   return new Promise((resolve) => {
     if (httpServer && httpsServer) {
       resolve(currentPort)

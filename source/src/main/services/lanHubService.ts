@@ -101,17 +101,18 @@ export function getLocalSubnetPrefixes(): string[] {
   return Array.from(prefixes)
 }
 
-export async function fastHttpSubnetSweep(timeoutMs = 800): Promise<DiscoveredBeamPeer[]> {
+export async function fastHttpSubnetSweep(timeoutMs = 700): Promise<DiscoveredBeamPeer[]> {
   const prefixes = getLocalSubnetPrefixes()
   const results: DiscoveredBeamPeer[] = []
   const myIp = getLocalIp()
+  const CANDIDATE_PORTS = [3111, 3117]
 
-  const checkHost = (hostIp: string): Promise<DiscoveredBeamPeer | null> => {
+  const checkHostPort = (hostIp: string, port: number): Promise<DiscoveredBeamPeer | null> => {
     return new Promise((resolve) => {
       const req = http.get(
         {
           hostname: hostIp,
-          port: 3111,
+          port,
           path: '/api/lan/status',
           timeout: timeoutMs
         },
@@ -126,11 +127,12 @@ export async function fastHttpSubnetSweep(timeoutMs = 800): Promise<DiscoveredBe
                   const status = json.status || {}
                   const isBeamReady = !!json.isBeamReady || !!status.pairingPin || status.role === 'master'
                   const storeName = json.storeName || status.storeName || 'TINDA Store'
+                  const actualPort = Number(status.port || json.port || port)
                   resolve({
                     ip: hostIp,
-                    port: 3111,
+                    port: actualPort,
                     storeName,
-                    version: json.version || '4.1.9',
+                    version: json.version || '4.1.10',
                     isBeamReady
                   })
                   return
@@ -154,7 +156,9 @@ export async function fastHttpSubnetSweep(timeoutMs = 800): Promise<DiscoveredBe
     for (let i = 1; i <= 254; i++) {
       const targetIp = `${prefix}.${i}`
       if (targetIp === myIp) continue
-      tasks.push(checkHost(targetIp))
+      for (const p of CANDIDATE_PORTS) {
+        tasks.push(checkHostPort(targetIp, p))
+      }
     }
   }
 
@@ -397,7 +401,10 @@ export async function discoverBeamSenders(timeoutMs = 2000): Promise<DiscoveredB
 
 export async function startBeamSender(): Promise<BeamSenderInfo> {
   if (!lanServer) {
-    await startMasterServer(3111)
+    const boundPort = await startMasterServer(0)
+    if (!boundPort || !lanServer) {
+      throw new Error('Failed to bind local LAN server. Ports 3111/3117 are unavailable.')
+    }
   }
   const pin = generatePin()
   let storeName = 'TINDA Store'
@@ -436,76 +443,94 @@ export function getActiveBeamSender(): BeamSenderInfo | null {
 }
 
 export async function pullBeamData(peerIp: string, peerPort: number, pin: string): Promise<{ ok: boolean; counts?: Record<string, number>; error?: string }> {
-  return new Promise((resolve) => {
-    const postData = JSON.stringify({ pin: pin.trim() })
-    const options: http.RequestOptions = {
-      hostname: peerIp,
-      port: peerPort,
-      path: '/api/lan/beam/pull',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(postData)
-      },
-      timeout: 45000
+  // Try peerPort first; if network hangs up or rejects, attempt fallback LAN ports
+  const candidatePorts = Array.from(new Set([peerPort, 3111, 3117]))
+  let lastError = ''
+
+  for (const port of candidatePorts) {
+    const result = await new Promise<{ ok: boolean; counts?: Record<string, number>; error?: string; networkRetry?: boolean }>((resolve) => {
+      const postData = JSON.stringify({ pin: pin.trim() })
+      const options: http.RequestOptions = {
+        hostname: peerIp,
+        port,
+        path: '/api/lan/beam/pull',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData)
+        },
+        timeout: 45000
+      }
+
+      const req = http.request(options, (res) => {
+        let data = ''
+        res.on('data', (chunk) => { data += chunk })
+        res.on('end', async () => {
+          try {
+            if (res.statusCode !== 200) {
+              let errorMsg = 'Failed to pull data from peer PC'
+              try {
+                const errJson = JSON.parse(data)
+                if (errJson.error) errorMsg = errJson.error
+              } catch {}
+              const isAuthError = res.statusCode === 400 || res.statusCode === 401
+              resolve({ ok: false, error: errorMsg, networkRetry: !isAuthError })
+              return
+            }
+
+            const parsed = JSON.parse(data)
+            if (!parsed.ok || !parsed.data) {
+              resolve({ ok: false, error: parsed.error || 'Empty or invalid response from peer PC', networkRetry: false })
+              return
+            }
+
+            // Apply foreign-key safe import with safety backup
+            const { counts } = await importWindowsBackup(getDb(), parsed.data, { safetyBackup: true })
+
+            // Schedule automatic UI restart after data clone
+            setTimeout(() => {
+              try {
+                const { relaunchAfterDataChange } = require('./dataManagementService')
+                relaunchAfterDataChange()
+              } catch {
+                if (typeof app?.relaunch === 'function') {
+                  app.relaunch()
+                  app.exit(0)
+                }
+              }
+            }, 1000)
+
+            resolve({ ok: true, counts })
+          } catch (err) {
+            resolve({ ok: false, error: (err as Error).message, networkRetry: false })
+          }
+        })
+      })
+
+      req.on('error', (err) => {
+        resolve({ ok: false, error: `Network error connecting to ${peerIp}:${port} — ${err.message}`, networkRetry: true })
+      })
+
+      req.on('timeout', () => {
+        req.destroy()
+        resolve({ ok: false, error: `Connection timed out connecting to ${peerIp}:${port}. Check Wi-Fi / LAN connection.`, networkRetry: true })
+      })
+
+      req.write(postData)
+      req.end()
+    })
+
+    if (result.ok) {
+      return { ok: true, counts: result.counts }
     }
 
-    const req = http.request(options, (res) => {
-      let data = ''
-      res.on('data', (chunk) => { data += chunk })
-      res.on('end', async () => {
-        try {
-          if (res.statusCode !== 200) {
-            let errorMsg = 'Failed to pull data from peer PC'
-            try {
-              const errJson = JSON.parse(data)
-              if (errJson.error) errorMsg = errJson.error
-            } catch {}
-            resolve({ ok: false, error: errorMsg })
-            return
-          }
+    lastError = result.error || 'Failed to connect to peer PC'
+    if (!result.networkRetry) {
+      return { ok: false, error: lastError }
+    }
+  }
 
-          const parsed = JSON.parse(data)
-          if (!parsed.ok || !parsed.data) {
-            resolve({ ok: false, error: parsed.error || 'Empty or invalid response from peer PC' })
-            return
-          }
-
-          // Apply foreign-key safe import with safety backup
-          const { counts } = await importWindowsBackup(getDb(), parsed.data, { safetyBackup: true })
-
-          // Schedule automatic UI restart after data clone
-          setTimeout(() => {
-            try {
-              const { relaunchAfterDataChange } = require('./dataManagementService')
-              relaunchAfterDataChange()
-            } catch {
-              if (typeof app?.relaunch === 'function') {
-                app.relaunch()
-                app.exit(0)
-              }
-            }
-          }, 1000)
-
-          resolve({ ok: true, counts })
-        } catch (err) {
-          resolve({ ok: false, error: (err as Error).message })
-        }
-      })
-    })
-
-    req.on('error', (err) => {
-      resolve({ ok: false, error: `Network error connecting to ${peerIp}:${peerPort} — ${err.message}` })
-    })
-
-    req.on('timeout', () => {
-      req.destroy()
-      resolve({ ok: false, error: `Connection timed out connecting to ${peerIp}:${peerPort}. Check Wi-Fi / LAN connection.` })
-    })
-
-    req.write(postData)
-    req.end()
-  })
+  return { ok: false, error: lastError }
 }
 
 export function generatePin(): string {
@@ -944,36 +969,51 @@ export function broadcastLanEvent(event: { type: string; payload: unknown }): vo
   }
 }
 
-export function startMasterServer(port = 3111, attempts = 0): Promise<number> {
+const PREFERRED_LAN_PORTS = [3111, 3117, 3118, 3119, 3120, 3121, 3130, 3131, 3132]
+
+export function startMasterServer(portOrIndex: number = 0, attempts: number = 0): Promise<number> {
   return new Promise((resolve) => {
     if (lanServer) {
       resolve(currentPort)
       return
     }
 
-    if (attempts >= 5) {
-      console.warn('[LAN Hub] Could not bind Master Server after 5 attempts; LAN Hub disabled.')
+    let targetPort = 3111
+    if (portOrIndex < PREFERRED_LAN_PORTS.length) {
+      targetPort = PREFERRED_LAN_PORTS[portOrIndex] ?? 3111
+    } else if (portOrIndex > 1024) {
+      targetPort = portOrIndex
+    } else {
+      console.warn('[LAN Hub] Could not bind Master Server on candidate ports; LAN Hub disabled.')
       resolve(0)
       return
     }
 
-    currentPort = port
-    lanServer = http.createServer(handleLanRequest)
+    if (attempts >= PREFERRED_LAN_PORTS.length) {
+      console.warn('[LAN Hub] Could not bind Master Server after port rotation; LAN Hub disabled.')
+      resolve(0)
+      return
+    }
 
-    lanServer.on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'EADDRINUSE' && attempts < 5) {
-        try { lanServer?.close() } catch { /* ignore */ }
+    const srv = http.createServer(handleLanRequest)
+
+    srv.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        try { srv.close() } catch { /* ignore */ }
         lanServer = null
-        void startMasterServer(currentPort + 1, attempts + 1).then(resolve)
+        const nextIndex = portOrIndex > 1024 ? 1 : portOrIndex + 1
+        void startMasterServer(nextIndex, attempts + 1).then(resolve)
       } else {
         console.error('[LAN Hub] Master Server error:', err.message)
-        try { lanServer?.close() } catch { /* ignore */ }
+        try { srv.close() } catch { /* ignore */ }
         lanServer = null
         resolve(0)
       }
     })
 
-    lanServer.listen(currentPort, '0.0.0.0', () => {
+    srv.listen(targetPort, '0.0.0.0', () => {
+      currentPort = targetPort
+      lanServer = srv
       console.log(`[LAN Hub] Master Server listening on 0.0.0.0:${currentPort}`)
       if (!activePairingPin) generatePin()
       startUdpBeacon(currentPort)
