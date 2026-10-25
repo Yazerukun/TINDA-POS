@@ -17,15 +17,17 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v4.1.11 (Untruncated Inventory & Dashboard KPI Accuracy Release)
+- **Current Stable Version:** v4.1.12 (Pure Full Build Mandate & Direct NSIS Auto-Updater Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**
-  1. **Untruncated Inventory & Dashboard KPI Accuracy**: Removed legacy `.slice(0, 10)` artificial cap on Dashboard `alertProducts` so `out` and `low` counts accurately reflect the entire inventory (e.g. 15+ low stock items appear as 15 low, exactly matching the Inventory filter).
-  2. **Inventory Search Limit Raised**: Elevated `products.search` limit on Dashboard from 1,000 to 5,000 (matching `Inventory.tsx`), guaranteeing zero truncation for stores with large product catalogs.
-  3. **Scrollable Alert Overview & One-Tap Inventory Nav**: Redesigned the "LOW / OUT OF STOCK" card with clean scrollable view (`max-h-80 overflow-y-auto`) and one-tap "View in Inventory" button so store owners can inspect every item needing reorder.
-  4. **Telemetry Limit Expansion**: Raised low stock query limit in `storeTelemetry.ts` from 20 to 5,000 to prevent AI Advisor and Notification Bell truncation.
-  5. **Quick Launch Bar Real-Time Badge**: Quick Launch Inventory action button displays real-time un-truncated stock status (`{out} Out · {low} Low`).
+  1. **Pure Full Build Mandate**: Eradicated patch fallbacks in `updateTransport.ts`. Set `hasPatch: false` across redirect fallbacks, ensuring all client nodes download 100% full binaries (`TindaPOS-Setup-4.1.12.exe` / `TindaPOS-Portable-4.1.12.exe` / `TindaPOS-4.1.12.AppImage`).
+  2. **Interactive UAC Elevation Support in Auto-Updater**: Updated `restartAndInstall()` to invoke `quitAndInstall(false, true)` allowing the NSIS installer to prompt for UAC elevation on Windows machines installed under `C:\Program Files\`, eliminating silent install termination.
+  3. **Untruncated Inventory & Dashboard KPI Accuracy**: Removed legacy `.slice(0, 10)` artificial cap on Dashboard `alertProducts` so `out` and `low` counts accurately reflect the entire inventory (e.g. 15+ low stock items appear as 15 low, exactly matching the Inventory filter).
+  4. **Inventory Search Limit Raised**: Elevated `products.search` limit on Dashboard from 1,000 to 5,000 (matching `Inventory.tsx`), guaranteeing zero truncation for stores with large product catalogs.
+  5. **Scrollable Alert Overview & One-Tap Inventory Nav**: Redesigned the "LOW / OUT OF STOCK" card with clean scrollable view (`max-h-80 overflow-y-auto`) and one-tap "View in Inventory" button so store owners can inspect every item needing reorder.
+  6. **Telemetry Limit Expansion**: Raised low stock query limit in `storeTelemetry.ts` from 20 to 5,000 to prevent AI Advisor and Notification Bell truncation.
+  7. **Quick Launch Bar Real-Time Badge**: Quick Launch Inventory action button displays real-time un-truncated stock status (`{out} Out · {low} Low`).
   2. **TINDA LAN Direct Beam (1-Tap PC-to-PC Data Transfer)**: Direct local network data beam over Wi-Fi, Ethernet switch, or direct PC-to-PC LAN cable without router. UDP beacon auto-discovery (Port 3112) with 'TINDA_BEAM_BEACON', secure 6-digit PIN handshake (POST /api/lan/beam/pull on Port 3111), and atomic safety backup & restore. Designed with UI-UX Pro Max standards, embedded in Settings Data Tab and Network Tab.
   3. **Universal Foreign Key Constraint Immune Restore**: Eradicated `SqliteError: FOREIGN KEY constraint failed` during `.tinda-backup` import (`backup:importTinda`). Corrected `CANONICAL_TABLES` topological order, decoupled foreign key checks during bulk restore transaction via `PRAGMA foreign_keys = OFF` outside transaction, enabled `PRAGMA defer_foreign_keys = ON`, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
   3. **[F1] 0ms Instant Hardware Responsiveness**: Progressive 80-item chunk windowing and requestAnimationFrame focus, reducing initial DOM mount time from ~350ms to < 2ms (over 150× faster).

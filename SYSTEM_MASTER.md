@@ -2137,6 +2137,17 @@
 3. **Quick Launch Badge Sync:** Real-time stock status badge on the Quick Launch Bar displays actual un-truncated counts (`{out} Out · {low} Low`).
 4. **Canonical Verification:** Automated unit tests verify all 17+ low stock items are retained without slicing and query limits remain 5000. 100% test coverage with zero TypeScript compilation errors.
 
+---
+
+## 99. Pure Full Build Mandate & Direct NSIS Auto-Updater (v4.1.12 Spec)
+
+### 99.1 Architecture Principles (Pure Full Build Mandate)
+1. **Zero Patch Invariant:** To prevent client-side update failure across legacy nodes, `updateTransport.ts` strictly points all updater checks to 100% complete binaries (`TindaPOS-Setup-4.1.12.exe`, `TindaPOS-Portable-4.1.12.exe`, `TindaPOS-4.1.12.AppImage`).
+2. **Fabricated Fallback Eradication:** `fetchLatestRedirectFallback()` explicitly returns `hasPatch: false` and `patchAsset: null`. This guarantees the client auto-update state machine never attempts HTTP 404 patch downloads or falls into mixed-state retry loops.
+3. **Interactive UAC Elevation Support:** In `updateTransport.ts`, `restartAndInstall()` invokes `quitAndInstall(false, true)` allowing the NSIS installer to prompt for UAC elevation on Windows machines where the app is installed under `C:\Program Files\`. This eliminates silent installer exits and guarantees successful version upgrades.
+4. **Canonical Verification:** 100% passing tests across unit and integration suites with zero TypeScript compilation errors.
+
+
 
 
 

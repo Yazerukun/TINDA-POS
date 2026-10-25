@@ -1,9 +1,9 @@
-version: 4.1.11
+version: 4.1.12
 files:
-  - url: TindaPOS-4.1.11.AppImage
-    sha512: iRz07eAcl4xW4Cj8Vz55BI+m+24bEECKnyYz6bUWAUfLg1iHgmpQV0Wuwdi8HvEcPpgSOroVHIing7U0NIyGyQ==
-    size: 140903132
-    blockMapSize: 148208
-path: TindaPOS-4.1.11.AppImage
-sha512: iRz07eAcl4xW4Cj8Vz55BI+m+24bEECKnyYz6bUWAUfLg1iHgmpQV0Wuwdi8HvEcPpgSOroVHIing7U0NIyGyQ==
-releaseDate: '2026-10-25T11:26:34.897Z'
+  - url: TindaPOS-4.1.12.AppImage
+    sha512: j+o30p56yq3WdJyK2YI6qiMoGD5XHkqG4pGml2HNSiPvb8QNN9zWPD3nD36HT9msUr9uo7KLy5Q/y3Cg/UVJmg==
+    size: 140903142
+    blockMapSize: 148218
+path: TindaPOS-4.1.12.AppImage
+sha512: j+o30p56yq3WdJyK2YI6qiMoGD5XHkqG4pGml2HNSiPvb8QNN9zWPD3nD36HT9msUr9uo7KLy5Q/y3Cg/UVJmg==
+releaseDate: '2026-10-25T12:10:14.989Z'
