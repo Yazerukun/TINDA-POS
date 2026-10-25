@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v4.1.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.10-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -14,13 +14,13 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
+**Dedicated Port Isolation · Self-Healing LAN Beam Sync · Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.9_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-Setup-4.1.9.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.9_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-Portable-4.1.9.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v4.1.9_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-4.1.9.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.10_NSIS_(~111.4MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-Setup-4.1.10.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.10_Standalone_(~110.5MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-Portable-4.1.10.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v4.1.10_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-4.1.10.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,16 +31,30 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v4.1.9 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v4.1.10 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-Setup-4.1.9.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-Portable-4.1.9.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-4.1.9.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/TindaPOS-4.1.9.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.9.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.9/SHA256SUMS-v4.1.9.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.10.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-Setup-4.1.10.exe) | `~111.4 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.10.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-Portable-4.1.10.exe) | `~110.5 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.10.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/TindaPOS-4.1.10.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.10.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.10/SHA256SUMS-v4.1.10.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+
+---
+
+## 🌟 What's New in v4.1.10: Dedicated Port Isolation & Self-Healing LAN Beam Sync Edition
+
+### 1. 🛡️ Port Collision & Socket Hang-Up Eradication
+- **Permanent Port Separation**: Moved `phoneScannerService` permanently to dedicated ports `3122` (HTTP) and `3123` (HTTPS SSL).
+- **Socket Hang-Up Eliminated**: Completely eradicated the TLS socket hang-up error caused by plain HTTP requests inadvertently hitting the HTTPS camera port.
+- **Deterministic Port Rotation**: Upgraded `lanHubService` with candidate ports `[3111, 3117..3121]`, ensuring clean binding even on machines with existing background developer services.
+- **Port State Invariant**: `currentPort` updates strictly upon verified `listen()` success, guaranteeing `startBeamSender()` never broadcasts stale or unbound ports.
+
+### 2. ⚡ Self-Healing Multi-Port Beam Pull
+- **Automatic Fallback Retry (`pullBeamData`)**: If an initial peer connection encounters a network drop, timeout, or port mismatch, it automatically retries across alternative candidate ports (`[peerPort, 3111, 3117]`) before surfacing an error.
+- **Parallel Subnet Sweep**: `fastHttpSubnetSweep` scans candidate ports `[3111, 3117]` in parallel, auto-detecting the actual server port.
 
 ---
 

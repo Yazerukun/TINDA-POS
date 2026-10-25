@@ -1,13 +1,19 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.9 (ZERO-CLICK INSTANT PEER RADAR & HYBRID SUBNET SWEEP EDITION)
+- v4.1.10 (DEDICATED PORT ISOLATION & SELF-HEALING LAN BEAM SYNC EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep Edition
+- Production Release Ready — v4.1.10 Dedicated Port Isolation & Self-Healing LAN Beam Sync Edition
+
+COMPLETED (v4.1.10 Dedicated Port Isolation & Self-Healing LAN Beam Sync):
+- Stage 28: Dedicated Port Range Isolation: Migrated `phoneScannerService` from ports 3112/3113 to dedicated isolated ports 3122 (HTTP) and 3123 (HTTPS SSL). Eradicated `socket hang up` bug caused by plain HTTP requests hitting the HTTPS camera port.
+- Stage 29: Deterministic Port Rotation & Binding Guard: Upgraded `startMasterServer` with `PREFERRED_LAN_PORTS = [3111, 3117, 3118, 3119, 3120, 3121, 3130]`. `currentPort` only updates upon verified `listen()` success, guaranteeing `startBeamSender()` never broadcasts stale or unbound ports.
+- Stage 30: Self-Healing Multi-Port Beam Pull: Enhanced `pullBeamData` to automatically fall back to alternative LAN ports (`[peerPort, 3111, 3117]`) if an initial port encounters network drop or port remapping.
+- Stage 31: Multi-Port Subnet Sweep: Updated `fastHttpSubnetSweep` to sweep candidate ports `[3111, 3117]` in parallel, auto-detecting actual server ports.
 
 COMPLETED (v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep):
 - Stage 24: Hybrid Dual-Engine Peer Discovery: Solved Wi-Fi AP Isolation and UDP packet drops on modern routers and public profiles. Engineered fast parallel HTTP subnet sweep (<800ms) across all active `/24` subnets (`192.168.x.1..254`) on port 3111, querying `/api/lan/status` via unicast TCP.

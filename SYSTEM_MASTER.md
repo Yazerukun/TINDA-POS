@@ -2105,6 +2105,24 @@
 3. **Pulsating Radar HUD:** Displays an active emerald/teal pulsating radar badge ("Zero-Click Radar") and informs the cashier that the network is actively monitoring for Sender PCs.
 4. **Canonical Verification:** 609+ automated tests passing across 99 test suites with 0 TypeScript compilation errors and verified database invariants.
 
+---
+
+## 97. Dedicated Port Range Isolation & Self-Healing LAN Beam Sync (v4.1.10 Spec)
+
+### 97.1 Socket Hang-Up Root Cause & Protocol Collision Eradication
+1. **Root Cause Analysis:** On merchant machines running background developer services, AgentMemory, or multiple terminals, ports `3111-3113` are occupied. `phoneScannerService` previously started on preferred ports `3112/3113` and bumped up to `3114` (HTTP) and `3115` (HTTPS SSL). When `lanHubService` attempted to start, it exceeded its 5-attempt ceiling (`3111..3115`), leaving `lanServer` unbound while stale variable `currentPort = 3115` was broadcast to peers.
+2. **Protocol Mismatch Elimination:** When the receiving terminal connected via plain HTTP `POST /api/lan/beam/pull` to port `3115`, it was received by `phoneScanner`'s TLS socket. The SSL engine rejected the non-TLS handshake, triggering `ECONNRESET / socket hang up`.
+3. **Dedicated Port Architecture Invariant:**
+   - `phoneScannerService` is permanently isolated to dedicated range `3122` (HTTP) and `3123` (HTTPS).
+   - `lanHubService` rotates exclusively across `PREFERRED_LAN_PORTS = [3111, 3117, 3118, 3119, 3120, 3121, 3130]`.
+   - `currentPort` updates strictly inside verified `srv.listen()` callbacks, ensuring stale or unbound ports are never broadcast.
+
+### 97.2 Self-Healing Multi-Port Beam Pull & Subnet Sweep
+1. **Multi-Port Failover Pull (`pullBeamData`):** Automatically attempts peer connection across `[peerPort, 3111, 3117]`. If an initial port experiences network drop or port collision, it fails over immediately without aborting the transfer or prompting the user.
+2. **Multi-Port Subnet Sweep (`fastHttpSubnetSweep`):** Sweeps candidate ports `[3111, 3117]` in parallel across all `/24` subnets, extracting the actual running server port dynamically.
+3. **Canonical Verification:** 624 automated unit and integration tests passing across 99 test suites with 0 TypeScript compilation errors and verified database invariants.
+
+
 
 
 
