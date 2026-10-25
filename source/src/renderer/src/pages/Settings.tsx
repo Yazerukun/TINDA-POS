@@ -39,7 +39,8 @@ import {
   Sliders,
   QrCode,
   Smartphone,
-  Share2
+  Share2,
+  Wifi
 } from 'lucide-react'
 import { BrowserQRCodeSvgWriter } from '@zxing/library'
 import type { BackupInfo, User, LicenseStatus } from '@shared/types'
@@ -47,6 +48,7 @@ import type { DataLocationStatus, PrinterChoice } from '@shared/ipc'
 import { printerPick, printerStatusLabel, autoDetectLabelPrinter } from '@shared/printer'
 import { Modal } from '../components/ui/Modal'
 import { AppLogo } from '../components/AppLogo'
+import { LanBeamModal } from '../components/LanBeamModal'
 import { useSettings } from '../stores/settings'
 import { PrinterStudioModal } from '../components/PrinterStudioModal'
 import { saveStoredPrinterCustomization } from '../utils/printerCustomization'
@@ -503,6 +505,7 @@ function DataTab(): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [newStoreOpen, setNewStoreOpen] = useState(false)
   const [portableOpen, setPortableOpen] = useState(false)
+  const [beamModalOpen, setBeamModalOpen] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const [newStoreConfirmation, setNewStoreConfirmation] = useState('')
   const [resetting, setResetting] = useState(false)
@@ -589,6 +592,7 @@ function DataTab(): React.JSX.Element {
         <div className="mt-4 flex flex-wrap gap-2">
           <button onClick={() => void backupNow()} className="btn-primary flex items-center gap-2 text-xs"><Save className="h-3.5 w-3.5" /> Back Up Now</button>
           <button onClick={() => void showRestore()} className="btn-ghost flex items-center gap-2 text-xs"><RotateCcw className="h-3.5 w-3.5" /> Restore from Backup</button>
+          <button onClick={() => setBeamModalOpen(true)} className="btn-accent flex items-center gap-2 text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold shadow-md shadow-emerald-950/40"><Wifi className="h-3.5 w-3.5" /> LAN Beam (Wi-Fi / Cable Transfer)</button>
           <button onClick={() => void window.api.backup.openFolder()} className="btn-ghost flex items-center gap-2 text-xs"><FolderOpen className="h-3.5 w-3.5" /> Open Backup Folder</button>
           <button onClick={() => void exportUniversal()} className="btn-ghost flex items-center gap-2 text-xs"><HardDriveDownload className="h-3.5 w-3.5" /> Export Universal Backup</button>
           <button onClick={() => void importUniversal()} className="btn-ghost flex items-center gap-2 text-xs"><Download className="h-3.5 w-3.5" /> Import Universal Backup</button>
@@ -637,6 +641,7 @@ function DataTab(): React.JSX.Element {
           {backups.map((backup) => <button key={backup.filename} onClick={() => void restore(backup)} className="flex w-full items-center justify-between rounded-lg border border-ink-line p-3 text-left hover:border-brand-500/50"><span className="font-mono text-xs text-slate-300">{backup.filename}</span><RotateCcw className="h-4 w-4 text-brand-400" /></button>)}
         </div>
       </Modal>}
+      <LanBeamModal isOpen={beamModalOpen} onClose={() => setBeamModalOpen(false)} />
     </div>
   )
 }

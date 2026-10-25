@@ -556,6 +556,12 @@ export interface TindaApi {
     testVps: (url: string, token: string) => Promise<{ ok: boolean; message: string }>
     triggerVpsSync: () => Promise<{ ok: boolean; syncedCount: number; message: string }>
     discover: () => Promise<import('@shared/types').DiscoveredMaster[]>
+    startBeam: () => Promise<import('@shared/types').BeamSenderInfo>
+    stopBeam: () => Promise<void>
+    getActiveBeam: () => Promise<import('@shared/types').BeamSenderInfo | null>
+    discoverBeamPeers: () => Promise<import('@shared/types').DiscoveredBeamPeer[]>
+    pullBeamData: (peerIp: string, peerPort: number, pin: string) =>
+      Promise<{ ok: boolean; counts?: Record<string, number>; error?: string }>
     onStatus: (cb: (status: import('@shared/types').LanStatus) => void) => () => void
   }
   license: {

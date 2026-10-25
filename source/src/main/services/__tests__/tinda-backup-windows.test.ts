@@ -56,4 +56,62 @@ describe('tinda-backup windows adapter', () => {
     file.checksum = 'bad'
     await expect(importWindowsBackup(db, JSON.stringify(file), { safetyBackup: false })).rejects.toThrow(/integrity|checksum|Invalid/i)
   })
+
+  it('restores complex store data with interdependent foreign keys without FK error', async () => {
+    // Populate interconnected entities
+    db.prepare("INSERT INTO shifts(user_id, status) VALUES (1, 'OPENED')").run()
+    db.prepare("INSERT INTO customers(full_name) VALUES ('Juan Dela Cruz')").run()
+    db.prepare(`
+      INSERT INTO sales(transaction_no, user_id, customer_id, shift_id, total_c)
+      VALUES ('TX-001', 1, 1, 1, 2000)
+    `).run()
+    db.prepare(`
+      INSERT INTO sale_items(sale_id, product_id, product_name, unit_name, qty, qty_base, unit_price_c, subtotal_c)
+      VALUES (1, 1, 'Coke', 'bottle', 1, 1, 2000, 2000)
+    `).run()
+    db.prepare(`
+      INSERT INTO stock_batches(product_id, label, quantity)
+      VALUES (1, 'BATCH-01', 9)
+    `).run()
+    db.prepare(`
+      INSERT INTO inventory_movements(product_id, quantity_before, quantity_change, quantity_after, movement_type)
+      VALUES (1, 10, -1, 9, 'SALE')
+    `).run()
+    db.prepare(`
+      INSERT INTO batch_movements(batch_id, movement_id, sale_item_id, quantity_change)
+      VALUES (1, 1, 1, -1)
+    `).run()
+
+    // Export complete snapshot
+    const backupJson = await exportWindowsBackup(db, '4.1.3')
+
+    // Wipe test db or create a brand new target db
+    const targetDb = new Database(':memory:')
+    targetDb.pragma('foreign_keys = ON')
+    runMigrations(targetDb)
+
+    // Restore should succeed completely without FOREIGN KEY constraint failed error
+    const { counts } = await importWindowsBackup(targetDb, backupJson, { safetyBackup: false })
+    expect(counts.sales).toBe(1)
+    expect(counts.shifts).toBe(1)
+    expect(counts.sale_items).toBe(1)
+    expect(counts.batch_movements).toBe(1)
+    expect(targetDb.prepare('SELECT COUNT(*) AS c FROM sales').get()).toEqual({ c: 1 })
+    expect(targetDb.prepare('SELECT COUNT(*) AS c FROM shifts').get()).toEqual({ c: 1 })
+  })
+
+  it('imports real-world web format backup file seamlessly', async () => {
+    const fs = await import('node:fs')
+    const samplePath = '/home/ian/Downloads/tinda-backup-2026-10-11.tinda-backup'
+    if (fs.existsSync(samplePath)) {
+      const text = fs.readFileSync(samplePath, 'utf8')
+      const targetDb = new Database(':memory:')
+      targetDb.pragma('foreign_keys = ON')
+      runMigrations(targetDb)
+
+      const { counts } = await importWindowsBackup(targetDb, text, { safetyBackup: false })
+      expect(counts.products).toBeGreaterThan(0)
+      expect(counts.categories).toBeGreaterThan(0)
+    }
+  })
 })

@@ -647,6 +647,22 @@ export interface DiscoveredMaster {
   version: string
 }
 
+export interface BeamSenderInfo {
+  pin: string
+  ip: string
+  port: number
+  storeName: string
+  expiresAt: number
+}
+
+export interface DiscoveredBeamPeer {
+  ip: string
+  port: number
+  storeName: string
+  version: string
+  isBeamReady: boolean
+}
+
 export interface InventoryChangedEvent {
   reason: 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'ADJUSTMENT' | 'CSV_IMPORT' | 'PURCHASE' | 'EXCHANGE'
   product_ids: number[]

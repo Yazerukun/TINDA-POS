@@ -24,7 +24,36 @@ export function validateBackupFile(file: TindaBackupFile): ValidationResult {
     fail('future-schema', `Backup uses schema ${file.manifest.source.schemaVersion}, newer than supported ${SCHEMA_VERSION}.`)
 
   if (!isPlainObject(file.data)) { fail('invalid', 'Missing data.'); return { ok: false, issues } }
-  if (!Array.isArray(file.data.tables)) { fail('invalid', 'data.tables must be an array.'); return { ok: false, issues } }
+  if (!Array.isArray(file.data.tables)) {
+    // Gracefully normalize web and legacy formats where tables were top-level array properties on data
+    const rawData = file.data as Record<string, unknown>
+    const normalizedTables: { name: string; rows: Record<string, unknown>[] }[] = []
+    for (const [key, val] of Object.entries(rawData)) {
+      if (key === 'settings' || key === 'tables') continue
+      if (Array.isArray(val)) {
+        const canonicalName = key === 'transactions' ? 'sales' : key
+        if (CANONICAL_TABLES.includes(canonicalName as never)) {
+          normalizedTables.push({ name: canonicalName, rows: val })
+        }
+      }
+    }
+    if (normalizedTables.length > 0) {
+      file.data.tables = normalizedTables
+    } else {
+      fail('invalid', 'data.tables must be an array.'); return { ok: false, issues }
+    }
+  }
+  if (Array.isArray(file.data.settings)) {
+    // Normalize web format array of { key, value } entries into an object map
+    const convertedSettings: Record<string, unknown> = {}
+    for (const item of file.data.settings as { key: string; value: unknown }[]) {
+      if (item && typeof item.key === 'string') {
+        convertedSettings[item.key] = item.value
+      }
+    }
+    file.data.settings = convertedSettings
+  }
+
   if (file.data.settings !== null && !isPlainObject(file.data.settings))
     fail('invalid', 'data.settings must be an object or null.')
 
@@ -53,13 +82,17 @@ export function validateBackupFile(file: TindaBackupFile): ValidationResult {
     }
   }
 
-  if (typeof file.checksum !== 'string' || file.checksum.length === 0) {
+  const isWebOrLegacy = file.manifest?.source?.platform === 'web' || !file.checksum
+  if (!isWebOrLegacy && (typeof file.checksum !== 'string' || file.checksum.length === 0)) {
     fail('bad-checksum', 'Missing checksum.')
   }
   return { ok: issues.length === 0, issues }
 }
 
 export async function verifyChecksum(file: TindaBackupFile): Promise<boolean> {
+  if (file.manifest?.source?.platform === 'web' || !file.checksum || file.checksum === 'web-unhashed') {
+    return true
+  }
   return file.checksum === (await computeChecksum(file.data))
 }
 

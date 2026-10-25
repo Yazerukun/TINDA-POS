@@ -369,6 +369,12 @@ const api: TindaApi = {
     testVps: (url, token) => invoke<{ ok: boolean; message: string }>('lan:testVps', url, token),
     triggerVpsSync: () => invoke<{ ok: boolean; syncedCount: number; message: string }>('lan:triggerVpsSync'),
     discover: () => invoke<import('@shared/types').DiscoveredMaster[]>('lan:discover'),
+    startBeam: () => invoke<import('@shared/types').BeamSenderInfo>('lan:startBeam'),
+    stopBeam: () => invoke<void>('lan:stopBeam'),
+    getActiveBeam: () => invoke<import('@shared/types').BeamSenderInfo | null>('lan:getActiveBeam'),
+    discoverBeamPeers: () => invoke<import('@shared/types').DiscoveredBeamPeer[]>('lan:discoverBeamPeers'),
+    pullBeamData: (peerIp: string, peerPort: number, pin: string) =>
+      invoke<{ ok: boolean; counts?: Record<string, number>; error?: string }>('lan:pullBeamData', peerIp, peerPort, pin),
     onStatus: (cb) => {
       const listener = (_e: IpcRendererEvent, data: import('@shared/types').LanStatus): void => cb(data)
       ipcRenderer.on('lan:status', listener)

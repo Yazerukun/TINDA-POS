@@ -1428,6 +1428,20 @@ handle('lan:triggerVpsSync', () => {
   sessionSvc.requirePermission('settings:manage')
   return lanHubSvc.triggerVpsSync()
 })
+handle('lan:startBeam', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.startBeamSender()
+})
+handle('lan:stopBeam', () => {
+  sessionSvc.requirePermission('settings:manage')
+  return lanHubSvc.stopBeamSender()
+})
+handle('lan:getActiveBeam', () => lanHubSvc.getActiveBeamSender())
+handle('lan:discoverBeamPeers', () => lanHubSvc.discoverBeamSenders())
+handle('lan:pullBeamData', (_e: IpcMainInvokeEvent, peerIp: string, peerPort: number, pin: string) => {
+  sessionSvc.requirePermission('backup:manage')
+  return lanHubSvc.pullBeamData(peerIp, peerPort, pin)
+})
 
 // ---- Machine-Locked VIP Licensing ----
 handle('license:getStatus', () => licenseService.getStatus())

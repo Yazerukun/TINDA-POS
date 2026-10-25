@@ -15,6 +15,7 @@ import {
   HardDrive
 } from 'lucide-react'
 import type { LanStatus, LanRole } from '@shared/types'
+import { LanBeamModal } from './LanBeamModal'
 
 export function NetworkSettingsTab(): React.JSX.Element {
   const [status, setStatus] = useState<LanStatus | null>(null)
@@ -22,6 +23,7 @@ export function NetworkSettingsTab(): React.JSX.Element {
   const [savingMode, setSavingMode] = useState(false)
   const [copied, setCopied] = useState(false)
   const [pinCopied, setPinCopied] = useState(false)
+  const [beamOpen, setBeamOpen] = useState(false)
 
   // Satellite configuration inputs
   const [masterIp, setMasterIp] = useState('')
@@ -195,6 +197,35 @@ export function NetworkSettingsTab(): React.JSX.Element {
               Run multiple checkout cashiers on one shared database (100% offline) or mirror sales to your personal VPS.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* LAN Direct Beam Card */}
+      <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/20 to-teal-950/20 p-5 shadow-lg shadow-emerald-950/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+              <Wifi className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+                LAN Direct Beam (Instant PC-to-PC Transfer)
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Wi-Fi &amp; Cable
+                </span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Send or receive the entire store database between two laptops on the same Wi-Fi or connected with a single LAN cable. Zero USB flash drives needed.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setBeamOpen(true)}
+            className="btn-primary shrink-0 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-950/50"
+          >
+            <Radio className="h-4 w-4" />
+            <span>Open LAN Beam</span>
+          </button>
         </div>
       </div>
 
@@ -596,6 +627,7 @@ export function NetworkSettingsTab(): React.JSX.Element {
           </div>
         )}
       </div>
+      <LanBeamModal isOpen={beamOpen} onClose={() => setBeamOpen(false)} />
     </div>
   )
 }

@@ -3,16 +3,18 @@ import http from 'node:http'
 import crypto from 'node:crypto'
 import os from 'node:os'
 import dgram from 'node:dgram'
-import { BrowserWindow, powerSaveBlocker } from 'electron'
-import type { LanRole, LanStatus, LanDevice, StoreSettings, InventoryChangedEvent, DiscoveredMaster } from '@shared/types'
+import { app, BrowserWindow, powerSaveBlocker } from 'electron'
+import type { LanRole, LanStatus, LanDevice, StoreSettings, InventoryChangedEvent, DiscoveredMaster, BeamSenderInfo, DiscoveredBeamPeer } from '@shared/types'
 import { getSettings, updateSettings } from '../repositories/settings'
 import { getDb } from '../database/connection'
+import { exportWindowsBackup, importWindowsBackup } from './tindaBackupWindows'
 
 let lanServer: http.Server | null = null
 let currentPort = 3111
 let activePairingPin = ''
 let pairingPinExpiry = 0
 let serverSecret = crypto.randomBytes(32).toString('hex')
+let activeBeamSender: BeamSenderInfo | null = null
 const pairedClients = new Map<string, LanDevice & { token: string }>()
 const sseConnections = new Set<http.ServerResponse>()
 
@@ -71,11 +73,12 @@ export function startUdpBeacon(port: number): void {
         try { storeName = getSettings(getDb()).store_name || storeName } catch {}
         const payload = Buffer.from(
           JSON.stringify({
-            cmd: 'TINDA_BEACON',
+            cmd: activeBeamSender ? 'TINDA_BEAM_BEACON' : 'TINDA_BEACON',
             storeName,
             ip: getLocalIp(),
             port,
-            version: '2.2.2'
+            version: '4.1.7',
+            isBeamReady: activeBeamSender !== null
           })
         )
         socket.send(payload, 0, payload.length, UDP_BEACON_PORT, '255.255.255.255')
@@ -112,7 +115,7 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
       socket.on('message', (msg, rinfo) => {
         try {
           const parsed = JSON.parse(msg.toString())
-          if (parsed && parsed.cmd === 'TINDA_BEACON') {
+          if (parsed && (parsed.cmd === 'TINDA_BEACON' || parsed.cmd === 'TINDA_BEAM_BEACON')) {
             const ip = parsed.ip || rinfo.address
             const port = parsed.port || 3111
             const key = `${ip}:${port}`
@@ -120,7 +123,7 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
               ip,
               port,
               storeName: parsed.storeName || 'TINDA Store',
-              version: parsed.version || '2.2.2'
+              version: parsed.version || '4.1.7'
             })
           }
         } catch {}
@@ -130,7 +133,7 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
         // Suppress transient port collisions
       })
 
-      socket.bind(UDP_BEACON_PORT, '0.0.0.0', () => {
+      socket.bind(0, '0.0.0.0', () => {
         try {
           socket?.setBroadcast(true)
           const probe = Buffer.from(JSON.stringify({ cmd: 'TINDA_PROBE' }))
@@ -145,6 +148,162 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
       try { socket?.close() } catch {}
       resolve(Array.from(discovered.values()))
     }, timeoutMs)
+  })
+}
+
+export async function discoverBeamSenders(timeoutMs = 2500): Promise<DiscoveredBeamPeer[]> {
+  return new Promise((resolve) => {
+    const discovered = new Map<string, DiscoveredBeamPeer>()
+    let socket: dgram.Socket | null = null
+
+    try {
+      socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+      socket.on('message', (msg, rinfo) => {
+        try {
+          const parsed = JSON.parse(msg.toString())
+          if (parsed && (parsed.cmd === 'TINDA_BEACON' || parsed.cmd === 'TINDA_BEAM_BEACON')) {
+            const ip = parsed.ip || rinfo.address
+            const port = parsed.port || 3111
+            const key = `${ip}:${port}`
+            discovered.set(key, {
+              ip,
+              port,
+              storeName: parsed.storeName || 'TINDA Store',
+              version: parsed.version || '4.1.7',
+              isBeamReady: !!parsed.isBeamReady
+            })
+          }
+        } catch {}
+      })
+
+      socket.on('error', () => {
+        // Suppress transient port collisions
+      })
+
+      socket.bind(0, '0.0.0.0', () => {
+        try {
+          socket?.setBroadcast(true)
+          const probe = Buffer.from(JSON.stringify({ cmd: 'TINDA_BEAM_PROBE' }))
+          socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, '255.255.255.255')
+        } catch {}
+      })
+    } catch {
+      // Fallback
+    }
+
+    setTimeout(() => {
+      try { socket?.close() } catch {}
+      resolve(Array.from(discovered.values()))
+    }, timeoutMs)
+  })
+}
+
+export async function startBeamSender(): Promise<BeamSenderInfo> {
+  if (!lanServer) {
+    await startMasterServer(3111)
+  }
+  const pin = generatePin()
+  let storeName = 'TINDA Store'
+  try { storeName = getSettings(getDb()).store_name || storeName } catch {}
+
+  activeBeamSender = {
+    pin,
+    ip: getLocalIp(),
+    port: currentPort,
+    storeName,
+    expiresAt: pairingPinExpiry
+  }
+  notifyStatus()
+  return activeBeamSender
+}
+
+export function stopBeamSender(): void {
+  activeBeamSender = null
+  const currentRole = getLanStatus().role
+  if (currentRole === 'standalone') {
+    stopMasterServer()
+  } else {
+    notifyStatus()
+  }
+}
+
+export function getActiveBeamSender(): BeamSenderInfo | null {
+  if (activeBeamSender && Date.now() > activeBeamSender.expiresAt) {
+    activeBeamSender = null
+  }
+  return activeBeamSender
+}
+
+export async function pullBeamData(peerIp: string, peerPort: number, pin: string): Promise<{ ok: boolean; counts?: Record<string, number>; error?: string }> {
+  return new Promise((resolve) => {
+    const postData = JSON.stringify({ pin: pin.trim() })
+    const options: http.RequestOptions = {
+      hostname: peerIp,
+      port: peerPort,
+      path: '/api/lan/beam/pull',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      },
+      timeout: 45000
+    }
+
+    const req = http.request(options, (res) => {
+      let data = ''
+      res.on('data', (chunk) => { data += chunk })
+      res.on('end', async () => {
+        try {
+          if (res.statusCode !== 200) {
+            let errorMsg = 'Failed to pull data from peer PC'
+            try {
+              const errJson = JSON.parse(data)
+              if (errJson.error) errorMsg = errJson.error
+            } catch {}
+            resolve({ ok: false, error: errorMsg })
+            return
+          }
+
+          const parsed = JSON.parse(data)
+          if (!parsed.ok || !parsed.data) {
+            resolve({ ok: false, error: parsed.error || 'Empty or invalid response from peer PC' })
+            return
+          }
+
+          // Apply foreign-key safe import with safety backup
+          const { counts } = await importWindowsBackup(getDb(), parsed.data, { safetyBackup: true })
+
+          // Schedule automatic UI restart after data clone
+          setTimeout(() => {
+            try {
+              const { relaunchAfterDataChange } = require('./dataManagementService')
+              relaunchAfterDataChange()
+            } catch {
+              if (typeof app?.relaunch === 'function') {
+                app.relaunch()
+                app.exit(0)
+              }
+            }
+          }, 1000)
+
+          resolve({ ok: true, counts })
+        } catch (err) {
+          resolve({ ok: false, error: (err as Error).message })
+        }
+      })
+    })
+
+    req.on('error', (err) => {
+      resolve({ ok: false, error: `Network error connecting to ${peerIp}:${peerPort} — ${err.message}` })
+    })
+
+    req.on('timeout', () => {
+      req.destroy()
+      resolve({ ok: false, error: `Connection timed out connecting to ${peerIp}:${peerPort}. Check Wi-Fi / LAN connection.` })
+    })
+
+    req.write(postData)
+    req.end()
   })
 }
 
@@ -453,6 +612,35 @@ function handleLanRequest(req: http.IncomingMessage, res: http.ServerResponse): 
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ ok: false, error: 'Bad request: ' + (err as Error).message }))
+      }
+    })
+    return
+  }
+
+  // 2b. LAN Direct Beam: Authorized Database Snapshot Pull
+  if (pathname === '/api/lan/beam/pull' && req.method === 'POST') {
+    let body = ''
+    req.on('data', (chunk) => { body += chunk })
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body)
+        const { pin } = payload
+        if (!pin || pin.trim() !== activePairingPin || Date.now() > pairingPinExpiry) {
+          res.writeHead(401, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ ok: false, error: 'Invalid or expired 6-digit PIN. Check the Sender PC screen.' }))
+          return
+        }
+
+        const appVersion = typeof app?.getVersion === 'function' ? app.getVersion() : '4.1.7'
+        const snapshotText = await exportWindowsBackup(getDb(), appVersion)
+        let storeName = 'TINDA Store'
+        try { storeName = getSettings(getDb()).store_name || storeName } catch {}
+
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: true, data: snapshotText, storeName }))
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ ok: false, error: 'Failed to generate store snapshot: ' + (err as Error).message }))
       }
     })
     return
