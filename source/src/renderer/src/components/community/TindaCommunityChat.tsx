@@ -108,6 +108,71 @@ function playNotificationChime(): void {
   }
 }
 
+export function parseMessageDate(dateStr?: string): Date {
+  if (!dateStr) return new Date()
+  let s = String(dateStr).trim()
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(s) && !s.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(s)) {
+    s = s.replace(' ', 'T') + 'Z'
+  }
+  const d = new Date(s)
+  return isNaN(d.getTime()) ? new Date() : d
+}
+
+export function formatChatTimestamp(isoDateStr?: string): string {
+  if (!isoDateStr) return ''
+  try {
+    const d = parseMessageDate(isoDateStr)
+    const now = new Date()
+
+    const timeStr = d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+
+    const isToday =
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear()
+
+    const yesterday = new Date(now)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const isYesterday =
+      d.getDate() === yesterday.getDate() &&
+      d.getMonth() === yesterday.getMonth() &&
+      d.getFullYear() === yesterday.getFullYear()
+
+    if (isToday) {
+      return `Today · ${timeStr}`
+    } else if (isYesterday) {
+      return `Yesterday · ${timeStr}`
+    } else {
+      const isThisYear = d.getFullYear() === now.getFullYear()
+      const dateStr = d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        ...(isThisYear ? {} : { year: 'numeric' })
+      })
+      return `${dateStr} · ${timeStr}`
+    }
+  } catch {
+    return ''
+  }
+}
+
+export function formatFullChatTooltip(isoDateStr?: string): string {
+  if (!isoDateStr) return ''
+  try {
+    const d = parseMessageDate(isoDateStr)
+    return d.toLocaleString('en-US', {
+      dateStyle: 'full',
+      timeStyle: 'medium'
+    })
+  } catch {
+    return ''
+  }
+}
+
 export function TindaCommunityChat(): React.JSX.Element | null {
   const { settings } = useSettings()
   const { page } = useNav()
@@ -228,11 +293,11 @@ export function TindaCommunityChat(): React.JSX.Element | null {
         setMessages((prev) => {
           const serverIds = new Set(validMessages.map((m) => m.id))
           const localPending = prev.filter(
-            (m) => !serverIds.has(m.id) && Date.now() - new Date(m.created_at).getTime() < 30000
+            (m) => !serverIds.has(m.id) && Date.now() - parseMessageDate(m.created_at).getTime() < 30000
           )
           if (localPending.length === 0) return validMessages
           return [...validMessages, ...localPending].sort(
-            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            (a, b) => parseMessageDate(a.created_at).getTime() - parseMessageDate(b.created_at).getTime()
           )
         })
         setIsOnline(true)
@@ -747,9 +812,17 @@ export function TindaCommunityChat(): React.JSX.Element | null {
                   <Crown className="h-2.5 w-2.5" /> {announcements[0]?.author}
                 </span>
                 <span>
-                  {announcements[0]?.created_at
-                    ? new Date(announcements[0].created_at).toLocaleDateString()
-                    : ''}
+                  {announcements[0]?.created_at && !announcements[0].created_at.startsWith('1970')
+                    ? parseMessageDate(announcements[0].created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })
+                    : new Date().toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
                 </span>
               </div>
             </div>
@@ -811,11 +884,11 @@ export function TindaCommunityChat(): React.JSX.Element | null {
                           </span>
                         )}
                         <span className="text-slate-600">·</span>
-                        <span className="text-[9px] text-slate-500">
-                          {new Date(m.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                        <span
+                          title={formatFullChatTooltip(m.created_at)}
+                          className="text-[9px] text-slate-400 font-medium cursor-help"
+                        >
+                          {formatChatTimestamp(m.created_at)}
                         </span>
                       </div>
 

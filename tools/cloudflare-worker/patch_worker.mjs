@@ -41,7 +41,26 @@ const chatModule = `
 // ==========================================
 // RESILIENT COMMUNITY CHAT & ANNOUNCEMENTS
 // (Triple Tier: Cloudflare D1 + Cloudflare KV + Edge Memory Fallback)
+// Timezone: Philippine Standard Time (Asia/Manila, UTC+8)
 // ==========================================
+
+function getManilaTime() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }).format(new Date());
+}
+
+function normalizeIsoDate(d) {
+  if (!d) return new Date().toISOString();
+  let s = String(d).trim();
+  if (/^\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}:\\d{2}/.test(s) && !s.endsWith("Z") && !/[+-]\\d{2}:\\d{2}$/.test(s)) {
+    s = s.replace(" ", "T") + "Z";
+  }
+  return s;
+}
 
 let memoryMessages = [
   {
@@ -113,13 +132,18 @@ async function saveAnnouncementsToKV(kv, ann) {
 
 // 1. Announcements
 y.get("/api/announcements", async (c) => {
+  const nowIso = new Date().toISOString();
   if (c.env.DB) {
     try {
       const { results } = await c.env.DB.prepare(
         "SELECT * FROM live_announcements ORDER BY is_pinned DESC, created_at DESC LIMIT 20"
       ).all();
       if (results && results.length > 0) {
-        return c.json({ ok: true, announcements: results });
+        const cleaned = results.map(a => ({
+          ...a,
+          created_at: (a.created_at && !String(a.created_at).startsWith("1970")) ? normalizeIsoDate(a.created_at) : nowIso
+        }));
+        return c.json({ ok: true, announcements: cleaned });
       }
     } catch (err) {}
   }
@@ -127,11 +151,19 @@ y.get("/api/announcements", async (c) => {
     try {
       const data = await getAnnouncementsFromKV(c.env.TINDA_CHAT);
       if (Array.isArray(data) && data.length > 0) {
-        return c.json({ ok: true, announcements: data });
+        const cleaned = data.map(a => ({
+          ...a,
+          created_at: (a.created_at && !String(a.created_at).startsWith("1970")) ? normalizeIsoDate(a.created_at) : nowIso
+        }));
+        return c.json({ ok: true, announcements: cleaned });
       }
     } catch {}
   }
-  return c.json({ ok: true, announcements: memoryAnnouncements });
+  const fallback = memoryAnnouncements.map((a) => ({
+    ...a,
+    created_at: a.created_at && !String(a.created_at).startsWith("1970") ? normalizeIsoDate(a.created_at) : nowIso
+  }));
+  return c.json({ ok: true, announcements: fallback });
 });
 
 y.post("/api/announcements", async (c) => {
@@ -187,6 +219,7 @@ y.get("/api/chat/messages", async (c) => {
           try { seen = m.seen_by ? JSON.parse(m.seen_by) : []; } catch {}
           return {
             ...m,
+            created_at: normalizeIsoDate(m.created_at),
             seen_by: seen
           };
         });
@@ -205,13 +238,21 @@ y.get("/api/chat/messages", async (c) => {
     try {
       const kvMessages = await getChatMessagesFromKV(c.env.TINDA_CHAT);
       if (Array.isArray(kvMessages) && kvMessages.length > 0) {
-        return c.json({ ok: true, messages: kvMessages.slice(-limit) });
+        const cleaned = kvMessages.map(m => ({
+          ...m,
+          created_at: normalizeIsoDate(m.created_at)
+        }));
+        return c.json({ ok: true, messages: cleaned.slice(-limit) });
       }
     } catch (err) {}
   }
 
   // Edge memory fallback (never offline)
-  return c.json({ ok: true, messages: memoryMessages.slice(-limit) });
+  const cleanedMem = memoryMessages.map(m => ({
+    ...m,
+    created_at: normalizeIsoDate(m.created_at)
+  }));
+  return c.json({ ok: true, messages: cleanedMem.slice(-limit) });
 });
 
 // 3. Post Chat Message
@@ -283,13 +324,13 @@ y.post("/api/chat/messages", async (c) => {
   return c.json({ ok: true, message: msg });
 });
 
-// 4. Mark Message Seen
+// 4. Mark Message Seen (Philippine Standard Time)
 y.post("/api/chat/messages/seen", async (c) => {
   let body = {};
   try { body = await c.req.json(); } catch {}
   const messageId = String(body.message_id || "").trim();
   const seenBy = String(body.seen_by || "Cashier").trim();
-  const time = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+  const time = getManilaTime();
 
   if (messageId) {
     const memMsg = memoryMessages.find((m) => m.id === messageId);
@@ -376,4 +417,4 @@ y.post("/api/chat/messages/delete", async (c) => {
 
 code = code.replace(exportTarget, `${chatModule}\n${exportTarget}`)
 fs.writeFileSync(indexPath, code, 'utf8')
-console.log('✓ Successfully patched tinda-sync/index.js with KV + Memory + D1 Community Chat & Announcements!')
+console.log('✓ Successfully patched tinda-sync/index.js with PHT Time & Date Normalization!')
