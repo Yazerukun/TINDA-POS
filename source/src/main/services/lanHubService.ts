@@ -53,11 +53,158 @@ export function setSatelliteVip(val: boolean): void {
   satelliteIsVip = val
 }
 
+export function getBroadcastAddresses(): string[] {
+  const addresses: string[] = ['255.255.255.255']
+  try {
+    const interfaces = os.networkInterfaces()
+    for (const name of Object.keys(interfaces)) {
+      const ifaceList = interfaces[name]
+      if (!ifaceList) continue
+      for (const iface of ifaceList) {
+        if (iface.family === 'IPv4' && !iface.internal && iface.address && iface.netmask) {
+          const ipParts = iface.address.split('.').map(Number)
+          const maskParts = iface.netmask.split('.').map(Number)
+          if (ipParts.length === 4 && maskParts.length === 4) {
+            const bcastParts = ipParts.map((part, i) => {
+              const mask = maskParts[i] ?? 255
+              return (part | (~mask & 255)) >>> 0
+            })
+            const bcast = bcastParts.join('.')
+            if (!addresses.includes(bcast)) {
+              addresses.push(bcast)
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+  return addresses
+}
+
+export function getLocalSubnetPrefixes(): string[] {
+  const prefixes = new Set<string>()
+  try {
+    const interfaces = os.networkInterfaces()
+    for (const name of Object.keys(interfaces)) {
+      const ifaceList = interfaces[name]
+      if (!ifaceList) continue
+      for (const iface of ifaceList) {
+        if (iface.family === 'IPv4' && !iface.internal && iface.address) {
+          const parts = iface.address.split('.')
+          if (parts.length === 4) {
+            prefixes.add(`${parts[0]}.${parts[1]}.${parts[2]}`)
+          }
+        }
+      }
+    }
+  } catch {}
+  return Array.from(prefixes)
+}
+
+export async function fastHttpSubnetSweep(timeoutMs = 800): Promise<DiscoveredBeamPeer[]> {
+  const prefixes = getLocalSubnetPrefixes()
+  const results: DiscoveredBeamPeer[] = []
+  const myIp = getLocalIp()
+
+  const checkHost = (hostIp: string): Promise<DiscoveredBeamPeer | null> => {
+    return new Promise((resolve) => {
+      const req = http.get(
+        {
+          hostname: hostIp,
+          port: 3111,
+          path: '/api/lan/status',
+          timeout: timeoutMs
+        },
+        (res) => {
+          let data = ''
+          res.on('data', (c) => { data += c })
+          res.on('end', () => {
+            try {
+              if (res.statusCode === 200) {
+                const json = JSON.parse(data)
+                if (json && (json.ok || json.status)) {
+                  const status = json.status || {}
+                  const isBeamReady = !!json.isBeamReady || !!status.pairingPin || status.role === 'master'
+                  const storeName = json.storeName || status.storeName || 'TINDA Store'
+                  resolve({
+                    ip: hostIp,
+                    port: 3111,
+                    storeName,
+                    version: json.version || '4.1.9',
+                    isBeamReady
+                  })
+                  return
+                }
+              }
+            } catch {}
+            resolve(null)
+          })
+        }
+      )
+      req.on('error', () => resolve(null))
+      req.on('timeout', () => {
+        try { req.destroy() } catch {}
+        resolve(null)
+      })
+    })
+  }
+
+  const tasks: Promise<DiscoveredBeamPeer | null>[] = []
+  for (const prefix of prefixes) {
+    for (let i = 1; i <= 254; i++) {
+      const targetIp = `${prefix}.${i}`
+      if (targetIp === myIp) continue
+      tasks.push(checkHost(targetIp))
+    }
+  }
+
+  const found = await Promise.all(tasks)
+  for (const item of found) {
+    if (item) results.push(item)
+  }
+  return results
+}
+
 export function startUdpBeacon(port: number): void {
   stopUdpBeacon()
   try {
     const socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
-    socket.bind(() => {
+
+    socket.on('error', (err) => {
+      console.warn('[UDP Beacon] Socket warning/fallback:', err)
+      // If port 3112 is already bound or fails, fallback to ephemeral port
+      try {
+        socket.close()
+        const fallback = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+        fallback.bind(0, () => {
+          try { fallback.setBroadcast(true) } catch {}
+        })
+        udpBeaconSocket = fallback
+      } catch {}
+    })
+
+    socket.on('message', (msg, rinfo) => {
+      try {
+        const parsed = JSON.parse(msg.toString())
+        if (parsed && (parsed.cmd === 'TINDA_BEAM_PROBE' || parsed.cmd === 'TINDA_PROBE')) {
+          let storeName = 'TINDA Store'
+          try { storeName = getSettings(getDb()).store_name || storeName } catch {}
+          const reply = Buffer.from(
+            JSON.stringify({
+              cmd: activeBeamSender ? 'TINDA_BEAM_BEACON' : 'TINDA_BEACON',
+              storeName,
+              ip: getLocalIp(),
+              port: currentPort,
+              version: '4.1.9',
+              isBeamReady: activeBeamSender !== null
+            })
+          )
+          socket.send(reply, 0, reply.length, rinfo.port, rinfo.address)
+        }
+      } catch {}
+    })
+
+    socket.bind(UDP_BEACON_PORT, () => {
       try {
         socket.setBroadcast(true)
       } catch (err) {
@@ -77,18 +224,24 @@ export function startUdpBeacon(port: number): void {
             storeName,
             ip: getLocalIp(),
             port,
-            version: '4.1.7',
+            version: '4.1.9',
             isBeamReady: activeBeamSender !== null
           })
         )
-        socket.send(payload, 0, payload.length, UDP_BEACON_PORT, '255.255.255.255')
+        const targets = getBroadcastAddresses()
+        for (const target of targets) {
+          try {
+            udpBeaconSocket?.send(payload, 0, payload.length, UDP_BEACON_PORT, target)
+          } catch {}
+        }
       } catch {
         // Non-fatal if broadcast temporarily fails
       }
     }
 
     broadcast()
-    udpBeaconInterval = setInterval(broadcast, 3000)
+    const intervalMs = activeBeamSender ? 1000 : 2500
+    udpBeaconInterval = setInterval(broadcast, intervalMs)
   } catch (err) {
     console.warn('[UDP Beacon] Failed to start UDP beacon:', err)
   }
@@ -106,8 +259,24 @@ export function stopUdpBeacon(): void {
 }
 
 export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaster[]> {
-  return new Promise((resolve) => {
-    const discovered = new Map<string, DiscoveredMaster>()
+  const discovered = new Map<string, DiscoveredMaster>()
+
+  // 1. Parallel Fast HTTP Subnet Sweep (Immune to AP Isolation & UDP drops)
+  const httpPromise = fastHttpSubnetSweep(800)
+    .then((peers) => {
+      for (const p of peers) {
+        discovered.set(`${p.ip}:${p.port}`, {
+          ip: p.ip,
+          port: p.port,
+          storeName: p.storeName,
+          version: p.version
+        })
+      }
+    })
+    .catch(() => {})
+
+  // 2. Parallel Multi-Interface UDP Probe
+  const udpPromise = new Promise<void>((resolve) => {
     let socket: dgram.Socket | null = null
 
     try {
@@ -123,7 +292,7 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
               ip,
               port,
               storeName: parsed.storeName || 'TINDA Store',
-              version: parsed.version || '4.1.7'
+              version: parsed.version || '4.1.9'
             })
           }
         } catch {}
@@ -137,7 +306,12 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
         try {
           socket?.setBroadcast(true)
           const probe = Buffer.from(JSON.stringify({ cmd: 'TINDA_PROBE' }))
-          socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, '255.255.255.255')
+          const targets = getBroadcastAddresses()
+          for (const target of targets) {
+            try {
+              socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, target)
+            } catch {}
+          }
         } catch {}
       })
     } catch {
@@ -146,14 +320,28 @@ export async function discoverMasters(timeoutMs = 2000): Promise<DiscoveredMaste
 
     setTimeout(() => {
       try { socket?.close() } catch {}
-      resolve(Array.from(discovered.values()))
+      resolve()
     }, timeoutMs)
   })
+
+  await Promise.all([httpPromise, udpPromise])
+  return Array.from(discovered.values())
 }
 
-export async function discoverBeamSenders(timeoutMs = 2500): Promise<DiscoveredBeamPeer[]> {
-  return new Promise((resolve) => {
-    const discovered = new Map<string, DiscoveredBeamPeer>()
+export async function discoverBeamSenders(timeoutMs = 2000): Promise<DiscoveredBeamPeer[]> {
+  const discovered = new Map<string, DiscoveredBeamPeer>()
+
+  // 1. Parallel Fast HTTP Subnet Sweep (<800ms) - completely immune to AP Isolation & UDP blocks
+  const httpPromise = fastHttpSubnetSweep(800)
+    .then((httpPeers) => {
+      for (const p of httpPeers) {
+        discovered.set(`${p.ip}:${p.port}`, p)
+      }
+    })
+    .catch(() => {})
+
+  // 2. Parallel Multi-Interface UDP Broadcast & Probe Listener
+  const udpPromise = new Promise<void>((resolve) => {
     let socket: dgram.Socket | null = null
 
     try {
@@ -165,12 +353,13 @@ export async function discoverBeamSenders(timeoutMs = 2500): Promise<DiscoveredB
             const ip = parsed.ip || rinfo.address
             const port = parsed.port || 3111
             const key = `${ip}:${port}`
+            const existing = discovered.get(key)
             discovered.set(key, {
               ip,
               port,
-              storeName: parsed.storeName || 'TINDA Store',
-              version: parsed.version || '4.1.7',
-              isBeamReady: !!parsed.isBeamReady
+              storeName: parsed.storeName || existing?.storeName || 'TINDA Store',
+              version: parsed.version || '4.1.9',
+              isBeamReady: parsed.isBeamReady !== undefined ? !!parsed.isBeamReady : (existing?.isBeamReady ?? true)
             })
           }
         } catch {}
@@ -184,7 +373,12 @@ export async function discoverBeamSenders(timeoutMs = 2500): Promise<DiscoveredB
         try {
           socket?.setBroadcast(true)
           const probe = Buffer.from(JSON.stringify({ cmd: 'TINDA_BEAM_PROBE' }))
-          socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, '255.255.255.255')
+          const targets = getBroadcastAddresses()
+          for (const target of targets) {
+            try {
+              socket?.send(probe, 0, probe.length, UDP_BEACON_PORT, target)
+            } catch {}
+          }
         } catch {}
       })
     } catch {
@@ -193,9 +387,12 @@ export async function discoverBeamSenders(timeoutMs = 2500): Promise<DiscoveredB
 
     setTimeout(() => {
       try { socket?.close() } catch {}
-      resolve(Array.from(discovered.values()))
+      resolve()
     }, timeoutMs)
   })
+
+  await Promise.all([httpPromise, udpPromise])
+  return Array.from(discovered.values())
 }
 
 export async function startBeamSender(): Promise<BeamSenderInfo> {
@@ -213,6 +410,8 @@ export async function startBeamSender(): Promise<BeamSenderInfo> {
     storeName,
     expiresAt: pairingPinExpiry
   }
+  // Immediately restart UDP Beacon with active beam flag and fast 1s interval
+  startUdpBeacon(currentPort)
   notifyStatus()
   return activeBeamSender
 }
@@ -223,6 +422,8 @@ export function stopBeamSender(): void {
   if (currentRole === 'standalone') {
     stopMasterServer()
   } else {
+    // Restore normal beacon without beam ready flag
+    startUdpBeacon(currentPort)
     notifyStatus()
   }
 }
@@ -562,8 +763,17 @@ function handleLanRequest(req: http.IncomingMessage, res: http.ServerResponse): 
       const { licenseService } = require('./licenseService')
       isVip = !!licenseService.getStatus()?.isVip
     } catch {}
+    let storeName = 'TINDA Store'
+    try { storeName = getSettings(getDb()).store_name || storeName } catch {}
     res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ ok: true, status: getLanStatus(), isVip }))
+    res.end(JSON.stringify({
+      ok: true,
+      status: getLanStatus(),
+      isVip,
+      storeName,
+      isBeamReady: activeBeamSender !== null,
+      version: '4.1.9'
+    }))
     return
   }
 
@@ -631,7 +841,7 @@ function handleLanRequest(req: http.IncomingMessage, res: http.ServerResponse): 
           return
         }
 
-        const appVersion = typeof app?.getVersion === 'function' ? app.getVersion() : '4.1.7'
+        const appVersion = typeof app?.getVersion === 'function' ? app.getVersion() : '4.1.9'
         const snapshotText = await exportWindowsBackup(getDb(), appVersion)
         let storeName = 'TINDA Store'
         try { storeName = getSettings(getDb()).store_name || storeName } catch {}

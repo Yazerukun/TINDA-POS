@@ -98,10 +98,17 @@ export function LanBeamModal({ isOpen, onClose }: LanBeamModalProps): React.JSX.
     try {
       const list = await window.api.lan.discoverBeamPeers()
       setPeers(list)
-      if (list.length > 0 && !selectedPeer) {
-        // Automatically select the first peer that is in beam ready mode
-        const ready = list.find((p) => p.isBeamReady) || list[0]
-        setSelectedPeer(ready || null)
+      if (list.length > 0) {
+        setSelectedPeer((current) => {
+          if (!current) {
+            const ready = list.find((p) => p.isBeamReady) || list[0]
+            return ready ?? null
+          }
+          const found = list.find((p) => p.ip === current.ip)
+          if (found) return found
+          const fallback = list.find((p) => p.isBeamReady) || list[0]
+          return fallback ?? null
+        })
       }
     } catch (e) {
       setTransferError((e as Error)?.message || 'Failed to scan nearby PCs')
@@ -110,11 +117,62 @@ export function LanBeamModal({ isOpen, onClose }: LanBeamModalProps): React.JSX.
     }
   }
 
+  // Continuous Zero-Click Radar (sweeps local network immediately and every 2.5s)
   useEffect(() => {
-    if (isOpen && activeTab === 'receive') {
-      void handleScanPeers()
+    if (!isOpen || activeTab !== 'receive' || isTransferring || transferSuccess) {
+      return
     }
-  }, [isOpen, activeTab])
+
+    let isMounted = true
+    let scanActive = false
+
+    const runRadarScan = async (isFirst = false): Promise<void> => {
+      if (scanActive) return
+      scanActive = true
+      if (isFirst) setIsScanning(true)
+
+      try {
+        const list = await window.api.lan.discoverBeamPeers()
+        if (!isMounted) return
+        setPeers(list)
+
+        setSelectedPeer((current) => {
+          if (list.length === 0) return current
+          if (!current) {
+            const ready = list.find((p) => p.isBeamReady) || list[0]
+            return ready ?? null
+          }
+          const found = list.find((p) => p.ip === current.ip)
+          if (found) {
+            if (!found.isBeamReady) {
+              const ready = list.find((p) => p.isBeamReady)
+              if (ready) return ready
+            }
+            return found
+          }
+          const fallback = list.find((p) => p.isBeamReady) || list[0]
+          return fallback ?? null
+        })
+      } catch (e) {
+        if (isFirst) {
+          setTransferError((e as Error)?.message || 'Failed to scan nearby PCs')
+        }
+      } finally {
+        scanActive = false
+        if (isMounted && isFirst) setIsScanning(false)
+      }
+    }
+
+    void runRadarScan(true)
+    const timer = setInterval(() => {
+      void runRadarScan(false)
+    }, 2500)
+
+    return (): void => {
+      isMounted = false
+      clearInterval(timer)
+    }
+  }, [isOpen, activeTab, isTransferring, transferSuccess])
 
   const handlePullData = async (): Promise<void> => {
     const targetIp = useManualIp ? manualIp.trim() : selectedPeer?.ip
@@ -407,37 +465,40 @@ export function LanBeamModal({ isOpen, onClose }: LanBeamModalProps): React.JSX.
                   {/* Step 1: Select Peer PC */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                        <Server className="h-3.5 w-3.5 text-teal-400" />
-                        1. Select Nearby Sender PC:
-                      </label>
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                          <Server className="h-3.5 w-3.5 text-teal-400" />
+                          1. Select Nearby Sender PC:
+                        </label>
+                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-[10px] font-semibold text-teal-400">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                          </span>
+                          <span>Zero-Click Radar</span>
+                        </span>
+                      </div>
                       <button
                         onClick={() => void handleScanPeers()}
                         disabled={isScanning}
                         className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 transition-colors"
                       >
                         <RefreshCw className={`h-3 w-3 ${isScanning ? 'animate-spin' : ''}`} />
-                        <span>{isScanning ? 'Scanning...' : 'Refresh Scan'}</span>
+                        <span>{isScanning ? 'Scanning...' : 'Refresh'}</span>
                       </button>
                     </div>
 
                     {!useManualIp ? (
                       <div className="space-y-2">
                         {peers.length === 0 ? (
-                          <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/30 p-5 text-center text-xs text-slate-400">
-                            {isScanning ? (
-                              <div className="flex items-center justify-center gap-2">
-                                <RefreshCw className="h-4 w-4 animate-spin text-teal-400" />
-                                <span>Scanning local Wi-Fi and LAN cables for active TINDA senders...</span>
-                              </div>
-                            ) : (
-                              <div>
-                                <p>No active Sender PCs detected on local network.</p>
-                                <p className="text-[11px] text-slate-500 mt-1">
-                                  Ensure Laptop A clicked <strong>&quot;Start Beam Broadcast&quot;</strong>, or switch to manual IP below.
-                                </p>
-                              </div>
-                            )}
+                          <div className="rounded-xl border border-dashed border-teal-500/30 bg-teal-950/10 p-5 text-center text-xs text-slate-300">
+                            <div className="flex items-center justify-center gap-2.5 mb-1.5 text-teal-400">
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              <span className="font-semibold">Radar Sweeping Wi-Fi & LAN Cable...</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+                              On Laptop A (Sender PC), click <strong>&quot;Start Beam Broadcast&quot;</strong>. It will appear here and auto-select in 1-2 seconds!
+                            </p>
                           </div>
                         ) : (
                           <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
@@ -475,6 +536,13 @@ export function LanBeamModal({ isOpen, onClose }: LanBeamModalProps): React.JSX.
                                 </button>
                               )
                             })}
+                          </div>
+                        )}
+
+                        {selectedPeer && !useManualIp && (
+                          <div className="p-2 rounded-lg bg-teal-500/10 border border-teal-500/20 text-[11px] text-teal-300 flex items-center gap-1.5">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+                            <span>Auto-selected: <strong>{selectedPeer.storeName}</strong> ({selectedPeer.ip}). Enter 6-digit PIN below:</span>
                           </div>
                         )}
 

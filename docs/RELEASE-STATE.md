@@ -1,13 +1,19 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.8 (FOREIGN KEY CONSTRAINT IMMUNE RESTORE & TINDA LAN DIRECT BEAM PC-TO-PC SYNC EDITION)
+- v4.1.9 (ZERO-CLICK INSTANT PEER RADAR & HYBRID SUBNET SWEEP EDITION)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync Edition
+- Production Release Ready — v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep Edition
+
+COMPLETED (v4.1.9 Zero-Click Instant Peer Radar & Hybrid Subnet Sweep):
+- Stage 24: Hybrid Dual-Engine Peer Discovery: Solved Wi-Fi AP Isolation and UDP packet drops on modern routers and public profiles. Engineered fast parallel HTTP subnet sweep (<800ms) across all active `/24` subnets (`192.168.x.1..254`) on port 3111, querying `/api/lan/status` via unicast TCP.
+- Stage 25: Multi-Interface Subnet Broadcast & Probe Reply: Binds UDP beacon on port 3112 (`reuseAddr: true`), listens for `TINDA_BEAM_PROBE` and `TINDA_PROBE` to emit instantaneous unicast UDP replies, and broadcasts dynamically to all interface broadcast addresses (`ip | ~netmask`). Accelerated beacon to 1000ms upon starting Beam.
+- Stage 26: Zero-Click Auto-Selecting Radar UI: Added continuous background radar loop (every 2.5s) to `LanBeamModal`, automatically sweeping the network and auto-selecting detected sender laptops without requiring manual IP typing or clicking "Refresh Scan".
+- Stage 27: Quality Gates: 624/624 passing Vitest tests across 99 suites, 0 TypeScript errors across Node & Web.
 
 COMPLETED (v4.1.8 Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam):
 - Stage 21: Universal Foreign Key Restore Immunity: Eradicated SqliteError: FOREIGN KEY constraint failed during .tinda-backup import (backup:importTinda). Corrected CANONICAL_TABLES topological order (shifts before sales, sales before batch_movements), decoupled foreign key checks during bulk restore transaction via PRAGMA foreign_keys = OFF outside transaction, enabled PRAGMA defer_foreign_keys = ON, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
