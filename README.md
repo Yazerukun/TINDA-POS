@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v4.1.11-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v4.1.12-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -14,13 +14,13 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Untruncated Inventory & Dashboard KPI Accuracy · Dedicated Port Isolation · Self-Healing LAN Beam Sync · Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
+**Pure Full Build Mandate · Untruncated Inventory Alerts & Dashboard KPI Precision · Dedicated Port Isolation · Self-Healing LAN Beam Sync · Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.11_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-Setup-4.1.11.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.11_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-Portable-4.1.11.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v4.1.11_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-4.1.11.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v4.1.12_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-Setup-4.1.12.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v4.1.12_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-Portable-4.1.12.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v4.1.12_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-4.1.12.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,27 +31,31 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v4.1.11 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v4.1.12 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-4.1.11.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-Setup-4.1.11.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-4.1.11.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-Portable-4.1.11.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-4.1.11.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/TindaPOS-4.1.11.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v4.1.11.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.11/SHA256SUMS-v4.1.11.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-4.1.12.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-Setup-4.1.12.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-4.1.12.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-Portable-4.1.12.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-4.1.12.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/TindaPOS-4.1.12.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v4.1.12.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v4.1.12/SHA256SUMS-v4.1.12.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v4.1.11: Untruncated Inventory & Dashboard KPI Accuracy Release
+## 🌟 What's New in v4.1.12: Pure Full Build Mandate & Direct NSIS Auto-Updater Edition
 
-### 1. 📊 Full Store Inventory Reporting on Dashboard & KPIs
-- **Artificial 10-Item Cap Eradicated**: Removed legacy `.slice(0, 10)` truncation on `alertProducts` so `out` and `low` counts accurately reflect the entire inventory (e.g. 15+ low stock items appear as 15 low, perfectly matching the Inventory filter).
-- **Inventory Search Limit Aligned**: Elevated `products.search` limit in `Dashboard.tsx` from 1,000 to 5,000 (matching `Inventory.tsx`), guaranteeing zero truncation for stores with large product catalogs.
-- **Scrollable Alert Overview & One-Tap Inventory Nav**: Redesigned the "LOW / OUT OF STOCK" card with a clean scrollable container (`max-h-80 overflow-y-auto`) and one-tap "View in Inventory" button so store owners can inspect every item needing reorder.
-- **Telemetry Limit Expansion**: Raised low stock query limit in `storeTelemetry.ts` from 20 to 5,000 to prevent AI Store Advisor and Notification Bell truncation.
-- **Quick Launch Bar Real-Time Badge**: Quick Launch Inventory action button displays real-time un-truncated stock status (`{out} Out · {low} Low`).
+### 1. 🚀 Pure Full Build Mandate (Zero Patch Friction)
+- **Eradicated Fabricated Patch Fallbacks**: `updateTransport.ts` strictly points all updater checks to 100% complete binaries (`TindaPOS-Setup-4.1.12.exe`, `TindaPOS-Portable-4.1.12.exe`, `TindaPOS-4.1.12.AppImage`).
+- **Interactive UAC Elevation Support**: Enabled interactive installer elevation for Windows auto-update so permissions prompts display clearly on machines installed under `C:\Program Files\`, eliminating silent installer exits.
+- **Direct 1-Click Update**: All existing client nodes (v4.1.8, v4.1.9, v4.1.10, v4.1.11) cleanly download and install the official full binary.
+
+### 2. 📊 Full Store Inventory Reporting & Dashboard Precision
+- **Artificial 10-Item Cap Eradicated**: Uncapped low-stock and out-of-stock counters on Dashboard & KPIs so the entire store reorder list (e.g. 15+ items) matches the inventory table with 100% accuracy.
+- **Inventory Search Limit Aligned**: Elevated `products.search` limit to 5,000 items in `Dashboard.tsx`.
+- **Scrollable Alert Overview**: Responsive scrollable container (`max-h-80 overflow-y-auto`) with high-contrast status badges and a 1-tap "View in Inventory" button.
+- **Telemetry Limit Expansion**: Raised low stock limit in `storeTelemetry.ts` to 5,000 items.
 
 ---
 

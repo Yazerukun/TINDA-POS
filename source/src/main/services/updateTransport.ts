@@ -146,22 +146,15 @@ export class ElectronUpdateTransport implements UpdateTransport {
       const { version: v, tag } = latestTag
       const isLinux = process.platform === 'linux'
 
-      const patchUrl = `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-Feature-Patch-${v}.zip`
       const fullAssetUrl = isLinux
         ? `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-${v}.AppImage`
         : `https://github.com/${UPDATE_OWNER}/${UPDATE_REPO}/releases/download/${tag}/TindaPOS-Setup-${v}.exe`
       const fullAssetName = isLinux ? `TindaPOS-${v}.AppImage` : `TindaPOS-Setup-${v}.exe`
 
-      const patchAsset: import('@shared/update').ReleaseAsset = {
-        name: `TindaPOS-Feature-Patch-${v}.zip`,
-        url: patchUrl,
-        size: 874646
-      }
-
       const fullAsset: import('@shared/update').ReleaseAsset = {
         name: fullAssetName,
         url: fullAssetUrl,
-        size: isLinux ? 137232958 : 112574670
+        size: isLinux ? 140903132 : 117052596
       }
 
       return {
@@ -169,11 +162,11 @@ export class ElectronUpdateTransport implements UpdateTransport {
         tag,
         title: `TINDA POS ${tag}`,
         publishedAt: new Date().toISOString(),
-        releaseNotes: `TINDA POS ${tag} Update\n• Live Fast Patch & System Improvements`,
+        releaseNotes: `TINDA POS ${tag} Update\n• Official Full Multi-Platform Release`,
         stable: true,
-        assets: [patchAsset, fullAsset],
-        hasPatch: true,
-        patchAsset,
+        assets: [fullAsset],
+        hasPatch: false,
+        patchAsset: null,
         hasFull: true,
         fullAsset
       }
@@ -359,7 +352,7 @@ export class ElectronUpdateTransport implements UpdateTransport {
       return
     }
     const updater = require('electron-updater') as typeof import('electron-updater')
-    updater.autoUpdater.quitAndInstall(true, true)
+    updater.autoUpdater.quitAndInstall(false, true)
   }
 
   async reveal(path: string): Promise<void> {

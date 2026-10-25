@@ -247,12 +247,7 @@ ${fs.readFileSync(sumsPath, 'utf8').trim()}
     }))
   }
 
-  const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
-  const patchPath = path.join(BUILDS_DIR, patchFile)
-  const patchShaFile = `${patchFile}.sha256`
-  const patchShaPath = path.join(BUILDS_DIR, patchShaFile)
-
-  console.log(`✅ Release ready! Uploading official release assets (Full binaries + In-app Fast Patch)...`)
+  console.log(`✅ Release ready! Uploading official full release assets (100% Pure Full Binaries Mandate)...`)
 
   const assetsToUpload = [
     { file: setupFile, path: setupPath, type: 'application/vnd.microsoft.portable-executable' }
@@ -262,12 +257,6 @@ ${fs.readFileSync(sumsPath, 'utf8').trim()}
   }
   if (fs.existsSync(appImagePath)) {
     assetsToUpload.push({ file: appImageFile, path: appImagePath, type: 'application/x-executable' })
-  }
-  if (fs.existsSync(patchPath)) {
-    assetsToUpload.push({ file: patchFile, path: patchPath, type: 'application/zip' })
-  }
-  if (fs.existsSync(patchShaPath)) {
-    assetsToUpload.push({ file: patchShaFile, path: patchShaPath, type: 'text/plain' })
   }
   if (fs.existsSync(blockmapPath)) {
     assetsToUpload.push({ file: blockmapFile, path: blockmapPath, type: 'application/octet-stream' })
