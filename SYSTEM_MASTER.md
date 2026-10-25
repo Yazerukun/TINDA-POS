@@ -2122,6 +2122,22 @@
 2. **Multi-Port Subnet Sweep (`fastHttpSubnetSweep`):** Sweeps candidate ports `[3111, 3117]` in parallel across all `/24` subnets, extracting the actual running server port dynamically.
 3. **Canonical Verification:** 624 automated unit and integration tests passing across 99 test suites with 0 TypeScript compilation errors and verified database invariants.
 
+---
+
+## 98. Untruncated Inventory Alerts & Dashboard KPI Precision (v4.1.11 Spec)
+
+### 98.1 Truncation Root Cause & Uncapped Alert State
+1. **Root Cause Analysis:** In `Dashboard.tsx`, `alerts` was subjected to an arbitrary `.slice(0, 10)` limit prior to setting `alertProducts`. Because the `out` (`stock <= 0`) and `low` (`stock > 0 && stock <= threshold`) metrics were computed directly from `alertProducts.filter(...)`, stores with more than 10 low-stock items saw their alert metrics capped at 10 on the Dashboard & KPI screen while the full Inventory view reported 15+ items.
+2. **Catalog Query Alignment:** `products.search` in `Dashboard.tsx` was queried with `limit: 1000` while `Inventory.tsx` used `limit: 5000`. Dashboard query limit is now raised to `limit: 5000` to guarantee parity for large merchant catalogs.
+3. **Telemetry & Advisor Synchronization:** In `storeTelemetry.ts`, low stock queries were bounded with `LIMIT 20`. This limit has been elevated to `LIMIT 5000` so that telemetry payloads, AI Advisor insights, and notification badges reflect the true un-truncated store state.
+
+### 98.2 UI Ergonomics & Quick Navigation
+1. **Scrollable Card Container:** Redesigned the "LOW / OUT OF STOCK" card with a responsive scrollable container (`max-h-80 overflow-y-auto pr-1`) so store owners can view every single reorder alert directly on the dashboard.
+2. **Direct Inventory Action:** Added high-contrast status badges (`{out.length} out` in red, `{low.length} low` in amber) accompanied by a "View in Inventory" button for instant one-click drill-down.
+3. **Quick Launch Badge Sync:** Real-time stock status badge on the Quick Launch Bar displays actual un-truncated counts (`{out} Out · {low} Low`).
+4. **Canonical Verification:** Automated unit tests verify all 17+ low stock items are retained without slicing and query limits remain 5000. 100% test coverage with zero TypeScript compilation errors.
+
+
 
 
 

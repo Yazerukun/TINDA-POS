@@ -1,13 +1,20 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.10 (DEDICATED PORT ISOLATION & SELF-HEALING LAN BEAM SYNC EDITION)
+- v4.1.11 (UNTRUNCATED INVENTORY & DASHBOARD KPI ACCURACY RELEASE)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.10 Dedicated Port Isolation & Self-Healing LAN Beam Sync Edition
+- Production Release Ready — v4.1.11 Untruncated Inventory & Dashboard KPI Accuracy Release
+
+COMPLETED (v4.1.11 Untruncated Inventory & Dashboard KPI Accuracy):
+- Stage 32: Un-truncated Low Stock & Out-of-Stock Reporting: Removed legacy `.slice(0, 10)` artificial cap on Dashboard `alertProducts` so `out` and `low` counts accurately reflect the entire inventory (e.g. 15+ low stock items appear as 15 low, exactly matching Inventory filter).
+- Stage 33: Inventory Search Limit Alignment: Elevated `products.search` limit in `Dashboard.tsx` from 1,000 to 5,000 (matching `Inventory.tsx`), guaranteeing zero truncation for stores with large catalogs.
+- Stage 34: Scrollable Alert Overview & One-Tap Inventory Nav: Redesigned the "LOW / OUT OF STOCK" card with clean scrollable view (`max-h-80 overflow-y-auto`) and one-tap "View in Inventory" button.
+- Stage 35: Telemetry Limit Expansion: Raised low stock query limit in `storeTelemetry.ts` from 20 to 5,000 to prevent AI Advisor and Notification Bell truncation.
+- Stage 36: Quality Gates: 100% typecheck clean (Node & Web), dedicated unit tests in `dashboard-low-stock.test.ts`.
 
 COMPLETED (v4.1.10 Dedicated Port Isolation & Self-Healing LAN Beam Sync):
 - Stage 28: Dedicated Port Range Isolation: Migrated `phoneScannerService` from ports 3112/3113 to dedicated isolated ports 3122 (HTTP) and 3123 (HTTPS SSL). Eradicated `socket hang up` bug caused by plain HTTP requests hitting the HTTPS camera port.
