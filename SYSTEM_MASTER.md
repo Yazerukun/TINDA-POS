@@ -39,6 +39,7 @@
 6. ❌ Never push, merge, or track proprietary source code (`source/`, `tools/`) to the public distribution repository (`Yazerukun/TINDA-POS`). All application source code must strictly reside in the private repository (`Yazerukun/TINDA-POS-Source`).
 7. ❌ Never overwrite, clear, truncate, or delete existing user database tables (`tindapos.db`), customer credit/utang balances, transactions, or license records (`tinda_license.json`) during application updates. All database migrations must be 100% additive (`CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ADD COLUMN`).
 8. ❌ Never alter, rotate secret salts for, or invalidate existing VIP Pro cryptographic signatures or machine keys. Existing customer licenses must remain 100% permanently valid and active across all future versions.
+9. ❌ Never place or retain source-building CI workflows (`.github/workflows/`) inside the public distribution repository (`Yazerukun/TINDA-POS`). Because the distribution repository contains zero `source/` code, workflow triggers on tag pushes fail immediately. All compilation and release pipelines belong exclusively in `Yazerukun/TINDA-POS-Source`.
 
 ---
 

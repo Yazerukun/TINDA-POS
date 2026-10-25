@@ -45,4 +45,25 @@ if (!migrationContent.includes('epoch_41_anti_downgrade') || !migrationContent.i
 }
 console.log('[PASS] Master migration schemas verified.')
 
+// 4. Check Public Distribution Invariants
+const possibleDistDirs = [
+  path.resolve(repoRoot, '../TINDA-POS'),
+  '/home/ian/Projects/TINDA-POS'
+]
+for (const publicDistDir of possibleDistDirs) {
+  if (fs.existsSync(publicDistDir)) {
+    const distWorkflows = path.join(publicDistDir, '.github', 'workflows')
+    if (fs.existsSync(distWorkflows)) {
+      console.error(`❌ FATAL: Orphaned .github/workflows detected in public distribution repository (${publicDistDir})! Build aborted!`)
+      process.exit(1)
+    }
+    const distSource = path.join(publicDistDir, 'source')
+    if (fs.existsSync(distSource)) {
+      console.error(`❌ FATAL: Proprietary source/ folder leaked into public distribution repository (${publicDistDir})! Build aborted!`)
+      process.exit(1)
+    }
+    console.log(`[PASS] Public distribution repository invariants verified for ${path.basename(publicDistDir)} (zero orphaned CI workflows, zero source leaks).`)
+  }
+}
+
 console.log('✅ ALL MASTER INVARIANTS PASSED! Safe to build.\n')
