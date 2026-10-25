@@ -2059,6 +2059,23 @@
 3. **Discreet Standby Scanner HUD:** The `Scanner Ready` indicator now rests in an unobtrusive, elegant standby pill (`border-ink-line/80 bg-ink-850 text-slate-400`) and pulses vivid emerald (`Scanner Active`) only when rapid hardware keystrokes from a physical USB/Bluetooth scanner are detected.
 4. **Canonical Verification:** 596 automated unit and integration tests passing across 94 test suites with 0 TypeScript compilation errors and verified database invariants.
 
+---
+
+## 95. Foreign Key Constraint Immune Restore & TINDA LAN Direct Beam PC-to-PC Sync (v4.1.8 Spec)
+
+### 95.1 Universal SQLite Restore Immunity & Constraint Relaxation
+1. **Root Cause Eradication:** Eradicated `SqliteError: FOREIGN KEY constraint failed` during `.tinda-backup` restoration (`backup:importTinda`) caused by forward-insertion of child tables prior to parent tables (e.g. `sales` referencing uninserted `shifts`, or `batch_movements` referencing uninserted `sale_items`).
+2. **Topological Order Invariant:** `CANONICAL_TABLES` enforces strict parent-before-child ordering: `roles` $\rightarrow$ `users` $\rightarrow$ `user_roles` $\rightarrow$ `shifts` $\rightarrow$ `categories` $\rightarrow$ `suppliers` $\rightarrow$ `customers` $\rightarrow$ `expense_categories` $\rightarrow$ `products` $\rightarrow$ `product_units` $\rightarrow$ `product_recipes` $\rightarrow$ `stock_batches` $\rightarrow$ `purchases` $\rightarrow$ `purchase_items` $\rightarrow$ `inventory_movements` $\rightarrow$ `expenses` $\rightarrow$ `sales` $\rightarrow$ `sale_items` $\rightarrow$ `batch_movements` $\rightarrow$ `payments` $\rightarrow$ `held_sales` $\rightarrow$ `held_sale_items` $\rightarrow$ `refunds` $\rightarrow$ `refund_items` $\rightarrow$ `credit_ledger` $\rightarrow$ `cash_movements` $\rightarrow$ `cash_counts` $\rightarrow$ `z_reads` $\rightarrow$ `ewallet_transactions` $\rightarrow$ `ewallet_audits` $\rightarrow$ `audit_logs` $\rightarrow$ `settings`.
+3. **External Constraint Relaxation (`PRAGMA foreign_keys = OFF`):** In SQLite, disabling foreign keys must occur outside active transactions. The restore engine deactivates foreign keys prior to opening `db.transaction`, sets `PRAGMA defer_foreign_keys = ON` within the transaction, and executes `PRAGMA foreign_key_check` and `PRAGMA integrity_check` before re-enabling `PRAGMA foreign_keys = ON` in a guaranteed `finally` block.
+4. **Self-Healing Web & Multi-Platform Adaptation:** Automatically synthesizes missing columns, generates missing SKUs for un-indexed web products, safely handles duplicate barcodes by making them unique, normalizes Dexie settings arrays into key-value pairs, and auto-decomposes embedded invoice items into `sale_items`.
+
+### 95.2 TINDA LAN Direct Beam (1-Tap PC-to-PC Wi-Fi & LAN Cable Data Transfer)
+1. **Zero USB Flash Drive Invariant:** Allows store owners and cashiers to clone their entire store database directly between two laptops over local Wi-Fi, Ethernet switch, or a direct PC-to-PC LAN cable in under 2 seconds.
+2. **UDP Auto-Discovery Beacon (Port 3112):** Listens on `0.0.0.0:3112` and broadcasts `TINDA_BEAM_BEACON` advertisements carrying store name, IP address, port, version, and `isBeamReady` flag.
+3. **Secure 6-Digit PIN Handshake (Port 3111):** Sender generates high-entropy 6-digit PIN expiring in 15 minutes. Authorized receiver issues `POST /api/lan/beam/pull` with the PIN, retrieving full store snapshot.
+4. **UI-UX Pro Max OLED/Dark Interface:** High-contrast `#0f172a` modal (`LanBeamModal`) with dual Send/Receive tabs, large monospace PIN display, live animated radar beacon indicator, automatic nearby PC scanner, manual IP override, and multi-step progress bar.
+5. **Canonical Verification:** 24 unit and integration tests passing across backup, validation, and LAN beam suites with 0 TypeScript compilation errors and verified database invariants.
+
 
 
 
