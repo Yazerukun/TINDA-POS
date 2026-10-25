@@ -247,21 +247,12 @@ ${fs.readFileSync(sumsPath, 'utf8').trim()}
     }))
   }
 
-  // Purge any unwanted patch files from GitHub release
-  const unwantedPatchAssets = (release.assets || []).filter((a) =>
-    a.name.includes('Patch') || a.name.endsWith('.zip') || a.name.includes('.zip.sha256')
-  )
-  for (const patchAsset of unwantedPatchAssets) {
-    console.log(`🗑️ PURGING UNWANTED PATCH ASSET FROM GITHUB: ${patchAsset.name} (ID: ${patchAsset.id})...`)
-    try {
-      await ghRequest('DELETE', `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${patchAsset.id}`)
-      console.log(`   ✓ Successfully deleted ${patchAsset.name} from GitHub release!`)
-    } catch (err) {
-      console.warn(`Could not delete patch asset ${patchAsset.name}:`, err.message)
-    }
-  }
+  const patchFile = `TindaPOS-Feature-Patch-${version}.zip`
+  const patchPath = path.join(BUILDS_DIR, patchFile)
+  const patchShaFile = `${patchFile}.sha256`
+  const patchShaPath = path.join(BUILDS_DIR, patchShaFile)
 
-  console.log(`✅ Release ready! Uploading official full release assets...`)
+  console.log(`✅ Release ready! Uploading official release assets (Full binaries + In-app Fast Patch)...`)
 
   const assetsToUpload = [
     { file: setupFile, path: setupPath, type: 'application/vnd.microsoft.portable-executable' }
@@ -271,6 +262,12 @@ ${fs.readFileSync(sumsPath, 'utf8').trim()}
   }
   if (fs.existsSync(appImagePath)) {
     assetsToUpload.push({ file: appImageFile, path: appImagePath, type: 'application/x-executable' })
+  }
+  if (fs.existsSync(patchPath)) {
+    assetsToUpload.push({ file: patchFile, path: patchPath, type: 'application/zip' })
+  }
+  if (fs.existsSync(patchShaPath)) {
+    assetsToUpload.push({ file: patchShaFile, path: patchShaPath, type: 'text/plain' })
   }
   if (fs.existsSync(blockmapPath)) {
     assetsToUpload.push({ file: blockmapFile, path: blockmapPath, type: 'application/octet-stream' })
