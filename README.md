@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v5.1.3-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v5.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -14,13 +14,13 @@
 
 ### The Premier 100% Offline-First Point-of-Sale System for Philippine Sari-Sari Stores, Minimarts & Wholesalers
 
-**Expanded Invoice Description & Untruncated Codes · Pure Full Build Mandate · Untruncated Inventory Alerts & Dashboard KPI Precision · Dedicated Port Isolation · Self-Healing LAN Beam Sync · Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
+**Omnipresent Minimized Purchase Invoice & Draft Persistence · Expanded Invoice Description & Untruncated Codes · Pure Full Build Mandate · Untruncated Inventory Alerts & Dashboard KPI Precision · Dedicated Port Isolation · Self-Healing LAN Beam Sync · Zero-Click Instant Peer Radar · Hybrid Subnet Sweep Engine · TINDA LAN Direct Beam (1-Tap PC-to-PC Sync) · Universal Foreign-Key Immune Backup Restore · Lightning-Fast Checkout · Hardware Barcode & Label Engine · Printable Utang Master List & Total Breakdown · Wholesale Invoices · Daily E-Wallet Reconciliation · Store Use OPEX Ledger & History Center · Clean Full Setup.exe Auto-Update · 1-Tap QR & Direct PIN Cloud Sync · 24-Hour VIP Demo Engine · Auto VIP Self-Healing**
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.3_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-Setup-5.1.3.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.3_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-Portable-5.1.3.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.3_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-5.1.3.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.4_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Setup-5.1.4.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.4_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Portable-5.1.4.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.4_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-5.1.4.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,20 +31,34 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v5.1.3 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v5.1.4 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-5.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-Setup-5.1.3.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-5.1.3.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-Portable-5.1.3.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-5.1.3.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/TindaPOS-5.1.3.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v5.1.3.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.3/SHA256SUMS-v5.1.3.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-5.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Setup-5.1.4.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-5.1.4.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Portable-5.1.4.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-5.1.4.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-5.1.4.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v5.1.4.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/SHA256SUMS-v5.1.4.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v5.1.3: Expanded Purchase Invoice Description & Code Layout
+## 🌟 What's New in v5.1.4: Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence
+
+### 1. 🛡️ Omnipresent Root-Level Shell Mount & Multi-Page Persistence
+- **Decoupled from Page Lifecycle**: Promoted `PurchaseInvoiceModal` from within `Inventory.tsx` up to the top-level application shell (`Shell.tsx`), governed by a global reactive store (`usePurchaseInvoiceModal`).
+- **Zero In-Memory Data Loss**: Switching pages between POS Cashier, Inventory, Customers, Utang, or Reports never unmounts the invoice component or destroys staged line items.
+- **Persistent Floating Receiving Dock**: When minimized, the floating dock card stays visible across **all pages** with live item count, staged subtotal, status badges (`ACTIVE` / `EDITING`), and one-tap instant restore (`Maximize`).
+
+### 2. 🎯 Dynamic Cart-Aware Layout Positioning
+- **POS Checkout Protection**: Intelligently detects active navigation view (`useNav`)—positioning the minimized floating dock at `bottom-16 right-4` across normal views, and automatically offsetting it to `bottom-16 right-[24.5rem] xl:right-[27.5rem]` in the POS Cashier.
+- **Zero Collision**: Completely clears the POS shopping cart and green `CHECKOUT & PAY` button, allowing cashiers to ring up walk-in customers while an invoice draft remains safely in progress.
+
+### 3. 💾 Resilient LocalStorage Draft Engine & Safe Dismissal Guards
+- **Automatic Draft Persistence**: Line items, supplier selection, invoice/receipt numbers, costs, and discounts auto-save into `tinda_purchase_invoice_draft_v1` on every keystroke and re-hydrate seamlessly across restarts.
+- **Accidental Click Prevention**: Pressing `Escape` or clicking outside the backdrop automatically minimizes the invoice to the dock instead of discarding items.
+- **Explicit Discard Confirmation**: Requires explicit two-step user confirmation before clearing staged items.
 
 ### 1. 📐 Uncapped Full-Width Description Column
 - **Dynamic Table Auto-Layout**: Upgraded table rendering from rigid equal-width columns to fluid `table-auto min-w-[1060px]`, routing maximum horizontal real estate directly to product names.
