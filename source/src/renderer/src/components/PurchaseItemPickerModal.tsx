@@ -19,6 +19,7 @@ interface PurchaseItemPickerModalProps {
   onClose: () => void
   products: Product[]
   onSelectProduct: (product: Product) => void
+  onRefresh?: () => Promise<void> | void
 }
 
 const INITIAL_CHUNK_SIZE = 80
@@ -28,41 +29,74 @@ export function PurchaseItemPickerModal({
   open,
   onClose,
   products,
-  onSelectProduct
+  onSelectProduct,
+  onRefresh
 }: PurchaseItemPickerModalProps): React.JSX.Element | null {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
   const [selectedIndex, setSelectedIndex] = useState<number>(0)
   const [renderLimit, setRenderLimit] = useState<number>(INITIAL_CHUNK_SIZE)
+  const [extraDbProducts, setExtraDbProducts] = useState<Product[]>([])
 
   const searchInputRef = useRef<HTMLInputElement>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowRefs = useRef<(HTMLTableRowElement | null)[]>([])
 
+  // Live search fallback if query has no in-memory matches or to discover newly added codes
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (!q) {
+      setExtraDbProducts([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      if (typeof window !== 'undefined' && window.api?.products?.search) {
+        try {
+          const res = await window.api.products.search(q, { status: 'ACTIVE', limit: 50 })
+          if (res?.rows && res.rows.length > 0) {
+            const newItems = res.rows.filter((rp) => !products.some((p) => p.id === rp.id))
+            if (newItems.length > 0) {
+              setExtraDbProducts(newItems)
+            }
+          }
+        } catch (err) {
+          console.debug('F1 Explorer live search error:', err)
+        }
+      }
+    }, 180)
+    return () => clearTimeout(timer)
+  }, [searchQuery, products])
+
+  // Catalog combining provided products and any newly discovered live DB rows
+  const effectiveCatalog = useMemo(() => {
+    if (extraDbProducts.length === 0) return products
+    return [...products, ...extraDbProducts]
+  }, [products, extraDbProducts])
+
   // Extract unique categories from catalog
   const categories = useMemo(() => {
     const catMap = new Map<string, number>()
-    products.forEach((p) => {
+    effectiveCatalog.forEach((p) => {
       const cat = p.category_name?.trim() || 'Uncategorized'
       catMap.set(cat, (catMap.get(cat) || 0) + 1)
     })
     return Array.from(catMap.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
-  }, [products])
+  }, [effectiveCatalog])
 
   // Count low stock items
   const lowStockCount = useMemo(() => {
-    return products.filter((p) => {
+    return effectiveCatalog.filter((p) => {
       const threshold = p.low_stock_threshold ?? 5
       return p.stock <= threshold
     }).length
-  }, [products])
+  }, [effectiveCatalog])
 
   // Filtered products list
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    return products.filter((p) => {
+    return effectiveCatalog.filter((p) => {
       // Category filter
       if (selectedCategory === 'LOW_STOCK') {
         const threshold = p.low_stock_threshold ?? 5
@@ -76,7 +110,7 @@ export function PurchaseItemPickerModal({
       if (!q) return true
       return matchesProductSearch(p, q)
     })
-  }, [products, searchQuery, selectedCategory])
+  }, [effectiveCatalog, searchQuery, selectedCategory])
 
   // Progressive rendering slice for 0ms instantaneous opening and silky 60fps scrolling
   const displayedProducts = useMemo(() => {
@@ -89,19 +123,21 @@ export function PurchaseItemPickerModal({
     setRenderLimit(INITIAL_CHUNK_SIZE)
   }, [searchQuery, selectedCategory])
 
-  // Auto-focus search input with 0ms microtask whenever modal opens
+  // Auto-focus search input with 0ms microtask and trigger proactive refresh whenever modal opens
   useEffect(() => {
     if (open) {
+      void onRefresh?.()
       setSearchQuery('')
       setSelectedCategory('ALL')
       setSelectedIndex(0)
       setRenderLimit(INITIAL_CHUNK_SIZE)
+      setExtraDbProducts([])
       requestAnimationFrame(() => {
         searchInputRef.current?.focus()
         searchInputRef.current?.select()
       })
     }
-  }, [open])
+  }, [open, onRefresh])
 
   // Ensure active row is scrolled into view smoothly
   useEffect(() => {
@@ -212,7 +248,7 @@ export function PurchaseItemPickerModal({
                   F1 Quick Picker
                 </span>
                 <span className="rounded-full bg-ink-800 border border-ink-line px-2 py-0.5 text-[11px] text-slate-400">
-                  {products.length} Products Active
+                  {effectiveCatalog.length} Products Active
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">

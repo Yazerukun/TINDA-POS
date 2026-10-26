@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   FileSpreadsheet,
   Plus,
@@ -312,6 +312,68 @@ export function PurchaseInvoiceModal({
     }
   }
 
+  // Proactively refresh active products in background (cache invalidation guard)
+  const refreshProducts = useCallback(async () => {
+    try {
+      if (typeof window !== 'undefined' && window.api?.products?.search) {
+        const prodRes = await window.api.products.search('', { status: 'ACTIVE', limit: 3000 })
+        if (prodRes?.rows) {
+          setAllProducts(prodRes.rows)
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to refresh products in purchase invoice:', err)
+    }
+  }, [])
+
+  // 1. Refresh products whenever modal is restored / un-minimized
+  const prevMinimizedRef = useRef(isMinimized)
+  useEffect(() => {
+    if (open && prevMinimizedRef.current && !isMinimized) {
+      void refreshProducts()
+      if (activeTab === 'create' && !viewingPurchase) {
+        setTimeout(() => searchInputRef.current?.focus(), 100)
+      }
+    }
+    prevMinimizedRef.current = isMinimized
+  }, [open, isMinimized, refreshProducts, activeTab, viewingPurchase])
+
+  // 2. Refresh products when inventory changes anywhere in the system (e.g. newly created code in Inventory tab)
+  useEffect(() => {
+    if (!open) return
+    let unsubscribe: (() => void) | undefined
+    if (typeof window !== 'undefined' && window.api?.inventory?.onChanged) {
+      unsubscribe = window.api.inventory.onChanged(() => {
+        void refreshProducts()
+      })
+    }
+    const handleCustomInv = () => {
+      void refreshProducts()
+    }
+    window.addEventListener('inventory:changed', handleCustomInv)
+    return () => {
+      unsubscribe?.()
+      window.removeEventListener('inventory:changed', handleCustomInv)
+    }
+  }, [open, refreshProducts])
+
+  // 3. Refresh products when window regains focus
+  useEffect(() => {
+    if (!open || isMinimized) return
+    const handleFocus = () => {
+      void refreshProducts()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [open, isMinimized, refreshProducts])
+
+  // 4. Refresh products when Spotlight Explorer (F1) is triggered
+  useEffect(() => {
+    if (showItemPicker) {
+      void refreshProducts()
+    }
+  }, [showItemPicker, refreshProducts])
+
   // Load history
   const loadHistory = async () => {
     setHistoryLoading(true)
@@ -386,6 +448,10 @@ export function PurchaseInvoiceModal({
     return units
   }, [selectedProduct])
 
+  // Live DB fallback items when typing/scanning codes not yet present in allProducts
+  const [liveDbItems, setLiveDbItems] = useState<Product[]>([])
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
   // Filtered products for dropdown suggestions
   const searchResults = useMemo(() => {
     const q = searchQuery.trim()
@@ -394,6 +460,124 @@ export function PurchaseInvoiceModal({
       .filter((p) => matchesProductSearch(p, q))
       .slice(0, 10)
   }, [allProducts, searchQuery])
+
+  // If in-memory results don't have matches, query DB live (e.g. for newly created codes in Inventory)
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (!q) {
+      setLiveDbItems([])
+      return
+    }
+    if (searchResults.length > 0) {
+      setLiveDbItems([])
+      return
+    }
+    const timer = setTimeout(async () => {
+      if (typeof window !== 'undefined') {
+        try {
+          if (window.api?.products?.lookupBarcode) {
+            const bar = await window.api.products.lookupBarcode(q)
+            if (bar?.exists && bar.product && !bar.isArchived) {
+              setLiveDbItems([bar.product])
+              return
+            }
+          }
+          if (window.api?.products?.search) {
+            const res = await window.api.products.search(q, { status: 'ACTIVE', limit: 10 })
+            if (res?.rows && res.rows.length > 0) {
+              setLiveDbItems(res.rows)
+            } else {
+              setLiveDbItems([])
+            }
+          }
+        } catch {
+          setLiveDbItems([])
+        }
+      }
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [searchQuery, searchResults.length])
+
+  const activeDropdownItems = useMemo(() => {
+    return searchResults.length > 0 ? searchResults : liveDbItems
+  }, [searchResults, liveDbItems])
+
+  // Handle keyboard navigation & Enter lookup on search input
+  const handleSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (activeDropdownItems.length > 0) {
+        setDropdownIndex((prev) => (prev + 1) % activeDropdownItems.length)
+        setShowDropdown(true)
+      }
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (activeDropdownItems.length > 0) {
+        setDropdownIndex((prev) => (prev - 1 + activeDropdownItems.length) % activeDropdownItems.length)
+        setShowDropdown(true)
+      }
+      return
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      setShowDropdown(false)
+      return
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      // If dropdown has items and one is selected
+      if (activeDropdownItems.length > 0 && activeDropdownItems[dropdownIndex]) {
+        handleSelectProduct(activeDropdownItems[dropdownIndex])
+        setShowDropdown(false)
+        return
+      }
+      const q = searchQuery.trim()
+      if (!q) return
+
+      // Direct lookup by barcode or code on Enter
+      try {
+        if (typeof window !== 'undefined') {
+          if (window.api?.products?.lookupBarcode) {
+            const barcodeRes = await window.api.products.lookupBarcode(q)
+            if (barcodeRes?.exists && barcodeRes.product && !barcodeRes.isArchived) {
+              handleSelectProduct(barcodeRes.product)
+              setShowDropdown(false)
+              return
+            }
+          }
+          if (window.api?.products?.search) {
+            const searchRes = await window.api.products.search(q, { status: 'ACTIVE', limit: 1 })
+            if (searchRes?.rows && searchRes.rows.length > 0 && searchRes.rows[0]) {
+              handleSelectProduct(searchRes.rows[0])
+              setShowDropdown(false)
+              return
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Direct lookup failed on Enter:', err)
+      }
+    }
+  }
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(target)
+      ) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Filtered History list by Search Bar (P.O. Number, Invoice #, Receipt #, Supplier, Date, Encoder)
   const filteredHistoryList = useMemo(() => {
@@ -423,9 +607,18 @@ export function PurchaseInvoiceModal({
 
   // Product Selection Handler
   const handleSelectProduct = (product: Product) => {
+    // Ensure product is in allProducts cache
+    setAllProducts((prev) => {
+      if (!prev.some((p) => p.id === product.id)) {
+        return [product, ...prev]
+      }
+      return prev
+    })
+
     setSelectedProduct(product)
     setSearchQuery(product.name)
     setShowDropdown(false)
+    setLiveDbItems([])
 
     // Select default unit
     const defaultUnit = product.units?.find((u) => u.is_default)?.name || product.base_unit || 'pc'
@@ -1064,7 +1257,10 @@ export function PurchaseInvoiceModal({
       {isMinimized && (
         <div
           className="fixed bottom-5 right-6 z-50 flex items-center gap-4 rounded-2xl border border-white/10 bg-ink-900/95 p-4 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-300 select-none cursor-pointer hover:border-emerald-500/30 transition-all"
-          onClick={() => setIsMinimized(false)}
+          onClick={() => {
+            setIsMinimized(false)
+            void refreshProducts()
+          }}
         >
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <Truck className="h-6 w-6" />
@@ -1087,6 +1283,7 @@ export function PurchaseInvoiceModal({
             onClick={(e) => {
               e.stopPropagation()
               setIsMinimized(false)
+              void refreshProducts()
             }}
             className="ml-2 rounded-lg bg-white/10 p-2 text-zinc-300 hover:bg-white/20 hover:text-white transition-colors"
             title="Restore Window"
@@ -1468,19 +1665,79 @@ export function PurchaseInvoiceModal({
                               <Search className="h-3 w-3" /> F1 Explorer
                             </button>
                           </label>
-                          <input
-                            ref={searchInputRef}
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => {
-                              setSearchQuery(e.target.value)
-                              setShowDropdown(true)
-                              setDropdownIndex(0)
-                            }}
-                            onFocus={() => setShowDropdown(true)}
-                            placeholder="Scan barcode or type name…"
-                            className="input w-full font-medium text-xs pr-8"
-                          />
+                          <div className="relative">
+                            <input
+                              ref={searchInputRef}
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => {
+                                setSearchQuery(e.target.value)
+                                setShowDropdown(true)
+                                setDropdownIndex(0)
+                              }}
+                              onFocus={() => setShowDropdown(true)}
+                              onKeyDown={handleSearchKeyDown}
+                              placeholder="Scan barcode or type name…"
+                              className="input w-full font-medium text-xs pr-8"
+                            />
+                            {searchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedProduct(null)
+                                  setSearchQuery('')
+                                  setShowDropdown(false)
+                                  searchInputRef.current?.focus()
+                                }}
+                                className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-white transition-colors"
+                                title="Clear search"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Search Dropdown */}
+                          {showDropdown && activeDropdownItems.length > 0 && (
+                            <div
+                              ref={dropdownRef}
+                              className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-emerald-500/40 bg-ink-900 shadow-2xl ring-2 ring-black"
+                              style={{ backgroundColor: '#111418' }}
+                            >
+                              <div
+                                className="sticky top-0 z-10 border-b border-ink-line px-3 py-1.5 text-[11px] font-bold text-slate-400 flex items-center justify-between"
+                                style={{ backgroundColor: '#0a0d0f' }}
+                              >
+                                <span>Matching Products ({activeDropdownItems.length})</span>
+                                <span className="text-[10px] text-emerald-400 font-mono">Use ↑↓ &amp; Enter to Select</span>
+                              </div>
+                              {activeDropdownItems.map((p, idx) => (
+                                <div
+                                  key={p.id}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault()
+                                    handleSelectProduct(p)
+                                  }}
+                                  onMouseEnter={() => setDropdownIndex(idx)}
+                                  className={`cursor-pointer border-b border-ink-line/50 p-2.5 text-xs transition-colors ${
+                                    idx === dropdownIndex
+                                      ? 'bg-emerald-500/25 text-white border-l-4 border-emerald-400 pl-3 font-semibold'
+                                      : 'text-slate-200 hover:bg-ink-800 hover:text-white'
+                                  }`}
+                                  style={idx === dropdownIndex ? { backgroundColor: 'rgba(16, 185, 129, 0.25)' } : { backgroundColor: '#111418' }}
+                                >
+                                  <div className="font-bold text-white text-sm leading-snug">{p.name}</div>
+                                  <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
+                                    {(p.barcode || p.sku) && (
+                                      <span className="font-mono text-emerald-300">Code: {p.barcode || p.sku}</span>
+                                    )}
+                                    {p.category_name && <span>• {p.category_name}</span>}
+                                    <span>• Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         <div className="md:col-span-2">
@@ -2141,19 +2398,79 @@ export function PurchaseInvoiceModal({
                           <Search className="h-3 w-3" /> F1 Explorer
                         </button>
                       </label>
-                      <input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value)
-                          setShowDropdown(true)
-                          setDropdownIndex(0)
-                        }}
-                        onFocus={() => setShowDropdown(true)}
-                        placeholder="Scan barcode or type name…"
-                        className="input w-full font-medium text-xs pr-8"
-                      />
+                      <div className="relative">
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => {
+                            setSearchQuery(e.target.value)
+                            setShowDropdown(true)
+                            setDropdownIndex(0)
+                          }}
+                          onFocus={() => setShowDropdown(true)}
+                          onKeyDown={handleSearchKeyDown}
+                          placeholder="Scan barcode or type name…"
+                          className="input w-full font-medium text-xs pr-8"
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedProduct(null)
+                              setSearchQuery('')
+                              setShowDropdown(false)
+                              searchInputRef.current?.focus()
+                            }}
+                            className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-white transition-colors"
+                            title="Clear search"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Search Dropdown */}
+                      {showDropdown && activeDropdownItems.length > 0 && (
+                        <div
+                          ref={dropdownRef}
+                          className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-emerald-500/40 bg-ink-900 shadow-2xl ring-2 ring-black"
+                          style={{ backgroundColor: '#111418' }}
+                        >
+                          <div
+                            className="sticky top-0 z-10 border-b border-ink-line px-3 py-1.5 text-[11px] font-bold text-slate-400 flex items-center justify-between"
+                            style={{ backgroundColor: '#0a0d0f' }}
+                          >
+                            <span>Matching Products ({activeDropdownItems.length})</span>
+                            <span className="text-[10px] text-emerald-400 font-mono">Use ↑↓ &amp; Enter to Select</span>
+                          </div>
+                          {activeDropdownItems.map((p, idx) => (
+                            <div
+                              key={p.id}
+                              onMouseDown={(e) => {
+                                e.preventDefault()
+                                handleSelectProduct(p)
+                              }}
+                              onMouseEnter={() => setDropdownIndex(idx)}
+                              className={`cursor-pointer border-b border-ink-line/50 p-2.5 text-xs transition-colors ${
+                                idx === dropdownIndex
+                                  ? 'bg-emerald-500/25 text-white border-l-4 border-emerald-400 pl-3 font-semibold'
+                                  : 'text-slate-200 hover:bg-ink-800 hover:text-white'
+                              }`}
+                              style={idx === dropdownIndex ? { backgroundColor: 'rgba(16, 185, 129, 0.25)' } : { backgroundColor: '#111418' }}
+                            >
+                              <div className="font-bold text-white text-sm leading-snug">{p.name}</div>
+                              <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
+                                {(p.barcode || p.sku) && (
+                                  <span className="font-mono text-emerald-300">Code: {p.barcode || p.sku}</span>
+                                )}
+                                {p.category_name && <span>• {p.category_name}</span>}
+                                <span>• Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="md:col-span-2">
@@ -2460,6 +2777,7 @@ export function PurchaseInvoiceModal({
         open={showItemPicker}
         onClose={() => setShowItemPicker(false)}
         products={allProducts}
+        onRefresh={refreshProducts}
         onSelectProduct={(prod) => {
           setShowItemPicker(false)
           handleSelectProduct(prod)

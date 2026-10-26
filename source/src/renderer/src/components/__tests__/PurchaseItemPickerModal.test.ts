@@ -171,4 +171,53 @@ describe('PurchaseItemPickerModal', () => {
     expect(markup).not.toContain('Catalog Item #81')
     expect(markup).toContain('Showing first 80 of 120 items')
   })
+
+  it('accepts onRefresh callback and accurately displays dynamic newly added codes', () => {
+    let refreshTriggered = false
+    const onRefresh = () => {
+      refreshTriggered = true
+    }
+
+    const updatedCatalog: Product[] = [
+      ...mockProducts,
+      {
+        id: 99,
+        name: 'Brand New Inventory Item Code 99',
+        sku: 'NEW-99',
+        barcode: '9900012345678',
+        description: null,
+        category_id: 1,
+        category_name: 'Snacks',
+        base_unit: 'pack',
+        purchase_cost_c: 2500,
+        default_price_c: 3500,
+        stock: 50,
+        low_stock_threshold: 10,
+        stock_status: 'IN_STOCK',
+        supplier_id: 1,
+        has_expiration: false,
+        image_path: null,
+        status: 'ACTIVE',
+        notes: null,
+        units: [],
+        created_at: '2026-10-26',
+        updated_at: '2026-10-26'
+      }
+    ]
+
+    const markup = renderToStaticMarkup(
+      React.createElement(PurchaseItemPickerModal, {
+        open: true,
+        onClose: () => {},
+        products: updatedCatalog,
+        onSelectProduct: () => {},
+        onRefresh
+      })
+    )
+
+    expect(markup).toContain('4 Products Active')
+    expect(markup).toContain('Brand New Inventory Item Code 99')
+    expect(markup).toContain('9900012345678')
+    expect(markup).toContain('₱25.00')
+  })
 })

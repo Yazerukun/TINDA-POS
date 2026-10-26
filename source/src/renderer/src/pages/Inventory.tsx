@@ -261,6 +261,9 @@ export function Inventory(): React.JSX.Element {
           setRecipeProduct(created)
         }
       }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('inventory:changed', { detail: { reason: f.id ? 'UPDATE' : 'CREATE' } }))
+      }
       setEditing(null)
       void load()
     } catch (e) { toastError('Save failed', String((e as Error)?.message || e)) }
