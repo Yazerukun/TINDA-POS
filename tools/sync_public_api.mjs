@@ -68,7 +68,7 @@ async function syncFile(localPath, repoPath) {
   }
 
   const payload = {
-    message: `release: sync v4.1.5 ${repoPath}`,
+    message: `release: sync v5.1.0 ${repoPath}`,
     content: base64Content,
     branch: 'master'
   }

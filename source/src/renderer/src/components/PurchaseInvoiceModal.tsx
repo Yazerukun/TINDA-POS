@@ -188,7 +188,8 @@ export function PurchaseInvoiceModal({
     showSignatures: true,
     compactSignatures: true,
     scalePercent: 100,
-    fitToOnePage: true
+    fitToOnePage: true,
+    showEffectiveDiscount: false
   }
 
   const [printCustomizer, setPrintCustomizer] = useState<PurchasePrintCustomizerOptions>(() => {
@@ -766,7 +767,7 @@ export function PurchaseInvoiceModal({
 
       const grossUnitCostC = it.unit_cost_c
       const discountC = it.discount_c || Math.max(0, grossUnitCostC * it.qty - it.subtotal_c)
-      const discountInput: string = it.discount_input ? String(it.discount_input) : (discountC > 0 ? (discountC / 100).toFixed(2) : '')
+      const discountInput: string = it.discount_input ? String(it.discount_input) : (discountC > 0 ? formatDiscountPercent('', discountC, grossUnitCostC * it.qty) : '')
       const netUnitCostC = it.qty > 0 ? Math.round(it.subtotal_c / it.qty) : grossUnitCostC
 
       return {
@@ -1663,9 +1664,9 @@ export function PurchaseInvoiceModal({
                                 {it.discountC > 0 ? (
                                   <span
                                     className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
-                                    title={`Less ${money(it.discountC)}`}
+                                    title={`Less ${money(it.discountC)} (${formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty, { withEffective: true })})`}
                                   >
-                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty, { withEffective: true })}
+                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-600 font-mono">—</span>
@@ -2829,6 +2830,15 @@ export function PurchaseInvoiceModal({
                           className="checkbox-custom"
                         />
                       </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span>Show Compounded Total %</span>
+                        <input
+                          type="checkbox"
+                          checked={Boolean(printCustomizer.showEffectiveDiscount)}
+                          onChange={(e) => updateCustomizer({ showEffectiveDiscount: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
                     </div>
 
                     {/* Document Sections Toggles */}
@@ -3015,7 +3025,7 @@ export function PurchaseInvoiceModal({
                               const discInput = it.discountInput ?? it.discount_input ?? ''
                               const discC =
                                 it.discountC ?? it.discount_c ?? Math.max(0, unitCostC * qty - subtotalC)
-                              const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty, { withEffective: true })
+                              const discStr = formatDiscountPercent(discInput, discC, unitCostC * qty, { withEffective: printCustomizer.showEffectiveDiscount ?? false })
 
                               const padY = `${printCustomizer.rowPaddingY || 3}px`
 

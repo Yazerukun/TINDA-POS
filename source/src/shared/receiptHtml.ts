@@ -1019,6 +1019,7 @@ export interface PurchasePrintCustomizerOptions {
   compactSignatures?: boolean
   scalePercent?: number
   fitToOnePage?: boolean
+  showEffectiveDiscount?: boolean
 }
 
 export function generatePurchaseOrderDocumentHtml(
@@ -1061,7 +1062,7 @@ export function generatePurchaseOrderDocumentHtml(
   const itemsHtml = p.items
     .map((it, idx) => {
       const grossItemC = it.unit_cost_c * it.qty
-      const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC, { withEffective: true })
+      const discText = formatDiscountPercent(it.discount_input, it.discount_c, grossItemC, { withEffective: customizer?.showEffectiveDiscount ?? false })
       const discDisplay =
         discText !== '—'
           ? `<span style="color:#b45309; font-weight: 700; font-family: monospace; font-size: ${Math.max(10, fontSize)}px;">${escapeHtml(discText)}</span>`

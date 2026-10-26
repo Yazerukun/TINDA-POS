@@ -1,15 +1,15 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v4.1.12 (PURE FULL BUILD MANDATE & DIRECT NSIS AUTO-UPDATER RELEASE)
+- v5.1.0 (PURE FULL BUILD MANDATE & DIRECT NSIS AUTO-UPDATER RELEASE)
 
 TARGET:
 - v4.2.0 (NEXT MAJOR CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v4.1.12 Pure Full Build Mandate & Direct NSIS Auto-Updater Release
+- Production Release Ready — v5.1.0 Pure Full Build Mandate & Direct NSIS Auto-Updater Release
 
-COMPLETED (v4.1.12 Pure Full Build Mandate & Direct NSIS Auto-Updater):
+COMPLETED (v5.1.0 Pure Full Build Mandate & Direct NSIS Auto-Updater):
 - Stage 37: Pure Full Build Mandate: Completely eradicated fabricated patch fallbacks in `updateTransport.ts`. Set `hasPatch: false` and `patchAsset: null` across redirect fallbacks, ensuring all client nodes download 100% full binaries (`TindaPOS-Setup-4.1.12.exe` / `TindaPOS-Portable-4.1.12.exe` / `TindaPOS-4.1.12.AppImage`).
 - Stage 38: Interactive UAC Elevation Support in Auto-Updater: Updated `restartAndInstall()` to invoke `quitAndInstall(false, true)` allowing the NSIS installer to prompt for UAC elevation on Windows machines installed under `C:\Program Files\`, eliminating silent install termination.
 - Stage 39: Uncapped Inventory & Dashboard KPI Precision: Full integration of un-truncated low-stock alerts, 5,000 query limit catalog parity, scrollable alert review card, and un-truncated Quick Launch counters.
