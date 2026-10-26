@@ -136,7 +136,7 @@ async function postToSupabase(
     apikey: SUPABASE_SYNC_CONFIG.anonKey,
     Authorization: `Bearer ${SUPABASE_SYNC_CONFIG.anonKey}`,
     'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TINDA-POS/5.1.1 Supabase-Failover'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TINDA-POS/5.1.2 Supabase-Failover'
   }
 
   try {
@@ -359,7 +359,7 @@ async function postToCloud(
       headers: {
         'Content-Type': 'application/json',
         'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.1'
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.2'
       },
       body: JSON.stringify(normalizedPayload),
       signal: controller.signal
@@ -499,7 +499,7 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
     // Ping cloud endpoint
     const pingRes = await cloudFetch(`${apiUrl.replace(/\/+$/, '')}/`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.1'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.2'
       },
       signal: AbortSignal.timeout(8000)
     })
@@ -512,7 +512,7 @@ export async function syncNow(db: Database.Database): Promise<{ ok: boolean; mes
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.1'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 TINDA-POS/5.1.2'
       },
       body: JSON.stringify({
         store_id: storeId,

@@ -74,8 +74,10 @@ export const STANDARD_PACKAGING_UNITS: { name: string; label: string; defaultCon
   { name: 'sack', label: 'SACK (Sack / Bag)', defaultConversion: 50 },
   { name: 'can', label: 'CAN (Can / Lata)', defaultConversion: 1 },
   { name: 'bottle', label: 'BOTTLE (Bottle / Botelya)', defaultConversion: 1 },
-  { name: 'kilo', label: 'KILO (Kilogram)', defaultConversion: 1 },
-  { name: 'custom', label: 'CUSTOM (Other)', defaultConversion: 1 }
+  { name: 'liter', label: 'LITER (Liter / L)', defaultConversion: 1 },
+  { name: 'gallon', label: 'GALLON (Gallon / Gal)', defaultConversion: 1 },
+  { name: 'kilo', label: 'KILO (Kilogram / Kg)', defaultConversion: 1 },
+  { name: 'custom', label: 'CUSTOM (Other)...', defaultConversion: 1 }
 ]
 
 interface InvoiceLineItem {
@@ -445,6 +447,14 @@ export function PurchaseInvoiceModal({
       }
     }
 
+    if (!units.some((u) => u.name.toLowerCase() === 'custom')) {
+      units.push({
+        name: 'custom',
+        label: 'CUSTOM (Other)...',
+        conversionToBase: 1
+      })
+    }
+
     return units
   }, [selectedProduct])
 
@@ -707,10 +717,15 @@ export function PurchaseInvoiceModal({
       return
     }
 
+    if (selectedUnitName === 'custom' && !customUnitName.trim()) {
+      toastError('Unit Name Required', 'Please enter a custom unit name (e.g. LITER, GALLON, DRUM).')
+      return
+    }
+
     const mult = Math.max(0.001, parseFloat(unitMultiplierInput) || 1)
     const effectiveUnitName =
       selectedUnitName === 'custom' && customUnitName.trim()
-        ? customUnitName.trim()
+        ? customUnitName.trim().toUpperCase()
         : selectedUnitName || selectedProduct.base_unit || 'pc'
 
     const qtyBase = Math.round(qty * mult * 1000) / 1000
@@ -1180,6 +1195,19 @@ export function PurchaseInvoiceModal({
     }
   }
 
+  // Fresh refs for shortcuts to completely prevent stale closure traps
+  const handleCommitItemRef = useRef(handleCommitItem)
+  handleCommitItemRef.current = handleCommitItem
+
+  const handleSaveInvoiceRef = useRef(handleSaveInvoice)
+  handleSaveInvoiceRef.current = handleSaveInvoice
+
+  const handleSaveEditRef = useRef(handleSaveEdit)
+  handleSaveEditRef.current = handleSaveEdit
+
+  const handleRemoveLastItemRef = useRef(handleRemoveLastItem)
+  handleRemoveLastItemRef.current = handleRemoveLastItem
+
   // Keyboard Shortcuts: F1, F2, F3, Ctrl+S
   useEffect(() => {
     if (!open || isMinimized) return
@@ -1195,14 +1223,14 @@ export function PurchaseInvoiceModal({
       // F2: Commit Item
       if (e.key === 'F2') {
         e.preventDefault()
-        handleCommitItem()
+        handleCommitItemRef.current()
         return
       }
 
       // F3: Remove Last Item
       if (e.key === 'F3') {
         e.preventDefault()
-        handleRemoveLastItem()
+        handleRemoveLastItemRef.current()
         return
       }
 
@@ -1210,44 +1238,16 @@ export function PurchaseInvoiceModal({
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault()
         if (viewingPurchase && isEditMode) {
-          void handleSaveEdit()
+          void handleSaveEditRef.current()
         } else if (activeTab === 'create') {
-          void handleSaveInvoice()
+          void handleSaveInvoiceRef.current()
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [
-    open,
-    isMinimized,
-    selectedProduct,
-    qtyInput,
-    unitCostPesos,
-    selectedUnitName,
-    items,
-    viewItems,
-    supplierId,
-    viewSupplierId,
-    invoiceNo,
-    viewInvoiceNo,
-    receiptNo,
-    viewReceiptNo,
-    isPaid,
-    viewIsPaid,
-    termsDays,
-    viewTermsDays,
-    discountC,
-    viewDiscountC,
-    notes,
-    viewNotes,
-    updateProductCosts,
-    viewUpdateProductCosts,
-    viewingPurchase,
-    isEditMode,
-    activeTab
-  ])
+  }, [open, isMinimized, viewingPurchase, isEditMode, activeTab])
 
   if (!open) return null
 
@@ -1752,6 +1752,24 @@ export function PurchaseInvoiceModal({
                               <option key={u.name} value={u.name}>{u.label}</option>
                             ))}
                           </select>
+                          {selectedUnitName === 'custom' && (
+                            <div className="mt-1.5 animate-fadeIn">
+                              <input
+                                type="text"
+                                value={customUnitName}
+                                onChange={(e) => setCustomUnitName(e.target.value.toUpperCase())}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    costInputRef.current?.focus()
+                                  }
+                                }}
+                                placeholder="e.g. LITER, GALLON, DRUM"
+                                className="input w-full text-xs py-1 px-2 uppercase font-bold text-emerald-300 border-emerald-500/60 bg-emerald-950/30 placeholder-slate-500 shadow-inner"
+                                autoFocus
+                              />
+                            </div>
+                          )}
                         </div>
 
                         <div className="md:col-span-1">
@@ -1774,6 +1792,12 @@ export function PurchaseInvoiceModal({
                             step="0.01"
                             value={unitCostPesos}
                             onChange={(e) => setUnitCostPesos(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleCommitItem()
+                              }
+                            }}
                             className="input w-full font-mono text-xs font-semibold"
                           />
                         </div>
@@ -1787,6 +1811,12 @@ export function PurchaseInvoiceModal({
                             step="any"
                             value={qtyInput}
                             onChange={(e) => setQtyInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleCommitItem()
+                              }
+                            }}
                             className="input w-full font-mono text-xs text-center font-bold text-white bg-ink-800"
                           />
                         </div>
@@ -1794,16 +1824,38 @@ export function PurchaseInvoiceModal({
                         <div className="md:col-span-2">
                           <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
                             <span>Supplier Disc</span>
-                            <span className="text-[10px] text-slate-400 font-normal">5+5+5 / 10/5</span>
+                            <span className="text-[10px] text-slate-400 font-normal">e.g. -50% / 5+5+5 / 10/5</span>
                           </label>
                           <input
                             ref={discountInputRef}
                             type="text"
                             value={itemDiscountInput}
                             onChange={(e) => setItemDiscountInput(e.target.value)}
-                            placeholder="0 / 5+5+5 / 10/5"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleCommitItem()
+                              }
+                            }}
+                            placeholder="0 / -50% / 5+5+5"
                             className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40"
                           />
+                          {itemDiscountInput.trim() && (
+                            <div className="mt-1 flex items-center gap-1.5 text-[11px] font-mono">
+                              {itemDiscountResult.discountAmountC > 0 ? (
+                                <span className="rounded bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 text-amber-300 font-bold inline-flex items-center gap-1">
+                                  <span>Less {money(itemDiscountResult.discountAmountC)}</span>
+                                  <span className="text-amber-400/90 text-[10px]">
+                                    ({formatDiscountPercent(itemDiscountInput, itemDiscountResult.discountAmountC, itemGrossC)})
+                                  </span>
+                                </span>
+                              ) : itemDiscountResult.percentages.length > 0 ? (
+                                <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 text-amber-400 font-medium">
+                                  Discount active: {itemDiscountResult.percentages.map((p) => `-${p}%`).join('')}
+                                </span>
+                              ) : null}
+                            </div>
+                          )}
                         </div>
 
                         <div className="md:col-span-1">
@@ -2003,10 +2055,21 @@ export function PurchaseInvoiceModal({
                               {viewDiscountC > 0 ? `-${money(viewDiscountC)}` : '₱0.00'}
                             </span>
                           )}
-                          {viewInvoiceDiscountResult.discountAmountC > 0 && isEditMode && (
-                            <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
-                              -{money(viewInvoiceDiscountResult.discountAmountC)}
-                            </span>
+                          {isEditMode && (
+                            viewInvoiceDiscountResult.discountAmountC > 0 ? (
+                              <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                                -{money(viewInvoiceDiscountResult.discountAmountC)}
+                                {viewInvoiceDiscountResult.effectivePercent > 0 && (
+                                  <span className="text-[10px] text-amber-500/90 ml-1">
+                                    ({viewInvoiceDiscountResult.effectivePercent.toFixed(1)}%)
+                                  </span>
+                                )}
+                              </span>
+                            ) : viewInvoiceDiscountResult.percentages.length > 0 ? (
+                              <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                                Active: {viewInvoiceDiscountResult.percentages.map((p) => `-${p}%`).join('')}
+                              </span>
+                            ) : null
                           )}
                         </div>
                       </div>
@@ -2485,6 +2548,24 @@ export function PurchaseInvoiceModal({
                           <option key={u.name} value={u.name}>{u.label}</option>
                         ))}
                       </select>
+                      {selectedUnitName === 'custom' && (
+                        <div className="mt-1.5 animate-fadeIn">
+                          <input
+                            type="text"
+                            value={customUnitName}
+                            onChange={(e) => setCustomUnitName(e.target.value.toUpperCase())}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                costInputRef.current?.focus()
+                              }
+                            }}
+                            placeholder="e.g. LITER, GALLON, DRUM"
+                            className="input w-full text-xs py-1 px-2 uppercase font-bold text-emerald-300 border-emerald-500/60 bg-emerald-950/30 placeholder-slate-500 shadow-inner"
+                            autoFocus
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="md:col-span-1">
@@ -2507,6 +2588,12 @@ export function PurchaseInvoiceModal({
                         step="0.01"
                         value={unitCostPesos}
                         onChange={(e) => setUnitCostPesos(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleCommitItem()
+                          }
+                        }}
                         className="input w-full font-mono text-xs font-semibold"
                       />
                     </div>
@@ -2520,6 +2607,12 @@ export function PurchaseInvoiceModal({
                         step="any"
                         value={qtyInput}
                         onChange={(e) => setQtyInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleCommitItem()
+                          }
+                        }}
                         className="input w-full font-mono text-xs text-center font-bold text-white bg-ink-800"
                       />
                     </div>
@@ -2527,16 +2620,38 @@ export function PurchaseInvoiceModal({
                     <div className="md:col-span-2">
                       <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
                         <span>Supplier Disc</span>
-                        <span className="text-[10px] text-slate-400 font-normal">5+5+5 / 10/5</span>
+                        <span className="text-[10px] text-slate-400 font-normal">e.g. -50% / 5+5+5 / 10/5</span>
                       </label>
                       <input
                         ref={discountInputRef}
                         type="text"
                         value={itemDiscountInput}
                         onChange={(e) => setItemDiscountInput(e.target.value)}
-                        placeholder="0 / 5+5+5 / 10/5"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleCommitItem()
+                          }
+                        }}
+                        placeholder="0 / -50% / 5+5+5"
                         className="input w-full font-mono text-xs font-semibold text-amber-300 border-amber-500/40"
                       />
+                      {itemDiscountInput.trim() && (
+                        <div className="mt-1 flex items-center gap-1.5 text-[11px] font-mono">
+                          {itemDiscountResult.discountAmountC > 0 ? (
+                            <span className="rounded bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 text-amber-300 font-bold inline-flex items-center gap-1">
+                              <span>Less {money(itemDiscountResult.discountAmountC)}</span>
+                              <span className="text-amber-400/90 text-[10px]">
+                                ({formatDiscountPercent(itemDiscountInput, itemDiscountResult.discountAmountC, itemGrossC)})
+                              </span>
+                            </span>
+                          ) : itemDiscountResult.percentages.length > 0 ? (
+                            <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 text-amber-400 font-medium">
+                              Discount active: {itemDiscountResult.percentages.map((p) => `-${p}%`).join('')}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
 
                     <div className="md:col-span-1">
@@ -2638,9 +2753,9 @@ export function PurchaseInvoiceModal({
                                 {it.discountC > 0 ? (
                                   <span
                                     className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-300 text-[11px]"
-                                    title={it.discountInput}
+                                    title={`Less ${money(it.discountC)} (${formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty, { withEffective: true })})`}
                                   >
-                                    {it.discountInput ? `${it.discountInput} ` : ''}(-{money(it.discountC)})
+                                    {formatDiscountPercent(it.discountInput, it.discountC, it.unitCostC * it.qty)}
                                   </span>
                                 ) : (
                                   <span className="text-slate-600 font-mono">—</span>
@@ -2719,11 +2834,20 @@ export function PurchaseInvoiceModal({
                           placeholder="0 / 5+5+5 / 10/5"
                           className="input w-36 py-0.5 text-right font-mono text-xs text-amber-300"
                         />
-                        {invoiceDiscountResult.discountAmountC > 0 && (
+                        {invoiceDiscountResult.discountAmountC > 0 ? (
                           <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
                             -{money(invoiceDiscountResult.discountAmountC)}
+                            {invoiceDiscountResult.effectivePercent > 0 && (
+                              <span className="text-[10px] text-amber-500/90 ml-1">
+                                ({invoiceDiscountResult.effectivePercent.toFixed(1)}%)
+                              </span>
+                            )}
                           </span>
-                        )}
+                        ) : invoiceDiscountResult.percentages.length > 0 ? (
+                          <span className="rounded bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 font-mono text-amber-400 text-xs">
+                            Active: {invoiceDiscountResult.percentages.map((p) => `-${p}%`).join('')}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
 
