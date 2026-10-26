@@ -1,15 +1,21 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.0 (PURE FULL BUILD MANDATE & DIRECT NSIS AUTO-UPDATER RELEASE)
+- v5.1.1 (DYNAMIC INVENTORY CODE DISCOVERY & RECEIVING DOCK SYNC RELEASE)
 
 TARGET:
-- v4.2.0 (NEXT MAJOR CYCLE)
+- v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.0 Pure Full Build Mandate & Direct NSIS Auto-Updater Release
+- Production Release Ready — v5.1.1 Dynamic Inventory Code Discovery & Receiving Dock Sync Release
 
-COMPLETED (v5.1.0 Pure Full Build Mandate & Direct NSIS Auto-Updater):
+COMPLETED (v5.1.1 Dynamic Inventory Code Discovery & Receiving Dock Sync):
+- Stage 40: Zero-Exit Catalog Invalidation on Un-minimize & Restore: Added automatic product cache invalidation in `PurchaseInvoiceModal.tsx` whenever restored from minimized dock, eliminating stale in-memory product lists when users create codes in Inventory.
+- Stage 41: Reactive Inventory Bridge: Subscribed `PurchaseInvoiceModal` to `window.api.inventory.onChanged` and renderer `inventory:changed` events so new items created anywhere in the app instantly synchronize into the line item picker.
+- Stage 42: F1 Spotlight Explorer Live SQLite Fallback: Updated `PurchaseItemPickerModal.tsx` to accept `onRefresh` and seamlessly query SQLite live for newly created codes, dynamically appending them to the catalog table.
+- Stage 43: Omnibox Autocomplete Dropdown & Direct Enter Lookup: Rendered high-contrast autocomplete dropdown below entry input with keyboard navigation (Up/Down/Enter) and direct fallback on Enter for instant barcode scanner and manual code entry.
+
+COMPLETED (v5.1.0 Pure Full Build Mandate & Cascading Trade Discount):
 - Stage 37: Pure Full Build Mandate: Completely eradicated fabricated patch fallbacks in `updateTransport.ts`. Set `hasPatch: false` and `patchAsset: null` across redirect fallbacks, ensuring all client nodes download 100% full binaries (`TindaPOS-Setup-4.1.12.exe` / `TindaPOS-Portable-4.1.12.exe` / `TindaPOS-4.1.12.AppImage`).
 - Stage 38: Interactive UAC Elevation Support in Auto-Updater: Updated `restartAndInstall()` to invoke `quitAndInstall(false, true)` allowing the NSIS installer to prompt for UAC elevation on Windows machines installed under `C:\Program Files\`, eliminating silent install termination.
 - Stage 39: Uncapped Inventory & Dashboard KPI Precision: Full integration of un-truncated low-stock alerts, 5,000 query limit catalog parity, scrollable alert review card, and un-truncated Quick Launch counters.
