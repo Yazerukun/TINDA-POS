@@ -17,7 +17,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v4.1.12 (Pure Full Build Mandate & Direct NSIS Auto-Updater Edition)
+- **Current Stable Version:** v5.1.0 (Pure Cascading Trade Discount Receipt Printing & VIP Hardware Voucher Edition)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**
