@@ -1895,34 +1895,36 @@ export function PurchaseInvoiceModal({
                       )}
                     </div>
 
-                    <div className="max-h-[38vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60">
-                      <table className="table min-w-[920px]">
+                    <div className="max-h-[44vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60 shadow-inner">
+                      <table className="w-full border-collapse table-auto min-w-[1060px]">
                         <thead>
-                          <tr>
-                            <th className="w-10 py-2.5 px-3 text-center">#</th>
-                            <th className="py-2.5 px-3 text-left">Item Code</th>
-                            <th className="py-2.5 px-3 text-left">Description</th>
-                            <th className="py-2.5 px-3 text-center">Unit</th>
-                            <th className="py-2.5 px-3 text-center">Qty</th>
-                            <th className="py-2.5 px-3 text-center">Stock In</th>
-                            <th className="py-2.5 px-3 text-right">Gross Cost</th>
-                            <th className="py-2.5 px-3 text-center">Trade Disc</th>
-                            <th className="py-2.5 px-3 text-right">Net Cost</th>
-                            <th className="py-2.5 px-3 text-right">Net Amount</th>
-                            {isEditMode && <th className="w-10 py-2.5 px-3 text-center">Action</th>}
+                          <tr className="border-b border-ink-line bg-ink-900/80">
+                            <th className="w-10 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">#</th>
+                            <th className="w-28 py-2.5 px-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Item Code</th>
+                            <th className="py-2.5 px-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 min-w-[280px] lg:min-w-[400px]">Description</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Unit</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Qty</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Stock In</th>
+                            <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Gross Cost</th>
+                            <th className="w-24 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Trade Disc</th>
+                            <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Cost</th>
+                            <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Amount</th>
+                            {isEditMode && <th className="w-12 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Action</th>}
                           </tr>
                         </thead>
                         <tbody>
                           {viewItems.map((it, idx) => (
-                            <tr key={it.tempId} className="hover:bg-ink-800/60 transition-colors">
-                              <td className="py-2 px-3 text-center text-xs font-mono text-slate-500">
+                            <tr key={it.tempId} className="border-b border-ink-line/50 hover:bg-ink-800/60 transition-colors">
+                              <td className="py-2.5 px-3 text-center text-xs font-mono text-slate-500 whitespace-nowrap">
                                 {idx + 1}
                               </td>
-                              <td className="py-2 px-3 font-mono text-xs text-slate-300">
+                              <td className="py-2.5 px-3 font-mono text-xs text-slate-300 whitespace-nowrap">
                                 {it.barcode || it.sku || '—'}
                               </td>
-                              <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
-                                {it.productName}
+                              <td className="py-2.5 px-3 text-left min-w-[280px] lg:min-w-[400px]" title={it.productName}>
+                                <span className="block font-semibold text-slate-100 text-xs leading-snug break-words whitespace-normal" title={it.productName}>
+                                  {it.productName}
+                                </span>
                               </td>
                               <td className="py-2 px-3 text-center text-xs">
                                 <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">
@@ -2696,7 +2698,7 @@ export function PurchaseInvoiceModal({
                     </div>
                   </div>
 
-                  <div className="max-h-[38vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60">
+                  <div className="max-h-[44vh] min-h-[160px] overflow-auto rounded-xl border border-ink-line bg-ink-950/60 shadow-inner">
                     {items.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-12 text-slate-500 space-y-1">
                         <Barcode className="h-8 w-8 text-slate-600" />
@@ -2706,33 +2708,35 @@ export function PurchaseInvoiceModal({
                         </p>
                       </div>
                     ) : (
-                      <table className="table min-w-[920px]">
+                      <table className="w-full border-collapse table-auto min-w-[1060px]">
                         <thead>
-                          <tr>
-                            <th className="w-10 py-2.5 px-3 text-center">#</th>
-                            <th className="py-2.5 px-3 text-left">Item Code</th>
-                            <th className="py-2.5 px-3 text-left">Description</th>
-                            <th className="py-2.5 px-3 text-center">Unit</th>
-                            <th className="py-2.5 px-3 text-center">Qty</th>
-                            <th className="py-2.5 px-3 text-center">Stock In</th>
-                            <th className="py-2.5 px-3 text-right">Gross Cost</th>
-                            <th className="py-2.5 px-3 text-center">Trade Disc</th>
-                            <th className="py-2.5 px-3 text-right">Net Cost</th>
-                            <th className="py-2.5 px-3 text-right">Net Amount</th>
-                            <th className="w-10 py-2.5 px-3 text-center">Action</th>
+                          <tr className="border-b border-ink-line bg-ink-900/80">
+                            <th className="w-10 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">#</th>
+                            <th className="w-28 py-2.5 px-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Item Code</th>
+                            <th className="py-2.5 px-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 min-w-[280px] lg:min-w-[400px]">Description</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Unit</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Qty</th>
+                            <th className="w-20 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Stock In</th>
+                            <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Gross Cost</th>
+                            <th className="w-24 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Trade Disc</th>
+                            <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Cost</th>
+                            <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Amount</th>
+                            <th className="w-12 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           {items.map((it, idx) => (
-                            <tr key={it.tempId} className="hover:bg-ink-800/60 transition-colors">
-                              <td className="py-2 px-3 text-center text-xs font-mono text-slate-500">
+                            <tr key={it.tempId} className="border-b border-ink-line/50 hover:bg-ink-800/60 transition-colors">
+                              <td className="py-2.5 px-3 text-center text-xs font-mono text-slate-500 whitespace-nowrap">
                                 {idx + 1}
                               </td>
-                              <td className="py-2 px-3 font-mono text-xs text-slate-300">
-                                {it.barcode}
+                              <td className="py-2.5 px-3 font-mono text-xs text-slate-300 whitespace-nowrap">
+                                {it.barcode || it.sku || '—'}
                               </td>
-                              <td className="py-2 px-3 font-medium text-white truncate max-w-[220px]">
-                                {it.productName}
+                              <td className="py-2.5 px-3 text-left min-w-[280px] lg:min-w-[400px]" title={it.productName}>
+                                <span className="block font-semibold text-slate-100 text-xs leading-snug break-words whitespace-normal" title={it.productName}>
+                                  {it.productName}
+                                </span>
                               </td>
                               <td className="py-2 px-3 text-center text-xs">
                                 <span className="rounded bg-ink-800 border border-ink-line px-1.5 py-0.5 font-mono text-slate-300">

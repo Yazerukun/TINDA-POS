@@ -1,13 +1,18 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.2 (EDITABLE CUSTOM PACKAGING UNITS & REACTIVE DISCOUNT ENGINE RELEASE)
+- v5.1.3 (EXPANDED PURCHASE INVOICE DESCRIPTION & CODE LAYOUT RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.2 Editable Custom Packaging Units & Reactive Discount Engine Release
+- Production Release Ready — v5.1.3 Expanded Purchase Invoice Description & Code Layout Release
+
+COMPLETED (v5.1.3 Expanded Purchase Invoice Description & Code Layout):
+- Stage 47: Uncapped Full-Width Description Column: Switched purchase invoice tables in both View/Edit and Create modes to `table-auto min-w-[1060px]` with generous width (`min-w-[280px] lg:min-w-[400px]`), removing artificial `truncate max-w-[220px]` restrictions.
+- Stage 48: Multi-Line Wrapping & Optical Tooltips: Set `break-words whitespace-normal font-semibold text-slate-100 text-xs leading-snug` with hover tooltips (`title={it.productName}`) so complex product names, pipe fittings, dimensions, and descriptions are fully readable with zero clipping.
+- Stage 49: Untruncated Item Codes & Compact Numeric Formatting: Enforced `whitespace-nowrap w-28` for barcodes and SKUs, guaranteeing no code ellipsis (`SKU-09...`), while compacting numeric columns (`Unit`, `Qty`, `Cost`, `Discount`, `Amount`) and expanding the table scroll viewport (`max-h-[44vh]`).
 
 COMPLETED (v5.1.2 Editable Custom Packaging Units & Reactive Discount Engine):
 - Stage 44: Editable Custom Packaging Units (Liter, Gallon, Drum, etc.): Restored dedicated uppercase custom unit input box when selecting `CUSTOM (Other)...` in both Create and Edit Invoice modes, allowing store owners to freely type custom wholesale units.
