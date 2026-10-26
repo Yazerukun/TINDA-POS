@@ -1,13 +1,19 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.3 (EXPANDED PURCHASE INVOICE DESCRIPTION & CODE LAYOUT RELEASE)
+- v5.1.4 (OMNIPRESENT MULTI-PAGE MINIMIZED PURCHASE INVOICE & AUTOMATIC DRAFT PERSISTENCE RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.3 Expanded Purchase Invoice Description & Code Layout Release
+- Production Release Ready — v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence Release
+
+COMPLETED (v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence):
+- Stage 50: Root-Level Mount Architecture: Decoupled `PurchaseInvoiceModal` from `Inventory.tsx` and promoted it to the root application shell (`Shell.tsx`) with a dedicated global Zustand store (`usePurchaseInvoiceModal`), preventing unmounting or in-memory item loss when switching between POS Cashier, Inventory, Customers, and other pages.
+- Stage 51: Dynamic Cart-Aware Dock Positioning: Embedded real-time navigation awareness (`useNav`) into the minimized floating receiving dock, positioning it cleanly at `bottom-16 right-4` across standard pages, and automatically offsetting it to `bottom-16 right-[24.5rem] xl:right-[27.5rem]` on the POS page to guarantee zero overlap with the POS Cart and Checkout button.
+- Stage 52: Resilient LocalStorage Draft Engine: Integrated automatic draft persistence (`tinda_purchase_invoice_draft_v1`), safely auto-saving staged items, supplier selection, invoice/receipt numbers, costs, and discounts, restoring them automatically across app restarts and preventing accidental data loss on backdrop/Escape dismissals.
+- Stage 53: Safe Dismissal & Discard Confirmations: Converted accidental backdrop clicks and Escape key presses into auto-minimization toasts, and required explicit two-step user confirmation before discarding any in-progress draft invoice.
 
 COMPLETED (v5.1.3 Expanded Purchase Invoice Description & Code Layout):
 - Stage 47: Uncapped Full-Width Description Column: Switched purchase invoice tables in both View/Edit and Create modes to `table-auto min-w-[1060px]` with generous width (`min-w-[280px] lg:min-w-[400px]`), removing artificial `truncate max-w-[220px]` restrictions.
