@@ -20,7 +20,7 @@ import { PriceTagPrintModal } from '../components/PriceTagPrintModal'
 import { InventoryPrintModal } from '../components/InventoryPrintModal'
 import { RecipeModal } from '../components/RecipeModal'
 import { PromoBundlesModal } from '../components/PromoBundlesModal'
-import { PurchaseInvoiceModal } from '../components/PurchaseInvoiceModal'
+import { usePurchaseInvoiceModal } from '../stores/purchaseInvoiceModal'
 import { StoreUseModal } from '../components/inventory/StoreUseModal'
 import { createScannerListener, playScanBeep } from '../lib/barcodeScanner'
 import {
@@ -57,7 +57,7 @@ export function Inventory(): React.JSX.Element {
   const [printInventoryOpen, setPrintInventoryOpen] = useState(false)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
-  const [purchaseInvoiceOpen, setPurchaseInvoiceOpen] = useState(false)
+  const { isOpen: purchaseInvoiceOpen, isMinimized: isPurchaseInvoiceMinimized, openModal: openPurchaseInvoice } = usePurchaseInvoiceModal()
   const [promoModalOpen, setPromoModalOpen] = useState(false)
   const { settings } = useSettings()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -272,14 +272,14 @@ export function Inventory(): React.JSX.Element {
   // Instant Hardware & Phone Barcode Scanner Detection in Inventory View
   useEffect(() => {
     // Only intercept when no modal or dialog is open
-    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen || purchaseInvoiceOpen || promoModalOpen) {
+    if (editing || managingCategories || importing || restocking || withdrawing || expirationOpen || priceGuideOpen || vipModalOpen || (purchaseInvoiceOpen && !isPurchaseInvoiceMinimized) || promoModalOpen) {
       return
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'F2') {
         e.preventDefault()
-        setPurchaseInvoiceOpen(true)
+        openPurchaseInvoice()
       } else if (e.altKey && (e.key === 'v' || e.key === 'V')) {
         e.preventDefault()
         toggleViewMode()
@@ -327,7 +327,7 @@ export function Inventory(): React.JSX.Element {
       window.removeEventListener('keydown', scannerListener)
       cleanupPhoneScan?.()
     }
-  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, purchaseInvoiceOpen, promoModalOpen, products, defaultThreshold, toggleViewMode])
+  }, [editing, managingCategories, importing, restocking, withdrawing, expirationOpen, priceGuideOpen, vipModalOpen, purchaseInvoiceOpen, isPurchaseInvoiceMinimized, openPurchaseInvoice, promoModalOpen, products, defaultThreshold, toggleViewMode])
 
   return (
     <div className="p-6">
@@ -343,7 +343,7 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
-          <button onClick={() => setPurchaseInvoiceOpen(true)} className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-sm font-semibold">
+          <button onClick={openPurchaseInvoice} className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-sm font-semibold">
             <FileSpreadsheet className="h-4 w-4" /> Purchase Invoice (F2)
           </button>
           <button
@@ -864,13 +864,6 @@ export function Inventory(): React.JSX.Element {
       )}
       {viewingMovements && <StockHistoryView products={products} onClose={() => setViewingMovements(false)} />}
       {viewingReceiving && <StockReceivingView onClose={() => setViewingReceiving(false)} />}
-      {purchaseInvoiceOpen && (
-        <PurchaseInvoiceModal
-          open={purchaseInvoiceOpen}
-          onClose={() => setPurchaseInvoiceOpen(false)}
-          onSuccess={() => void load()}
-        />
-      )}
       <PromoBundlesModal
         open={promoModalOpen}
         onClose={() => setPromoModalOpen(false)}

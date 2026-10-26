@@ -32,6 +32,7 @@ import { SystemDebuggerModal } from '../components/SystemDebuggerModal'
 import { GlobalErrorBoundary } from '../components/GlobalErrorBoundary'
 import { AmbientFaultPill } from '../components/AmbientFaultPill'
 import { useSystemDebugger } from '../stores/systemDebugger'
+import { PurchaseInvoiceModal } from '../components/PurchaseInvoiceModal'
 
 export function Shell(): React.JSX.Element {
   const { user } = useAuth()
@@ -136,6 +137,7 @@ export function Shell(): React.JSX.Element {
       <NotificationBellDrawer />
       <SystemDebuggerModal />
       <AmbientFaultPill />
+      {user && <PurchaseInvoiceModal />}
     </div>
   )
 }

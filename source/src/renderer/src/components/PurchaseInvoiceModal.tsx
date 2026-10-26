@@ -48,6 +48,8 @@ import { calculateChainDiscount } from '../utils/supplierDiscount'
 import { matchesProductSearch } from '@shared/searchUtils'
 import { useSettings } from '../stores/settings'
 import { useAuth } from '../stores/auth'
+import { useNav } from '../stores/nav'
+import { usePurchaseInvoiceModal } from '../stores/purchaseInvoiceModal'
 import {
   formatPurchaseOrderSlipLines,
   generatePurchaseOrderDocumentHtml,
@@ -58,9 +60,10 @@ import {
 } from '@shared/receiptHtml'
 
 interface PurchaseInvoiceModalProps {
-  open: boolean
-  onClose: () => void
-  onSuccess: () => void
+  open?: boolean
+  isMinimized?: boolean
+  onClose?: () => void
+  onSuccess?: () => void
 }
 
 export const STANDARD_PACKAGING_UNITS: { name: string; label: string; defaultConversion: number }[] = [
@@ -97,32 +100,92 @@ interface InvoiceLineItem {
   subtotalC: number      // net line subtotal in cents
 }
 
-export function PurchaseInvoiceModal({
-  open,
-  onClose,
-  onSuccess
-}: PurchaseInvoiceModalProps): React.JSX.Element | null {
+const DRAFT_KEY = 'tinda_purchase_invoice_draft_v1'
+
+interface PurchaseInvoiceDraft {
+  supplierId: number | ''
+  invoiceNo: string
+  receiptNo: string
+  purchaseDate: string
+  isPaid: boolean
+  termsDays: string
+  notes: string
+  updateProductCosts: boolean
+  discountPesos: string
+  items: InvoiceLineItem[]
+}
+
+function loadSavedDraft(): Partial<PurchaseInvoiceDraft> {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+  } catch {}
+  return {}
+}
+
+export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): React.JSX.Element | null {
+  const store = usePurchaseInvoiceModal()
+  const navPage = useNav((s) => s.page)
+  const page = typeof window !== 'undefined' ? (useNav.getState ? useNav.getState().page : navPage) : navPage
+  const open = props.open !== undefined ? props.open : store.isOpen
+  const isMinimized = props.isMinimized !== undefined ? props.isMinimized : store.isMinimized
+  const setIsMinimized = store.setIsMinimized
+  const onClose = props.onClose || store.closeModal
+  const onSuccess = () => {
+    props.onSuccess?.()
+    window.dispatchEvent(new CustomEvent('inventory:changed'))
+  }
+
   const { settings, load: loadSettings } = useSettings()
   const user = useAuth((s) => s.user)
 
   const [activeTab, setActiveTab] = useState<'create' | 'history'>('create')
-  const [isMinimized, setIsMinimized] = useState(false)
   const [isHeaderPanelMinimized, setIsHeaderPanelMinimized] = useState(false)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [loadingInitial, setLoadingInitial] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  // Invoice Header Fields (Create mode)
-  const [supplierId, setSupplierId] = useState<number | ''>('')
-  const [invoiceNo, setInvoiceNo] = useState('')
-  const [receiptNo, setReceiptNo] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState<string>(() => new Date().toISOString().slice(0, 10))
-  const [isPaid, setIsPaid] = useState(true)
-  const [termsDays, setTermsDays] = useState('0')
-  const [notes, setNotes] = useState('')
-  const [updateProductCosts, setUpdateProductCosts] = useState(true)
-  const [discountPesos, setDiscountPesos] = useState('0')
+  // Invoice Header Fields (Create mode) - Restored from localStorage draft if present
+  const [supplierId, setSupplierId] = useState<number | ''>(() => {
+    const draft = loadSavedDraft()
+    return draft.supplierId !== undefined ? draft.supplierId : ''
+  })
+  const [invoiceNo, setInvoiceNo] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.invoiceNo || ''
+  })
+  const [receiptNo, setReceiptNo] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.receiptNo || ''
+  })
+  const [purchaseDate, setPurchaseDate] = useState<string>(() => {
+    const draft = loadSavedDraft()
+    return draft.purchaseDate || new Date().toISOString().slice(0, 10)
+  })
+  const [isPaid, setIsPaid] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.isPaid !== undefined ? draft.isPaid : true
+  })
+  const [termsDays, setTermsDays] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.termsDays !== undefined ? draft.termsDays : '0'
+  })
+  const [notes, setNotes] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.notes || ''
+  })
+  const [updateProductCosts, setUpdateProductCosts] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.updateProductCosts !== undefined ? draft.updateProductCosts : true
+  })
+  const [discountPesos, setDiscountPesos] = useState(() => {
+    const draft = loadSavedDraft()
+    return draft.discountPesos !== undefined ? draft.discountPesos : '0'
+  })
 
   // Item Entry Bar Fields
   const [searchQuery, setSearchQuery] = useState('')
@@ -137,8 +200,11 @@ export function PurchaseInvoiceModal({
   const [dropdownIndex, setDropdownIndex] = useState(0)
   const [showItemPicker, setShowItemPicker] = useState(false)
 
-  // Line items for Create mode
-  const [items, setItems] = useState<InvoiceLineItem[]>([])
+  // Line items for Create mode - Restored from localStorage draft if present
+  const [items, setItems] = useState<InvoiceLineItem[]>(() => {
+    const draft = loadSavedDraft()
+    return Array.isArray(draft.items) ? draft.items : []
+  })
 
   // History Tab state
   const [historyList, setHistoryList] = useState<Purchase[]>([])
@@ -203,6 +269,103 @@ export function PurchaseInvoiceModal({
   })
 
   const [showCustomizerControls, setShowCustomizerControls] = useState(true)
+
+  // Auto-persist draft items & metadata to localStorage whenever modified
+  useEffect(() => {
+    try {
+      if (items.length > 0) {
+        const draft: PurchaseInvoiceDraft = {
+          supplierId,
+          invoiceNo,
+          receiptNo,
+          purchaseDate,
+          isPaid,
+          termsDays,
+          notes,
+          updateProductCosts,
+          discountPesos,
+          items
+        }
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+      } else {
+        localStorage.removeItem(DRAFT_KEY)
+      }
+    } catch (err) {
+      console.warn('Failed to save purchase invoice draft:', err)
+    }
+  }, [items, supplierId, invoiceNo, receiptNo, purchaseDate, isPaid, termsDays, notes, updateProductCosts, discountPesos])
+
+  const handleDiscardDraft = useCallback(() => {
+    if (viewingPurchase) {
+      setViewingPurchase(null)
+      setIsEditMode(false)
+      setIsMinimized(false)
+      onClose()
+      return
+    }
+
+    if (items.length > 0) {
+      if (
+        window.confirm(
+          `You currently have ${items.length} staged items in this draft purchase invoice.\n\nAre you sure you want to discard this draft?`
+        )
+      ) {
+        setItems([])
+        localStorage.removeItem(DRAFT_KEY)
+        setInvoiceNo('')
+        setReceiptNo('')
+        setNotes('')
+        setDiscountPesos('0')
+        setIsMinimized(false)
+        onClose()
+        toastSuccess('Draft Discarded', 'Purchase invoice draft has been cleared.')
+      }
+    } else {
+      setIsMinimized(false)
+      onClose()
+    }
+  }, [viewingPurchase, items.length, onClose, setIsMinimized])
+
+  const handleCancelClick = useCallback(() => {
+    if (items.length > 0) {
+      if (
+        window.confirm(
+          `You have ${items.length} staged items in this draft purchase invoice.\n\nClick OK to discard this draft, or Cancel to keep it minimized in the dock.`
+        )
+      ) {
+        setItems([])
+        localStorage.removeItem(DRAFT_KEY)
+        setInvoiceNo('')
+        setReceiptNo('')
+        setNotes('')
+        setDiscountPesos('0')
+        setIsMinimized(false)
+        onClose()
+      } else {
+        setIsMinimized(true)
+        toastSuccess(
+          'Purchase Invoice Minimized',
+          `${items.length} items staged. Click dock icon anytime to restore.`
+        )
+      }
+    } else {
+      setIsMinimized(false)
+      onClose()
+    }
+  }, [items.length, onClose, setIsMinimized])
+
+  const handleModalClose = useCallback(() => {
+    if (items.length > 0 || viewingPurchase) {
+      setIsMinimized(true)
+      toastSuccess(
+        'Purchase Invoice Minimized',
+        `${items.length} items staged. Click the dock icon anytime to restore.`
+      )
+    } else {
+      setIsMinimized(false)
+      onClose()
+    }
+  }, [items.length, viewingPurchase, onClose, setIsMinimized])
 
   const updateCustomizer = (patch: Partial<PurchasePrintCustomizerOptions>) => {
     setPrintCustomizer((prev) => {
@@ -393,7 +556,6 @@ export function PurchaseInvoiceModal({
 
   useEffect(() => {
     if (open) {
-      setIsMinimized(false)
       void loadData()
       if (!settings) void loadSettings()
       if (activeTab === 'history') {
@@ -934,10 +1096,14 @@ export function PurchaseInvoiceModal({
 
       // Reset form
       setItems([])
+      try {
+        localStorage.removeItem(DRAFT_KEY)
+      } catch {}
       setInvoiceNo('')
       setReceiptNo('')
       setNotes('')
       setDiscountPesos('0')
+      setIsMinimized(false)
       onSuccess()
       onClose()
     } catch (err) {
@@ -1256,40 +1422,57 @@ export function PurchaseInvoiceModal({
       {/* Floating Receiving Dock (Minimized State) */}
       {isMinimized && (
         <div
-          className="fixed bottom-5 right-6 z-50 flex items-center gap-4 rounded-2xl border border-white/10 bg-ink-900/95 p-4 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-300 select-none cursor-pointer hover:border-emerald-500/30 transition-all"
+          className={`fixed z-50 flex items-center gap-4 rounded-2xl border border-emerald-500/30 bg-ink-900/95 p-3.5 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-4 duration-300 select-none cursor-pointer hover:border-emerald-400 hover:scale-[1.02] active:scale-[0.98] transition-all ${
+            page === 'pos'
+              ? 'bottom-16 right-[24.5rem] xl:right-[27.5rem]'
+              : 'bottom-16 right-4'
+          }`}
           onClick={() => {
             setIsMinimized(false)
             void refreshProducts()
           }}
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Truck className="h-6 w-6" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-inner">
+            <Truck className="h-6 w-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-white">Purchase Invoice Receiving</span>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-400/30">
                 {viewingPurchase ? (isEditMode ? 'EDITING' : 'VIEWING') : 'ACTIVE'}
               </span>
             </div>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-300 font-medium">
               {viewingPurchase
                 ? `${viewingPurchase.purchase_no} (${viewItems.length} items · ${money(viewNetTotalC)})`
                 : `${items.length} items staged (${money(netTotalC)})`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsMinimized(false)
-              void refreshProducts()
-            }}
-            className="ml-2 rounded-lg bg-white/10 p-2 text-zinc-300 hover:bg-white/20 hover:text-white transition-colors"
-            title="Restore Window"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1.5 ml-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsMinimized(false)
+                void refreshProducts()
+              }}
+              className="rounded-lg bg-emerald-600/30 p-2 text-emerald-300 hover:bg-emerald-600 hover:text-white border border-emerald-500/30 transition-all"
+              title="Restore Window"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDiscardDraft()
+              }}
+              className="rounded-lg bg-white/5 p-2 text-zinc-400 hover:bg-rose-500/20 hover:text-rose-300 border border-transparent hover:border-rose-500/30 transition-all"
+              title="Discard Draft Invoice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -1297,7 +1480,7 @@ export function PurchaseInvoiceModal({
       {!isMinimized && (
         <Modal
           open={open}
-          onClose={onClose}
+          onClose={handleModalClose}
           maxWidth="max-w-7xl"
           title=""
         >
@@ -1360,7 +1543,10 @@ export function PurchaseInvoiceModal({
 
                 <button
                   type="button"
-                  onClick={() => setIsMinimized(true)}
+                  onClick={() => {
+                    setIsMinimized(true)
+                    toastSuccess('Purchase Invoice Minimized', `${items.length} items staged. Click dock icon anytime to restore.`)
+                  }}
                   title="Minimize to Floating Dock"
                   className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center"
                 >
@@ -2867,14 +3053,17 @@ export function PurchaseInvoiceModal({
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={onClose}
+                      onClick={handleCancelClick}
                       className="btn-ghost text-xs text-slate-400 hover:text-white"
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsMinimized(true)}
+                      onClick={() => {
+                        setIsMinimized(true)
+                        toastSuccess('Purchase Invoice Minimized', `${items.length} items staged. Click dock icon anytime to restore.`)
+                      }}
                       className="btn-ghost text-xs text-zinc-400 hover:text-white flex items-center gap-1"
                     >
                       <Minus className="h-3.5 w-3.5" />
