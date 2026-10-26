@@ -1,13 +1,18 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.1 (DYNAMIC INVENTORY CODE DISCOVERY & RECEIVING DOCK SYNC RELEASE)
+- v5.1.2 (EDITABLE CUSTOM PACKAGING UNITS & REACTIVE DISCOUNT ENGINE RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.1 Dynamic Inventory Code Discovery & Receiving Dock Sync Release
+- Production Release Ready — v5.1.2 Editable Custom Packaging Units & Reactive Discount Engine Release
+
+COMPLETED (v5.1.2 Editable Custom Packaging Units & Reactive Discount Engine):
+- Stage 44: Editable Custom Packaging Units (Liter, Gallon, Drum, etc.): Restored dedicated uppercase custom unit input box when selecting `CUSTOM (Other)...` in both Create and Edit Invoice modes, allowing store owners to freely type custom wholesale units.
+- Stage 45: Standard Packaging Presets Enrichment: Added `LITER`, `GALLON`, and `KILO` directly into standard wholesale unit presets with 1-click selection.
+- Stage 46: Reactive Discount Engine & Stale-Closure Eradication: Added comprehensive percentage parsing with leading minus sign (`-50%`, `-50`, `-20%-20%`), replaced state closures in `handleKeyDown` with persistent refs to ensure `F2` commit captures fresh discount on first attempt, added live preview chip (`Less ₱50.00 (-50%)`), and added high-velocity `Enter` key listeners on Cost, Qty, and Discount inputs.
 
 COMPLETED (v5.1.1 Dynamic Inventory Code Discovery & Receiving Dock Sync):
 - Stage 40: Zero-Exit Catalog Invalidation on Un-minimize & Restore: Added automatic product cache invalidation in `PurchaseInvoiceModal.tsx` whenever restored from minimized dock, eliminating stale in-memory product lists when users create codes in Inventory.
