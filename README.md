@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v5.1.1-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v5.1.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.1_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-Setup-5.1.1.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.1_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-Portable-5.1.1.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.1_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-5.1.1.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.2_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-Setup-5.1.2.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.2_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-Portable-5.1.2.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.2_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-5.1.2.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,28 +31,31 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v5.1.1 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v5.1.2 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-5.1.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-Setup-5.1.1.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-5.1.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-Portable-5.1.1.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-5.1.1.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/TindaPOS-5.1.1.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v5.1.1.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.1/SHA256SUMS-v5.1.1.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-5.1.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-Setup-5.1.2.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-5.1.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-Portable-5.1.2.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-5.1.2.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/TindaPOS-5.1.2.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v5.1.2.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.2/SHA256SUMS-v5.1.2.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v5.1.1: Instant Inventory Code Discovery & Dynamic Receiving Dock Sync
+## 🌟 What's New in v5.1.2: Editable Custom Packaging Units & Reactive Discount Engine
 
-### 1. 🔄 Zero-Exit Dynamic Catalog Sync on Minimize & Restore
-- **Instant Un-minimize Invalidation**: When minimizing the Purchase Invoice Receiving Dock to create a new barcode/code in Inventory and returning, the modal automatically refreshes active products in the background.
-- **Full Inventory Event Bridge**: Subscribed to `window.api.inventory.onChanged` and `inventory:changed` events so new products created anywhere in the app immediately synchronize into Purchase Invoice without requiring a modal restart.
-- **Window Focus Self-Healing**: Automatically re-syncs active products upon window refocus.
+### 1. 📦 Editable Custom Wholesale Units (Liter, Gallon, Drum, Tub, etc.)
+- **Interactive Custom Unit Box**: Restored dedicated uppercase input box when selecting `CUSTOM (Other)...` in both Create and Edit Invoice modes, allowing store owners to freely specify custom wholesale packaging (e.g. `LITER`, `GALLON`, `DRUM`, `TUB`, `TIE`, `PAIL`).
+- **Standard Packaging Enrichment**: Added `LITER`, `GALLON`, and `KILO` directly into standard wholesale unit presets with 1-click selection.
+- **Ergonomic Enter Key Flow**: Typing in the custom unit box and pressing Enter moves focus automatically to Unit Cost and Quantity.
 
-### 2. ⚡ Live F1 Spotlight Explorer & Omnibox Autocomplete Dropdown
-- **Real-Time SQLite Fallback**: F1 Universal Spotlight Explorer proactively falls back to live SQLite searches for newly created codes, dynamically appending them to the catalog table.
+### 2. ⚡ Reactive Cascading Discount Engine & Stale-Closure Eradication
+- **Universal Percentage Deductions**: Fully parses and calculates single discounts with leading minus (`-50%`, `-50`, `50%`) and compound series discounts (`-20%-20%`, `-5%-5%-5%`, `10+10`, `5/5/5`).
+- **Shortcut Stale-Closure Fix**: Replaced state-bound keyboard handler with persistent ref-based dispatchers so pressing `F2` immediately captures fresh discount inputs on the very first attempt without requiring multiple retries.
+- **Instant Live Preview Badge**: Real-time feedback badge (`Less ₱50.00 (-50%)`) appears below the discount input immediately as the user types.
+- **High-Velocity Enter Key Commit**: Pressing `Enter` on Cost, Qty, or Discount inputs immediately commits the item to the invoice table.
 - **High-Contrast Autocomplete Dropdown**: Rendered an intuitive search dropdown below the item entry input with arrow key navigation, code/cost badges, and instant selection.
 - **Direct Barcode / Code Lookup on Enter**: Pressing Enter on any scanned or typed barcode instantly queries SQLite, commits the match into the line item inputs, and directs focus straight to the quantity field.
 - **Interactive UAC Elevation Support**: Enabled interactive installer elevation for Windows auto-update so permissions prompts display clearly on machines installed under `C:\Program Files\`, eliminating silent installer exits.
