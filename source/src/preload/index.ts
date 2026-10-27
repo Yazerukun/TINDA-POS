@@ -1,3 +1,4 @@
+import type { ExportResult } from '@shared/types'
 import { contextBridge, ipcRenderer } from 'electron'
 import type { TindaApi } from '@shared/ipc'
 import type { IpcRendererEvent } from 'electron'
@@ -160,6 +161,7 @@ const api: TindaApi = {
     csvTemplate: () => invoke<string>('products:csvTemplate'),
     previewCsv: (text) => invoke('products:previewCsv', text),
     importCsv: (text, strategy) => invoke('products:importCsv', text, strategy),
+    exportExcel: () => invoke<ExportResult>('products:exportExcel'),
     previewSimplePos: (text) => invoke('products:previewSimplePos', text),
     importSimplePos: (text, strategy) => invoke('products:importSimplePos', text, strategy),
     saveImage: (data) => invoke<{ filename: string; url: string }>('products:saveImage', data),

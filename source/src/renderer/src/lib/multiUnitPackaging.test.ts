@@ -15,6 +15,7 @@ describe('v5.1.5 Multi-Unit Packaging & Custom Unit Pricing', () => {
     barcode: '480111111000',
     description: 'High grade brown sugar sold by piece, quarter kilo, or full kilo',
     category_id: 1,
+    category_name: 'Sugar & Baking',
     base_unit: 'pc',
     purchase_cost_c: 800, // ₱8.00 cost per piece
     default_price_c: 1300, // ₱13.00 tingi per piece

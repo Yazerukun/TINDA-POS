@@ -375,6 +375,10 @@ handle('products:importCsv', (_e: IpcMainInvokeEvent, text: string, strategy: 'S
   emitInventoryChanged({ reason: 'CSV_IMPORT', product_ids: result.product_ids })
   return result
 })
+handle('products:exportExcel', () => {
+  user()
+  return exportSvc.exportCsv('INVENTORY')
+})
 handle('products:previewSimplePos', (_e: IpcMainInvokeEvent, text: string) => {
   sessionSvc.requirePermission('products:manage')
   return simplePosSvc.previewSimplePos(db(), text)

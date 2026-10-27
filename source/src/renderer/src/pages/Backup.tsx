@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save, HelpCircle, Crown } from 'lucide-react'
+import { Plus, RotateCcw, FolderOpen, HardDriveDownload, Cloud, Save, HelpCircle, Crown, FileSpreadsheet } from 'lucide-react'
 import type { BackupInfo, StoreSettings } from '@shared/types'
 import { shortDateTime } from '@shared/format'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -15,6 +15,24 @@ export function Backup(): React.JSX.Element {
   const [confirm, setConfirm] = useState<BackupInfo | null>(null)
   const [rollbackOpen, setRollbackOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [exportingExcel, setExportingExcel] = useState(false)
+
+  const handleExportExcel = async () => {
+    setExportingExcel(true)
+    try {
+      const res = await window.api.products.exportExcel()
+      toastSuccess('Excel Export Ready', `${res.rows} items exported. Opening spreadsheet...`)
+      try {
+        await window.api.app.openPath(res.path)
+      } catch {
+        await window.api.app.revealPath(res.path)
+      }
+    } catch (e) {
+      toastError('Export failed', String((e as Error)?.message || e))
+    } finally {
+      setExportingExcel(false)
+    }
+  }
   const [settings, setSettings] = useState<StoreSettings | null>(null)
 
   const load = async () => {
@@ -78,10 +96,45 @@ export function Backup(): React.JSX.Element {
             <button onClick={() => setRollbackOpen(true)} className="btn-ghost flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 border border-amber-500/20" title="Safely downgrade or restore a previous version of TINDA POS (VIP Pro Protected)">
               <RotateCcw className="h-3.5 w-3.5 text-amber-400" /> Version Rollback <Crown className="h-3 w-3 text-amber-400" />
             </button>
+            <button
+              onClick={() => void handleExportExcel()}
+              disabled={exportingExcel}
+              className="btn-ghost flex items-center gap-2 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30"
+              title="Export complete inventory and backup data to Microsoft Excel (.csv)"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-400" /> {exportingExcel ? 'Exporting...' : 'Export to Excel'}
+            </button>
             <button onClick={() => void create()} disabled={busy} className="btn-primary flex items-center gap-2"><Plus className="h-4 w-4" /> Back Up Now</button>
           </div>
         }
       />
+
+      <div className="card mb-4 max-w-3xl p-4 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-transparent border-emerald-500/30 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <FileSpreadsheet className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-slate-100">Microsoft Excel Export & Live Sync</p>
+                <span className="badge bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] uppercase font-bold tracking-wider">Excel Ready</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Export your store inventory, bodega stock, costs, selling prices, and multi-unit packaging into a formatted Excel spreadsheet (.csv). Open directly in Microsoft Excel or link with Excel Power Query for automatic live sync.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => void handleExportExcel()}
+            disabled={exportingExcel}
+            className="btn-primary bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 whitespace-nowrap self-start sm:self-center shadow-md font-semibold"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            {exportingExcel ? 'Exporting...' : 'Export to Excel'}
+          </button>
+        </div>
+      </div>
 
       {settings && (
         <div className="card mb-4 max-w-3xl p-4">

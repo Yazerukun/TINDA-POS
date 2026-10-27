@@ -9,10 +9,11 @@ import { itemSalesReport } from './reporting'
 
 function toCsv(header: string[], records: (string | number)[][]): string {
   const esc = (v: string | number) => {
-    const s = String(v)
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    const s = String(v ?? '')
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
-  return [header.map(esc).join(','), ...records.map((r) => r.map(esc).join(','))].join('\n')
+  // Prepend UTF-8 BOM (\uFEFF) so Microsoft Excel on Windows renders all characters cleanly
+  return '\uFEFF' + [header.map(esc).join(','), ...records.map((r) => r.map(esc).join(','))].join('\r\n')
 }
 
 export function exportCsv(
@@ -68,29 +69,73 @@ export function exportCsv(
       ])
     )
   } else if (kind === 'INVENTORY') {
+    const unitsMap = new Map<number, string[]>()
+    try {
+      const unitsRaw = db
+        .prepare(`SELECT product_id, name, conversion_to_base, selling_price_c FROM product_units ORDER BY conversion_to_base ASC`)
+        .all() as { product_id: number; name: string; conversion_to_base: number; selling_price_c: number }[]
+      for (const u of unitsRaw) {
+        const list = unitsMap.get(u.product_id) || []
+        const price = (u.selling_price_c / 100).toFixed(2)
+        list.push(`${u.name} (${u.conversion_to_base} base) = ₱${price}`)
+        unitsMap.set(u.product_id, list)
+      }
+    } catch {
+      // product_units fallback
+    }
+
     const rowsRaw = db
       .prepare(
-        `SELECT p.name, c.name AS category_name, p.sku, p.base_unit, p.stock, p.purchase_cost_c, p.default_price_c,
+        `SELECT p.id, p.name, c.name AS category_name, p.sku, p.barcode, p.base_unit, p.stock, p.purchase_cost_c, p.default_price_c,
                 p.low_stock_threshold, p.status, COALESCE(s.name,'') AS supplier
          FROM products p LEFT JOIN categories c ON c.id = p.category_id LEFT JOIN suppliers s ON s.id = p.supplier_id
          WHERE p.status = 'ACTIVE' ORDER BY p.name`
       )
       .all() as Record<string, unknown>[]
     flush(
-      'inventory',
-      ['Product', 'Category', 'SKU', 'Base Unit', 'Stock', 'Cost', 'Selling Price', 'Low Stock Threshold', 'Status', 'Supplier'],
-      rowsRaw.map((r) => [
-        String(r.name),
-        String(r.category_name ?? ''),
-        String(r.sku),
-        String(r.base_unit),
-        Number(r.stock),
-        Number(r.purchase_cost_c) / 100,
-        Number(r.default_price_c) / 100,
-        Number(r.low_stock_threshold),
-        String(r.status),
-        String(r.supplier)
-      ])
+      'tinda-inventory-excel',
+      [
+        'Barcode',
+        'SKU',
+        'Product Name',
+        'Category',
+        'Base Unit',
+        'Packaging Units & Prices',
+        'Bodega Stock',
+        'Cost (PHP)',
+        'Selling Price (PHP)',
+        'Total Stock Value (PHP)',
+        'Low Stock Threshold',
+        'Stock Status',
+        'Status',
+        'Supplier'
+      ],
+      rowsRaw.map((r) => {
+        const stock = Number(r.stock ?? 0)
+        const cost = Number(r.purchase_cost_c ?? 0) / 100
+        const price = Number(r.default_price_c ?? 0) / 100
+        const threshold = Number(r.low_stock_threshold ?? 5)
+        const stockValue = Number((stock * cost).toFixed(2))
+        const pUnits = unitsMap.get(Number(r.id))?.join(' | ') || 'Single Unit'
+        const stockStatus = stock <= 0 ? 'OUT OF STOCK' : stock <= threshold ? 'LOW STOCK' : 'HEALTHY'
+
+        return [
+          String(r.barcode ?? ''),
+          String(r.sku ?? ''),
+          String(r.name ?? ''),
+          String(r.category_name ?? ''),
+          String(r.base_unit ?? 'pc'),
+          pUnits,
+          stock,
+          cost.toFixed(2),
+          price.toFixed(2),
+          stockValue.toFixed(2),
+          threshold,
+          stockStatus,
+          String(r.status ?? 'ACTIVE'),
+          String(r.supplier ?? '')
+        ]
+      })
     )
   } else if (kind === 'EXPENSES') {
     const exp = listExpenses(db, { from: opts.from, to: opts.to, limit: 100000 }).rows

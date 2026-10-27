@@ -59,6 +59,24 @@ export function Inventory(): React.JSX.Element {
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const { isOpen: purchaseInvoiceOpen, isMinimized: isPurchaseInvoiceMinimized, openModal: openPurchaseInvoice } = usePurchaseInvoiceModal()
   const [promoModalOpen, setPromoModalOpen] = useState(false)
+  const [exportingExcel, setExportingExcel] = useState(false)
+
+  const handleExportExcel = async () => {
+    setExportingExcel(true)
+    try {
+      const res = await window.api.products.exportExcel()
+      toastSuccess('Excel Export Ready', `${res.rows} items exported. Opening spreadsheet...`)
+      try {
+        await window.api.app.openPath(res.path)
+      } catch {
+        await window.api.app.revealPath(res.path)
+      }
+    } catch (e) {
+      toastError('Export failed', String((e as Error)?.message || e))
+    } finally {
+      setExportingExcel(false)
+    }
+  }
   const { settings } = useSettings()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('tinda_inventory_view_mode') as 'grid' | 'list') || 'grid'
@@ -340,6 +358,14 @@ export function Inventory(): React.JSX.Element {
           <button onClick={() => setPriceGuideOpen(true)} className="btn-ghost flex items-center gap-2"><Sparkles className="h-4 w-4 text-brand-400" /> Price Guide</button>
           <button onClick={() => { setSelectedTagProduct(null); setPrintPriceTagsOpen(true) }} className="btn-ghost flex items-center gap-2 text-sky-300 hover:text-sky-200"><Tag className="h-4 w-4 text-sky-400" /> Print Price Tags</button>
           <button onClick={() => setPrintInventoryOpen(true)} className="btn-ghost flex items-center gap-2 text-emerald-300 hover:text-emerald-200"><Printer className="h-4 w-4 text-emerald-400" /> Print Sheets / P.O.</button>
+          <button
+            onClick={() => void handleExportExcel()}
+            disabled={exportingExcel}
+            className="btn-primary bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-2 shadow-sm font-semibold"
+            title="Export complete inventory, stock, costs, and packaging units to Microsoft Excel (.csv)"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-200" /> {exportingExcel ? 'Exporting...' : 'Export to Excel'}
+          </button>
           <button onClick={() => setImporting(true)} className="btn-ghost flex items-center gap-2"><Upload className="h-4 w-4" /> Import Products / Backup</button>
           <button onClick={() => setViewingReceiving(true)} className="btn-ghost flex items-center gap-2"><ClipboardList className="h-4 w-4" /> Stock Receiving</button>
           <button onClick={() => setViewingMovements(true)} className="btn-ghost flex items-center gap-2"><ArrowDownUp className="h-4 w-4" /> Stock History</button>
