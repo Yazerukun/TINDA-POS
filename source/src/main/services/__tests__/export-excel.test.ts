@@ -20,8 +20,8 @@ import { createProduct } from '../../repositories/products'
 import { getDb, closeDb } from '../../database/connection'
 import { exportCsv } from '../export'
 
-describe('v5.1.6 Microsoft Excel Inventory Export Engine', () => {
-  it('exports complete inventory with UTF-8 BOM, multi-unit packaging, and formatted financial columns', () => {
+describe('v5.1.7 Microsoft Excel Inventory Export Engine', () => {
+  it('exports complete inventory with UTF-8 BOM, multi-unit packaging, and converted stock equivalents', () => {
     const db = getDb()
 
     const setupResult = completeSetup({
@@ -57,7 +57,7 @@ describe('v5.1.6 Microsoft Excel Inventory Export Engine', () => {
 
     expect(product.id).toBeGreaterThan(0)
 
-    // Set stock directly in database for testing
+    // Set stock directly in database for testing (1,000 pcs = exactly 10 Kilos)
     db.prepare('UPDATE products SET stock = 1000 WHERE id = ?').run(product.id)
 
     // Run export
@@ -79,7 +79,8 @@ describe('v5.1.6 Microsoft Excel Inventory Export Engine', () => {
     expect(rawContent).toContain('SKU')
     expect(rawContent).toContain('Product Name')
     expect(rawContent).toContain('Packaging Units & Prices')
-    expect(rawContent).toContain('Bodega Stock')
+    expect(rawContent).toContain('Bodega Stock (Base Units)')
+    expect(rawContent).toContain('Stock Equivalent (In Packs/Kilos)')
     expect(rawContent).toContain('Cost (PHP)')
     expect(rawContent).toContain('Selling Price (PHP)')
     expect(rawContent).toContain('Total Stock Value (PHP)')
@@ -91,7 +92,8 @@ describe('v5.1.6 Microsoft Excel Inventory Export Engine', () => {
     expect(rawContent).toContain('480123456001')
     expect(rawContent).toContain('1/4 Kilo (25 base) = ₱275.00')
     expect(rawContent).toContain('1 Kilo (100 base) = ₱1100.00')
-    expect(rawContent).toContain('1000') // Stock
+    expect(rawContent).toContain('1000') // Stock in base pcs
+    expect(rawContent).toContain('10 1 Kilo') // Converted stock equivalent (10 kilos!)
     expect(rawContent).toContain('8.00') // Cost
     expect(rawContent).toContain('13.00') // Selling price
     expect(rawContent).toContain('8000.00') // 1,000 * 8.00 = ₱8,000.00 total stock value

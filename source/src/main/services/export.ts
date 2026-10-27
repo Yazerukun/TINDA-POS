@@ -70,6 +70,7 @@ export function exportCsv(
     )
   } else if (kind === 'INVENTORY') {
     const unitsMap = new Map<number, string[]>()
+    const maxUnitMap = new Map<number, { name: string; conversion: number }>()
     try {
       const unitsRaw = db
         .prepare(`SELECT product_id, name, conversion_to_base, selling_price_c FROM product_units ORDER BY conversion_to_base ASC`)
@@ -79,6 +80,13 @@ export function exportCsv(
         const price = (u.selling_price_c / 100).toFixed(2)
         list.push(`${u.name} (${u.conversion_to_base} base) = ₱${price}`)
         unitsMap.set(u.product_id, list)
+
+        if (u.conversion_to_base > 1) {
+          const currentMax = maxUnitMap.get(u.product_id)
+          if (!currentMax || u.conversion_to_base > currentMax.conversion) {
+            maxUnitMap.set(u.product_id, { name: u.name, conversion: u.conversion_to_base })
+          }
+        }
       }
     } catch {
       // product_units fallback
@@ -101,7 +109,8 @@ export function exportCsv(
         'Category',
         'Base Unit',
         'Packaging Units & Prices',
-        'Bodega Stock',
+        'Bodega Stock (Base Units)',
+        'Stock Equivalent (In Packs/Kilos)',
         'Cost (PHP)',
         'Selling Price (PHP)',
         'Total Stock Value (PHP)',
@@ -119,6 +128,21 @@ export function exportCsv(
         const pUnits = unitsMap.get(Number(r.id))?.join(' | ') || 'Single Unit'
         const stockStatus = stock <= 0 ? 'OUT OF STOCK' : stock <= threshold ? 'LOW STOCK' : 'HEALTHY'
 
+        // Compute converted stock equivalent in largest packaging unit
+        const maxUnit = maxUnitMap.get(Number(r.id))
+        let stockEquivalent = `${stock} ${r.base_unit ?? 'pc'}`
+        if (maxUnit && maxUnit.conversion > 1) {
+          const whole = Math.floor(stock / maxUnit.conversion)
+          const rem = stock % maxUnit.conversion
+          if (whole > 0 && rem > 0) {
+            stockEquivalent = `${whole} ${maxUnit.name} + ${rem} ${r.base_unit ?? 'pc'}`
+          } else if (whole > 0) {
+            stockEquivalent = `${whole} ${maxUnit.name}`
+          } else {
+            stockEquivalent = `${rem} ${r.base_unit ?? 'pc'}`
+          }
+        }
+
         return [
           String(r.barcode ?? ''),
           String(r.sku ?? ''),
@@ -127,6 +151,7 @@ export function exportCsv(
           String(r.base_unit ?? 'pc'),
           pUnits,
           stock,
+          stockEquivalent,
           cost.toFixed(2),
           price.toFixed(2),
           stockValue.toFixed(2),

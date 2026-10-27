@@ -17,7 +17,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v5.1.6 (Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector)
+- **Current Stable Version:** v5.1.7 (Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**

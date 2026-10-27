@@ -1,5 +1,11 @@
 
-### Stage 58-61: v5.1.6 Microsoft Excel Inventory & Backup Export with Multi-Unit Packaging (October 27, 2026)
+### Stage 62-65: v5.1.7 Automated Stock Equivalent (Packs/Kilos) Conversion in Excel (October 27, 2026)
+- **Automatic Converted Stock Equivalent Column**: The Excel export now includes an automatic `Stock Equivalent (In Packs/Kilos)` column. Cashiers and store owners no longer need to perform mental math or Excel division; e.g. 1,000 pcs with 1 Kilo (100 base) displays `10 1 Kilo` (or `10 Kilos + 15 pcs` if remainder exists).
+- **Dual Stock Transparency**: Columns now clearly distinguish between `Bodega Stock (Base Units)` (exact base count in pcs) and `Stock Equivalent (In Packs/Kilos)` (converted pack/kilo representation).
+- **Complete Verification**: Automated vitest suite `src/main/services/__tests__/export-excel.test.ts` verifies conversion math, remainder handling, and UTF-8 BOM encoding.
+
+
+### Stage 58-61: v5.1.7 Microsoft Excel Inventory & Backup Export with Multi-Unit Packaging (October 27, 2026)
 - **1-Click "Export to Excel" in Inventory**: Added dedicated prominent emerald action button in Inventory PageHeader to export the entire store inventory directly to an Excel-formatted spreadsheet (.csv). Automatically launches Microsoft Excel or File Explorer upon completion.
 - **Dedicated Microsoft Excel Card in Backup & Restore**: Added an Excel Export & Live Sync section in Backup & Restore page, allowing store owners to extract a formatted spreadsheet snapshot of all inventory and financial numbers without needing to parse SQLite files.
 - **Ultra-Rich Multi-Unit Spreadsheet Columns**: Excel rows include Barcode, SKU, Product Name, Category, Base Unit, Packaging Units & Prices (e.g. 1/4 Kilo = ₱275, 1 Kilo = ₱1,100), Bodega Stock, Cost (PHP), Selling Price (PHP), Total Stock Value (PHP), Low Stock Threshold, Stock Status, Status, and Supplier.
@@ -9,15 +15,15 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.6 (NATIVE MULTI-UNIT PACKAGING, CUSTOM UNIT PRICING & POS QUICK-UNIT SELECTOR RELEASE)
+- v5.1.7 (NATIVE MULTI-UNIT PACKAGING, CUSTOM UNIT PRICING & POS QUICK-UNIT SELECTOR RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.6 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector Release
+- Production Release Ready — v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector Release
 
-COMPLETED (v5.1.6 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
+COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):
   Added a dedicated `Price (₱)` input column directly into the `Selling Units (Tingi / Multi-unit Packaging)` table with smart auto-pricing on conversion changes and full custom override support (e.g. Tingi ₱13, 1/4 Kilo ₱275, 1 Kilo ₱1,100).
 - Stage 55: Interactive Packaging Unit Quick-Picker Modal (`UnitPickerModal.tsx` & `POS.tsx`):
