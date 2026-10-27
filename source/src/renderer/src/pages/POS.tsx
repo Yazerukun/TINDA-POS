@@ -57,6 +57,7 @@ import { PosToolsModal } from '../components/PosToolsModal'
 import { FastButtonsBar } from '../components/FastButtonsBar'
 import { CashierCalculatorModal } from '../components/CashierCalculatorModal'
 import { PromoBundlesModal } from '../components/PromoBundlesModal'
+import { UnitPickerModal } from '../components/UnitPickerModal'
 import { getStoredPromoBundles, evaluateCartPromos, type PromoBundle } from '../utils/promoBundles'
 import { useGuide } from '../stores/guide'
 import { useSettings } from '../stores/settings'
@@ -122,6 +123,8 @@ interface CartState {
   customer_name: string | null
   discount_pesos: number
   add: (p: Product, qtyToAdd?: number) => void
+  addWithUnit: (p: Product, unit: Product['units'][number], qtyToAdd?: number) => void
+  changeItemUnit: (product_id: number, targetUnit: Product['units'][number]) => void
   addCustomItem: (name: string, price_c: number, unit_name?: string, qty?: number, cost_base_c?: number) => void
   setQty: (product_id: number, qty: number) => void
   setItemPrice: (product_id: number, priceC: number) => void
@@ -139,46 +142,81 @@ export const usePosCart = create<CartState>((set) => ({
   customer_id: null,
   customer_name: null,
   discount_pesos: 0,
-  add: (p: Product, qtyToAdd = 1) =>
+  add: (p: Product, qtyToAdd = 1) => {
+    if (p.units && p.units.length > 0) {
+      const defUnit = p.units.find((u) => u.is_default) || p.units[0]
+      if (defUnit) {
+        usePosCart.getState().addWithUnit(p, defUnit, qtyToAdd)
+        return
+      }
+    }
+    usePosCart.getState().addWithUnit(
+      p,
+      { id: 0, product_id: p.id, name: p.base_unit, conversion_to_base: 1, barcode: p.barcode, selling_price_c: p.default_price_c, is_default: true },
+      qtyToAdd
+    )
+  },
+  addWithUnit: (p: Product, unit: Product['units'][number], qtyToAdd = 1) =>
     set((s) => {
       const stock = saleStock(p)
-      const ex = s.items.find((i) => i.product_id === p.id)
       if (stock <= 0) return s
-      const weighable = isWeighableUnit(p.base_unit)
+      const conv = Math.max(1, unit.conversion_to_base || 1)
+      const weighable = isWeighableUnit(unit.name)
       const quantityToAdd = Math.max(weighable ? 0.001 : 1, qtyToAdd)
+      const unitPrice = (unit.selling_price_c && unit.selling_price_c > 0)
+        ? unit.selling_price_c
+        : (conv === 1 ? p.default_price_c : Math.round(p.default_price_c * conv))
+
+      const ex = s.items.find((i) => i.product_id === p.id)
       if (ex) {
-        const nextQty = Math.min(ex.qty + quantityToAdd, maxQuantity(stock, ex.conversion_to_base, weighable))
-        const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
-          ex.base_price_c ?? ex.unit_price_c,
-          nextQty,
-          ex.wholesale_price_c,
-          ex.wholesale_min_qty,
-          ex.custom_price_c
-        )
-        return {
-          items: s.items.map((i) =>
-            i === ex
-              ? {
-                  ...i,
-                  stock_base: stock,
-                  qty: nextQty,
-                  unit_price_c: unitPriceC,
-                  is_wholesale: isWholesale,
-                  is_custom_price: isCustom
-                }
-              : i
+        if (ex.unit_name === unit.name && ex.conversion_to_base === conv) {
+          const nextQty = Math.min(ex.qty + quantityToAdd, maxQuantity(stock, ex.conversion_to_base, weighable))
+          const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
+            ex.base_price_c ?? ex.unit_price_c,
+            nextQty,
+            ex.wholesale_price_c,
+            ex.wholesale_min_qty,
+            ex.custom_price_c
           )
+          return {
+            items: s.items.map((i) =>
+              i === ex
+                ? {
+                    ...i,
+                    stock_base: stock,
+                    qty: nextQty,
+                    unit_price_c: unitPriceC,
+                    is_wholesale: isWholesale,
+                    is_custom_price: isCustom
+                  }
+                : i
+            )
+          }
+        } else {
+          const nextQty = Math.min(ex.qty + quantityToAdd, maxQuantity(stock, conv, weighable))
+          return {
+            items: s.items.map((i) =>
+              i === ex
+                ? {
+                    ...i,
+                    unit_name: unit.name,
+                    conversion_to_base: conv,
+                    stock_base: stock,
+                    qty: nextQty,
+                    unit_price_c: unitPrice,
+                    base_price_c: unitPrice,
+                    cost_base_c: Math.round(p.purchase_cost_c * conv),
+                    is_wholesale: false,
+                    is_custom_price: false,
+                    custom_price_c: null
+                  }
+                : i
+            )
+          }
         }
       }
-      const initialQty = Math.min(quantityToAdd, maxQuantity(stock, 1, weighable))
-      const basePrice = p.default_price_c
-      const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
-        basePrice,
-        initialQty,
-        p.wholesale_price_c,
-        p.wholesale_min_qty,
-        null
-      )
+
+      const initialQty = Math.min(quantityToAdd, maxQuantity(stock, conv, weighable))
       return {
         items: [
           ...s.items,
@@ -186,20 +224,50 @@ export const usePosCart = create<CartState>((set) => ({
             product_id: p.id,
             name: p.name,
             description: p.description ?? null,
-            unit_name: p.base_unit,
+            unit_name: unit.name,
             qty: initialQty,
-            unit_price_c: unitPriceC,
-            base_price_c: basePrice,
-            wholesale_price_c: p.wholesale_price_c,
-            wholesale_min_qty: p.wholesale_min_qty,
-            is_wholesale: isWholesale,
+            unit_price_c: unitPrice,
+            base_price_c: unitPrice,
+            wholesale_price_c: conv === 1 ? p.wholesale_price_c : null,
+            wholesale_min_qty: conv === 1 ? p.wholesale_min_qty : null,
+            is_wholesale: false,
             custom_price_c: null,
-            is_custom_price: isCustom,
-            cost_base_c: p.purchase_cost_c,
+            is_custom_price: false,
+            cost_base_c: Math.round(p.purchase_cost_c * conv),
             stock_base: stock,
-            conversion_to_base: 1
+            conversion_to_base: conv
           }
         ]
+      }
+    }),
+  changeItemUnit: (product_id: number, targetUnit: Product['units'][number]) =>
+    set((s) => {
+      const item = s.items.find((i) => i.product_id === product_id)
+      if (!item) return s
+      const conv = Math.max(1, targetUnit.conversion_to_base || 1)
+      const weighable = isWeighableUnit(targetUnit.name)
+      const unitPrice = (targetUnit.selling_price_c && targetUnit.selling_price_c > 0)
+        ? targetUnit.selling_price_c
+        : (conv === 1 ? (item.base_price_c ?? item.unit_price_c) : Math.round((item.base_price_c ?? item.unit_price_c) * conv))
+      const maxQ = maxQuantity(item.stock_base, conv, weighable)
+      const safeQty = Math.min(item.qty, maxQ)
+
+      return {
+        items: s.items.map((i) =>
+          i.product_id === product_id
+            ? {
+                ...i,
+                unit_name: targetUnit.name,
+                conversion_to_base: conv,
+                unit_price_c: unitPrice,
+                base_price_c: unitPrice,
+                qty: Math.max(weighable ? 0.001 : 1, safeQty),
+                is_wholesale: false,
+                is_custom_price: false,
+                custom_price_c: null
+              }
+            : i
+        )
       }
     }),
   addCustomItem: (name: string, price_c: number, unit_name = 'pc', qty = 1, cost_base_c = 0) =>
@@ -341,6 +409,9 @@ export function POS(): React.JSX.Element {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [customizeModalOpen, setCustomizeModalOpen] = useState(false)
   const [catCounts, setCatCounts] = useState<Record<number | 'ALL', number>>({ ALL: 0 })
+  const [unitPickerProduct, setUnitPickerProduct] = useState<Product | null>(null)
+
+  const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products])
   const [posPinnedIds, setPosPinnedIds] = useState<number[]>(() =>
     reconcilePinnedCategoryIds(settings?.pos_pinned_categories)
   )
@@ -716,11 +787,19 @@ export function POS(): React.JSX.Element {
       // 3. Exact SKU match
       // 4. Exact product name match
       // 5. If query uniquely matches only 1 product that starts with or contains cleanCode
-      let found = res.rows.find(
-        (p) =>
-          p.barcode?.toLowerCase() === target ||
-          p.units?.some((u) => u.barcode?.toLowerCase() === target)
-      )
+      let matchedUnit: Product['units'][number] | undefined
+      let found = res.rows.find((p) => {
+        if (p.barcode?.toLowerCase() === target) {
+          matchedUnit = p.units?.find((u) => u.barcode?.toLowerCase() === target) || p.units?.[0]
+          return true
+        }
+        const u = p.units?.find((u) => u.barcode?.toLowerCase() === target)
+        if (u) {
+          matchedUnit = u
+          return true
+        }
+        return false
+      })
 
       if (!found) {
         found = res.rows.find((p) => p.sku?.toLowerCase() === target)
@@ -751,7 +830,7 @@ export function POS(): React.JSX.Element {
           toastError(`"${found.name}" is out of stock!`, 'Available for sale: 0 units')
         } else {
           const existing = usePosCart.getState().items.find((i) => i.product_id === found.id)
-          usePosCart.getState().add(found, qtyMultiplier)
+          if (matchedUnit) { usePosCart.getState().addWithUnit(found, matchedUnit, qtyMultiplier) } else { usePosCart.getState().add(found, qtyMultiplier) }
           const isQuotation = action === 'quotation'
           if (existing) {
             playDuplicateScanChime()
@@ -1627,7 +1706,14 @@ export function POS(): React.JSX.Element {
                   className="card group flex h-[185px] min-w-0 flex-col p-3 text-left transition hover:border-brand-500/50 aria-disabled:cursor-not-allowed aria-disabled:opacity-40"
                 >
                   <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                    <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="truncate text-xs font-bold text-brand-400">{p.sku}</span>
+                      {p.units && p.units.length > 1 && (
+                        <span className="rounded bg-brand-500/15 px-1 py-0.2 text-[9px] font-bold text-brand-300 border border-brand-500/30">
+                          {p.units.length} Units
+                        </span>
+                      )}
+                    </div>
                     <span className={`text-xs font-bold ${out ? 'text-red-400' : low ? 'text-amber-400' : 'text-slate-500'}`}>
                       {blocked > 0 ? `Sellable: ${formatQuantity(stock)}` : cartItem ? `Available: ${formatQuantity(available)} / ${formatQuantity(stock)}` : `Stock: ${formatQuantity(stock)}`} {p.base_unit}
                     </span>

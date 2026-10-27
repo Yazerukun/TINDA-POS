@@ -17,24 +17,13 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v5.1.4 (Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence)
+- **Current Stable Version:** v5.1.5 (Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**
-  1. **Pure Full Build Mandate**: Eradicated patch fallbacks in `updateTransport.ts`. Set `hasPatch: false` across redirect fallbacks, ensuring all client nodes download 100% full binaries (`TindaPOS-Setup-4.1.12.exe` / `TindaPOS-Portable-4.1.12.exe` / `TindaPOS-4.1.12.AppImage`).
-  2. **Interactive UAC Elevation Support in Auto-Updater**: Updated `restartAndInstall()` to invoke `quitAndInstall(false, true)` allowing the NSIS installer to prompt for UAC elevation on Windows machines installed under `C:\Program Files\`, eliminating silent install termination.
-  3. **Untruncated Inventory & Dashboard KPI Accuracy**: Removed legacy `.slice(0, 10)` artificial cap on Dashboard `alertProducts` so `out` and `low` counts accurately reflect the entire inventory (e.g. 15+ low stock items appear as 15 low, exactly matching the Inventory filter).
-  4. **Inventory Search Limit Raised**: Elevated `products.search` limit on Dashboard from 1,000 to 5,000 (matching `Inventory.tsx`), guaranteeing zero truncation for stores with large product catalogs.
-  5. **Scrollable Alert Overview & One-Tap Inventory Nav**: Redesigned the "LOW / OUT OF STOCK" card with clean scrollable view (`max-h-80 overflow-y-auto`) and one-tap "View in Inventory" button so store owners can inspect every item needing reorder.
-  6. **Telemetry Limit Expansion**: Raised low stock query limit in `storeTelemetry.ts` from 20 to 5,000 to prevent AI Advisor and Notification Bell truncation.
-  7. **Quick Launch Bar Real-Time Badge**: Quick Launch Inventory action button displays real-time un-truncated stock status (`{out} Out · {low} Low`).
-  2. **TINDA LAN Direct Beam (1-Tap PC-to-PC Data Transfer)**: Direct local network data beam over Wi-Fi, Ethernet switch, or direct PC-to-PC LAN cable without router. UDP beacon auto-discovery (Port 3112) with 'TINDA_BEAM_BEACON', secure 6-digit PIN handshake (POST /api/lan/beam/pull on Port 3111), and atomic safety backup & restore. Designed with UI-UX Pro Max standards, embedded in Settings Data Tab and Network Tab.
-  3. **Universal Foreign Key Constraint Immune Restore**: Eradicated `SqliteError: FOREIGN KEY constraint failed` during `.tinda-backup` import (`backup:importTinda`). Corrected `CANONICAL_TABLES` topological order, decoupled foreign key checks during bulk restore transaction via `PRAGMA foreign_keys = OFF` outside transaction, enabled `PRAGMA defer_foreign_keys = ON`, and introduced auto-healing for orphaned optional references. Added web-backup format normalizer for Dexie array settings and unhashed checksums.
-  3. **[F1] 0ms Instant Hardware Responsiveness**: Progressive 80-item chunk windowing and requestAnimationFrame focus, reducing initial DOM mount time from ~350ms to < 2ms (over 150× faster).
-  3. **[F1] Universal Inventory Spotlight Explorer**: Pressing F1 from anywhere in Purchase Invoice opens an Apple Design Standard command palette (PurchaseItemPickerModal.tsx) with instant 0ms in-memory search across Name, Barcode, SKU, and Category.
-  4. **100% Keyboard-Ergonomic Speedrun**: Smooth Arrow key navigation, immediate Enter selection that automatically injects the product and auto-focuses the Qty input field for instantaneous entry (F1 -> Type -> Enter -> Qty -> Enter).
-  5. **Visual Stock Health & Cost Transparency**: Displays color-coded real-time on-hand stock badges (Out of Stock, Low Stock, Healthy Stock), default Purchase Cost, Retail SRP, and expected margin markup percentage.
-  6. **Smart Category & Low Stock Filter Pills**: Instant chips for All Items, ⚠️ Low / Out of Stock (critical for restocking decisions), and top dynamic categories.
-  7. **Preserved Dual-Minimize Architecture**: Retains the Floating Receiving Dock (fixed bottom-5 right-6) and collapsible header details panel.
-  8. **Automated Verification**: 599/599 unit tests passing across 95 test files with 0 TypeScript compilation errors.
-  9. **Dual-Cloud High Availability & Supabase Autonomous Failover**: Seamless auto-failover from Cloudflare D1 to Supabase Managed PostgreSQL (`qeruenpmscoxwycniklr`), guaranteeing zero-downtime sales sync and uninterrupted dashboard telemetry. Full DDL schema provided in `SUPABASE_SCHEMA.txt`.
+  1. **Native Multi-Unit Packaging & Custom Unit Pricing (`Inventory.tsx` & `productForm.ts`)**: Added dedicated Selling Price (`₱`) field per selling packaging unit (e.g. 1 Kilo = ₱1,100, 1/4 Kilo = ₱275, Tingi/Pcs = ₱13). Supports custom pricing independent of strict linear multiplier math, allowing bulk packaging discounts and sari-sari store tingi price premiums under a single product code.
+  2. **Interactive POS Quick-Unit Picker (`UnitPickerModal.tsx` & `POS.tsx`)**: Tapping or clicking any multi-unit product card or table row in POS Cashier pops up an Apple Cupertino-style numbered Unit Picker modal. Cashiers can hit keyboard keys `1`, `2`, `3`... or Esc, or tap directly to inject the exact packaging unit with its specific retail price.
+  3. **Real-Time In-Cart Packaging Unit Switcher (`POS.tsx`)**: Cashiers can switch packaging units on-the-fly directly within the cart line items dropdown without deleting and re-adding items. Price, barcode, conversion, and subtotal automatically update in real time.
+  4. **Multi-Unit Barcode Auto-Recognition (`POS.tsx`)**: Scanning unit-specific barcodes instantly identifies and injects the matched packaging unit, unit price, and conversion factor into the active cart.
+  5. **Integer Centavo Precision Stock Deduction (`checkout.ts`)**: Automatic deduction of inventory stock in base units (`qty * conversion_to_base`) on checkout with zero floating-point rounding errors.
+  6. **Automated Verification**: 648/648 unit tests passing across 103 test files with 0 TypeScript compilation errors. Pure full binary releases with no patch mismatches.

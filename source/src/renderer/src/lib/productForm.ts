@@ -133,6 +133,7 @@ export function updateProductInput(form: ProductFormData): Partial<ProductInput>
   const sanitizedUnits = (form.units || []).map((u) => ({
     ...u,
     name: u.name.trim(),
+    selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
     barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
   }))
   return {
@@ -167,6 +168,7 @@ export function createProductInput(form: ProductFormData): ProductInput {
   const sanitizedUnits = rawUnits.map((u) => ({
     ...u,
     name: u.name.trim(),
+    selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
     barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
   }))
   return {

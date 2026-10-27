@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v5.1.4-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v5.1.5-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.4_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Setup-5.1.4.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.4_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-Portable-5.1.4.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.4_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.4/TindaPOS-5.1.4.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.5_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.5/TindaPOS-Setup-5.1.5.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.5_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.5/TindaPOS-Portable-5.1.5.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.5_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.5/TindaPOS-5.1.5.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,7 +31,7 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v5.1.4 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v5.1.5 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|

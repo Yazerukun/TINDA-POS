@@ -1,13 +1,23 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.4 (OMNIPRESENT MULTI-PAGE MINIMIZED PURCHASE INVOICE & AUTOMATIC DRAFT PERSISTENCE RELEASE)
+- v5.1.5 (NATIVE MULTI-UNIT PACKAGING, CUSTOM UNIT PRICING & POS QUICK-UNIT SELECTOR RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence Release
+- Production Release Ready — v5.1.5 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector Release
+
+COMPLETED (v5.1.5 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
+- Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):
+  Added a dedicated `Price (₱)` input column directly into the `Selling Units (Tingi / Multi-unit Packaging)` table with smart auto-pricing on conversion changes and full custom override support (e.g. Tingi ₱13, 1/4 Kilo ₱275, 1 Kilo ₱1,100).
+- Stage 55: Interactive Packaging Unit Quick-Picker Modal (`UnitPickerModal.tsx` & `POS.tsx`):
+  When cashier clicks any multi-unit item in the POS grid or list, opens a fast numbered Cupertino modal displaying all units, conversions, prices, and stock, with keyboard shortcuts (1, 2, 3...) and instant 1-tap cart insertion.
+- Stage 56: In-Cart Packaging Unit Switcher (`POS.tsx`):
+  Added inline interactive unit dropdown selector on Cart line items, allowing cashiers to change packaging units on the fly without deleting the item.
+- Stage 57: Smart Unit Barcode Matcher & Base Unit Stock Reconciliation:
+  Scanning a unit-specific barcode directly matches and inserts that packaging unit with its specific price and conversion factor, automatically deducting `-qty * conversion_to_base` from the unified base inventory on checkout.
 
 COMPLETED (v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence):
 - Stage 50: Root-Level Mount Architecture: Decoupled `PurchaseInvoiceModal` from `Inventory.tsx` and promoted it to the root application shell (`Shell.tsx`) with a dedicated global Zustand store (`usePurchaseInvoiceModal`), preventing unmounting or in-memory item loss when switching between POS Cashier, Inventory, Customers, and other pages.

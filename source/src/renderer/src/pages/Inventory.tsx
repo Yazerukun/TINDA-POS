@@ -1841,7 +1841,7 @@ function ProductModal({
     finally { setCategoryBusy(false) }
   }
   return (
-    <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-lg" footer={
+    <Modal open onClose={onClose} title={form.id ? 'Edit Product' : 'New Product'} maxWidth="max-w-xl" footer={
       <>
         <button onClick={onClose} className="btn-ghost">Cancel</button>
         <button disabled={saving || categoryBusy || uploadingImage} onClick={() => void submit()} className="btn-primary">Save</button>
@@ -2256,12 +2256,59 @@ function ProductModal({
           <input id="product-expiration" className="input w-full" type="date" value={f.expiration_date ?? ''} onChange={(e) => set({ expiration_date: e.target.value })} />
         </div>}
         <div className="col-span-2">
-          <label className="label">Selling Units (Tingi / Multi-unit)</label>
-          <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="label">Selling Units (Tingi / Multi-unit Packaging)</label>
+            <span className="text-[11px] text-slate-400">Set custom prices & conversions (e.g. Tingi, 1/4 Kilo, 1 Kilo)</span>
+          </div>
+          <div className="space-y-1.5 mt-1">
+            <div className="grid grid-cols-[1fr_64px_84px_100px_28px_28px] items-center gap-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
+              <span>Unit Name</span>
+              <span className="text-center" title="How many base units (e.g. 25 or 100 pcs)">Pcs/Base</span>
+              <span className="text-right">Price (₱)</span>
+              <span>Barcode</span>
+              <span></span>
+              <span></span>
+            </div>
             {rows.map((r, i) => (
-              <div key={i} className="grid grid-cols-[1fr_76px_110px_28px_28px] items-center gap-2">
-                <input placeholder={i === 0 ? 'Unit name (e.g. piece)' : 'Selling unit name'} value={r.name} onChange={(e) => setRow(i, { name: e.target.value })} className="input w-full" />
-                <input type="number" min={1} step={1} title={`1 ${f.base_unit || 'base unit'} × ${r.conversion_to_base}`} value={r.conversion_to_base} onChange={(e) => setRow(i, { conversion_to_base: Math.max(1, parseInt(e.target.value || '1', 10)) })} className="input w-full" />
+              <div key={i} className="grid grid-cols-[1fr_64px_84px_100px_28px_28px] items-center gap-1.5">
+                <input
+                  placeholder={i === 0 ? 'Unit name (e.g. pc)' : 'Selling unit name'}
+                  value={r.name}
+                  onChange={(e) => setRow(i, { name: e.target.value })}
+                  className="input w-full text-xs"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  title={`1 ${r.name || 'unit'} = ${r.conversion_to_base} ${f.base_unit || 'base unit'}`}
+                  value={r.conversion_to_base}
+                  onChange={(e) => {
+                    const conv = Math.max(1, parseInt(e.target.value || '1', 10))
+                    const patch: Partial<ProductUnitInput> = { conversion_to_base: conv }
+                    if (r.selling_price_c === 0 || r.selling_price_c === r.conversion_to_base * f.default_price_c) {
+                      patch.selling_price_c = conv * f.default_price_c
+                    }
+                    setRow(i, patch)
+                  }}
+                  className="input w-full text-center text-xs"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="any"
+                  placeholder="0.00"
+                  title={`Selling price for 1 ${r.name || 'unit'}`}
+                  value={r.selling_price_c > 0 ? r.selling_price_c / 100 : ''}
+                  onChange={(e) => {
+                    const val = e.target.value ? Math.round(parseFloat(e.target.value) * 100) : 0
+                    setRow(i, { selling_price_c: val })
+                    if (i === 0 && r.conversion_to_base === 1) {
+                      set({ default_price_c: val })
+                    }
+                  }}
+                  className="input w-full text-right text-xs font-mono font-medium"
+                />
                 <input
                   placeholder="Barcode"
                   value={r.barcode ?? ''}
@@ -2280,13 +2327,25 @@ function ProductModal({
                 >
                   <Camera className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => removeUnit(i)} disabled={rows.length <= 1} className="btn-ghost-2 rounded-lg p-2 text-danger-400 disabled:opacity-30" title="Remove selling unit"><Trash2 className="h-4 w-4" /></button>
+                <button
+                  type="button"
+                  onClick={() => removeUnit(i)}
+                  disabled={rows.length <= 1}
+                  className="btn-ghost-2 rounded-lg p-2 text-danger-400 disabled:opacity-30"
+                  title="Remove selling unit"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             ))}
             {rows.some((r) => !r.name || !r.name.trim()) && <p className="text-xs text-danger-400">Please enter a name for the selling unit.</p>}
           </div>
-          <button type="button" onClick={addUnit} className="btn-ghost mt-2 flex items-center gap-1"><Plus className="h-4 w-4" /> Add selling unit</button>
-          <p className="mt-1 text-xs text-slate-500">Conversion is how many base units one selling unit equals. Example: 1 box = 24 sachets.</p>
+          <button type="button" onClick={addUnit} className="btn-ghost mt-2 flex items-center gap-1 text-xs">
+            <Plus className="h-4 w-4" /> Add selling unit
+          </button>
+          <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+            💡 <strong>Multi-Unit Example:</strong> Tingi: <code>1 pc</code> @ ₱13.00 &bull; 1/4 Kilo: <code>25 pcs</code> @ ₱275.00 &bull; 1 Kilo: <code>100 pcs</code> @ ₱1,100.00. Stock automatically deducts from the base unit!
+          </p>
         </div>
       </form>
       {cameraScanTarget !== null && (
