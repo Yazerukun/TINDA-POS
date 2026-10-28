@@ -17,7 +17,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v5.1.8 (Universal Stock History Spotlight Search, Real-Time Telemetry & Excel Export)
+- **Current Stable Version:** v5.1.9 (Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**

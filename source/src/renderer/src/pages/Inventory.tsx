@@ -1527,6 +1527,50 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [type, setType] = useState<'' | InventoryMovement['movement_type']>('')
   const [productId, setProductId] = useState<number | ''>('')
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showProductDropdown, setShowProductDropdown] = useState(false)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+
+  // Click outside to close the interactive spotlight item dropdown
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowProductDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [])
+
+  // Synchronize selectedProduct when productId changes
+  useEffect(() => {
+    if (productId === '') {
+      setSelectedProduct(null)
+    } else {
+      const found = products.find((p) => p.id === productId)
+      setSelectedProduct(found || null)
+    }
+  }, [productId, products])
+
+  // Real-time matching products from store catalog as user types
+  const matchingProducts = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const q = searchQuery.toLowerCase().trim()
+    return products.filter((p) => {
+      const name = p.name.toLowerCase()
+      const sku = (p.sku || '').toLowerCase()
+      const barcode = (p.barcode || '').toLowerCase()
+      const category = (p.category_name || '').toLowerCase()
+      const units = p.units?.some((u) => (u.barcode && u.barcode.toLowerCase().includes(q)) || (u.name && u.name.toLowerCase().includes(q)))
+      return name.includes(q) || sku.includes(q) || barcode.includes(q) || category.includes(q) || units
+    })
+  }, [products, searchQuery])
+
+  // Products available in the companion select dropdown
+  const filteredSelectProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products
+    return matchingProducts.length > 0 ? matchingProducts : products
+  }, [products, searchQuery, matchingProducts])
 
   // Debounce search query to trigger backend SQL search
   useEffect(() => {
@@ -1597,7 +1641,6 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
     }
   }, [filteredRows])
 
-  const productName = (id: number) => products.find((p) => p.id === id)?.name ?? `#${id}`
   const productInfo = (id: number) => products.find((p) => p.id === id)
 
   const handleExportExcel = async () => {
@@ -1675,7 +1718,7 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
       open
       onClose={onClose}
       title="Stock History & Audit Log"
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[95vw] w-[95vw]"
       footer={
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -1683,7 +1726,7 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
             {(searchQuery || productId || type) && (
               <button
                 type="button"
-                onClick={() => { setSearchQuery(''); setProductId(''); setType('') }}
+                onClick={() => { setSearchQuery(''); setProductId(''); setType(''); setSelectedProduct(null) }}
                 className="ml-2 text-primary-400 hover:underline flex items-center gap-1"
               >
                 <RotateCcw className="h-3 w-3" /> Clear filters
@@ -1706,27 +1749,96 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
       }
     >
       <div className="space-y-3.5">
-        {/* Search & Product Dropdown Bar */}
+        {/* Universal Search & Product Spotlight Bar */}
         <div className="grid gap-3 md:grid-cols-12 items-center">
-          <div className="relative md:col-span-8">
+          <div ref={searchContainerRef} className="relative md:col-span-8">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               className="input w-full pl-10 pr-9 text-sm rounded-xl bg-slate-900/70 border-ink-line focus:border-primary-500/60 focus:ring-1 focus:ring-primary-500/30 transition-all placeholder:text-slate-500"
-              placeholder="Search by product name, barcode, SKU, reason, reference, or cashier..."
+              placeholder="Search product name, barcode, SKU, reason, reference, or cashier..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchQuery.trim().length > 0) setShowProductDropdown(true)
+              }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setShowProductDropdown(true)
+              }}
               autoFocus
             />
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setSearchQuery('')
+                  setShowProductDropdown(false)
+                }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800 transition-colors"
                 title="Clear search query"
               >
                 <X className="h-4 w-4" />
               </button>
+            )}
+
+            {/* Interactive Spotlight Matching Items Dropdown */}
+            {showProductDropdown && matchingProducts.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-80 overflow-y-auto rounded-2xl bg-slate-900 border border-primary-500/50 shadow-2xl backdrop-blur-2xl p-2 space-y-1 ring-1 ring-primary-500/20">
+                <div className="px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 flex items-center justify-between border-b border-ink-line/60 pb-1.5">
+                  <span className="flex items-center gap-1.5 text-primary-300 font-bold">
+                    <Search className="h-3.5 w-3.5" /> Found {matchingProducts.length} matching store products (Click to view stock history):
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowProductDropdown(false)}
+                    className="text-slate-400 hover:text-white p-0.5 rounded"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="space-y-1 pt-1">
+                  {matchingProducts.slice(0, 15).map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setProductId(p.id)
+                        setSelectedProduct(p)
+                        setShowProductDropdown(false)
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-xl text-left hover:bg-primary-950/60 border border-transparent hover:border-primary-500/40 transition-all group"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <ProductImage src={p.image_path} alt={p.name} className="h-9 w-9 rounded-lg shrink-0 object-cover border border-ink-line/70" />
+                        <div className="min-w-0">
+                          <div className="font-semibold text-white text-xs truncate group-hover:text-primary-200">
+                            {p.name}
+                          </div>
+                          <div className="text-[11px] font-mono text-slate-400 flex items-center gap-2 truncate mt-0.5">
+                            {p.sku && <span className="bg-slate-800/80 px-1 rounded">SKU: {p.sku}</span>}
+                            {p.barcode && <span className="bg-slate-800/80 px-1 rounded">Barcode: {p.barcode}</span>}
+                            {p.category_name && <span className="text-slate-400">• {p.category_name}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 pl-2">
+                        <div className={`text-xs font-mono font-bold px-2 py-0.5 rounded border inline-block ${
+                          p.stock <= 0
+                            ? 'bg-danger-500/10 text-danger-400 border-danger-500/30'
+                            : p.stock <= p.low_stock_threshold
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        }`}>
+                          {p.stock} {p.base_unit}
+                        </div>
+                        <div className="text-[11px] text-slate-300 font-mono mt-0.5">
+                          ₱{(p.default_price_c / 100).toFixed(2)}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
@@ -1734,17 +1846,92 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
             <select
               className="input w-full text-sm rounded-xl bg-slate-900/70 border-ink-line focus:border-primary-500/60"
               value={productId}
-              onChange={(e) => setProductId(e.target.value === '' ? '' : Number(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value === '' ? '' : Number(e.target.value)
+                setProductId(val)
+                const found = products.find((p) => p.id === val)
+                setSelectedProduct(found || null)
+              }}
             >
-              <option value="">All Products ({products.length})</option>
-              {products.map((p) => (
+              <option value="">All Products ({filteredSelectProducts.length})</option>
+              {filteredSelectProducts.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} {p.sku ? `(${p.sku})` : ''}
+                  {p.name} {p.sku ? `(${p.sku})` : ''} — {p.stock} {p.base_unit}
                 </option>
               ))}
             </select>
           </div>
         </div>
+
+        {/* Quick Item Chips (Visible when typing in search bar) */}
+        {matchingProducts.length > 0 && !selectedProduct && (
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 px-1 rounded-lg bg-slate-900/50 border border-ink-line/40 scrollbar-thin">
+            <span className="text-[11px] text-primary-300 shrink-0 font-semibold px-1">
+              Matching Items:
+            </span>
+            {matchingProducts.slice(0, 8).map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setProductId(p.id)
+                  setSelectedProduct(p)
+                  setShowProductDropdown(false)
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-800/90 hover:bg-primary-900/50 border border-ink-line/60 hover:border-primary-500/60 text-slate-200 transition-all shrink-0 shadow-sm"
+                title={`Click to filter movements for ${p.name}`}
+              >
+                <span className="font-semibold text-white truncate max-w-[150px]">{p.name}</span>
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1 rounded">
+                  {p.stock} {p.base_unit}
+                </span>
+              </button>
+            ))}
+            {matchingProducts.length > 8 && (
+              <span className="text-[11px] text-slate-500 shrink-0 pr-1">+{matchingProducts.length - 8} more</span>
+            )}
+          </div>
+        )}
+
+        {/* Selected Product Active Telemetry Banner */}
+        {selectedProduct && (
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-primary-950/70 via-slate-900/90 to-primary-950/70 border border-primary-500/40 shadow-sm">
+            <div className="flex items-center gap-3 min-w-0">
+              <ProductImage src={selectedProduct.image_path} alt={selectedProduct.name} className="h-10 w-10 rounded-lg shrink-0 object-cover border border-primary-500/40" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-primary-600/30 text-primary-300 border border-primary-500/40">
+                    Active Product Filter
+                  </span>
+                  <h3 className="font-bold text-white text-sm truncate">{selectedProduct.name}</h3>
+                  {selectedProduct.category_name && (
+                    <span className="text-xs text-slate-400">({selectedProduct.category_name})</span>
+                  )}
+                </div>
+                <div className="text-xs font-mono text-slate-300 flex items-center gap-3 mt-1 flex-wrap">
+                  {selectedProduct.sku && <span>SKU: <b className="text-white">{selectedProduct.sku}</b></span>}
+                  {selectedProduct.barcode && <span>Barcode: <b className="text-white">{selectedProduct.barcode}</b></span>}
+                  <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Current Bodega Stock: {selectedProduct.stock} {selectedProduct.base_unit}
+                  </span>
+                  <span className="text-cyan-300 font-semibold">
+                    Retail Price: ₱{(selectedProduct.default_price_c / 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setProductId('')
+                setSelectedProduct(null)
+              }}
+              className="btn-ghost text-xs text-rose-300 hover:text-rose-100 hover:bg-rose-950/50 px-3 py-1.5 rounded-lg border border-rose-500/40 flex items-center gap-1.5 shrink-0 ml-3 transition-all"
+            >
+              <X className="h-3.5 w-3.5" /> Show All Store Movements
+            </button>
+          </div>
+        )}
 
         {/* Movement Type Filter Pills & Live Telemetry Metrics */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-ink-line/40">
@@ -1789,18 +1976,18 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
           </div>
         </div>
 
-        {/* Movement Table */}
+        {/* Movement Table with Generous Width & Untruncated Reason / Reference */}
         <div className="max-h-[55vh] overflow-auto rounded-xl border border-ink-line/70 bg-ink-950/40 shadow-inner">
           <table className="table">
             <thead>
               <tr>
-                <th className="w-[17%] text-center align-middle">Date / Time</th>
-                <th className="w-[25%] text-left px-3 align-middle">Product</th>
-                <th className="w-[12%] text-center align-middle">Type</th>
-                <th className="w-[11%] text-center align-middle">Change</th>
-                <th className="w-[11%] text-center align-middle">Stock After</th>
-                <th className="w-[14%] text-center align-middle">Reason / Ref</th>
-                <th className="w-[10%] text-center align-middle">By</th>
+                <th className="w-[13%] text-center align-middle">Date / Time</th>
+                <th className="w-[23%] text-left px-3 align-middle">Product Name / Barcode</th>
+                <th className="w-[10%] text-center align-middle">Type</th>
+                <th className="w-[9%] text-center align-middle">Change</th>
+                <th className="w-[9%] text-center align-middle">Stock After</th>
+                <th className="w-[26%] text-left px-3 align-middle">Reason & Reference / Notes</th>
+                <th className="w-[10%] text-center align-middle">Recorded By</th>
               </tr>
             </thead>
             <tbody>
@@ -1811,41 +1998,46 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
                 const pBarcode = row.product_barcode || p?.barcode
                 return (
                   <tr key={row.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="w-[17%] text-center align-middle text-xs text-slate-400">
+                    <td className="w-[13%] text-center align-middle text-xs text-slate-400 font-mono">
                       {new Date(row.created_at.replace(' ', 'T')).toLocaleString()}
                     </td>
-                    <td className="w-[25%] text-left px-3 align-middle">
-                      <div className="font-medium text-white truncate max-w-[260px]" title={pName}>
+                    <td className="w-[23%] text-left px-3 align-middle">
+                      <div className="font-semibold text-white leading-snug break-words" title={pName}>
                         {pName}
                       </div>
                       {(pSku || pBarcode) && (
-                        <div className="text-[11px] font-mono text-slate-400 truncate max-w-[260px]">
-                          {pSku ? `SKU: ${pSku}` : ''}
-                          {pBarcode ? ` ${pSku ? '•' : ''} Barcode: ${pBarcode}` : ''}
+                        <div className="text-[11px] font-mono text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          {pSku && <span className="bg-slate-800/80 px-1.5 py-0.2 rounded border border-ink-line/40">SKU: {pSku}</span>}
+                          {pBarcode && <span className="bg-slate-800/80 px-1.5 py-0.2 rounded border border-ink-line/40">Barcode: {pBarcode}</span>}
                         </div>
                       )}
                     </td>
-                    <td className="w-[12%] text-center align-middle">
+                    <td className="w-[10%] text-center align-middle">
                       <span className={`badge border inline-flex items-center justify-center ${getMovementBadgeClass(row.movement_type)}`}>
                         {typeLabels[row.movement_type] ?? row.movement_type}
                       </span>
                     </td>
-                    <td className={`w-[11%] text-center align-middle font-mono tabular-nums font-semibold ${
+                    <td className={`w-[9%] text-center align-middle font-mono tabular-nums font-semibold ${
                       row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'
                     }`}>
                       {row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}
                     </td>
-                    <td className="w-[11%] text-center align-middle font-mono tabular-nums text-slate-200">
+                    <td className="w-[9%] text-center align-middle font-mono tabular-nums text-slate-200">
                       {row.quantity_after} {row.unit}
                     </td>
-                    <td
-                      className="w-[14%] text-center align-middle truncate max-w-[150px] text-xs"
-                      title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}
-                    >
-                      <span className="text-slate-300">{row.reason || '—'}</span>
-                      {row.reference ? <span className="text-slate-500 font-mono text-[11px]"> ({row.reference})</span> : null}
+                    {/* Widened Reason & Reference column - 100% visible, no truncation! */}
+                    <td className="w-[26%] text-left px-3 align-middle text-xs">
+                      <div className="font-medium text-slate-100 break-words leading-relaxed whitespace-normal">
+                        {row.reason || '—'}
+                      </div>
+                      {row.reference && (
+                        <div className="text-[11px] font-mono text-cyan-300 mt-1 inline-flex items-center gap-1 bg-cyan-950/60 border border-cyan-700/40 px-2 py-0.5 rounded-md">
+                          <span className="text-cyan-400/70 font-semibold">Ref:</span>
+                          <span>{row.reference}</span>
+                        </div>
+                      )}
                     </td>
-                    <td className="w-[10%] text-center align-middle truncate text-slate-300 text-xs">
+                    <td className="w-[10%] text-center align-middle text-slate-300 text-xs">
                       {(row as InventoryMovement & { user_name?: string }).user_name || '—'}
                     </td>
                   </tr>
@@ -1866,7 +2058,7 @@ function StockHistoryView({ products, onClose }: { products: Product[]; onClose:
               {(searchQuery || productId || type) && (
                 <button
                   type="button"
-                  onClick={() => { setSearchQuery(''); setProductId(''); setType('') }}
+                  onClick={() => { setSearchQuery(''); setProductId(''); setType(''); setSelectedProduct(null) }}
                   className="btn-ghost text-xs text-primary-400 mt-2 inline-flex items-center gap-1"
                 >
                   <RotateCcw className="h-3 w-3" /> Reset all filters

@@ -1,3 +1,10 @@
+### Stage 70: v5.1.9 Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine (October 28, 2026)
+- **Widened Reason & Reference Audit Column**: Reason / Reference column widened from `w-[14%]` to `w-[26%]` and removed restrictive truncation. Reason descriptions and notes wrap cleanly with zero text cut-off.
+- **Dedicated Acrylic Reference Badge**: Reference codes, invoice numbers, and supplier vouchers render in a dedicated cyan badge (`Ref: ...`) underneath reasons.
+- **Spotlight Product Autocomplete Dropdown**: Floating spotlight suggestions list matching catalog items (image, SKU, barcode, category, bodega stock, price) directly under the search bar as the cashier/owner types.
+- **Quick-Pick Item Rails & Telemetry Banner**: Clickable product suggestion pills rail and prominent Active Filter banner with 1-tap reset.
+- **Ultra-Wide Cinema Modal**: Upgraded modal to `max-w-[95vw] w-[95vw]` for maximum screen utilization across all resolutions.
+
 ### Stage 66-69: v5.1.8 Universal Stock History Spotlight Search, Real-Time Inflow/Outflow Telemetry & Quick Excel Export (October 28, 2026)
 - **Universal Spotlight Search Bar in Stock History**: Added a responsive, prominent search bar in the Stock History modal. Store owners and cashiers can instantly type to search movements by Product Name, Barcode, SKU, Reason, Reference/Invoice number, or Cashier with 0ms client-side latency and debounced deep SQLite database searching.
 - **Quick Movement Type Filter Pills**: Replaced cumbersome dropdown scrolling with one-tap Cupertino filter pills (All Movements, Purchases, Sales, Store Use, Withdrawals, Adjustments, Loss & Damage, Refunds) with customized color-coded badges.
@@ -22,13 +29,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.8 (UNIVERSAL STOCK HISTORY SPOTLIGHT SEARCH, REAL-TIME TELEMETRY & EXCEL EXPORT RELEASE)
+- v5.1.9 (WIDENED REASON/REF AUDIT LOG & SPOTLIGHT PRODUCT SUGGESTION ENGINE RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.8 Universal Stock History Spotlight Search, Real-Time Telemetry & Quick Excel Export
+- Production Release Ready — v5.1.9 Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine
 
 COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):

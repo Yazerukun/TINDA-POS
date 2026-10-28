@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v5.1.8-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v5.1.9-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.8_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-Setup-5.1.8.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.8_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-Portable-5.1.8.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.8_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-5.1.8.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.1.9_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-Setup-5.1.9.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.1.9_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-Portable-5.1.9.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.1.9_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-5.1.9.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,20 +31,33 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v5.1.8 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v5.1.9 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-5.1.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-Setup-5.1.8.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-5.1.8.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-Portable-5.1.8.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-5.1.8.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/TindaPOS-5.1.8.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v5.1.8.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.8/SHA256SUMS-v5.1.8.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-5.1.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-Setup-5.1.9.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-5.1.9.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-Portable-5.1.9.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-5.1.9.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/TindaPOS-5.1.9.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v5.1.9.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.1.9/SHA256SUMS-v5.1.9.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v5.1.8: Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence
+## 🌟 What's New in v5.1.9: Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine
+
+### 1. 🔍 Widened Reason & Reference Audit Log (Zero Truncation)
+- **Expanded Column Real Estate**: Reason & Reference column expanded from `w-[14%]` to `w-[26%]`, completely eradicating text cut-offs and truncation ellipsis.
+- **Dedicated Reference Badge**: Reference and Invoice numbers now render cleanly below reason descriptions in a high-contrast cyan acrylic badge (`Ref: ...`), ensuring full visibility for purchase vouchers, suppliers, and void reasons.
+- **Ultra-Wide Cinema Modal**: Stock History modal widened to `max-w-[95vw] w-[95vw]` to accommodate comprehensive multi-column audit data without horizontal cramping.
+
+### 2. ⚡ Spotlight Product Search Dropdown & Interactive Suggestions
+- **Live Search Autocomplete**: As you type in the Stock History search bar, an interactive Spotlight dropdown emerges showing matching store products with image, SKU, barcode, category, current bodega stock level, and retail price.
+- **One-Tap Product Selection**: Clicking any product in the suggestion dropdown or quick-pick suggestion chips automatically locks the audit view to that specific item with a prominent Active Filter Telemetry Banner and 1-tap reset.
+
+---
+
+## 🌟 What's New in v5.1.8: Omnipresent Multi-Page Minimized Purchase Invoice & Universal Stock History Search
 
 ### 1. 🛡️ Omnipresent Root-Level Shell Mount & Multi-Page Persistence
 - **Decoupled from Page Lifecycle**: Promoted `PurchaseInvoiceModal` from within `Inventory.tsx` up to the top-level application shell (`Shell.tsx`), governed by a global reactive store (`usePurchaseInvoiceModal`).
