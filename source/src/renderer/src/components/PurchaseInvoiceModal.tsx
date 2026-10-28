@@ -38,7 +38,7 @@ import {
   RotateCcw,
   Check
 } from 'lucide-react'
-import type { Product, Supplier, Purchase, ProductUnit, CreatePurchaseInput, UpdatePurchaseInput } from '@shared/types'
+import type { Product, Supplier, Purchase, PurchaseItem, ProductUnit, CreatePurchaseInput, UpdatePurchaseInput } from '@shared/types'
 import { money, moneyWholePesos, shortDate } from '@shared/format'
 import { Modal } from './ui/Modal'
 import { PurchaseItemPickerModal } from './PurchaseItemPickerModal'
@@ -98,6 +98,8 @@ interface InvoiceLineItem {
   discountC: number      // calculated discount in cents
   netUnitCostC: number   // effective unit cost after discount
   subtotalC: number      // net line subtotal in cents
+  sellingPriceC: number  // retail selling price in cents
+  originalSellingPriceC?: number // current catalog selling price for comparison
 }
 
 const DRAFT_KEY = 'tinda_purchase_invoice_draft_v1'
@@ -195,6 +197,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
   const [customUnitName, setCustomUnitName] = useState('')
   const [qtyInput, setQtyInput] = useState('1')
   const [unitCostPesos, setUnitCostPesos] = useState('0')
+  const [sellingPricePesos, setSellingPricePesos] = useState('0')
   const [itemDiscountInput, setItemDiscountInput] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [dropdownIndex, setDropdownIndex] = useState(0)
@@ -442,6 +445,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
   const searchInputRef = useRef<HTMLInputElement>(null)
   const qtyInputRef = useRef<HTMLInputElement>(null)
   const costInputRef = useRef<HTMLInputElement>(null)
+  const sellingInputRef = useRef<HTMLInputElement>(null)
   const discountInputRef = useRef<HTMLInputElement>(null)
   const unitSelectRef = useRef<HTMLSelectElement>(null)
 
@@ -806,6 +810,12 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     const costInPesos = ((product.purchase_cost_c * conversion) / 100).toFixed(2)
     setUnitCostPesos(costInPesos)
 
+    // Calculate default selling price for selected unit
+    const defaultSellingC = unitObj?.selling_price_c && unitObj.selling_price_c > 0
+      ? unitObj.selling_price_c
+      : Math.round(product.default_price_c * conversion)
+    setSellingPricePesos((defaultSellingC / 100).toFixed(2))
+
     setQtyInput('1')
     setItemDiscountInput('')
 
@@ -835,6 +845,12 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     setUnitMultiplierInput(String(conversion))
     const costInPesos = ((selectedProduct.purchase_cost_c * conversion) / 100).toFixed(2)
     setUnitCostPesos(costInPesos)
+
+    // Update default selling price for newly selected unit
+    const unitSellingC = foundConfig?.selling_price_c && foundConfig.selling_price_c > 0
+      ? foundConfig.selling_price_c
+      : Math.round(selectedProduct.default_price_c * conversion)
+    setSellingPricePesos((unitSellingC / 100).toFixed(2))
   }
 
   // Multiplier / Conversion Rate Handler (e.g. 10 pcs per bundle)
@@ -844,6 +860,8 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     const mult = Math.max(0.001, parseFloat(val) || 1)
     const costInPesos = ((selectedProduct.purchase_cost_c * mult) / 100).toFixed(2)
     setUnitCostPesos(costInPesos)
+    const sellInPesos = ((selectedProduct.default_price_c * mult) / 100).toFixed(2)
+    setSellingPricePesos(sellInPesos)
   }
 
   // Live Item Gross & Trade Discount Evaluation
@@ -900,6 +918,13 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     const subtotalC = Math.max(0, grossSubtotalC - discountC)
     const netUnitCostC = qty > 0 ? Math.round(subtotalC / qty) : unitCostC
 
+    const sellingVal = parseFloat(sellingPricePesos)
+    const sellingPriceC = !isNaN(sellingVal) && sellingVal >= 0 ? Math.round(sellingVal * 100) : 0
+    const unitObj = selectedProduct.units?.find((u) => u.name.toLowerCase() === effectiveUnitName.toLowerCase())
+    const origSellingC = unitObj?.selling_price_c && unitObj.selling_price_c > 0
+      ? unitObj.selling_price_c
+      : Math.round((selectedProduct.default_price_c || 0) * mult)
+
     const newItem: InvoiceLineItem = {
       tempId: `item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       productId: selectedProduct.id,
@@ -914,7 +939,9 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
       discountInput: itemDiscountInput.trim(),
       discountC,
       netUnitCostC,
-      subtotalC
+      subtotalC,
+      sellingPriceC: sellingPriceC > 0 ? sellingPriceC : origSellingC,
+      originalSellingPriceC: origSellingC
     }
 
     // Determine target list: viewItems (if in edit mode) or items (if in create mode)
@@ -940,7 +967,8 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
             discountInput: combinedFormula,
             discountC: newDiscount.discountAmountC,
             netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
-            subtotalC: newSubtotal
+            subtotalC: newSubtotal,
+            sellingPriceC: sellingPriceC > 0 ? sellingPriceC : existing.sellingPriceC
           }
           setViewItems(updated)
         }
@@ -969,7 +997,8 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
             discountInput: combinedFormula,
             discountC: newDiscount.discountAmountC,
             netUnitCostC: newQty > 0 ? Math.round(newSubtotal / newQty) : unitCostC,
-            subtotalC: newSubtotal
+            subtotalC: newSubtotal,
+            sellingPriceC: sellingPriceC > 0 ? sellingPriceC : existing.sellingPriceC
           }
           setItems(updated)
         }
@@ -985,6 +1014,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     setSearchQuery('')
     setQtyInput('1')
     setUnitCostPesos('0')
+    setSellingPricePesos('0')
     setSelectedUnitName('')
     setUnitMultiplierInput('1')
     setCustomUnitName('')
@@ -994,6 +1024,20 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     setTimeout(() => {
       searchInputRef.current?.focus()
     }, 50)
+  }
+
+
+  // Inline update item selling price directly from table
+  const handleUpdateItemSellingPrice = (tempId: string, newSellingPriceC: number, isViewItems = false) => {
+    if (isViewItems) {
+      setViewItems((prev) =>
+        prev.map((it) => (it.tempId === tempId ? { ...it, sellingPriceC: newSellingPriceC } : it))
+      )
+    } else {
+      setItems((prev) =>
+        prev.map((it) => (it.tempId === tempId ? { ...it, sellingPriceC: newSellingPriceC } : it))
+      )
+    }
   }
 
   // Remove Line Item
@@ -1084,7 +1128,8 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
           unit_cost_c: it.unitCostC,
           discount_input: it.discountInput || null,
           discount_c: it.discountC,
-          subtotal_c: it.subtotalC
+          subtotal_c: it.subtotalC,
+          selling_price_c: it.sellingPriceC
         }))
       }
 
@@ -1144,6 +1189,10 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
       const discountInput: string = it.discount_input ? String(it.discount_input) : (discountC > 0 ? formatDiscountPercent('', discountC, grossUnitCostC * it.qty) : '')
       const netUnitCostC = it.qty > 0 ? Math.round(it.subtotal_c / it.qty) : grossUnitCostC
 
+      const itemSellingC = (it as PurchaseItem).selling_price_c && (it as PurchaseItem).selling_price_c! > 0
+        ? (it as PurchaseItem).selling_price_c!
+        : (unitObj?.selling_price_c || Math.round((matchedProd?.default_price_c || 0) * conversion))
+
       return {
         tempId: `view-item-${it.id || idx}-${Date.now()}`,
         productId: it.product_id,
@@ -1158,7 +1207,9 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
         discountInput,
         discountC,
         netUnitCostC,
-        subtotalC: it.subtotal_c
+        subtotalC: it.subtotal_c,
+        sellingPriceC: itemSellingC,
+        originalSellingPriceC: unitObj?.selling_price_c || Math.round((matchedProd?.default_price_c || 0) * conversion)
       }
     })
 
@@ -1840,7 +1891,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                       </div>
 
                       <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12 items-end">
-                        <div className="relative md:col-span-4">
+                        <div className="relative md:col-span-3">
                           <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
                             <span>Item Code / Barcode</span>
                             <button
@@ -1919,6 +1970,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                                     )}
                                     {p.category_name && <span>• {p.category_name}</span>}
                                     <span>• Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                                    <span className="text-emerald-300 font-semibold">• SRP: ₱{(p.default_price_c / 100).toFixed(2)}</span>
                                   </div>
                                 </div>
                               ))}
@@ -1981,11 +2033,58 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault()
-                                handleCommitItem()
+                                sellingInputRef.current?.focus()
+                                sellingInputRef.current?.select()
                               }
                             }}
                             className="input w-full font-mono text-xs font-semibold"
                           />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="mb-1 flex items-center justify-between text-xs font-semibold text-emerald-400">
+                            <span>Selling Price (₱)</span>
+                            {parseFloat(sellingPricePesos) > 0 && parseFloat(unitCostPesos) > 0 && (
+                              <span className={`text-[10px] font-mono font-bold ${
+                                parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos) ? 'text-emerald-300' : 'text-danger-400'
+                              }`}>
+                                {parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos)
+                                  ? `+₱${(parseFloat(sellingPricePesos) - parseFloat(unitCostPesos)).toFixed(2)}`
+                                  : `-₱${(parseFloat(unitCostPesos) - parseFloat(sellingPricePesos)).toFixed(2)}`}
+                              </span>
+                            )}
+                          </label>
+                          <input
+                            ref={sellingInputRef}
+                            type="number"
+                            step="0.01"
+                            value={sellingPricePesos}
+                            onChange={(e) => setSellingPricePesos(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                qtyInputRef.current?.focus()
+                                qtyInputRef.current?.select()
+                              }
+                            }}
+                            placeholder="0.00"
+                            className="input w-full font-mono text-xs font-bold text-emerald-300 border-emerald-500/40 bg-emerald-950/20 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40"
+                          />
+                          {parseFloat(sellingPricePesos) > 0 && parseFloat(unitCostPesos) > 0 && (
+                            <div className="mt-1 flex items-center gap-1 text-[10px] font-mono">
+                              <span className="text-slate-400">Margin:</span>
+                              <span className={`font-bold ${
+                                parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos) ? 'text-emerald-400' : 'text-danger-400'
+                              }`}>
+                                {Math.round(((parseFloat(sellingPricePesos) - parseFloat(unitCostPesos)) / parseFloat(sellingPricePesos)) * 100)}%
+                              </span>
+                              {selectedProduct && Math.round(parseFloat(sellingPricePesos) * 100) !== (selectedProduct.default_price_c * (parseFloat(unitMultiplierInput) || 1)) && (
+                                <span className="text-amber-300 text-[9px] bg-amber-500/15 border border-amber-500/40 px-1 rounded ml-auto">
+                                  Price Change
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="md:col-span-1">
@@ -2007,9 +2106,9 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                           />
                         </div>
 
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-1">
                           <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
-                            <span>Supplier Disc</span>
+                            <span>Trade Disc</span>
                             <span className="text-[10px] text-slate-400 font-normal">e.g. -50% / 5+5+5 / 10/5</span>
                           </label>
                           <input
@@ -2095,6 +2194,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                             <th className="w-24 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Trade Disc</th>
                             <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Cost</th>
                             <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Amount</th>
+                            <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-emerald-400 whitespace-nowrap">Selling Price</th>
                             {isEditMode && <th className="w-12 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Action</th>}
                           </tr>
                         </thead>
@@ -2174,6 +2274,45 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
                                 {money(it.subtotalC)}
+                              </td>
+                              <td className="py-2 px-3 text-right whitespace-nowrap">
+                                {isEditMode ? (
+                                  <div className="flex flex-col items-end gap-0.5">
+                                    <div className="flex items-center gap-1 justify-end">
+                                      <span className="text-[11px] text-slate-400 font-mono">₱</span>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={it.sellingPriceC !== undefined ? (it.sellingPriceC / 100).toFixed(2) : '0.00'}
+                                        onChange={(e) => {
+                                          const val = parseFloat(e.target.value)
+                                          const newC = !isNaN(val) && val >= 0 ? Math.round(val * 100) : 0
+                                          handleUpdateItemSellingPrice(it.tempId, newC, true)
+                                        }}
+                                        title="Edit retail selling price for this product"
+                                        className="w-20 px-1.5 py-0.5 text-right font-mono text-xs font-bold text-emerald-300 bg-slate-900 border border-emerald-500/40 rounded focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40"
+                                      />
+                                    </div>
+                                    {it.sellingPriceC > 0 && it.netUnitCostC > 0 && (
+                                      <span className={`text-[10px] font-mono ${
+                                        it.sellingPriceC >= it.netUnitCostC ? 'text-emerald-400' : 'text-danger-400 font-bold'
+                                      }`}>
+                                        {it.sellingPriceC >= it.netUnitCostC ? '+' : ''}{money(it.sellingPriceC - it.netUnitCostC)} ({Math.round(((it.sellingPriceC - it.netUnitCostC) / it.sellingPriceC) * 100)}%)
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-end gap-0.5">
+                                    <span className="font-mono text-xs font-bold text-emerald-300">
+                                      {money(it.sellingPriceC)}
+                                    </span>
+                                    {it.sellingPriceC > 0 && it.netUnitCostC > 0 && (
+                                      <span className="text-[10px] font-mono text-emerald-400">
+                                        +{money(it.sellingPriceC - it.netUnitCostC)} ({Math.round(((it.sellingPriceC - it.netUnitCostC) / it.sellingPriceC) * 100)}%)
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </td>
                               {isEditMode && (
                                 <td className="py-2 px-3 text-center">
@@ -2638,7 +2777,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                   </div>
 
                   <div className="grid grid-cols-1 gap-2.5 md:grid-cols-12 items-end">
-                    <div className="relative md:col-span-4">
+                    <div className="relative md:col-span-3">
                       <label className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-300">
                         <span>Item Code / Barcode</span>
                         <button
@@ -2717,6 +2856,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                                 )}
                                 {p.category_name && <span>• {p.category_name}</span>}
                                 <span>• Cost: ₱{(p.purchase_cost_c / 100).toFixed(2)}</span>
+                                    <span className="text-emerald-300 font-semibold">• SRP: ₱{(p.default_price_c / 100).toFixed(2)}</span>
                               </div>
                             </div>
                           ))}
@@ -2779,11 +2919,58 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault()
-                            handleCommitItem()
+                            sellingInputRef.current?.focus()
+                            sellingInputRef.current?.select()
                           }
                         }}
                         className="input w-full font-mono text-xs font-semibold"
                       />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="mb-1 flex items-center justify-between text-xs font-semibold text-emerald-400">
+                        <span>Selling Price (₱)</span>
+                        {parseFloat(sellingPricePesos) > 0 && parseFloat(unitCostPesos) > 0 && (
+                          <span className={`text-[10px] font-mono font-bold ${
+                            parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos) ? 'text-emerald-300' : 'text-danger-400'
+                          }`}>
+                            {parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos)
+                              ? `+₱${(parseFloat(sellingPricePesos) - parseFloat(unitCostPesos)).toFixed(2)}`
+                              : `-₱${(parseFloat(unitCostPesos) - parseFloat(sellingPricePesos)).toFixed(2)}`}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        ref={sellingInputRef}
+                        type="number"
+                        step="0.01"
+                        value={sellingPricePesos}
+                        onChange={(e) => setSellingPricePesos(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            qtyInputRef.current?.focus()
+                            qtyInputRef.current?.select()
+                          }
+                        }}
+                        placeholder="0.00"
+                        className="input w-full font-mono text-xs font-bold text-emerald-300 border-emerald-500/40 bg-emerald-950/20 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40"
+                      />
+                      {parseFloat(sellingPricePesos) > 0 && parseFloat(unitCostPesos) > 0 && (
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-mono">
+                          <span className="text-slate-400">Margin:</span>
+                          <span className={`font-bold ${
+                            parseFloat(sellingPricePesos) >= parseFloat(unitCostPesos) ? 'text-emerald-400' : 'text-danger-400'
+                          }`}>
+                            {Math.round(((parseFloat(sellingPricePesos) - parseFloat(unitCostPesos)) / parseFloat(sellingPricePesos)) * 100)}%
+                          </span>
+                          {selectedProduct && Math.round(parseFloat(sellingPricePesos) * 100) !== (selectedProduct.default_price_c * (parseFloat(unitMultiplierInput) || 1)) && (
+                            <span className="text-amber-300 text-[9px] bg-amber-500/15 border border-amber-500/40 px-1 rounded ml-auto">
+                              Price Change
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="md:col-span-1">
@@ -2805,9 +2992,9 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                       />
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-1">
                       <label className="mb-1 flex items-center justify-between text-xs font-semibold text-amber-300">
-                        <span>Supplier Disc</span>
+                        <span>Trade Disc</span>
                         <span className="text-[10px] text-slate-400 font-normal">e.g. -50% / 5+5+5 / 10/5</span>
                       </label>
                       <input
@@ -2907,6 +3094,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                             <th className="w-24 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Trade Disc</th>
                             <th className="w-24 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Cost</th>
                             <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Net Amount</th>
+                            <th className="w-28 py-2.5 px-3 text-right text-[11px] font-semibold uppercase tracking-wider text-emerald-400 whitespace-nowrap">Selling Price</th>
                             <th className="w-12 py-2.5 px-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400 whitespace-nowrap">Action</th>
                           </tr>
                         </thead>
@@ -2956,6 +3144,32 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-bold text-emerald-300">
                                 {money(it.subtotalC)}
+                              </td>
+                              <td className="py-2 px-3 text-right whitespace-nowrap">
+                                <div className="flex flex-col items-end gap-0.5">
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <span className="text-[11px] text-slate-400 font-mono">₱</span>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={it.sellingPriceC !== undefined ? (it.sellingPriceC / 100).toFixed(2) : '0.00'}
+                                      onChange={(e) => {
+                                        const val = parseFloat(e.target.value)
+                                        const newC = !isNaN(val) && val >= 0 ? Math.round(val * 100) : 0
+                                        handleUpdateItemSellingPrice(it.tempId, newC, false)
+                                      }}
+                                      title="Edit retail selling price for this product"
+                                      className="w-20 px-1.5 py-0.5 text-right font-mono text-xs font-bold text-emerald-300 bg-slate-900 border border-emerald-500/40 rounded focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40"
+                                    />
+                                  </div>
+                                  {it.sellingPriceC > 0 && it.netUnitCostC > 0 && (
+                                    <span className={`text-[10px] font-mono ${
+                                      it.sellingPriceC >= it.netUnitCostC ? 'text-emerald-400' : 'text-danger-400 font-bold'
+                                    }`}>
+                                      {it.sellingPriceC >= it.netUnitCostC ? '+' : ''}{money(it.sellingPriceC - it.netUnitCostC)} ({Math.round(((it.sellingPriceC - it.netUnitCostC) / it.sellingPriceC) * 100)}%)
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-2 px-3 text-center">
                                 <button

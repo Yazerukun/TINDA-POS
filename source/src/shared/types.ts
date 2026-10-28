@@ -412,6 +412,7 @@ export interface PurchaseItem {
   discount_input?: string | null
   discount_c?: number
   subtotal_c: number
+  selling_price_c?: number
 }
 
 export interface CreatePurchaseInput {
@@ -434,6 +435,7 @@ export interface CreatePurchaseInput {
     discount_input?: string | null
     discount_c?: number
     subtotal_c: number
+    selling_price_c?: number
   }[]
 }
 
@@ -458,6 +460,7 @@ export interface UpdatePurchaseInput {
     discount_input?: string | null
     discount_c?: number
     subtotal_c: number
+    selling_price_c?: number
   }[]
 }
 

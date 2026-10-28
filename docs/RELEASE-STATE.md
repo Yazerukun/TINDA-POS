@@ -1,3 +1,10 @@
+### Stage 71: v5.2.0 Instant Selling Price Entry, Live Margin Telemetry & Automatic Inventory Price Sync in Purchase Invoices (October 28, 2026)
+- **Instant Selling Price Entry in Fast Item Bar**: Added dedicated Selling Price (₱) input field in both Create and Edit invoice modes. Automatically pre-populates with current product retail price upon item selection.
+- **Live Profit Spread & Margin Telemetry**: Real-time margin percentage (`+XX%`) and profit badges (`+₱XX.XX`) compute instantly as costs and selling prices are keyed in.
+- **Inline Table Selling Price Editing**: Dedicated Selling Price column in the invoice items table allowing direct price modifications on any staged row.
+- **Atomic Catalog Price Synchronization**: Saving or editing invoices atomically updates product selling prices in `products` and `product_units`.
+- **Zero Back-and-Forth Workflow**: Eradicated the need for store owners to navigate back to Inventory to update selling prices during supplier price increases.
+
 ### Stage 70: v5.1.9 Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine (October 28, 2026)
 - **Widened Reason & Reference Audit Column**: Reason / Reference column widened from `w-[14%]` to `w-[26%]` and removed restrictive truncation. Reason descriptions and notes wrap cleanly with zero text cut-off.
 - **Dedicated Acrylic Reference Badge**: Reference codes, invoice numbers, and supplier vouchers render in a dedicated cyan badge (`Ref: ...`) underneath reasons.
@@ -29,13 +36,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.9 (WIDENED REASON/REF AUDIT LOG & SPOTLIGHT PRODUCT SUGGESTION ENGINE RELEASE)
+- v5.2.0 (INSTANT SELLING PRICE & AUTOMATIC INVENTORY PRICE SYNC RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.9 Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine
+- Production Release Ready — v5.2.0 Instant Selling Price Entry & Automatic Inventory Price Sync in Purchase Invoices
 
 COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):

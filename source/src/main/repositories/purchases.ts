@@ -112,6 +112,9 @@ export function ensurePurchasesTables(db: Database.Database): void {
     if (!itemCols.has('discount_c')) {
       db.exec('ALTER TABLE purchase_items ADD COLUMN discount_c INTEGER NOT NULL DEFAULT 0')
     }
+    if (!itemCols.has('selling_price_c')) {
+      db.exec('ALTER TABLE purchase_items ADD COLUMN selling_price_c INTEGER NOT NULL DEFAULT 0')
+    }
   } catch (err) {
     console.error('ensurePurchasesTables column upgrade failed:', err)
   }
@@ -186,6 +189,49 @@ export function nextPurchaseNo(db: Database.Database): string {
   return `PPO-${String(seq).padStart(6, '0')}`
 }
 
+
+function updateProductSellingPriceFromPurchase(
+  db: Database.Database,
+  it: { product_id: number; unit_name: string; qty: number; qty_base: number; selling_price_c?: number }
+) {
+  if (it.selling_price_c === undefined || it.selling_price_c <= 0) return
+
+  const conversion = it.qty > 0 ? Math.round((it.qty_base / it.qty) * 1000) / 1000 : 1
+
+  // Check if unit matches an existing packaging unit in product_units
+  const matchedUnit = db.prepare(
+    `SELECT id, conversion_to_base FROM product_units WHERE product_id = ? AND LOWER(name) = LOWER(?) LIMIT 1`
+  ).get(it.product_id, it.unit_name) as { id: number; conversion_to_base: number } | undefined
+
+  if (matchedUnit) {
+    db.prepare(`UPDATE product_units SET selling_price_c = ? WHERE id = ?`).run(
+      it.selling_price_c,
+      matchedUnit.id
+    )
+    if (matchedUnit.conversion_to_base === 1) {
+      db.prepare(`UPDATE products SET default_price_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
+        it.selling_price_c,
+        it.product_id
+      )
+    }
+  } else {
+    const prod = db.prepare(`SELECT base_unit FROM products WHERE id = ?`).get(it.product_id) as { base_unit: string } | undefined
+    const isBaseUnit = !prod || prod.base_unit.toLowerCase() === it.unit_name.toLowerCase() || conversion === 1
+
+    if (isBaseUnit) {
+      db.prepare(`UPDATE products SET default_price_c = ?, updated_at = datetime('now','localtime') WHERE id = ?`).run(
+        it.selling_price_c,
+        it.product_id
+      )
+    } else if (conversion > 1) {
+      db.prepare(
+        `INSERT INTO product_units (product_id, name, conversion_to_base, selling_price_c, is_default)
+         VALUES (?, ?, ?, ?, 0)`
+      ).run(it.product_id, it.unit_name, Math.round(conversion), it.selling_price_c)
+    }
+  }
+}
+
 export function createPurchase(
   db: Database.Database,
   input: {
@@ -209,6 +255,7 @@ export function createPurchase(
       discount_input?: string | null
       discount_c?: number
       subtotal_c: number
+      selling_price_c?: number
     }[]
   }
 ): Purchase {
@@ -249,8 +296,8 @@ export function createPurchase(
       )
     const purchaseId = Number(info.lastInsertRowid)
     const stmt = db.prepare(
-      `INSERT INTO purchase_items (purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO purchase_items (purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c, selling_price_c)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     for (const it of input.items) {
       stmt.run(
@@ -262,7 +309,8 @@ export function createPurchase(
         it.unit_cost_c,
         it.discount_input ?? null,
         it.discount_c != null ? it.discount_c : Math.max(0, it.unit_cost_c * it.qty - it.subtotal_c),
-        it.subtotal_c
+        it.subtotal_c,
+        it.selling_price_c ?? 0
       )
 
       // Effective net unit cost per base unit after trade discount
@@ -296,6 +344,9 @@ export function createPurchase(
           it.product_id
         )
       }
+
+      // Automatically update catalog product selling price if specified (> 0)
+      updateProductSellingPriceFromPurchase(db, it)
     }
     return purchaseId
   })
@@ -328,6 +379,7 @@ export function updatePurchase(
       discount_input?: string | null
       discount_c?: number
       subtotal_c: number
+      selling_price_c?: number
     }[]
   }
 ): Purchase {
@@ -416,8 +468,8 @@ export function updatePurchase(
 
     const stmt = db.prepare(
       `INSERT INTO purchase_items (
-         purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         purchase_id, product_id, unit_name, qty, qty_base, unit_cost_c, discount_input, discount_c, subtotal_c, selling_price_c
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     for (const it of input.items) {
       stmt.run(
@@ -429,7 +481,8 @@ export function updatePurchase(
         it.unit_cost_c,
         it.discount_input ?? null,
         it.discount_c ?? 0,
-        it.subtotal_c
+        it.subtotal_c,
+        it.selling_price_c ?? 0
       )
 
       if (input.update_product_costs) {
@@ -441,6 +494,9 @@ export function updatePurchase(
           it.product_id
         )
       }
+
+      // Automatically update catalog product selling price if specified (> 0)
+      updateProductSellingPriceFromPurchase(db, it)
     }
   })
 
