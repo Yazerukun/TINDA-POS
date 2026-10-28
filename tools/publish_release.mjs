@@ -43,7 +43,16 @@ if (!fs.existsSync(setupPath)) {
   process.exit(1)
 }
 
-const RELEASE_NAME = process.env.RELEASE_NAME || `TINDA POS ${TAG} — Multi-Token Search Disambiguation, Hardware Scanner Standby & Multi-Platform Release`
+let defaultReleaseTitle = `TINDA POS ${TAG} — Official Release`
+try {
+  const readmeText = fs.readFileSync(path.resolve('README.md'), 'utf8')
+  const titleMatch = readmeText.match(new RegExp(`## 🌟 What's New in ${TAG}: ([^\\n]+)`, 'i'))
+  if (titleMatch && titleMatch[1]) {
+    defaultReleaseTitle = `TINDA POS ${TAG} — ${titleMatch[1].trim()}`
+  }
+} catch {}
+
+const RELEASE_NAME = process.env.RELEASE_NAME || defaultReleaseTitle
 
 function ghRequest(method, urlStr, headers = {}, body = null) {
   return new Promise((resolve, reject) => {
