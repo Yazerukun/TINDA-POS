@@ -309,10 +309,25 @@ export interface TindaApi {
     expiration: () => Promise<import('./types').ExpirationEntry[]>
     batchDate: (id: number, date: string) => Promise<void>
     onChanged: (cb: (event: import('./types').InventoryChangedEvent) => void) => () => void
-    movements: (opts: { product_id?: number; movement_type?: InventoryMovementType | ''; limit?: number; offset?: number; from?: string; to?: string }) => Promise<{
+    movements: (opts: {
+      search?: string
+      product_id?: number
+      movement_type?: InventoryMovementType | ''
+      limit?: number
+      offset?: number
+      from?: string
+      to?: string
+    }) => Promise<{
       rows: InventoryMovement[]
       total: number
     }>
+    exportExcel: (opts?: {
+      search?: string
+      product_id?: number
+      movement_type?: InventoryMovementType | ''
+      from?: string
+      to?: string
+    }) => Promise<import('./types').ExportResult>
     receiving: (opts?: { search?: string; from?: string; to?: string; supplier_id?: number; source?: import('./types').StockReceivingSource | ''; limit?: number; offset?: number }) => Promise<{
       rows: import('./types').StockReceivingRecord[]
       total: number

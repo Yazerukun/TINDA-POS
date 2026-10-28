@@ -219,6 +219,10 @@ export interface InventoryMovement {
   reference: string | null
   user_id: number
   created_at: string
+  product_name?: string
+  product_sku?: string
+  product_barcode?: string | null
+  user_name?: string
 }
 
 export type StockReceivingSource = 'RESTOCK' | 'PURCHASE' | 'CSV OPENING STOCK' | 'INITIAL STOCK' | 'MANUAL RECEIVING'

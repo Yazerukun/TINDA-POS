@@ -1522,67 +1522,369 @@ function WithdrawModal({ products, initial, onDone, onClose }: { products: Produ
 function StockHistoryView({ products, onClose }: { products: Product[]; onClose: () => void }): React.JSX.Element {
   const [rows, setRows] = useState<InventoryMovement[]>([])
   const [loading, setLoading] = useState(true)
+  const [exportingExcel, setExportingExcel] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [type, setType] = useState<'' | InventoryMovement['movement_type']>('')
   const [productId, setProductId] = useState<number | ''>('')
+
+  // Debounce search query to trigger backend SQL search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+    }, 250)
+    return () => clearTimeout(handler)
+  }, [searchQuery])
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const result = await window.api.inventory.movements({ product_id: productId === '' ? undefined : productId, movement_type: type, limit: 300 })
+      const result = await window.api.inventory.movements({
+        search: debouncedSearch.trim() || undefined,
+        product_id: productId === '' ? undefined : productId,
+        movement_type: type,
+        limit: 500
+      })
       setRows(result.rows)
-    } catch (e) { toastError('Stock History failed', String((e as Error).message || e)) } finally { setLoading(false) }
-  }, [type, productId])
+    } catch (e) {
+      toastError('Stock History failed', String((e as Error).message || e))
+    } finally {
+      setLoading(false)
+    }
+  }, [type, productId, debouncedSearch])
+
   useEffect(() => { void load() }, [load])
   useEffect(() => window.api.inventory.onChanged(() => { void load() }), [load])
+
+  // Instant client-side filtering while typing (0ms latency)
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return rows
+    return rows.filter((row) => {
+      const p = products.find((prod) => prod.id === row.product_id)
+      const pName = (row.product_name || p?.name || '').toLowerCase()
+      const pSku = (row.product_sku || p?.sku || '').toLowerCase()
+      const pBarcode = (row.product_barcode || p?.barcode || '').toLowerCase()
+      const reason = (row.reason || '').toLowerCase()
+      const ref = (row.reference || '').toLowerCase()
+      const user = (row.user_name || '').toLowerCase()
+      const mType = (row.movement_type || '').toLowerCase()
+      return (
+        pName.includes(q) ||
+        pSku.includes(q) ||
+        pBarcode.includes(q) ||
+        reason.includes(q) ||
+        ref.includes(q) ||
+        user.includes(q) ||
+        mType.includes(q)
+      )
+    })
+  }, [rows, searchQuery, products])
+
+  // Realtime Telemetry Summary
+  const stats = useMemo(() => {
+    let inflow = 0
+    let outflow = 0
+    for (const r of filteredRows) {
+      if (r.quantity_change > 0) inflow += r.quantity_change
+      else if (r.quantity_change < 0) outflow += Math.abs(r.quantity_change)
+    }
+    return {
+      total: filteredRows.length,
+      inflow: Number(inflow.toFixed(2)),
+      outflow: Number(outflow.toFixed(2)),
+      net: Number((inflow - outflow).toFixed(2))
+    }
+  }, [filteredRows])
+
   const productName = (id: number) => products.find((p) => p.id === id)?.name ?? `#${id}`
-  const typeLabels: Partial<Record<InventoryMovement['movement_type'], string>> = { PURCHASE: 'Purchase', SALE: 'Sale', REFUND: 'Refund', RETURN: 'Return', DAMAGE: 'Damage', EXPIRATION: 'Expiration', LOSS: 'Loss', ADJUSTMENT: 'Adjustment', INITIAL_STOCK: 'Initial Stock', WITHDRAWAL: 'Withdrawal', STORE_USE: 'Store Use' }
-  return <Modal open onClose={onClose} title="Stock History" maxWidth="max-w-6xl" footer={<button className="btn-ghost" onClick={onClose}>Close</button>}>
-    <div className="space-y-4">
-      <div className="grid gap-2 md:grid-cols-2">
-        <div><label className="label">Product</label><select className="input w-full" value={productId} onChange={(e) => setProductId(e.target.value === '' ? '' : Number(e.target.value))}><option value="">All products</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-        <div><label className="label">Movement Type</label><select className="input w-full" value={type} onChange={(e) => setType(e.target.value as '' | InventoryMovement['movement_type'])}><option value="">All types</option>{Object.entries(typeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
-      </div>
-      <div className="max-h-[55vh] overflow-auto rounded-lg border border-ink-line">
-        <table className="table">
-          <thead>
-            <tr>
-              <th className="w-[18%] text-center align-middle">Date / Time</th>
-              <th className="w-[22%] text-center align-middle">Product</th>
-              <th className="w-[12%] text-center align-middle">Type</th>
-              <th className="w-[11%] text-center align-middle">Change</th>
-              <th className="w-[11%] text-center align-middle">After</th>
-              <th className="w-[16%] text-center align-middle">Reason</th>
-              <th className="w-[10%] text-center align-middle">By</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td className="w-[18%] text-center align-middle text-xs text-slate-400">{new Date(row.created_at.replace(' ', 'T')).toLocaleString()}</td>
-                <td className="w-[22%] text-center align-middle font-medium text-white truncate" title={productName(row.product_id)}>{productName(row.product_id)}</td>
-                <td className="w-[12%] text-center align-middle">
-                  <span className={`badge border inline-flex items-center justify-center ${
-                    row.movement_type === 'WITHDRAWAL'
-                      ? 'border-danger-500/30 bg-danger-500/10 text-danger-300'
-                      : row.movement_type === 'STORE_USE'
-                        ? 'border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold'
-                        : 'border-slate-500/30 bg-slate-500/10 text-slate-300'
-                  }`}>
-                    {typeLabels[row.movement_type] ?? row.movement_type}
-                  </span>
-                </td>
-                <td className={`w-[11%] text-center align-middle font-mono tabular-nums ${row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'}`}>{row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}</td>
-                <td className="w-[11%] text-center align-middle font-mono tabular-nums">{row.quantity_after} {row.unit}</td>
-                <td className="w-[16%] text-center align-middle truncate" title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}>{row.reason || '—'}{row.reference ? <span className="text-slate-500"> — {row.reference}</span> : null}</td>
-                <td className="w-[10%] text-center align-middle truncate text-slate-300">{(row as InventoryMovement & { user_name?: string }).user_name || '—'}</td>
+  const productInfo = (id: number) => products.find((p) => p.id === id)
+
+  const handleExportExcel = async () => {
+    setExportingExcel(true)
+    try {
+      const res = await window.api.inventory.exportExcel({
+        search: searchQuery.trim() || undefined,
+        product_id: productId === '' ? undefined : productId,
+        movement_type: type
+      })
+      toastSuccess('Excel Export Ready', `${res.rows} movement records exported. Opening spreadsheet...`)
+      try {
+        await window.api.app.openPath(res.path)
+      } catch {
+        await window.api.app.revealPath(res.path)
+      }
+    } catch (e) {
+      toastError('Export failed', String((e as Error)?.message || e))
+    } finally {
+      setExportingExcel(false)
+    }
+  }
+
+  const typeLabels: Partial<Record<InventoryMovement['movement_type'], string>> = {
+    PURCHASE: 'Purchase',
+    SALE: 'Sale',
+    REFUND: 'Refund',
+    RETURN: 'Return',
+    DAMAGE: 'Damage',
+    EXPIRATION: 'Expiration',
+    LOSS: 'Loss',
+    ADJUSTMENT: 'Adjustment',
+    INITIAL_STOCK: 'Initial Stock',
+    WITHDRAWAL: 'Withdrawal',
+    STORE_USE: 'Store Use'
+  }
+
+  const quickFilterPills: Array<{ label: string; value: '' | InventoryMovement['movement_type'] }> = [
+    { label: 'All Movements', value: '' },
+    { label: 'Purchases', value: 'PURCHASE' },
+    { label: 'Sales', value: 'SALE' },
+    { label: 'Store Use', value: 'STORE_USE' },
+    { label: 'Withdrawals', value: 'WITHDRAWAL' },
+    { label: 'Adjustments', value: 'ADJUSTMENT' },
+    { label: 'Loss & Damage', value: 'DAMAGE' },
+    { label: 'Refunds', value: 'REFUND' }
+  ]
+
+  const getMovementBadgeClass = (mType: InventoryMovement['movement_type']) => {
+    switch (mType) {
+      case 'PURCHASE':
+      case 'INITIAL_STOCK':
+        return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+      case 'SALE':
+        return 'border-blue-500/30 bg-blue-500/10 text-blue-300'
+      case 'STORE_USE':
+        return 'border-amber-500/30 bg-amber-500/10 text-amber-300 font-semibold'
+      case 'WITHDRAWAL':
+      case 'DAMAGE':
+      case 'EXPIRATION':
+      case 'LOSS':
+        return 'border-danger-500/30 bg-danger-500/10 text-danger-300'
+      case 'ADJUSTMENT':
+        return 'border-purple-500/30 bg-purple-500/10 text-purple-300'
+      case 'REFUND':
+      case 'RETURN':
+        return 'border-indigo-500/30 bg-indigo-500/10 text-indigo-300'
+      default:
+        return 'border-slate-500/30 bg-slate-500/10 text-slate-300'
+    }
+  }
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title="Stock History & Audit Log"
+      maxWidth="max-w-6xl"
+      footer={
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span>Showing <b className="text-white">{filteredRows.length}</b> movements</span>
+            {(searchQuery || productId || type) && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setProductId(''); setType('') }}
+                className="ml-2 text-primary-400 hover:underline flex items-center gap-1"
+              >
+                <RotateCcw className="h-3 w-3" /> Clear filters
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportExcel}
+              disabled={exportingExcel || filteredRows.length === 0}
+              className="btn-primary bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm"
+              title="Export filtered stock history to Microsoft Excel (.csv)"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-200" />
+              {exportingExcel ? 'Exporting...' : 'Export to Excel'}
+            </button>
+            <button className="btn-ghost text-xs px-4 py-1.5" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-3.5">
+        {/* Search & Product Dropdown Bar */}
+        <div className="grid gap-3 md:grid-cols-12 items-center">
+          <div className="relative md:col-span-8">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              className="input w-full pl-10 pr-9 text-sm rounded-xl bg-slate-900/70 border-ink-line focus:border-primary-500/60 focus:ring-1 focus:ring-primary-500/30 transition-all placeholder:text-slate-500"
+              placeholder="Search by product name, barcode, SKU, reason, reference, or cashier..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800 transition-colors"
+                title="Clear search query"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="md:col-span-4">
+            <select
+              className="input w-full text-sm rounded-xl bg-slate-900/70 border-ink-line focus:border-primary-500/60"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value === '' ? '' : Number(e.target.value))}
+            >
+              <option value="">All Products ({products.length})</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.sku ? `(${p.sku})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Movement Type Filter Pills & Live Telemetry Metrics */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-ink-line/40">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {quickFilterPills.map((pill) => {
+              const isActive = type === pill.value
+              return (
+                <button
+                  key={pill.label}
+                  type="button"
+                  onClick={() => setType(pill.value)}
+                  className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-all ${
+                    isActive
+                      ? 'bg-primary-600 text-white shadow-sm ring-1 ring-primary-400/30'
+                      : 'bg-slate-800/60 text-slate-300 hover:bg-slate-800 hover:text-white border border-ink-line/50'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Live Inflow / Outflow Telemetry */}
+          <div className="flex items-center gap-2.5 text-xs font-mono ml-auto">
+            <span className="text-slate-400">
+              Records: <b className="text-white">{stats.total}</b>
+            </span>
+            <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              +{stats.inflow} in
+            </span>
+            <span className="text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+              -{stats.outflow} out
+            </span>
+            <span className={`px-2 py-0.5 rounded border font-semibold ${
+              stats.net >= 0
+                ? 'text-cyan-300 bg-cyan-500/10 border-cyan-500/20'
+                : 'text-amber-300 bg-amber-500/10 border-amber-500/20'
+            }`}>
+              Net: {stats.net >= 0 ? `+${stats.net}` : stats.net}
+            </span>
+          </div>
+        </div>
+
+        {/* Movement Table */}
+        <div className="max-h-[55vh] overflow-auto rounded-xl border border-ink-line/70 bg-ink-950/40 shadow-inner">
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="w-[17%] text-center align-middle">Date / Time</th>
+                <th className="w-[25%] text-left px-3 align-middle">Product</th>
+                <th className="w-[12%] text-center align-middle">Type</th>
+                <th className="w-[11%] text-center align-middle">Change</th>
+                <th className="w-[11%] text-center align-middle">Stock After</th>
+                <th className="w-[14%] text-center align-middle">Reason / Ref</th>
+                <th className="w-[10%] text-center align-middle">By</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {!loading && rows.length === 0 && <p className="py-10 text-center text-sm text-slate-500">No stock movements match these filters.</p>}
-        {loading && <p className="py-10 text-center text-sm text-slate-500">Loading stock movements…</p>}
+            </thead>
+            <tbody>
+              {filteredRows.map((row) => {
+                const p = productInfo(row.product_id)
+                const pName = row.product_name || p?.name || `Product #${row.product_id}`
+                const pSku = row.product_sku || p?.sku
+                const pBarcode = row.product_barcode || p?.barcode
+                return (
+                  <tr key={row.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="w-[17%] text-center align-middle text-xs text-slate-400">
+                      {new Date(row.created_at.replace(' ', 'T')).toLocaleString()}
+                    </td>
+                    <td className="w-[25%] text-left px-3 align-middle">
+                      <div className="font-medium text-white truncate max-w-[260px]" title={pName}>
+                        {pName}
+                      </div>
+                      {(pSku || pBarcode) && (
+                        <div className="text-[11px] font-mono text-slate-400 truncate max-w-[260px]">
+                          {pSku ? `SKU: ${pSku}` : ''}
+                          {pBarcode ? ` ${pSku ? '•' : ''} Barcode: ${pBarcode}` : ''}
+                        </div>
+                      )}
+                    </td>
+                    <td className="w-[12%] text-center align-middle">
+                      <span className={`badge border inline-flex items-center justify-center ${getMovementBadgeClass(row.movement_type)}`}>
+                        {typeLabels[row.movement_type] ?? row.movement_type}
+                      </span>
+                    </td>
+                    <td className={`w-[11%] text-center align-middle font-mono tabular-nums font-semibold ${
+                      row.quantity_change < 0 ? 'text-danger-400' : 'text-emerald-400'
+                    }`}>
+                      {row.quantity_change > 0 ? '+' : ''}{row.quantity_change} {row.unit}
+                    </td>
+                    <td className="w-[11%] text-center align-middle font-mono tabular-nums text-slate-200">
+                      {row.quantity_after} {row.unit}
+                    </td>
+                    <td
+                      className="w-[14%] text-center align-middle truncate max-w-[150px] text-xs"
+                      title={row.reason ? `${row.reason}${row.reference ? ` — ${row.reference}` : ''}` : undefined}
+                    >
+                      <span className="text-slate-300">{row.reason || '—'}</span>
+                      {row.reference ? <span className="text-slate-500 font-mono text-[11px]"> ({row.reference})</span> : null}
+                    </td>
+                    <td className="w-[10%] text-center align-middle truncate text-slate-300 text-xs">
+                      {(row as InventoryMovement & { user_name?: string }).user_name || '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+
+          {!loading && filteredRows.length === 0 && (
+            <div className="py-12 text-center space-y-2">
+              <Search className="h-8 w-8 text-slate-500 mx-auto opacity-50" />
+              <p className="text-sm font-medium text-slate-400">No stock movements found.</p>
+              <p className="text-xs text-slate-500">
+                {searchQuery || productId || type
+                  ? 'Try adjusting your search terms or clearing your filters.'
+                  : 'No stock movements recorded yet.'}
+              </p>
+              {(searchQuery || productId || type) && (
+                <button
+                  type="button"
+                  onClick={() => { setSearchQuery(''); setProductId(''); setType('') }}
+                  className="btn-ghost text-xs text-primary-400 mt-2 inline-flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3" /> Reset all filters
+                </button>
+              )}
+            </div>
+          )}
+
+          {loading && (
+            <div className="py-12 text-center text-sm text-slate-400">
+              <RefreshCw className="h-5 w-5 animate-spin mx-auto text-primary-400 mb-2" />
+              Loading stock movements…
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  </Modal>
+    </Modal>
+  )
 }
 
 function CategoryModal({ categories, onChanged, onClose }: { categories: Category[]; onChanged: () => Promise<void>; onClose: () => void }): React.JSX.Element {

@@ -437,6 +437,10 @@ handle('inventory:batchDate', (_e: IpcMainInvokeEvent, id: number, date: string)
   emitInventoryChanged({ reason: 'ADJUSTMENT', product_ids: [productId] })
 })
 handle('inventory:movements', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listMovements(db(), (opts ?? {}) as object))
+handle('inventory:exportExcel', (_e: IpcMainInvokeEvent, opts: unknown) => {
+  user()
+  return exportSvc.exportCsv('MOVEMENTS', (opts ?? {}) as any)
+})
 handle('inventory:receiving', (_e: IpcMainInvokeEvent, opts: unknown) => invRepo.listReceiving(db(), (opts ?? {}) as object))
 handle('inventory:receive', (_e: IpcMainInvokeEvent, input: unknown) => {
   sessionSvc.requirePermission('inventory:receive')

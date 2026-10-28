@@ -5,6 +5,8 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { listSales } from '../repositories/sales'
 import { listExpenses } from '../repositories/expenses'
+import { listMovements } from '../repositories/inventory'
+import type { InventoryMovementType } from '@shared/types'
 import { itemSalesReport } from './reporting'
 
 function toCsv(header: string[], records: (string | number)[][]): string {
@@ -17,8 +19,8 @@ function toCsv(header: string[], records: (string | number)[][]): string {
 }
 
 export function exportCsv(
-  kind: 'SALES' | 'ITEMS' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS',
-  opts: { from?: string; to?: string; category_id?: number; search?: string } = {}
+  kind: 'SALES' | 'ITEMS' | 'INVENTORY' | 'EXPENSES' | 'UTANG' | 'TRANSACTIONS' | 'MOVEMENTS',
+  opts: { from?: string; to?: string; category_id?: number; search?: string; product_id?: number; movement_type?: InventoryMovementType | '' } = {}
 ): ExportResult {
   const db = getDb()
   const { exports } = appDirs()
@@ -168,6 +170,44 @@ export function exportCsv(
       'expenses',
       ['Date', 'Category', 'Amount', 'Description', 'Reference', 'User'],
       exp.map((e) => [e.expense_date, e.category_name, e.amount_c / 100, e.description ?? '', e.reference ?? '', e.user_name])
+    )
+  } else if (kind === 'MOVEMENTS' || (kind as string) === 'STOCK_HISTORY') {
+    const movements = listMovements(db, {
+      search: opts.search,
+      from: opts.from,
+      to: opts.to,
+      product_id: opts.product_id,
+      movement_type: opts.movement_type,
+      limit: 100000
+    }).rows
+    flush(
+      'stock-history',
+      [
+        'Date & Time',
+        'Product Name',
+        'SKU',
+        'Barcode',
+        'Movement Type',
+        'Quantity Change',
+        'Unit',
+        'Stock After',
+        'Reason',
+        'Reference / Invoice',
+        'Recorded By'
+      ],
+      movements.map((m) => [
+        m.created_at,
+        m.product_name || `Product #${m.product_id}`,
+        m.product_sku || '',
+        m.product_barcode || '',
+        m.movement_type,
+        m.quantity_change > 0 ? `+${m.quantity_change}` : m.quantity_change,
+        m.unit,
+        m.quantity_after,
+        m.reason || '',
+        m.reference || '',
+        m.user_name || ''
+      ])
     )
   } else if (kind === 'UTANG') {
     const customers = db.prepare('SELECT * FROM customers ORDER BY full_name').all() as { full_name: string; nickname: string | null; phone: string | null; balance_c: number; credit_limit_c: number }[]

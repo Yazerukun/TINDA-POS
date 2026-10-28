@@ -1,3 +1,10 @@
+### Stage 66-69: v5.1.8 Universal Stock History Spotlight Search, Real-Time Inflow/Outflow Telemetry & Quick Excel Export (October 28, 2026)
+- **Universal Spotlight Search Bar in Stock History**: Added a responsive, prominent search bar in the Stock History modal. Store owners and cashiers can instantly type to search movements by Product Name, Barcode, SKU, Reason, Reference/Invoice number, or Cashier with 0ms client-side latency and debounced deep SQLite database searching.
+- **Quick Movement Type Filter Pills**: Replaced cumbersome dropdown scrolling with one-tap Cupertino filter pills (All Movements, Purchases, Sales, Store Use, Withdrawals, Adjustments, Loss & Damage, Refunds) with customized color-coded badges.
+- **Real-Time Inflow / Outflow Telemetry Strip**: Displays live movement counts, total units added (+Inflow), total units deducted (-Outflow), and Net Stock Change computed automatically from filtered records.
+- **1-Click "Export to Excel" in Stock History**: Added a dedicated emerald action button in the modal to export filtered stock movements into a clean Excel CSV with UTF-8 BOM, timestamps, product names, SKUs, barcodes, movement types, quantity changes, units, stock after, reasons, references, and cashier names.
+- **Full Automated Testing**: New Vitest test suite `src/main/services/__tests__/stock-history-search.test.ts` verifying all search permutations, combined filters, and Excel export generation with 100% pass rate.
+
 
 ### Stage 62-65: v5.1.7 Automated Stock Equivalent (Packs/Kilos) Conversion in Excel (October 27, 2026)
 - **Automatic Converted Stock Equivalent Column**: The Excel export now includes an automatic `Stock Equivalent (In Packs/Kilos)` column. Cashiers and store owners no longer need to perform mental math or Excel division; e.g. 1,000 pcs with 1 Kilo (100 base) displays `10 1 Kilo` (or `10 Kilos + 15 pcs` if remainder exists).
@@ -15,13 +22,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.7 (NATIVE MULTI-UNIT PACKAGING, CUSTOM UNIT PRICING & POS QUICK-UNIT SELECTOR RELEASE)
+- v5.1.8 (UNIVERSAL STOCK HISTORY SPOTLIGHT SEARCH, REAL-TIME TELEMETRY & EXCEL EXPORT RELEASE)
 
 TARGET:
 - v5.2.0 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector Release
+- Production Release Ready — v5.1.8 Universal Stock History Spotlight Search, Real-Time Telemetry & Quick Excel Export
 
 COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):

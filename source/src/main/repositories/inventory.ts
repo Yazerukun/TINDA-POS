@@ -10,6 +10,7 @@ export function listMovements(
     offset?: number
     from?: string
     to?: string
+    search?: string
   } = {}
 ): { rows: InventoryMovement[]; total: number } {
   const where: string[] = []
@@ -30,17 +31,33 @@ export function listMovements(
     where.push('im.created_at <= ?')
     params.push(opts.to)
   }
+  if (opts.search?.trim()) {
+    const q = `%${opts.search.trim()}%`
+    where.push(
+      '(p.name LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ? OR im.reason LIKE ? OR im.reference LIKE ? OR u.full_name LIKE ? OR u.username LIKE ?)'
+    )
+    params.push(q, q, q, q, q, q, q)
+  }
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : ''
-  const total = (db.prepare(`SELECT COUNT(*) AS c FROM inventory_movements im ${whereSql}`).get(...params) as { c: number }).c
+  const joins = 'LEFT JOIN products p ON p.id = im.product_id LEFT JOIN users u ON u.id = im.user_id'
+  const total = (
+    db.prepare(`SELECT COUNT(*) AS c FROM inventory_movements im ${joins} ${whereSql}`).get(...params) as { c: number }
+  ).c
   const limit = opts.limit ?? 100
   const offset = opts.offset ?? 0
   const rows = db
     .prepare(
-      `SELECT im.*, COALESCE(u.full_name, u.username, '') AS user_name
-       FROM inventory_movements im LEFT JOIN users u ON u.id = im.user_id
-       ${whereSql} ORDER BY im.id DESC LIMIT ? OFFSET ?`
+      `SELECT im.*,
+              COALESCE(p.name, '') AS product_name,
+              p.sku AS product_sku,
+              p.barcode AS product_barcode,
+              COALESCE(u.full_name, u.username, '') AS user_name
+       FROM inventory_movements im
+       ${joins}
+       ${whereSql}
+       ORDER BY im.id DESC LIMIT ? OFFSET ?`
     )
-    .all(...params, limit, offset) as (InventoryMovement & { user_name: string })[]
+    .all(...params, limit, offset) as InventoryMovement[]
   return { rows, total }
 }
 
