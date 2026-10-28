@@ -13,8 +13,9 @@
 
 export type ReceiptWidth = '58mm' | '80mm'
 
-export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]!)
+export function escapeHtml(value?: string | null): string {
+  if (value === undefined || value === null) return ''
+  return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char]!)
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = { PHP: '₱', PESO: '₱' }
@@ -841,6 +842,7 @@ export interface PurchaseOrderPrintPayload {
     created_at?: string
     items: {
       id?: number
+      product_id?: number
       product_name: string
       product_barcode?: string | null
       product_sku?: string | null
@@ -851,6 +853,7 @@ export interface PurchaseOrderPrintPayload {
       discount_input?: string | null
       discount_c?: number
       subtotal_c: number
+      selling_price_c?: number | null
     }[]
   }
 }
@@ -955,7 +958,7 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
     payload.storeName || 'TINDA POS',
     'PURCHASE ORDER / RECEIVING SLIP',
     '--------------------------------',
-    `P.O. Number: ${p.purchase_no}`,
+    `P.O. Number: ${p.purchase_no || (p as any).invoice_no || (p.id ? `PO-${p.id}` : "PO-NEW")}`,
     `Date: ${formatReceiptDate(p.purchase_date)}`,
     `Supplier: ${p.supplier_name}`,
     `Invoice #: ${p.invoice_no || '—'}`,
@@ -984,6 +987,9 @@ export function formatPurchaseOrderSlipLines(payload: PurchaseOrderPrintPayload)
     const discPart = discStr.padStart(10, ' ')
     const amountStr = moneyStr(it.subtotal_c).padStart(11, ' ')
     lines.push(`     ${priceStr} ${discPart} ${amountStr}`)
+    if (it.selling_price_c && it.selling_price_c > 0) {
+      lines.push(`     >> SRP / Retail Price: P${moneyStr(it.selling_price_c)}`)
+    }
   }
 
   lines.push('--------------------------------')
@@ -1010,6 +1016,7 @@ export interface PurchasePrintCustomizerOptions {
   showRowNumber?: boolean
   showBarcode?: boolean
   showBaseUnits?: boolean
+  showSellingPrice?: boolean
   showStoreHeader?: boolean
   compactHeader?: boolean
   showInfoCards?: boolean
@@ -1032,7 +1039,7 @@ export function generatePurchaseOrderDocumentHtml(
   const storeName = escapeHtml(payload.storeName || 'TINDA POS STORE')
   const storeAddress = escapeHtml(payload.storeAddress || '')
   const storePhone = escapeHtml(payload.storePhone || '')
-  const poNo = escapeHtml(p.purchase_no)
+  const poNo = escapeHtml(p.purchase_no || (p as any).invoice_no || (p.id ? `PO-${p.id}` : "PO-NEW"))
   const title = `Purchase Order - ${poNo}`
 
   const rowPaddingY =
@@ -1049,6 +1056,7 @@ export function generatePurchaseOrderDocumentHtml(
   const showRowNumber = customizer?.showRowNumber ?? false
   const showBarcode = customizer?.showBarcode ?? false
   const showBaseUnits = customizer?.showBaseUnits ?? false
+  const showSellingPrice = customizer?.showSellingPrice ?? true
   const showStoreHeader = customizer?.showStoreHeader ?? true
   const compactHeader = customizer?.compactHeader ?? true
   const showInfoCards = customizer?.showInfoCards ?? true
@@ -1083,6 +1091,7 @@ export function generatePurchaseOrderDocumentHtml(
         <td style="padding: ${rowPaddingY}px 4px; text-align: right; font-family: monospace; color: #334155; font-weight: 600;">₱${moneyStr(it.unit_cost_c)}</td>
         <td style="padding: ${rowPaddingY}px 4px; text-align: center;">${discDisplay}</td>
         <td style="padding: ${rowPaddingY}px 4px; text-align: right; font-family: monospace; font-weight: 800; color: #0f172a; font-size: ${fontSize + 1}px;">₱${moneyStr(it.subtotal_c)}</td>
+        ${showSellingPrice ? `<td style="padding: ${rowPaddingY}px 4px; text-align: right; font-family: monospace; font-weight: 800; color: #059669; font-size: ${fontSize + 1}px;">₱${moneyStr(it.selling_price_c || 0)}</td>` : ''}
       </tr>
     `
     })
@@ -1212,6 +1221,7 @@ export function generatePurchaseOrderDocumentHtml(
           <th style="width: 78px; text-align: right;">UNIT PRICE</th>
           <th style="width: 72px; text-align: center;">DISCOUNT</th>
           <th style="width: 86px; text-align: right;">AMOUNT</th>
+          ${showSellingPrice ? '<th style="width: 84px; text-align: right; color: #059669;">SELLING PRICE</th>' : ''}
         </tr>
       </thead>
       <tbody>

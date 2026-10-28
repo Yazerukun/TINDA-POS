@@ -17,7 +17,7 @@
 
 ## 4. CURRENT VERSION & SYSTEM STATUS
 - **App Name:** TINDA POS Desktop
-- **Current Stable Version:** v5.2.0 (Instant Selling Price Entry, Live Margin Telemetry & Automatic Inventory Price Sync in Purchase Invoices)
+- **Current Stable Version:** v5.2.1 (Visible Selling Price on Printed Purchase Orders & Slips for Shelf Tagging)
 - **Path:** `D:\TINDA-POS-Desktop\source\`
 - **Stack:** Electron + React 19 + TypeScript + Tailwind CSS + Zustand + Better-SQLite3
 - **Latest Features:**

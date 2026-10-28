@@ -251,6 +251,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
     showRowNumber: false,
     showBarcode: false,
     showBaseUnits: false,
+    showSellingPrice: true,
     showStoreHeader: true,
     compactHeader: true,
     showInfoCards: true,
@@ -1323,6 +1324,7 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
         const discInput = it.discountInput ?? it.discount_input ?? ''
         const formattedPercent = formatDiscountPercent(discInput, discC, grossC)
 
+        const sellingPriceC = it.sellingPriceC ?? it.selling_price_c ?? 0
         return {
           id: it.id || 0,
           purchase_id: viewingPurchase.id,
@@ -1335,7 +1337,8 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
           unit_cost_c: unitCostC,
           discount_input: formattedPercent !== '—' ? formattedPercent : (discInput || null),
           discount_c: discC,
-          subtotal_c: subtotalC
+          subtotal_c: subtotalC,
+          selling_price_c: sellingPriceC
         }
       })
 
@@ -3688,6 +3691,15 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                           className="checkbox-custom"
                         />
                       </label>
+                      <label className="flex items-center justify-between gap-2 text-[11px] text-slate-300 cursor-pointer select-none">
+                        <span className="text-emerald-400 font-semibold">Show Selling Price (SRP)</span>
+                        <input
+                          type="checkbox"
+                          checked={printCustomizer.showSellingPrice !== false}
+                          onChange={(e) => updateCustomizer({ showSellingPrice: e.target.checked })}
+                          className="checkbox-custom"
+                        />
+                      </label>
                     </div>
 
                     {/* Document Sections Toggles */}
@@ -3863,6 +3875,11 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                             <th style={{ width: '86px' }} className="p-1 text-right">
                               AMOUNT
                             </th>
+                            {printCustomizer.showSellingPrice !== false && (
+                              <th style={{ width: '82px' }} className="p-1 text-right text-emerald-400">
+                                SELLING PRICE
+                              </th>
+                            )}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
@@ -3933,6 +3950,14 @@ export function PurchaseInvoiceModal(props: PurchaseInvoiceModalProps = {}): Rea
                                   >
                                     {money(subtotalC)}
                                   </td>
+                                  {printCustomizer.showSellingPrice !== false && (
+                                    <td
+                                      style={{ padding: `${padY} 4px` }}
+                                      className="text-right font-mono font-bold text-emerald-700"
+                                    >
+                                      {money(it.sellingPriceC ?? it.selling_price_c ?? 0)}
+                                    </td>
+                                  )}
                                 </tr>
                               )
                             }

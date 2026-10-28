@@ -7,6 +7,11 @@ import { getDb, closeDb } from '../../database/connection'
 import * as products from '../../repositories/products'
 import { createPurchase, getPurchase, updatePurchase } from '../../repositories/purchases'
 import { completeSetup } from '../auth'
+import {
+  generatePurchaseOrderDocumentHtml,
+  formatPurchaseOrderSlipLines,
+  type PurchaseOrderPrintPayload
+} from '../../../shared/receiptHtml'
 
 let dataDir: string
 let db: Database.Database
@@ -224,5 +229,51 @@ describe('Purchase Invoice Instant Selling Price Update Engine', () => {
 
     const prodAAfter = products.getProduct(db, testProdAId)
     expect(prodAAfter?.default_price_c).toBe(currentPrice)
+  })
+
+  it('renders Selling Price (SRP) in Printed PO A4 document and thermal slip', () => {
+    const printPayload: PurchaseOrderPrintPayload = {
+      purchase: {
+        id: 99,
+        purchase_no: 'PO-2026-PRINT-01',
+        invoice_no: 'PO-2026-PRINT-01',
+        purchase_date: '2026-10-28',
+        supplier_name: 'Evergreen Hardware Supply',
+        total_c: 135000,
+        notes: 'Urgent restocking',
+        created_at: '2026-10-28 10:00:00',
+        items: [
+          {
+            id: 1,
+            product_id: testProdAId,
+            product_name: 'Pioneer Epoxy All Purpose 500g',
+            product_sku: 'EPOXY-500G',
+            unit_name: 'can',
+            qty: 10,
+            qty_base: 10,
+            unit_cost_c: 13500,
+            discount_c: 0,
+            subtotal_c: 135000,
+            selling_price_c: 17500
+          }
+        ]
+      },
+      storeName: 'Price Sync Test Hardware',
+      storeAddress: 'Bacolod City'
+    }
+
+    // 1. A4 Document with Selling Price enabled (default)
+    const docHtml = generatePurchaseOrderDocumentHtml(printPayload, { showSellingPrice: true })
+    expect(docHtml.html).toContain('SELLING PRICE')
+    expect(docHtml.html).toContain('₱175.00')
+
+    // 2. A4 Document with Selling Price disabled via customizer toggle
+    const docHtmlWithout = generatePurchaseOrderDocumentHtml(printPayload, { showSellingPrice: false })
+    expect(docHtmlWithout.html).not.toContain('SELLING PRICE')
+
+    // 3. Thermal Slip output contains SRP / Retail Price sub-line
+    const slipLines = formatPurchaseOrderSlipLines(printPayload)
+    const srpLine = slipLines.find((l) => l.includes('>> SRP / Retail Price: P175.00'))
+    expect(srpLine).toBeDefined()
   })
 })

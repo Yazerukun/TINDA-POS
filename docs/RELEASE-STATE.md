@@ -1,3 +1,10 @@
+### Stage 72: v5.2.1 Visible Selling Price on Printed Purchase Orders & Slips for Shelf Tagging (October 28, 2026)
+- **Printed A4 Purchase Order Selling Price Column**: Added a dedicated `SELLING PRICE` column in the A4 document / voucher printout with emerald-accented monospace formatting, providing store staff instant retail shelf tagging numbers without looking up catalog prices.
+- **Thermal Slip SRP / Retail Price Sub-line**: Thermal receipts and receiving slips automatically print `>> SRP / Retail Price: PXX.XX` underneath item descriptions when selling prices are present.
+- **Interactive Print Customizer Toggle**: Added a `Show Selling Price (SRP)` checkbox toggle in the Purchase Invoice Print Customizer modal so owners can toggle visibility on or off depending on whether they want supplier-facing or internal-facing vouchers.
+- **Live Paper Preview**: The print preview window dynamically mirrors the `SELLING PRICE` column in real-time as users customize their document layout.
+- **Automated Verification**: Comprehensive Vitest test suite in `src/main/services/__tests__/purchase-invoice-selling-price.test.ts` verifying document HTML and thermal slip generation for Selling Price formatting.
+
 ### Stage 71: v5.2.0 Instant Selling Price Entry, Live Margin Telemetry & Automatic Inventory Price Sync in Purchase Invoices (October 28, 2026)
 - **Instant Selling Price Entry in Fast Item Bar**: Added dedicated Selling Price (₱) input field in both Create and Edit invoice modes. Automatically pre-populates with current product retail price upon item selection.
 - **Live Profit Spread & Margin Telemetry**: Real-time margin percentage (`+XX%`) and profit badges (`+₱XX.XX`) compute instantly as costs and selling prices are keyed in.
@@ -36,13 +43,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.2.0 (INSTANT SELLING PRICE & AUTOMATIC INVENTORY PRICE SYNC RELEASE)
+- v5.2.1 (PRINTED P.O. SELLING PRICE & SHELF TAGGING RELEASE)
 
 TARGET:
-- v5.2.0 (NEXT FEATURE CYCLE)
+- v5.2.2 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.2.0 Instant Selling Price Entry & Automatic Inventory Price Sync in Purchase Invoices
+- Production Release Ready — v5.2.1 Visible Selling Price on Printed Purchase Orders & Slips
 
 COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):
