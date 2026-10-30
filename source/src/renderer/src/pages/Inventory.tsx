@@ -2636,7 +2636,19 @@ function ProductModal({
         </div>
         <div>
           <label className="label">Base Unit</label>
-          <input value={f.base_unit} onChange={(e) => set({ base_unit: e.target.value })} className="input w-full" placeholder="pc, sachet, bottle" />
+          <input
+            value={f.base_unit}
+            onChange={(e) => {
+              const newBase = e.target.value
+              set({ base_unit: newBase })
+              const firstRow = rows[0]
+              if (firstRow && firstRow.conversion_to_base === 1 && (!firstRow.name || firstRow.name.toLowerCase() === 'pc' || firstRow.name === f.base_unit)) {
+                setRow(0, { name: newBase })
+              }
+            }}
+            className="input w-full"
+            placeholder="pc, sachet, bottle, kilo"
+          />
         </div>
         <div>
           <label className="label">Purchase Cost (₱)</label>

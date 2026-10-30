@@ -116,3 +116,5 @@
 2026-10-28 13:36:56 | Jin Engine Dispatched | Task: Fresh install OpenCode - uninstall then reinstall latest version
 2026-10-28 14:40:53 | Jin Engine Dispatched | Task: hello
 2026-10-28 14:41:26 | Jin Engine Dispatched | Task: investigate REA installation
+2026-10-28 16:09:31 | Jin Engine Dispatched | Task: Yuki_bridge Android keyless - locate source and remove license check
+2026-10-28 16:13:34 | Jin Engine Dispatched | Task: extract Android source from Yuki_bridge APK to find and remove license checks

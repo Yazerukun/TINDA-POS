@@ -65,15 +65,18 @@ export function quantityBreakdown(base: number, units: { name: string; conversio
   return parts.join(' + ')
 }
 
-const WEIGHABLE_UNITS_REGEX = /^(kilo|kilos|kg|kls|kilogram|kilograms|g|gram|grams|l|liter|liters|litre|litres|ml|milliliter|milliliters|m|meter|meters)$/i
+const WEIGHABLE_UNITS_REGEX = /^(kilo|kilos|kg|kgs|kl|kls|kilogram|kilograms|g|gm|gms|gram|grams|mg|mgs|milligram|milligrams|l|lt|lts|ltr|ltrs|liter|liters|litre|litres|ml|mls|milliliter|milliliters|m|mtr|mtrs|meter|meters|oz|ounce|ounces|lb|lbs|pound|pounds)$/i
 
 export function isWeighableUnit(unitName: string | null | undefined): boolean {
   if (!unitName) return false
-  return WEIGHABLE_UNITS_REGEX.test(unitName.trim())
+  const clean = unitName.trim().replace(/\.$/, '')
+  if (WEIGHABLE_UNITS_REGEX.test(clean)) return true
+  // Also recognize composite unit descriptions like "1/4 kilo", "half kilo", "per kilo", "kilo pack"
+  return /(kilo|kilogram|gram|liter|litre|meter|pound|ounce)/i.test(clean)
 }
 
 export function formatQuantity(qty: number, unitName?: string | null): string {
   if (!Number.isFinite(qty)) return '0'
-  const valStr = qty % 1 === 0 ? String(qty) : Number(qty.toFixed(3)).toString()
+  const valStr = qty % 1 === 0 ? String(qty) : Number(qty.toFixed(6)).toString()
   return unitName ? `${valStr} ${unitName}` : valStr
-}
+}

@@ -106,7 +106,7 @@ export function buildReceiptLines(store: {
   lines.push('--------------------------------')
   for (const it of sale.items) {
     lines.push(`${it.product_name}`)
-    const qtyStr = it.qty % 1 === 0 ? String(it.qty) : Number(it.qty.toFixed(3)).toString()
+    const qtyStr = it.qty % 1 === 0 ? String(it.qty) : Number(it.qty.toFixed(6)).toString()
     lines.push(`  ${qtyStr} x ${(it.unit_price_c / 100).toFixed(2)}        ${(it.subtotal_c / 100).toFixed(2)}`)
   }
   lines.push('--------------------------------')
@@ -129,7 +129,7 @@ export function buildReceiptLines(store: {
   }
   lines.push('--------------------------------')
   const totalCount = sale.items.reduce((total, item) => total + item.qty, 0)
-  const totalCountStr = totalCount % 1 === 0 ? String(totalCount) : Number(totalCount.toFixed(3)).toString()
+  const totalCountStr = totalCount % 1 === 0 ? String(totalCount) : Number(totalCount.toFixed(6)).toString()
   lines.push(`Total Items: ${totalCountStr}`)
   lines.push(store.footer || 'Thank you! Please come again.')
   if (!isVip) {

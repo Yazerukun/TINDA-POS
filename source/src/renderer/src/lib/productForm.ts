@@ -130,12 +130,18 @@ export function firstUnitError(units: ProductUnitInput[]): string | null {
 // has_expiration is intentionally NOT sent: the backend merges undefined
 // fields from the stored product, so editing never flips that flag.
 export function updateProductInput(form: ProductFormData): Partial<ProductInput> {
-  const sanitizedUnits = (form.units || []).map((u) => ({
-    ...u,
-    name: u.name.trim(),
-    selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
-    barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
-  }))
+  const sanitizedUnits = (form.units || []).map((u) => {
+    let unitName = u.name.trim()
+    if (u.conversion_to_base === 1 && (!unitName || unitName.toLowerCase() === 'pc') && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
+      unitName = form.base_unit.trim()
+    }
+    return {
+      ...u,
+      name: unitName,
+      selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
+      barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
+    }
+  })
   return {
     name: form.name?.trim(),
     sku: form.sku?.trim(),
@@ -165,12 +171,18 @@ export function createProductInput(form: ProductFormData): ProductInput {
   const rawUnits = form.units.length > 0
     ? form.units
     : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: 0, is_default: true }]
-  const sanitizedUnits = rawUnits.map((u) => ({
-    ...u,
-    name: u.name.trim(),
-    selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
-    barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
-  }))
+  const sanitizedUnits = rawUnits.map((u) => {
+    let unitName = u.name.trim()
+    if (u.conversion_to_base === 1 && (!unitName || unitName.toLowerCase() === 'pc') && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
+      unitName = form.base_unit.trim()
+    }
+    return {
+      ...u,
+      name: unitName,
+      selling_price_c: u.selling_price_c > 0 ? u.selling_price_c : (u.conversion_to_base === 1 ? form.default_price_c : Math.round(form.default_price_c * u.conversion_to_base)),
+      barcode: u.barcode && u.barcode.trim() ? u.barcode.trim() : null
+    }
+  })
   return {
     name: form.name?.trim(),
     sku: form.sku?.trim(),

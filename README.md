@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TINDA_POS-v5.2.1-059669?style=for-the-badge&labelColor=065f46" alt="Version">
+<img src="https://img.shields.io/badge/TINDA_POS-v5.2.2-059669?style=for-the-badge&labelColor=065f46" alt="Version">
 <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_%7C_Linux-0078d4?style=for-the-badge&logo=windows&logoColor=white" alt="Platform">
 <img src="https://img.shields.io/badge/Engine-100%25_Offline--First-6366f1?style=for-the-badge" alt="Offline">
 <img src="https://img.shields.io/badge/Tests-100%25_Passing-10b981?style=for-the-badge" alt="Tests">
@@ -18,9 +18,9 @@
 
 <br />
 
-[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.2.1_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-Setup-5.2.1.exe)
-[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.2.1_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-Portable-5.2.1.exe)
-[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.2.1_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-5.2.1.AppImage)
+[![Download Setup](https://img.shields.io/badge/⬇️_Download_Setup-v5.2.2_NSIS_(~111.6MB)-059669?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-Setup-5.2.2.exe)
+[![Download Portable](https://img.shields.io/badge/📦_Download_Portable-v5.2.2_Standalone_(~110.7MB)-0284c7?style=for-the-badge)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-Portable-5.2.2.exe)
+[![Download AppImage](https://img.shields.io/badge/🐧_Download_Linux-v5.2.2_AppImage_(~134.4MB)-10b981?style=for-the-badge&logo=linux&logoColor=white)](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-5.2.2.AppImage)
 [![Cloud Dashboard](https://img.shields.io/badge/🌐_Cloud_Owner_Dashboard-Live_Web-7c3aed?style=for-the-badge)](https://tinda-owner-dashboard.pages.dev/)
 
 <br />
@@ -31,20 +31,20 @@
 
 ---
 
-## ⚡ Quick Download & Release Assets (v5.2.1 Full Windows & Linux Release)
+## ⚡ Quick Download & Release Assets (v5.2.2 Full Windows & Linux Release)
 
 | Asset | Size | Type | Description |
 |---|---|---|---|
-| [**TindaPOS-Setup-5.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-Setup-5.2.1.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
-| [**TindaPOS-Portable-5.2.1.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-Portable-5.2.1.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
-| [**TindaPOS-5.2.1.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/TindaPOS-5.2.1.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
-| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
-| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
-| [**SHA256SUMS-v5.2.1.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.1/SHA256SUMS-v5.2.1.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
+| [**TindaPOS-Setup-5.2.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-Setup-5.2.2.exe) | `~111.6 MB` | **Windows Setup Installer (NSIS)** | Full Windows installer with desktop shortcut, Start Menu entry, pre-update backup, and 3s silent auto-restart. |
+| [**TindaPOS-Portable-5.2.2.exe**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-Portable-5.2.2.exe) | `~110.7 MB` | **Standalone Portable** | Zero-installation executable. Plug into any USB flash drive and run instantly. |
+| [**TindaPOS-5.2.2.AppImage**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/TindaPOS-5.2.2.AppImage) | `~134.4 MB` | **Linux 64-bit AppImage** | Native standalone executable for Arch Linux, Ubuntu, Debian, Fedora, and Linux Mint. |
+| [**latest.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/latest.yml) | `0.3 KB` | **Windows Updater Manifest** | Electronic update verification signature for Windows auto-updater pipelines. |
+| [**latest-linux.yml**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/latest-linux.yml) | `0.3 KB` | **Linux Updater Manifest** | Electronic update verification signature for Linux auto-updater pipelines. |
+| [**SHA256SUMS-v5.2.2.txt**](https://github.com/Yazerukun/TINDA-POS/releases/download/v5.2.2/SHA256SUMS-v5.2.2.txt) | `0.5 KB` | **Integrity Checksums** | Official cryptographic SHA-256 signatures for binary verification. |
 
 ---
 
-## 🌟 What's New in v5.2.1: Visible Selling Price on Printed Purchase Orders & Slips for Shelf Tagging
+## 🌟 What's New in v5.2.2: Micro-Precision 6-Decimal Weight (0.37755 kg), Kilo-to-Price Converter & Auto-Unit Synchronization
 
 ### 1. 💰 Real-Time Selling Price Entry & Live Margin Telemetry
 - **Instant Price Visibility**: Selecting or scanning any product in the Purchase Invoice immediately displays its current catalog retail selling price (SRP) right beside the supplier cost.

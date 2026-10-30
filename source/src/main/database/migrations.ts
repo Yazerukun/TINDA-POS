@@ -173,6 +173,21 @@ export function ensureSchemaColumns(db: Database.Database): void {
     if (tbls.has('refund_items')) db.exec('CREATE INDEX IF NOT EXISTS idx_refund_items_sale_item ON refund_items(sale_item_id);')
     if (tbls.has('shifts')) db.exec('CREATE INDEX IF NOT EXISTS idx_shifts_opened ON shifts(opened_at);')
     if (tbls.has('payments')) db.exec('CREATE INDEX IF NOT EXISTS idx_payments_sale_method ON payments(sale_id, method);')
+
+    // Self-healing: Repair product_units where conversion_to_base = 1 and name was defaulted to 'pc'
+    // but the actual product's base_unit is different (e.g. 'kilo', 'kg', 'kls', 'meter', etc.)
+    if (tbls.has('product_units') && tbls.has('products')) {
+      db.exec(`
+        UPDATE product_units 
+        SET name = (SELECT base_unit FROM products WHERE products.id = product_units.product_id)
+        WHERE conversion_to_base = 1 
+          AND LOWER(TRIM(name)) = 'pc' 
+          AND product_id IN (
+            SELECT id FROM products 
+            WHERE LOWER(TRIM(base_unit)) != 'pc' AND base_unit IS NOT NULL AND TRIM(base_unit) != ''
+          );
+      `)
+    }
   } catch (err) {
     console.error('ensureSchemaColumns failed:', err)
   }

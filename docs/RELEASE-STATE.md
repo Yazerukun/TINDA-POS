@@ -1,3 +1,11 @@
+### Stage 73: v5.2.2 Micro-Precision 6-Decimal Weight (0.37755 kg), Kilo-to-Price Converter & Auto-Unit Synchronization (October 30, 2026)
+- **Root-Cause Unit Synchronization Fix**: Fixed bug where modifying `base_unit` in the product modal left default selling unit stuck as `pc`. Added bidirectional synchronization so `product_units` strictly inherits the product's base unit (e.g. `kilo`).
+- **Database Self-Healing Migration**: One-time background self-healing query in `ensureSchemaColumns` automatically repairs existing database products with `base_unit != 'pc'` that had legacy `pc` entries in `product_units`.
+- **Micro-Precision 6-Decimal Weight (0.000001 Precision)**: Upgraded quantity formatters, cart math, and stock movement tables to support up to 6 decimal places (e.g. `0.37755 kg` / `0.205346`), eliminating forced 3-decimal rounding and centavo discrepancies.
+- **Smart "Sell by Pesos (₱)" Kilo-to-Price Calculator**: Dedicated `[ ⚖️ By ₱ ]` action button in POS Cashier allowing tindero/cashier to enter desired pesos (e.g. ₱37) and automatically calculate exact weight (`0.37755 kg` at ₱98.00/kg) with zero centavo error.
+- **Fluent Fractional & Decimal Quantity Entry**: Replaced restrictive integer sanitization in `CartQtyInput` to smoothly allow typing `.25`, `0.25`, and high-precision weights without wiping or resetting during keystrokes.
+- **Automated Verification**: Comprehensive Vitest test suite in `src/main/services/__tests__/weighable-micro-precision.test.ts` verifying 6-decimal math, VIP client pricing scenario, database self-healing, and weighable unit detection.
+
 ### Stage 72: v5.2.1 Visible Selling Price on Printed Purchase Orders & Slips for Shelf Tagging (October 28, 2026)
 - **Printed A4 Purchase Order Selling Price Column**: Added a dedicated `SELLING PRICE` column in the A4 document / voucher printout with emerald-accented monospace formatting, providing store staff instant retail shelf tagging numbers without looking up catalog prices.
 - **Thermal Slip SRP / Retail Price Sub-line**: Thermal receipts and receiving slips automatically print `>> SRP / Retail Price: PXX.XX` underneath item descriptions when selling prices are present.
@@ -43,13 +51,13 @@
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.2.1 (PRINTED P.O. SELLING PRICE & SHELF TAGGING RELEASE)
+- v5.2.2 (MICRO-PRECISION WEIGHABLE & KILO-TO-PRICE RELEASE)
 
 TARGET:
-- v5.2.2 (NEXT FEATURE CYCLE)
+- v5.2.3 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.2.1 Visible Selling Price on Printed Purchase Orders & Slips
+- Production Release Ready — v5.2.2 Micro-Precision Weight & Kilo-to-Price Converter
 
 COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
 - Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):

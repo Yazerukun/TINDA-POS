@@ -17,7 +17,7 @@ export function maxQuantity(stockBase: number, conversionToBase: number, isWeigh
   if (!Number.isFinite(stockBase) || !Number.isFinite(conversionToBase) || conversionToBase <= 0) return 0
   const max = stockBase / conversionToBase
   if (isWeighable) {
-    return Math.max(0, Math.round(max * 1000) / 1000)
+    return Math.max(0, Math.round(max * 1000000) / 1000000)
   }
   return Math.max(0, Math.floor(max))
 }

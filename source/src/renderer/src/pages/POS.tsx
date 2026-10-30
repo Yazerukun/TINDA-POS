@@ -39,6 +39,7 @@ import {
   SlidersHorizontal,
   Package,
   Calculator,
+  Scale,
   Sparkles,
   Zap,
   Bell,
@@ -58,6 +59,7 @@ import { FastButtonsBar } from '../components/FastButtonsBar'
 import { CashierCalculatorModal } from '../components/CashierCalculatorModal'
 import { PromoBundlesModal } from '../components/PromoBundlesModal'
 import { UnitPickerModal } from '../components/UnitPickerModal'
+import { KiloPriceCalculatorModal } from '../components/KiloPriceCalculatorModal'
 import { getStoredPromoBundles, evaluateCartPromos, type PromoBundle } from '../utils/promoBundles'
 import { useGuide } from '../stores/guide'
 import { useSettings } from '../stores/settings'
@@ -144,15 +146,18 @@ export const usePosCart = create<CartState>((set) => ({
   discount_pesos: 0,
   add: (p: Product, qtyToAdd = 1) => {
     if (p.units && p.units.length > 0) {
-      const defUnit = p.units.find((u) => u.is_default) || p.units[0]
+      let defUnit = p.units.find((u) => u.is_default) || p.units[0]
       if (defUnit) {
+        if (defUnit.conversion_to_base === 1 && defUnit.name.toLowerCase() === 'pc' && p.base_unit && p.base_unit.toLowerCase() !== 'pc') {
+          defUnit = { ...defUnit, name: p.base_unit }
+        }
         usePosCart.getState().addWithUnit(p, defUnit, qtyToAdd)
         return
       }
     }
     usePosCart.getState().addWithUnit(
       p,
-      { id: 0, product_id: p.id, name: p.base_unit, conversion_to_base: 1, barcode: p.barcode, selling_price_c: p.default_price_c, is_default: true },
+      { id: 0, product_id: p.id, name: p.base_unit || 'pc', conversion_to_base: 1, barcode: p.barcode, selling_price_c: p.default_price_c, is_default: true },
       qtyToAdd
     )
   },
@@ -305,8 +310,9 @@ export const usePosCart = create<CartState>((set) => ({
         .map((i) => {
           if (i.product_id !== product_id) return i
           const weighable = isWeighableUnit(i.unit_name)
-          const safeQty = Number.isFinite(qty) ? (weighable ? Math.round(qty * 1000) / 1000 : Math.round(qty)) : 0
-          const maxQ = maxQuantity(i.stock_base, i.conversion_to_base, weighable)
+          const isDecimal = weighable || (qty % 1 !== 0)
+          const safeQty = Number.isFinite(qty) ? (isDecimal ? Math.round(qty * 1000000) / 1000000 : Math.round(qty)) : 0
+          const maxQ = maxQuantity(i.stock_base, i.conversion_to_base, isDecimal)
           const nextQty = Math.min(Math.max(0, safeQty), maxQ)
           const { unitPriceC, isWholesale, isCustom } = calculateItemUnitPrice(
             i.base_price_c ?? i.unit_price_c,
@@ -409,7 +415,6 @@ export function POS(): React.JSX.Element {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false)
   const [customizeModalOpen, setCustomizeModalOpen] = useState(false)
   const [catCounts, setCatCounts] = useState<Record<number | 'ALL', number>>({ ALL: 0 })
-  const [unitPickerProduct, setUnitPickerProduct] = useState<Product | null>(null)
 
   const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products])
   const [posPinnedIds, setPosPinnedIds] = useState<number[]>(() =>
@@ -1761,6 +1766,7 @@ export function POS(): React.JSX.Element {
       </div>
 
       <CartPanel
+        products={products}
         counterCameraEnabled={counterCameraEnabled}
         onToggleCounterCamera={handleToggleCounterCamera}
         onScan={(code) => void handleScan(code)}
@@ -1837,6 +1843,8 @@ export function POS(): React.JSX.Element {
         products={products}
         onProductsChanged={() => void search(q, catFilter === 'ALL' ? null : Number(catFilter), false)}
       />
+
+
     </div>
   )
 }
@@ -1852,31 +1860,27 @@ function CartQtyInput({
 }): React.JSX.Element {
   const weighable = isWeighableUnit(item.unit_name)
   const [val, setVal] = useState(String(item.qty))
+  const isTypingRef = useRef(false)
 
   useEffect(() => {
-    if (parseFloat(val) !== item.qty) {
+    if (!isTypingRef.current) {
       setVal(String(item.qty))
     }
   }, [item.qty])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
-    if (weighable) {
-      if (!/^\d*\.?\d*$/.test(raw)) return
-      setVal(raw)
-      const parsed = parseFloat(raw)
-      if (!isNaN(parsed) && parsed > 0) {
-        usePosCart.getState().setQty(item.product_id, parsed)
-      }
-    } else {
-      const clean = raw.replace(/\D/g, '')
-      setVal(clean)
-      const parsed = parseInt(clean || '0', 10)
+    isTypingRef.current = true
+    const raw = e.target.value.replace(/,/g, '.')
+    if (!/^\d*\.?\d*$/.test(raw)) return
+    setVal(raw)
+    const parsed = parseFloat(raw)
+    if (!isNaN(parsed) && parsed > 0) {
       usePosCart.getState().setQty(item.product_id, parsed)
     }
   }
 
   const handleBlur = () => {
+    isTypingRef.current = false
     const parsed = parseFloat(val)
     if (isNaN(parsed) || parsed <= 0) {
       if (parsed === 0) {
@@ -1901,14 +1905,14 @@ function CartQtyInput({
     <input
       ref={inputRef}
       type="text"
-      inputMode={weighable ? 'decimal' : 'numeric'}
+      inputMode="decimal"
       value={val}
       onChange={handleChange}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       aria-label={`Quantity for ${item.name}`}
-      className={`h-8 ${weighable ? 'w-16' : 'w-12'} rounded-md border border-ink-line bg-ink-950 text-center text-sm font-bold text-white focus:border-brand-500 focus:outline-none`}
-      title={weighable ? 'Enter weight/kilos (e.g. 2.5). Press F2 to focus, Enter to confirm & return to search' : 'Press F2 to focus quantity, Enter to confirm & return to search'}
+      className={`h-8 ${weighable || val.length > 3 ? 'min-w-[4.5rem] px-1' : 'w-12'} rounded-md border border-ink-line bg-ink-950 text-center text-sm font-bold text-white focus:border-brand-500 focus:outline-none tabular-nums font-mono`}
+      title={weighable ? 'Enter exact weight/quantity (e.g. 0.37755 kg, 0.25). Press F2 to focus, Enter to confirm' : 'Enter quantity. Press F2 to focus, Enter to confirm'}
     />
   )
 }
@@ -2156,6 +2160,7 @@ function PriceOverrideModal({
 }
 
 function CartPanel({
+  products = [],
   counterCameraEnabled,
   onToggleCounterCamera,
   onScan,
@@ -2164,6 +2169,7 @@ function CartPanel({
   onOpenExpense,
   onRefocusSearch
 }: {
+  products?: Product[]
   counterCameraEnabled: boolean
   onToggleCounterCamera: (enabled: boolean) => void
   onScan: (code: string) => void
@@ -2200,6 +2206,8 @@ function CartPanel({
   const discountInputRef = useRef<HTMLInputElement>(null)
   const lastQtyInputRef = useRef<HTMLInputElement>(null)
 
+  const [unitPickerProduct, setUnitPickerProduct] = useState<Product | null>(null)
+  const [kiloCalcItem, setKiloCalcItem] = useState<CartItem | null>(null)
   const [seniorPwdOpen, setSeniorPwdOpen] = useState(false)
   const [discountType, setDiscountType] = useState<'SENIOR_PWD' | 'CUSTOM'>('SENIOR_PWD')
   const [seniorName, setSeniorName] = useState('')
@@ -2632,7 +2640,7 @@ function CartPanel({
                       type="button"
                       onClick={() => {
                         const step = weighable && i.qty <= 1 ? (i.qty > 0.25 ? 0.25 : i.qty) : 1
-                        usePosCart.getState().setQty(i.product_id, Math.max(0, Math.round((i.qty - step) * 1000) / 1000))
+                        usePosCart.getState().setQty(i.product_id, Math.max(0, Math.round((i.qty - step) * 1000000) / 1000000))
                       }}
                       className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-ink-800 hover:text-white transition active:scale-95"
                       title="Decrease quantity"
@@ -2649,7 +2657,7 @@ function CartPanel({
                       disabled={i.qty >= maxQuantity(i.stock_base, i.conversion_to_base, weighable)}
                       onClick={() => {
                         const step = weighable && i.qty < 1 ? 0.25 : 1
-                        usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000) / 1000)
+                        usePosCart.getState().setQty(i.product_id, Math.round((i.qty + step) * 1000000) / 1000000)
                       }}
                       className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-ink-800 hover:text-white transition active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent"
                       title={
@@ -2662,15 +2670,37 @@ function CartPanel({
                     </button>
                   </div>
                   <div className="flex flex-col text-[11px] leading-tight text-slate-400">
-                    <span className="font-mono">
-                      @{money(i.unit_price_c)} <span className="text-slate-500">/{i.unit_name}</span>
-                    </span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span>@{money(i.unit_price_c)}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const prod = products.find((p) => p.id === i.product_id)
+                          if (prod) setUnitPickerProduct(prod)
+                        }}
+                        className="text-slate-400 hover:text-brand-300 hover:underline cursor-pointer transition-colors"
+                        title="Click to change packaging unit"
+                      >
+                        /{i.unit_name}
+                      </button>
+                    </div>
                     {i.base_price_c && i.base_price_c !== i.unit_price_c && (
                       <span className="line-through text-[10px] text-slate-500">{money(i.base_price_c)}</span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  {weighable && (
+                    <button
+                      type="button"
+                      onClick={() => setKiloCalcItem(i)}
+                      className="flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 hover:text-cyan-300 transition"
+                      title="Scale & Kilo-to-Price Calculator (Sell by Pesos ₱)"
+                    >
+                      <Scale className="h-3 w-3" />
+                      <span>By ₱</span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => handleEditPriceClick(i)}

@@ -608,7 +608,7 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
       const product = prodRepo.getProduct(db(), item.product_id)
       const unit = item.unit_name ? product.units.find((u) => u.name === item.unit_name) : undefined
       const conv = unit?.conversion_to_base ?? (item.conversion_to_base || 1)
-      const qtyBase = Math.round(item.quantity * conv * 1000) / 1000
+      const qtyBase = Math.round(item.quantity * conv * 1000000) / 1000000
       if (qtyBase <= 0) throw new Error(`Calculated quantity for ${product.name} must be greater than zero.`)
       if (product.stock < qtyBase) {
         throw new Error(`Insufficient stock for "${product.name}". Current stock is ${product.stock} ${product.base_unit}, but tried to use ${qtyBase} ${product.base_unit}.`)
@@ -638,7 +638,7 @@ handle('inventory:storeUse', (_e: IpcMainInvokeEvent, input: unknown) => {
         unit_cost_c: effectiveCostC,
         total_amount_c: lineTotalAmountC,
         stock_before: product.stock,
-        stock_after: Math.round((product.stock - qtyBase) * 1000) / 1000
+        stock_after: Math.round((product.stock - qtyBase) * 1000000) / 1000000
       })
 
       touchedProductIds.push(item.product_id)
