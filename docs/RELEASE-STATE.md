@@ -1,3 +1,10 @@
+### Stage 74: v5.2.3 Resilient Z-Read Shift Finalization, Admin Cross-Terminal Fallback & New Shift Hub (November 10, 2026)
+- **Root-Cause Z-Read UI Healing**: Fixed bug where closing or finalizing a shift caused the Z-Read tab to render blank because `read` was `null` while historical records remained in Z-Read History.
+- **Interactive "Start a New Register Shift" Hub**: Added a dedicated self-healing card in the Z-Read tab when no shift is open, allowing tindero/cashier or store owners to start a new shift directly with float presets (₱0, ₱200, ₱500, ₱1,000, ₱1,500, ₱2,000) or navigate straight to Z-Read History.
+- **Admin/Manager Cross-Terminal Shift Fallback**: Backend IPC handlers (`reports:xRead`, `reports:cashCountExpected`, `reports:printXRead`, `reports:finalizeZ`) now intelligently fall back to `shiftRepo.anyOpenShift(db)` when an Admin or Manager accesses reports, eliminating "No open shift" exceptions on supervisor terminals.
+- **Dual X-Read & Z-Read Quick Actions in POS Tools**: PosToolsModal now features both "X-Read Slip" (instant mid-shift thermal balance printout) and "Z-Reading" (finalizing and closing shift with 1-tap navigation to Z-Read finalization panel).
+- **Automated Verification**: Vitest test suite and TypeScript compiler verification ensuring 100% zero errors across frontend and backend IPC layers.
+
 ### Stage 73: v5.2.2 Micro-Precision 6-Decimal Weight (0.37755 kg), Kilo-to-Price Converter & Auto-Unit Synchronization (October 30, 2026)
 - **Root-Cause Unit Synchronization Fix**: Fixed bug where modifying `base_unit` in the product modal left default selling unit stuck as `pc`. Added bidirectional synchronization so `product_units` strictly inherits the product's base unit (e.g. `kilo`).
 - **Database Self-Healing Migration**: One-time background self-healing query in `ensureSchemaColumns` automatically repairs existing database products with `base_unit != 'pc'` that had legacy `pc` entries in `product_units`.

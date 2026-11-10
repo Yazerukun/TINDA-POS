@@ -406,7 +406,7 @@ export const usePosCart = create<CartState>((set) => ({
 }))
 
 export function POS(): React.JSX.Element {
-  const { setPage, activeCategoryFilter, setActiveCategoryFilter } = useNav()
+  const { setPage, activeCategoryFilter, setActiveCategoryFilter, setReportsTab } = useNav()
   const { settings, update: updateSettings } = useSettings()
   const [q, setQ] = useState('')
   const [products, setProducts] = useState<Product[]>([])
@@ -1809,6 +1809,10 @@ export function POS(): React.JSX.Element {
         soundMuted={soundMuted}
         onToggleSoundMute={toggleSoundMute}
         onQuickZRead={() => void handleQuickZRead()}
+        onOpenZRead={() => {
+          setReportsTab('Z')
+          setPage('reports')
+        }}
         zReadingBusy={zReadingBusy}
         onOpenQuickExpense={() => setExpenseModalOpen(true)}
       />

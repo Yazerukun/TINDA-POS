@@ -325,7 +325,10 @@ export function Dashboard(): React.JSX.Element | null {
             </button>
             <button
               type="button"
-              onClick={() => setPage('reports')}
+              onClick={() => {
+                setReportsTab('Z')
+                setPage('reports')
+              }}
               className="group flex items-center justify-between rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 transition-all active:scale-95 shadow-sm"
               title="View daily sales summary and print Z-Reading"
             >

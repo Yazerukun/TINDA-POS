@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw, Crown, Package, Search } from 'lucide-react'
+import { FileDown, BarChart3, Printer, LockKeyhole, Coins, Eye, RefreshCw, Crown, Package, Search, PlayCircle, ArrowRight, ShoppingCart } from 'lucide-react'
 import type { SalesReportRow, ReportSummary, ReadReport, ZRead, CashCountRecord, ItemSalesReport, Category } from '@shared/types'
 import { cashCountLines, CASH_COUNT_DENOMINATION_CENTS } from '@shared/cashCount'
 import { readReportLines } from '@shared/readReport'
@@ -21,7 +21,7 @@ interface CompState {
 }
 
 export function Reports(): React.JSX.Element {
-  const { reportsTab, setReportsTab } = useNav()
+  const { reportsTab, setReportsTab, setPage } = useNav()
   const [from, setFrom] = useState(() => new Date().toISOString().slice(0, 10))
   const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
   const [groupBy, setGroupBy] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY')
@@ -39,6 +39,8 @@ export function Reports(): React.JSX.Element {
   const [history, setHistory] = useState<ZRead[]>([])
   const [readError, setReadError] = useState<string | null>(null)
   const [readRevision, setReadRevision] = useState(0)
+  const [openFloatStr, setOpenFloatStr] = useState('0')
+  const [openingShift, setOpeningShift] = useState(false)
   const [isVip, setIsVip] = useState(true)
   const [vipModalOpen, setVipModalOpen] = useState(false)
 
@@ -58,7 +60,7 @@ export function Reports(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    if (tab !== 'X') return
+    if (tab !== 'X' && tab !== 'Z') return
     let alive = true
     let sequence = 0
     const refresh = async () => {
@@ -88,6 +90,20 @@ export function Reports(): React.JSX.Element {
     }
   }, [tab, readRevision])
 
+  const handleStartShift = async (startingFloat = 0) => {
+    if (openingShift) return
+    setOpeningShift(true)
+    try {
+      const amountC = Math.max(0, Math.round(Number(startingFloat) * 100))
+      await window.api.shifts.open(amountC)
+      toastSuccess('New Cashier Shift Opened', `Starting float: ${money(amountC)}`)
+      setReadRevision((n) => n + 1)
+    } catch (err) {
+      toastError('Failed to Open Shift', String((err as Error)?.message || err))
+    } finally {
+      setOpeningShift(false)
+    }
+  }
   const loadSales = async () => {
     setLoading(true)
     try {
@@ -180,7 +196,7 @@ export function Reports(): React.JSX.Element {
   // Loaders are redefined per render; this effect intentionally keys on tab and
   // (re)loads only when the active report changes, not on every render.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'ITEMS') void loadItemSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>{setRead(null);toastError('No open shift',String((e as Error).message||e))}); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
+  useEffect(() => { if (tab === 'SALES') void loadSales(); else if (tab === 'ITEMS') void loadItemSales(); else if (tab === 'INVENTORY') void loadInv(); else if (tab === 'UTANG') void loadUtang(); else if (tab === 'Z') void window.api.reports.xRead().then(setRead).catch(e=>{setRead(null);setReadError(String((e as Error).message||e))}); else if (tab === 'ZHISTORY') void window.api.reports.zHistory().then(setHistory) }, [tab])
 
   const exportCsv = async () => {
     try {
@@ -527,8 +543,141 @@ export function Reports(): React.JSX.Element {
         </>
       ) : null)}
 
-      {tab === 'X' && !read && <div role="status"><p>{readError ? 'Hindi ma-load ang X-Read. Tiyaking may bukas na shift sa account na ito.' : 'Loading X-Read...'}</p>{readError && <><p className="mt-2 text-sm text-slate-400">{readError}</p><button className="btn-ghost mt-3" title="Refresh X-Read" onClick={()=>setReadRevision(n=>n+1)}><RefreshCw className="h-4 w-4"/></button></>}</div>}
-      {(tab === 'X' || tab === 'Z') && read && <ReadPanel key={`${tab}-${read.shift_id}`} report={read} finalize={tab === 'Z'} onUpdate={setRead} onRefresh={()=>setReadRevision(n=>n+1)} onFinalized={()=>{setRead(null);setTab('ZHISTORY')}} onCashCount={()=>setTab('CASHCOUNT')}/>}
+      {tab === 'X' && !read && (
+        <div className="card p-6 border-ink-line bg-ink-900/60 max-w-xl mx-auto text-center space-y-4">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <BarChart3 className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-white text-base">No Active Shift Found for X-Read</h3>
+            <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+              X-Reading displays mid-shift metrics for an open cashier register. If the shift was finalized or closed, open a new register shift to resume live reading.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <button
+              type="button"
+              disabled={openingShift}
+              onClick={() => void handleStartShift(0)}
+              className="btn-primary flex items-center gap-2 text-xs py-2 px-3.5"
+            >
+              <PlayCircle className="h-4 w-4" />
+              <span>{openingShift ? 'Opening Register...' : 'Open Shift Now (₱0 Float)'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage('pos')}
+              className="btn-ghost flex items-center gap-1.5 text-xs py-2 px-3 text-slate-300 hover:text-white"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span>Go to POS Cashier</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setReadRevision((n) => n + 1)}
+              className="btn-ghost flex items-center gap-1.5 text-xs py-2 px-3 text-slate-400 hover:text-white"
+              title="Refresh"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {tab === 'Z' && !read && (
+        <div className="card p-6 border-ink-line bg-ink-900/60 max-w-xl mx-auto space-y-5">
+          <div className="flex items-center gap-3 border-b border-ink-line pb-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-300">
+              <LockKeyhole className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">No Open Shift to Finalize (Z-Read)</h3>
+              <p className="text-xs text-slate-400">
+                A Z-Read is used to finalize and close an active cashier shift.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-ink-line/80 bg-ink-950/60 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-200">Start a New Register Shift</span>
+              <span className="text-[10px] text-slate-500 font-mono">Opening Float Fund</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">₱</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={openFloatStr}
+                  onChange={(e) => setOpenFloatStr(e.target.value)}
+                  placeholder="0.00"
+                  className="input w-full pl-7 font-mono font-bold text-emerald-400"
+                />
+              </div>
+              <button
+                type="button"
+                disabled={openingShift}
+                onClick={() => void handleStartShift(parseFloat(openFloatStr) || 0)}
+                className="btn-primary flex items-center gap-1.5 text-xs py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold shrink-0"
+              >
+                <PlayCircle className="h-4 w-4" />
+                <span>{openingShift ? 'Opening...' : 'Open Shift'}</span>
+              </button>
+            </div>
+            {/* Quick float presets */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-[10px] text-slate-500 mr-1">Float Presets:</span>
+              {[0, 200, 500, 1000, 1500, 2000].map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setOpenFloatStr(String(amt))}
+                  className="rounded-md border border-ink-line bg-ink-900 px-2 py-0.5 text-[11px] font-mono text-slate-300 hover:border-brand-500 hover:text-brand-300 transition"
+                >
+                  ₱{amt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setTab('ZHISTORY')}
+              className="text-brand-400 hover:text-brand-300 flex items-center gap-1.5 font-semibold transition"
+            >
+              <span>View Past Finalized Z-Reads (History)</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setReadRevision((n) => n + 1)}
+              className="btn-ghost flex items-center gap-1 text-[11px] py-1 px-2.5 text-slate-400 hover:text-white"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Retry</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(tab === 'X' || tab === 'Z') && read && (
+        <ReadPanel
+          key={`${tab}-${read.shift_id}`}
+          report={read}
+          finalize={tab === 'Z'}
+          onUpdate={setRead}
+          onRefresh={() => setReadRevision((n) => n + 1)}
+          onFinalized={() => {
+            setRead(null)
+            setTab('ZHISTORY')
+          }}
+          onCashCount={() => setTab('CASHCOUNT')}
+        />
+      )}
       {tab === 'ZHISTORY' && (
         <div className="card table-container">
           <table className="table">

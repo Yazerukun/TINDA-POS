@@ -132,7 +132,7 @@ export function firstUnitError(units: ProductUnitInput[]): string | null {
 export function updateProductInput(form: ProductFormData): Partial<ProductInput> {
   const sanitizedUnits = (form.units || []).map((u) => {
     let unitName = u.name.trim()
-    if (u.conversion_to_base === 1 && (!unitName || unitName.toLowerCase() === 'pc') && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
+    if (u.conversion_to_base === 1 && unitName && unitName.toLowerCase() === 'pc' && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
       unitName = form.base_unit.trim()
     }
     return {
@@ -173,7 +173,7 @@ export function createProductInput(form: ProductFormData): ProductInput {
     : [{ name: form.base_unit, conversion_to_base: 1, barcode: null, selling_price_c: 0, is_default: true }]
   const sanitizedUnits = rawUnits.map((u) => {
     let unitName = u.name.trim()
-    if (u.conversion_to_base === 1 && (!unitName || unitName.toLowerCase() === 'pc') && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
+    if (u.conversion_to_base === 1 && unitName && unitName.toLowerCase() === 'pc' && form.base_unit && form.base_unit.toLowerCase() !== 'pc') {
       unitName = form.base_unit.trim()
     }
     return {

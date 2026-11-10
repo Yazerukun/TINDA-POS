@@ -20,7 +20,8 @@ import {
   CheckCircle2,
   RefreshCw,
   ShieldCheck,
-  Terminal
+  Terminal,
+  LockKeyhole
 } from 'lucide-react'
 import { useSystemDebugger } from '../stores/systemDebugger'
 import { Modal } from './ui/Modal'
@@ -44,6 +45,7 @@ interface PosToolsModalProps {
   soundMuted: boolean
   onToggleSoundMute: () => void
   onQuickZRead: () => void
+  onOpenZRead?: () => void
   zReadingBusy: boolean
   onOpenQuickExpense: () => void
 }
@@ -60,6 +62,7 @@ export function PosToolsModal({
   soundMuted,
   onToggleSoundMute,
   onQuickZRead,
+  onOpenZRead,
   zReadingBusy,
   onOpenQuickExpense
 }: PosToolsModalProps): React.JSX.Element | null {
@@ -98,7 +101,7 @@ export function PosToolsModal({
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-white text-sm">TINDA POS Hardware Center</span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded border border-emerald-400/20 font-bold">
-                  v{event?.installedVersion || '5.2.2'}
+                  v{event?.installedVersion || '5.2.3'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">Integrated hardware &amp; operations controller</p>
@@ -324,7 +327,7 @@ export function PosToolsModal({
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">
             Shift Operations & Cash
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {/* Petty Cash */}
             <button
               type="button"
@@ -367,21 +370,43 @@ export function PosToolsModal({
               </div>
             </button>
 
-            {/* Z-Reading */}
+            {/* X-Read Slip */}
             <button
               type="button"
               disabled={zReadingBusy}
               onClick={() => {
                 onQuickZRead()
               }}
-              className="flex items-center gap-3 p-3 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 transition-all text-left group disabled:opacity-50"
+              className="flex items-center gap-3 p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 transition-all text-left group disabled:opacity-50"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 shrink-0 group-hover:scale-105 transition-transform">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500/20 text-sky-300 shrink-0 group-hover:scale-105 transition-transform">
                 {zReadingBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Printer className="h-5 w-5" />}
               </div>
               <div className="min-w-0">
+                <p className="font-bold text-sm leading-tight truncate">X-Read Slip</p>
+                <p className="text-[11px] text-sky-300/80 truncate">Print mid-shift balance</p>
+              </div>
+            </button>
+
+            {/* Z-Reading Close Shift */}
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                if (onOpenZRead) {
+                  onOpenZRead()
+                } else {
+                  setPage('reports')
+                }
+              }}
+              className="flex items-center gap-3 p-3 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 transition-all text-left group col-span-1 sm:col-span-2 lg:col-span-1"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 shrink-0 group-hover:scale-105 transition-transform">
+                <LockKeyhole className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
                 <p className="font-bold text-sm leading-tight truncate">Z-Reading</p>
-                <p className="text-[11px] text-purple-300/80 truncate">Print daily balancing</p>
+                <p className="text-[11px] text-purple-300/80 truncate">Finalize &amp; close shift</p>
               </div>
             </button>
           </div>
@@ -471,7 +496,7 @@ export function PosToolsModal({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-sm leading-tight truncate">Check for Updates</p>
-                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '5.2.2'} · Live Check</p>
+                <p className="text-[11px] text-emerald-300/80 truncate">v{event?.installedVersion || '5.2.3'} · Live Check</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-emerald-400 group-hover:underline shrink-0">
