@@ -1,13 +1,80 @@
+### Stage 74: v5.2.3 Resilient Z-Read Shift Finalization, Admin Cross-Terminal Fallback & New Shift Hub (November 10, 2026)
+- **Root-Cause Z-Read UI Healing**: Fixed bug where closing or finalizing a shift caused the Z-Read tab to render blank because `read` was `null` while historical records remained in Z-Read History.
+- **Interactive "Start a New Register Shift" Hub**: Added a dedicated self-healing card in the Z-Read tab when no shift is open, allowing tindero/cashier or store owners to start a new shift directly with float presets (₱0, ₱200, ₱500, ₱1,000, ₱1,500, ₱2,000) or navigate straight to Z-Read History.
+- **Admin/Manager Cross-Terminal Shift Fallback**: Backend IPC handlers (`reports:xRead`, `reports:cashCountExpected`, `reports:printXRead`, `reports:finalizeZ`) now intelligently fall back to `shiftRepo.anyOpenShift(db)` when an Admin or Manager accesses reports, eliminating "No open shift" exceptions on supervisor terminals.
+- **Dual X-Read & Z-Read Quick Actions in POS Tools**: PosToolsModal now features both "X-Read Slip" (instant mid-shift thermal balance printout) and "Z-Reading" (finalizing and closing shift with 1-tap navigation to Z-Read finalization panel).
+- **Automated Verification**: Vitest test suite and TypeScript compiler verification ensuring 100% zero errors across frontend and backend IPC layers.
+
+### Stage 73: v5.2.2 Micro-Precision 6-Decimal Weight (0.37755 kg), Kilo-to-Price Converter & Auto-Unit Synchronization (October 30, 2026)
+- **Root-Cause Unit Synchronization Fix**: Fixed bug where modifying `base_unit` in the product modal left default selling unit stuck as `pc`. Added bidirectional synchronization so `product_units` strictly inherits the product's base unit (e.g. `kilo`).
+- **Database Self-Healing Migration**: One-time background self-healing query in `ensureSchemaColumns` automatically repairs existing database products with `base_unit != 'pc'` that had legacy `pc` entries in `product_units`.
+- **Micro-Precision 6-Decimal Weight (0.000001 Precision)**: Upgraded quantity formatters, cart math, and stock movement tables to support up to 6 decimal places (e.g. `0.37755 kg` / `0.205346`), eliminating forced 3-decimal rounding and centavo discrepancies.
+- **Smart "Sell by Pesos (₱)" Kilo-to-Price Calculator**: Dedicated `[ ⚖️ By ₱ ]` action button in POS Cashier allowing tindero/cashier to enter desired pesos (e.g. ₱37) and automatically calculate exact weight (`0.37755 kg` at ₱98.00/kg) with zero centavo error.
+- **Fluent Fractional & Decimal Quantity Entry**: Replaced restrictive integer sanitization in `CartQtyInput` to smoothly allow typing `.25`, `0.25`, and high-precision weights without wiping or resetting during keystrokes.
+- **Automated Verification**: Comprehensive Vitest test suite in `src/main/services/__tests__/weighable-micro-precision.test.ts` verifying 6-decimal math, VIP client pricing scenario, database self-healing, and weighable unit detection.
+
+### Stage 72: v5.2.1 Visible Selling Price on Printed Purchase Orders & Slips for Shelf Tagging (October 28, 2026)
+- **Printed A4 Purchase Order Selling Price Column**: Added a dedicated `SELLING PRICE` column in the A4 document / voucher printout with emerald-accented monospace formatting, providing store staff instant retail shelf tagging numbers without looking up catalog prices.
+- **Thermal Slip SRP / Retail Price Sub-line**: Thermal receipts and receiving slips automatically print `>> SRP / Retail Price: PXX.XX` underneath item descriptions when selling prices are present.
+- **Interactive Print Customizer Toggle**: Added a `Show Selling Price (SRP)` checkbox toggle in the Purchase Invoice Print Customizer modal so owners can toggle visibility on or off depending on whether they want supplier-facing or internal-facing vouchers.
+- **Live Paper Preview**: The print preview window dynamically mirrors the `SELLING PRICE` column in real-time as users customize their document layout.
+- **Automated Verification**: Comprehensive Vitest test suite in `src/main/services/__tests__/purchase-invoice-selling-price.test.ts` verifying document HTML and thermal slip generation for Selling Price formatting.
+
+### Stage 71: v5.2.0 Instant Selling Price Entry, Live Margin Telemetry & Automatic Inventory Price Sync in Purchase Invoices (October 28, 2026)
+- **Instant Selling Price Entry in Fast Item Bar**: Added dedicated Selling Price (₱) input field in both Create and Edit invoice modes. Automatically pre-populates with current product retail price upon item selection.
+- **Live Profit Spread & Margin Telemetry**: Real-time margin percentage (`+XX%`) and profit badges (`+₱XX.XX`) compute instantly as costs and selling prices are keyed in.
+- **Inline Table Selling Price Editing**: Dedicated Selling Price column in the invoice items table allowing direct price modifications on any staged row.
+- **Atomic Catalog Price Synchronization**: Saving or editing invoices atomically updates product selling prices in `products` and `product_units`.
+- **Zero Back-and-Forth Workflow**: Eradicated the need for store owners to navigate back to Inventory to update selling prices during supplier price increases.
+
+### Stage 70: v5.1.9 Widened Reason/Reference Audit Log & Spotlight Product Suggestion Engine (October 28, 2026)
+- **Widened Reason & Reference Audit Column**: Reason / Reference column widened from `w-[14%]` to `w-[26%]` and removed restrictive truncation. Reason descriptions and notes wrap cleanly with zero text cut-off.
+- **Dedicated Acrylic Reference Badge**: Reference codes, invoice numbers, and supplier vouchers render in a dedicated cyan badge (`Ref: ...`) underneath reasons.
+- **Spotlight Product Autocomplete Dropdown**: Floating spotlight suggestions list matching catalog items (image, SKU, barcode, category, bodega stock, price) directly under the search bar as the cashier/owner types.
+- **Quick-Pick Item Rails & Telemetry Banner**: Clickable product suggestion pills rail and prominent Active Filter banner with 1-tap reset.
+- **Ultra-Wide Cinema Modal**: Upgraded modal to `max-w-[95vw] w-[95vw]` for maximum screen utilization across all resolutions.
+
+### Stage 66-69: v5.1.8 Universal Stock History Spotlight Search, Real-Time Inflow/Outflow Telemetry & Quick Excel Export (October 28, 2026)
+- **Universal Spotlight Search Bar in Stock History**: Added a responsive, prominent search bar in the Stock History modal. Store owners and cashiers can instantly type to search movements by Product Name, Barcode, SKU, Reason, Reference/Invoice number, or Cashier with 0ms client-side latency and debounced deep SQLite database searching.
+- **Quick Movement Type Filter Pills**: Replaced cumbersome dropdown scrolling with one-tap Cupertino filter pills (All Movements, Purchases, Sales, Store Use, Withdrawals, Adjustments, Loss & Damage, Refunds) with customized color-coded badges.
+- **Real-Time Inflow / Outflow Telemetry Strip**: Displays live movement counts, total units added (+Inflow), total units deducted (-Outflow), and Net Stock Change computed automatically from filtered records.
+- **1-Click "Export to Excel" in Stock History**: Added a dedicated emerald action button in the modal to export filtered stock movements into a clean Excel CSV with UTF-8 BOM, timestamps, product names, SKUs, barcodes, movement types, quantity changes, units, stock after, reasons, references, and cashier names.
+- **Full Automated Testing**: New Vitest test suite `src/main/services/__tests__/stock-history-search.test.ts` verifying all search permutations, combined filters, and Excel export generation with 100% pass rate.
+
+
+### Stage 62-65: v5.1.7 Automated Stock Equivalent (Packs/Kilos) Conversion in Excel (October 27, 2026)
+- **Automatic Converted Stock Equivalent Column**: The Excel export now includes an automatic `Stock Equivalent (In Packs/Kilos)` column. Cashiers and store owners no longer need to perform mental math or Excel division; e.g. 1,000 pcs with 1 Kilo (100 base) displays `10 1 Kilo` (or `10 Kilos + 15 pcs` if remainder exists).
+- **Dual Stock Transparency**: Columns now clearly distinguish between `Bodega Stock (Base Units)` (exact base count in pcs) and `Stock Equivalent (In Packs/Kilos)` (converted pack/kilo representation).
+- **Complete Verification**: Automated vitest suite `src/main/services/__tests__/export-excel.test.ts` verifies conversion math, remainder handling, and UTF-8 BOM encoding.
+
+
+### Stage 58-61: v5.1.7 Microsoft Excel Inventory & Backup Export with Multi-Unit Packaging (October 27, 2026)
+- **1-Click "Export to Excel" in Inventory**: Added dedicated prominent emerald action button in Inventory PageHeader to export the entire store inventory directly to an Excel-formatted spreadsheet (.csv). Automatically launches Microsoft Excel or File Explorer upon completion.
+- **Dedicated Microsoft Excel Card in Backup & Restore**: Added an Excel Export & Live Sync section in Backup & Restore page, allowing store owners to extract a formatted spreadsheet snapshot of all inventory and financial numbers without needing to parse SQLite files.
+- **Ultra-Rich Multi-Unit Spreadsheet Columns**: Excel rows include Barcode, SKU, Product Name, Category, Base Unit, Packaging Units & Prices (e.g. 1/4 Kilo = ₱275, 1 Kilo = ₱1,100), Bodega Stock, Cost (PHP), Selling Price (PHP), Total Stock Value (PHP), Low Stock Threshold, Stock Status, Status, and Supplier.
+- **Native UTF-8 BOM & Windows CRLF Formatting**: Prepended `\uFEFF` and formatted lines with `\r\n` so Microsoft Excel opens the file with 100% crystal-clear Philippine Peso symbols (₱) and zero character encoding artifacts.
+- **Excel Power Query Live Auto-Sync Guidance**: Supports direct linking via Excel Data > Get Data > From Text/CSV with 1-click "Refresh" for zero-typing automatic updates.
+
 # TINDA POS RELEASE RESUME
 
 CURRENT STABLE:
-- v5.1.4 (OMNIPRESENT MULTI-PAGE MINIMIZED PURCHASE INVOICE & AUTOMATIC DRAFT PERSISTENCE RELEASE)
+- v5.2.2 (MICRO-PRECISION WEIGHABLE & KILO-TO-PRICE RELEASE)
 
 TARGET:
-- v5.2.0 (NEXT FEATURE CYCLE)
+- v5.2.3 (NEXT FEATURE CYCLE)
 
 CURRENT STAGE:
-- Production Release Ready — v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence Release
+- Production Release Ready — v5.2.2 Micro-Precision Weight & Kilo-to-Price Converter
+
+COMPLETED (v5.1.7 Native Multi-Unit Packaging, Custom Unit Pricing & POS Quick-Unit Selector):
+- Stage 54: Native Custom Selling Price per Packaging Unit in Product Modal (`Inventory.tsx`):
+  Added a dedicated `Price (₱)` input column directly into the `Selling Units (Tingi / Multi-unit Packaging)` table with smart auto-pricing on conversion changes and full custom override support (e.g. Tingi ₱13, 1/4 Kilo ₱275, 1 Kilo ₱1,100).
+- Stage 55: Interactive Packaging Unit Quick-Picker Modal (`UnitPickerModal.tsx` & `POS.tsx`):
+  When cashier clicks any multi-unit item in the POS grid or list, opens a fast numbered Cupertino modal displaying all units, conversions, prices, and stock, with keyboard shortcuts (1, 2, 3...) and instant 1-tap cart insertion.
+- Stage 56: In-Cart Packaging Unit Switcher (`POS.tsx`):
+  Added inline interactive unit dropdown selector on Cart line items, allowing cashiers to change packaging units on the fly without deleting the item.
+- Stage 57: Smart Unit Barcode Matcher & Base Unit Stock Reconciliation:
+  Scanning a unit-specific barcode directly matches and inserts that packaging unit with its specific price and conversion factor, automatically deducting `-qty * conversion_to_base` from the unified base inventory on checkout.
 
 COMPLETED (v5.1.4 Omnipresent Multi-Page Minimized Purchase Invoice & Automatic Draft Persistence):
 - Stage 50: Root-Level Mount Architecture: Decoupled `PurchaseInvoiceModal` from `Inventory.tsx` and promoted it to the root application shell (`Shell.tsx`) with a dedicated global Zustand store (`usePurchaseInvoiceModal`), preventing unmounting or in-memory item loss when switching between POS Cashier, Inventory, Customers, and other pages.
